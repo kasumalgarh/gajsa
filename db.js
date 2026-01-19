@@ -1,13 +1,13 @@
 /* FILENAME: db.js
    PURPOSE: Complete ERP Engine (Full Double-Entry + Async Safe)
-   VERSION: 11.0 (Fixed InvalidStateError in Getters)
+   VERSION: 12.0 (Final Polished)
    AUTHOR: Money Wise Pro
 */
 
 class MoneyWiseDB {
     constructor() {
         this.dbName = "MoneyWise_Pro_DB";
-        this.dbVersion = 9; // Version kept same to avoid re-upgrade issues
+        this.dbVersion = 10; // Bumped version to force update if needed
         this.db = null;
     }
 
@@ -61,7 +61,7 @@ class MoneyWiseDB {
             request.onsuccess = async (event) => {
                 this.db = event.target.result;
                 await this._ensureDefaultSystemLedgers();
-                console.log("DB Ready: Version 11 (Getters Fixed)");
+                console.log("DB Ready: Version 12 (Stable)");
                 resolve(this.db);
             };
 
@@ -178,9 +178,7 @@ class MoneyWiseDB {
         });
     }
 
-    // --- CRUD OPERATIONS (FIXED HERE) ---
-    // The previous error was because we tried to access .result immediately.
-    // Now we wrap it in onsuccess.
+    // --- CRUD OPERATIONS ---
 
     async getLedgers() {
         return new Promise((resolve, reject) => {
@@ -241,7 +239,7 @@ class MoneyWiseDB {
             if (!data.id && data.op_qty !== undefined && data.current_stock === undefined) {
                 data.current_stock = data.op_qty;
             }
-            const tx = this.db.transaction("items", "readwrite");
+            const tx = this.db.transaction("items", "readwrite"); // Correct Store
             const req = data.id ? tx.objectStore("items").put(data) : tx.objectStore("items").add(data);
             req.onsuccess = () => resolve({ id: req.result });
             req.onerror = (e) => reject("Error creating item");

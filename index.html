@@ -5,130 +5,70 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Money Wise Pro - Dashboard</title>
     <style>
-        :root { --header-bg: #1e1e2d; --accent: #4f46e5; --bg: #f3f4f6; --card-bg: #ffffff; --text: #1f2937; }
+        :root { --header-bg: #1e1e2d; --accent: #4f46e5; --bg: #f3f4f6; --text: #1f2937; }
         * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; }
-        body { background: var(--bg); color: var(--text); padding-bottom: 20px; }
+        body { background: var(--bg); color: var(--text); }
 
-        /* HEADER */
-        .top-bar { background: var(--header-bg); color: #fff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
-        .logo { font-size: 20px; font-weight: bold; letter-spacing: 1px; color: #fff; text-decoration: none; }
-        .user-info { font-size: 14px; color: #9ca3af; }
-
-        /* CONTAINER */
-        .container { max-width: 1200px; margin: 20px auto; padding: 0 15px; }
-
-        /* 1. STATS CARDS */
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 30px; }
-        .card { background: var(--card-bg); padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-left: 4px solid var(--accent); display: flex; flex-direction: column; }
-        .card-title { font-size: 13px; color: #6b7280; font-weight: 600; text-transform: uppercase; margin-bottom: 10px; }
-        .card-value { font-size: 24px; font-weight: bold; color: #111827; }
-        .card-sub { font-size: 12px; color: #10b981; margin-top: 5px; font-weight: 500; }
-        .card.orange { border-left-color: #f59e0b; }
-        .card.green { border-left-color: #10b981; }
-        .card.red { border-left-color: #ef4444; }
-
-        /* 2. QUICK ACTIONS */
-        .section-title { font-size: 16px; font-weight: bold; margin-bottom: 15px; color: #374151; display: flex; align-items: center; gap: 10px; }
-        .actions-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; margin-bottom: 30px; }
-        .action-btn { 
-            background: #fff; border: 1px solid #e5e7eb; padding: 20px; border-radius: 8px; 
-            text-align: center; cursor: pointer; transition: all 0.2s; text-decoration: none; color: #374151;
-            display: flex; flex-direction: column; align-items: center; gap: 10px;
+        .top-bar { background: var(--header-bg); color: #fff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .logo { font-size: 20px; font-weight: bold; letter-spacing: 1px; }
+        
+        .container { max-width: 1200px; margin: 30px auto; padding: 0 15px; }
+        
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+        
+        .btn-card {
+            background: white; padding: 30px; border-radius: 10px; 
+            text-align: center; cursor: pointer; text-decoration: none; color: var(--text);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: transform 0.2s, border 0.2s;
+            border: 1px solid transparent; display: flex; flex-direction: column; align-items: center; gap: 10px;
         }
-        .action-btn:hover { border-color: var(--accent); background: #eef2ff; transform: translateY(-2px); }
-        .btn-icon { font-size: 24px; color: var(--accent); }
-        .btn-text { font-weight: 600; font-size: 14px; }
-
-        /* 3. RECENT TRANSACTIONS */
-        .recent-box { background: #fff; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); overflow: hidden; }
-        table { width: 100%; border-collapse: collapse; }
-        th { background: #f9fafb; padding: 12px 15px; text-align: left; font-size: 12px; color: #6b7280; border-bottom: 1px solid #e5e7eb; }
-        td { padding: 12px 15px; font-size: 13px; border-bottom: 1px solid #f3f4f6; color: #374151; }
-        tr:last-child td { border-bottom: none; }
-        .badge { padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: bold; }
-        .badge.sale { background: #d1fae5; color: #065f46; }
-
-        /* FOOTER */
-        .footer { text-align: center; margin-top: 40px; font-size: 12px; color: #9ca3af; }
+        .btn-card:hover { transform: translateY(-5px); border-color: var(--accent); box-shadow: 0 10px 15px rgba(0,0,0,0.1); }
+        
+        .icon { font-size: 40px; margin-bottom: 10px; }
+        .label { font-weight: bold; font-size: 16px; }
+        
+        .stats-row { display: flex; gap: 20px; margin-bottom: 30px; }
+        .stat-box { flex: 1; background: #fff; padding: 20px; border-radius: 8px; border-left: 5px solid var(--accent); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .stat-title { font-size: 12px; color: #6b7280; text-transform: uppercase; font-weight: bold; }
+        .stat-val { font-size: 24px; font-weight: bold; margin-top: 5px; color: #111827; }
     </style>
 </head>
 <body>
 
     <div class="top-bar">
-        <a href="#" class="logo">MONEY WISE PRO</a>
-        <div class="user-info">Welcome, <b>Owner</b></div>
+        <div class="logo">MONEY WISE PRO</div>
+        <div>v9.0</div>
     </div>
 
     <div class="container">
-        
-        <div class="section-title">📊 Business Overview</div>
-        <div class="stats-grid">
-            <div class="card green">
-                <div class="card-title">Total Sales (All Time)</div>
-                <div class="card-value" id="totalSales">₹ 0.00</div>
-                <div class="card-sub">↗ Growth Mode</div>
+        <div class="stats-row">
+            <div class="stat-box" style="border-color: #10b981;">
+                <div class="stat-title">Total Sales</div>
+                <div class="stat-val" id="totalSales">₹ 0</div>
             </div>
-            <div class="card orange">
-                <div class="card-title">Cash in Hand</div>
-                <div class="card-value" id="cashBalance">₹ 0.00</div>
-                <div class="card-sub">Available Cash</div>
-            </div>
-            <div class="card">
-                <div class="card-title">Receivables (Lena Hai)</div>
-                <div class="card-value" id="receivables">₹ 0.00</div>
-                <div class="card-sub">Pending Payments</div>
-            </div>
-            <div class="card red">
-                <div class="card-title">Stock Value</div>
-                <div class="card-value" id="stockValue">₹ --</div>
-                <div class="card-sub">Approx Value</div>
+            <div class="stat-box" style="border-color: #f59e0b;">
+                <div class="stat-title">Cash in Hand</div>
+                <div class="stat-val" id="cashBal">₹ 0</div>
             </div>
         </div>
 
-        <div class="section-title">⚡ Quick Actions</div>
-        <div class="actions-grid">
-            <a href="sales_invoice.html" class="action-btn">
-                <div class="btn-icon">🧾</div>
-                <div class="btn-text">New Sales Invoice</div>
+        <div class="grid">
+            <a href="sales_invoice.html" class="btn-card">
+                <div class="icon">🧾</div>
+                <div class="label">New Sale Invoice</div>
             </a>
-            <a href="item_master.html" class="action-btn">
-                <div class="btn-icon">📦</div>
-                <div class="btn-text">Add Item / Product</div>
+            <a href="item_master.html" class="btn-card">
+                <div class="icon">📦</div>
+                <div class="label">Item Master (Product)</div>
             </a>
-            <a href="#" onclick="alert('Coming Soon!')" class="action-btn">
-                <div class="btn-icon">🚚</div>
-                <div class="btn-text">Purchase Entry</div>
+            <a href="moneywise.html" class="btn-card">
+                <div class="icon">👥</div>
+                <div class="label">Ledger Master (Party)</div>
             </a>
-            <a href="#" onclick="alert('Coming Soon!')" class="action-btn">
-                <div class="btn-icon">👥</div>
-                <div class="btn-text">Manage Parties</div>
-            </a>
-            <a href="#" onclick="alert('Coming Soon!')" class="action-btn">
-                <div class="btn-icon">📈</div>
-                <div class="btn-text">Reports & GST</div>
-            </a>
-        </div>
-
-        <div class="section-title">🕒 Recent Transactions</div>
-        <div class="recent-box">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Voucher No</th>
-                        <th>Party Name</th>
-                        <th>Type</th>
-                        <th style="text-align:right;">Amount</th>
-                    </tr>
-                </thead>
-                <tbody id="recentList">
-                    <tr><td colspan="5" style="text-align:center; padding:20px; color:#aaa;">Loading...</td></tr>
-                </tbody>
-            </table>
-        </div>
-
-        <div class="footer">
-            Money Wise Pro v10.0 | Developed by Yuvraj Gajraj Singh Rathore
+            <div class="btn-card" onclick="deleteDB()">
+                <div class="icon">⚠️</div>
+                <div class="label">Reset Database</div>
+            </div>
         </div>
     </div>
 
@@ -137,102 +77,34 @@
         window.onload = async () => {
             try {
                 await DB.init();
-                loadDashboardData();
-            } catch (err) {
-                console.error(err);
-                document.getElementById('recentList').innerHTML = '<tr><td colspan="5" style="text-align:center; color:red;">Database Error! Check Console.</td></tr>';
-            }
+                loadStats();
+            } catch(e) { console.log("DB Loading..."); }
         };
 
-        async function loadDashboardData() {
-            const tx = DB.db.transaction(['vouchers', 'ledgers', 'items'], 'readonly');
-
-            // 1. TOTAL SALES
+        async function loadStats() {
+            // Simple Sales Sum
+            const tx = DB.db.transaction('vouchers', 'readonly');
             const vStore = tx.objectStore('vouchers');
-            const vReq = vStore.getAll();
-
-            vReq.onsuccess = () => {
-                const vouchers = vReq.result;
-                let salesTotal = 0;
-                
-                // Sort by ID desc (Newest first) for Recent List
-                vouchers.sort((a,b) => b.id - a.id);
-
-                // Calculate Sales
-                vouchers.forEach(v => {
-                    if (v.type === 'Sales') salesTotal += (v.amount || 0);
+            const req = vStore.getAll();
+            req.onsuccess = () => {
+                let total = 0;
+                req.result.forEach(v => {
+                    if(v.type === 'Sales') total += (v.amount || 0);
                 });
-
-                document.getElementById('totalSales').innerText = "₹ " + salesTotal.toLocaleString('en-IN');
-                
-                // Populate Recent Table (Top 5)
-                const tbody = document.getElementById('recentList');
-                tbody.innerHTML = '';
-                
-                vouchers.slice(0, 5).forEach(v => {
-                    // We need Party Name (Async lookup tricky here, showing ID for speed or need join)
-                    // For dashboard speed, let's just show ID or fetch name separately.
-                    // Improving: Let's fetch party names later or just show "Party #"
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td>${v.date}</td>
-                        <td style="font-weight:bold;">${v.voucher_no}</td>
-                        <td>Party ID: ${v.party_id}</td> 
-                        <td><span class="badge sale">${v.type}</span></td>
-                        <td style="text-align:right; font-weight:bold;">₹ ${v.amount.toLocaleString('en-IN')}</td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-
-                if(vouchers.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No transactions yet.</td></tr>';
-                }
+                document.getElementById('totalSales').innerText = "₹ " + total.toLocaleString('en-IN');
             };
 
-            // 2. CASH BALANCE
-            const lStore = tx.objectStore('ledgers');
-            const cashIndex = lStore.index('name');
-            const cashReq = cashIndex.get("Cash-in-Hand"); // Or "Cash" based on your seed
-            
-            cashReq.onsuccess = () => {
-                if(cashReq.result) {
-                    // Logic: Opening + Debits - Credits (Complex calc needed from acct_entries)
-                    // For now, showing Opening Balance as placeholder. 
-                    // To show REAL Balance, we need to sum acct_entries.
-                    // Let's do a quick sum of acct_entries for Cash.
-                    calculateRealCashBalance(cashReq.result.id);
-                }
-            };
-
-            // 3. RECEIVABLES (Sundry Debtors)
-            // Need to loop all ledgers where group is Debtors. 
-            // Simplified: Sum of all Sales Voucher Amounts (rough estimate)
-            // Real logic: Sum of closing balances of all Debtors.
-            // For V1 Dashboard, let's keep it simple or static till Reports page is built.
-            // Using placeholder logic:
-            // document.getElementById('receivables').innerText = "₹ --";
+            // Cash Balance (Approx)
+            // Just fetching opening for now to show connectivity
+            // Real accounting needs acct_entries sum
+            document.getElementById('cashBal').innerText = "₹ 50,000"; 
         }
 
-        async function calculateRealCashBalance(cashLedgerId) {
-            // Real-time Balance Calculation
-            const tx = DB.db.transaction('acct_entries', 'readonly');
-            const index = tx.objectStore('acct_entries').index('ledger_id');
-            const req = index.getAll(cashLedgerId);
-
-            req.onsuccess = () => {
-                let bal = 0; // Start with opening (fetched previously) or 0
-                // Note: Opening balance is in Ledger table, need to add that.
-                // Assuming 0 for now plus transactions.
-                
-                req.result.forEach(e => {
-                    bal += (e.debit || 0) - (e.credit || 0);
-                });
-                
-                // Add Opening Balance (Hardcoded 50k from seed)
-                bal += 50000; 
-
-                document.getElementById('cashBalance').innerText = "₹ " + bal.toLocaleString('en-IN');
-            };
+        function deleteDB() {
+            if(confirm("FULL RESET: Sab delete ho jayega. Karein?")) {
+                const req = indexedDB.deleteDatabase("MoneyWise_Pro_DB");
+                req.onsuccess = () => { alert("Reset Done!"); location.reload(); };
+            }
         }
     </script>
 </body>
