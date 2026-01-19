@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Money Wise Pro - Sales Invoice</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --header-bg: #1e1e2d; --accent: #6366f1; --bg: #f8fafc;
+            --card-bg: #ffffff; --border: #e2e8f0; --text: #1e293b;
+            --green: #10b981; --red: #ef4444; --muted: #64748b;
+        }
+        * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
+        body { background: var(--bg); color: var(--text); min-height: 100vh; }
+        .top-bar { background: var(--header-bg); color: white; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 20px; font-weight: 800; letter-spacing: 1px; }
+        .close { cursor: pointer; font-size: 18px; }
+        .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
+        .invoice-header { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 25px; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        .form-group label { font-size: 13px; font-weight: 600; color: var(--muted); }
+        input, select { padding: 10px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; outline: none; }
+        input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
+        .item-grid { background: white; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); overflow-x: auto; margin-bottom: 25px; }
+        table { width: 100%; border-collapse: collapse; min-width: 900px; }
+        th { background: #f8fafc; color: var(--muted); font-weight: 600; padding: 12px; text-align: left; font-size: 12px; border-bottom: 2px solid var(--border); }
+        td { padding: 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+        .qty, .rate, .disc, .gst { text-align: right; width: 80px; }
+        .item-select { width: 100%; min-width: 200px; }
+        .add-row { background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; margin: 15px; display: block; }
+        .totals { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: grid; grid-template-columns: 2fr 1fr; gap: 30px; }
+        .narration { grid-column: 1 / -1; }
+        .total-line { display: flex; justify-content: space-between; padding: 8px 0; font-size: 14px; border-bottom: 1px solid #f1f5f9; }
+        .grand-total { font-size: 20px; font-weight: 800; border-top: 2px solid var(--border); padding-top: 15px; margin-top: 10px; background: #f8fafc; }
+        .actions { margin: 30px 0; text-align: right; }
+        .save-btn { background: var(--green); color: white; border: none; padding: 14px 50px; border-radius: 8px; font-size: 16px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+        .save-btn:hover { background: #059669; box-shadow: 0 4px 15px rgba(16,185,129,0.3); }
+        .toast { position: fixed; bottom: 40px; right: 40px; background: var(--green); color: white; padding: 16px 32px; border-radius: 10px; box-shadow: 0 6px 20px rgba(0,0,0,0.25); z-index: 1000; display: none; font-weight: 600; }
+        @media print {
+            .top-bar, .actions, .add-row, .toast { display: none !important; }
+            .container { margin: 0; padding: 0; max-width: 100%; }
+            .invoice-header, .item-grid, .totals { box-shadow: none; border: 1px solid #000; margin-bottom: 20px; }
+            input, select, textarea { border: none; background: transparent; padding: 0; }
+            th { background: #f0f0f0 !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <div class="logo">MONEY WISE PRO - Sales Invoice</div>
+        <div class="close" onclick="window.location='index.html'">✕</div>
+    </div>
+
+    <div class="container">
+        <div class="invoice-header">
+            <div class="form-group">
+                <label>Invoice No</label>
+                <input type="text" id="invNo" placeholder="Auto-generated" readonly style="font-weight:bold; color:#0f172a;">
+            </div>
+            <div class="form-group">
+                <label>Date</label>
+                <input type="date" id="invDate" required>
+            </div>
+            <div class="form-group" style="grid-column: 1 / -1;">
+                <label>Customer / Party (Sundry Debtors)</label>
+                <select id="partySelect" required>
+                    <option value="">-- Select Customer --</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="item-grid">
+            <table id="itemTable">
+                <thead>
+                    <tr>
+                        <th width="5%">#</th>
+                        <th width="35%">Item Name</th>
+                        <th width="10%">Qty</th>
+                        <th width="10%">Unit</th>
+                        <th width="10%">Rate</th>
+                        <th width="8%">Disc %</th>
+                        <th width="8%">GST %</th>
+                        <th width="12%" class="text-right">Amount</th>
+                        <th width="5%"></th>
+                    </tr>
+                </thead>
+                <tbody id="itemRows"></tbody>
+            </table>
+            <button class="add-row" onclick="addItemRow()">+ Add Item Row</button>
+        </div>
+
+        <div class="totals">
+            <div class="narration">
+                <label>Narration / Remarks (Optional)</label>
+                <textarea id="narration" rows="3" placeholder="Thank you for your business..."></textarea>
+            </div>
+            <div>
+                <div class="total-line"><span>Sub Total</span><span id="subTotal">₹ 0.00</span></div>
+                <div class="total-line"><span>Discount Amount</span><span id="discTotal">₹ 0.00</span></div>
+                <div class="total-line"><span>Taxable Amount</span><span id="taxableAmt">₹ 0.00</span></div>
+                <div class="total-line"><span>CGST</span><span id="cgstAmt">₹ 0.00</span></div>
+                <div class="total-line"><span>SGST</span><span id="sgstAmt">₹ 0.00</span></div>
+                <div class="total-line"><span>IGST</span><span id="igstAmt">₹ 0.00</span></div>
+                <div class="total-line grand-total"><span>Grand Total</span><span id="grandTotal">₹ 0.00</span></div>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button class="save-btn" onclick="saveInvoice()">Save Invoice & Print (Alt + S)</button>
+        </div>
+    </div>
+
+    <div class="toast" id="toast">Invoice Saved Successfully!</div>
+
+    <script src="db.js"></script>
+    <script>
+        let itemsList = [];
+        let ledgersList = [];
+
+        window.onload = async () => {
+            try {
+                await DB.init();
+                await Promise.all([loadParties(), loadItems()]);
+                document.getElementById('invDate').valueAsDate = new Date();
+                generateInvoiceNo();
+                addItemRow(); // Start with one row
+                document.addEventListener('keydown', e => {
+                    if (e.altKey && e.key.toLowerCase() === 's') {
+                        e.preventDefault();
+                        saveInvoice();
+                    }
+                });
+            } catch(e) {
+                console.error("Init Error:", e);
+                alert("Database Error - Check Console");
+            }
+        };
+
+        async function loadParties() {
+            ledgersList = await DB.getLedgers();
+            const sel = document.getElementById('partySelect');
+            sel.innerHTML = '<option value="">-- Select Customer (Debtors) --</option>';
+            ledgersList.filter(l => l.group_name?.toLowerCase().includes("sundry debtors") || l.group_name?.includes("Debtors") || l.name.toLowerCase().includes("cash"))
+                       .sort((a,b) => a.name.localeCompare(b.name))
+                       .forEach(l => {
+                           let opt = document.createElement('option');
+                           opt.value = l.id;
+                           opt.text = l.name;
+                           sel.appendChild(opt);
+                       });
+        }
+
+        async function loadItems() {
+            itemsList = await DB.getItems();
+        }
+
+        function generateInvoiceNo() {
+            // Simple incremental - in production use DB last voucher
+            const random = Math.floor(100000 + Math.random() * 900000);
+            document.getElementById('invNo').value = `SAL-${random}`;
+        }
+
+        function addItemRow() {
+            const tbody = document.getElementById('itemRows');
+            const rowNum = tbody.children.length + 1;
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${rowNum}</td>
+                <td>
+                    <select class="item-select" onchange="loadItemDetails(this)">
+                        <option value="">-- Select Item --</option>
+                        ${itemsList.map(i => `<option value="${i.id}" 
+                            data-rate="${i.std_price || 0}" 
+                            data-unit="${i.unit || 'Pcs'}" 
+                            data-gst="${i.gst_rate || 18}">
+                            ${i.name} (${i.unit || 'Pcs'})
+                        </option>`).join('')}
+                    </select>
+                </td>
+                <td><input type="number" class="qty" min="1" value="1" step="1" onchange="calcRow(this)"></td>
+                <td><input type="text" class="unit" readonly></td>
+                <td><input type="number" class="rate" step="0.01" onchange="calcRow(this)"></td>
+                <td><input type="number" class="disc" step="0.01" value="0" onchange="calcRow(this)"> %</td>
+                <td><input type="number" class="gst" step="0.01" readonly></td>
+                <td class="text-right amt" style="font-weight:600;">₹0.00</td>
+                <td><button onclick="this.closest('tr').remove(); calcTotals()" style="color:var(--red); background:none; border:none; font-size:18px; cursor:pointer;">×</button></td>
+            `;
+            tbody.appendChild(tr);
+            calcTotals();
+        }
+
+        function loadItemDetails(select) {
+            const opt = select.options[select.selectedIndex];
+            const tr = select.closest('tr');
+            tr.querySelector('.rate').value = opt.dataset.rate || 0;
+            tr.querySelector('.unit').value = opt.dataset.unit || 'Pcs';
+            tr.querySelector('.gst').value = opt.dataset.gst || 18;
+            calcRow(select);
+        }
+
+        function calcRow(el) {
+            const tr = el.closest('tr');
+            const qty = parseFloat(tr.querySelector('.qty').value) || 0;
+            const rate = parseFloat(tr.querySelector('.rate').value) || 0;
+            const disc = parseFloat(tr.querySelector('.disc').value) || 0;
+            const gst = parseFloat(tr.querySelector('.gst').value) || 0;
+
+            let gross = qty * rate;
+            let discAmt = gross * (disc / 100);
+            let taxable = gross - discAmt;
+            let taxAmt = taxable * (gst / 100);
+            let total = taxable + taxAmt;
+
+            tr.querySelector('.amt').textContent = `₹${total.toFixed(2)}`;
+            tr.dataset.taxable = taxable;
+            tr.dataset.tax = taxAmt;
+            tr.dataset.discAmt = discAmt;
+
+            calcTotals();
+        }
+
+        function calcTotals() {
+            let subTotal = 0, discTotal = 0, taxable = 0, cgst = 0, sgst = 0;
+            document.querySelectorAll('#itemRows tr').forEach(tr => {
+                subTotal += parseFloat(tr.dataset.taxable || 0) + parseFloat(tr.dataset.tax || 0);
+                discTotal += parseFloat(tr.dataset.discAmt || 0);
+                taxable += parseFloat(tr.dataset.taxable || 0);
+                cgst += parseFloat(tr.dataset.tax || 0) / 2;
+                sgst += parseFloat(tr.dataset.tax || 0) / 2;
+            });
+
+            document.getElementById('subTotal').textContent = `₹${subTotal.toFixed(2)}`;
+            document.getElementById('taxableAmt').textContent = `₹${taxable.toFixed(2)}`;
+            document.getElementById('cgstAmt').textContent = `₹${cgst.toFixed(2)}`;
+            document.getElementById('sgstAmt').textContent = `₹${sgst.toFixed(2)}`;
+            document.getElementById('igstAmt').textContent = `₹0.00`; // Add IGST logic later
+            const grand = taxable + cgst + sgst;
+            document.getElementById('grandTotal').textContent = `₹${grand.toFixed(2)}`;
+        }
+
+        async function saveInvoice() {
+            const partyId = document.getElementById('partySelect').value;
+            if (!partyId) return alert("Select Customer");
+
+            const rows = document.querySelectorAll('#itemRows tr');
+            let inventoryEntries = [];
+            let taxableTotal = 0, taxTotal = 0;
+
+            for (let tr of rows) {
+                const itemId = tr.querySelector('.item-select').value;
+                if (!itemId) continue;
+
+                const qty = parseFloat(tr.querySelector('.qty').value) || 0;
+                const rate = parseFloat(tr.querySelector('.rate').value) || 0;
+
+                if (qty > 0) {
+                    inventoryEntries.push({
+                        item_id: parseInt(itemId),
+                        qty: qty,
+                        rate: rate
+                    });
+                    taxableTotal += parseFloat(tr.dataset.taxable || 0);
+                    taxTotal += parseFloat(tr.dataset.tax || 0);
+                }
+            }
+
+            if (inventoryEntries.length === 0) return alert("Add at least one item");
+
+            const grandTotal = Math.round(taxableTotal + taxTotal);
+
+            const voucherData = {
+                voucher_no: document.getElementById('invNo').value,
+                date: document.getElementById('invDate').value,
+                party_id: parseInt(partyId),
+                amount: grandTotal,
+                type: 'Sales',
+                narration: document.getElementById('narration').value || ''
+            };
+
+            // Accounting Entries (Double-Entry)
+            let acctEntries = [];
+
+            // 1. Debit Customer (Receivables increase)
+            acctEntries.push({
+                ledger_id: parseInt(partyId),
+                debit: grandTotal,
+                credit: 0
+            });
+
+            // 2. Credit Sales (Income)
+            const salesLedger = ledgersList.find(l => l.name === 'Local Sales');
+            if (salesLedger) {
+                acctEntries.push({
+                    ledger_id: salesLedger.id,
+                    debit: 0,
+                    credit: taxableTotal
+                });
+            }
+
+            // 3. Credit Tax Liability (Output Tax)
+            const cgstLedger = ledgersList.find(l => l.name === 'Output CGST');
+            const sgstLedger = ledgersList.find(l => l.name === 'Output SGST');
+
+            if (cgstLedger) acctEntries.push({ ledger_id: cgstLedger.id, debit: 0, credit: taxTotal / 2 });
+            if (sgstLedger) acctEntries.push({ ledger_id: sgstLedger.id, debit: 0, credit: taxTotal / 2 });
+
+            try {
+                await DB.saveVoucher(voucherData, inventoryEntries, acctEntries);
+                showToast("Invoice Saved Successfully!");
+                setTimeout(() => window.print(), 800);
+                setTimeout(() => location.reload(), 2500); // Reset for next invoice
+            } catch (e) {
+                alert("Save Failed: " + e.message);
+            }
+        }
+
+        function showToast(msg = "Invoice Saved Successfully!") {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.style.display = 'block';
+            setTimeout(() => t.style.display = 'none', 3000);
+        }
+    </script>
+</body>
+</html>
