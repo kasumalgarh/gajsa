@@ -13,30 +13,41 @@
         }
         * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
         body { background: var(--bg); color: var(--text); min-height: 100vh; }
+        
         .top-bar { background: var(--header-bg); color: white; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; }
         .logo { font-size: 20px; font-weight: 800; letter-spacing: 1px; }
         .close { cursor: pointer; font-size: 18px; }
+        
         .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
         .invoice-header { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 25px; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+        
         .form-group { display: flex; flex-direction: column; gap: 6px; }
         .form-group label { font-size: 13px; font-weight: 600; color: var(--muted); }
         input, select { padding: 10px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; outline: none; }
         input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
+        
         .item-grid { background: white; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); overflow-x: auto; margin-bottom: 25px; }
         table { width: 100%; border-collapse: collapse; min-width: 900px; }
         th { background: #f8fafc; color: var(--muted); font-weight: 600; padding: 12px; text-align: left; font-size: 12px; border-bottom: 2px solid var(--border); }
         td { padding: 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+        
         .qty, .rate, .disc, .gst { text-align: right; width: 80px; }
         .item-select { width: 100%; min-width: 200px; }
+        
         .add-row { background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; margin: 15px; display: block; }
+        
         .totals { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: grid; grid-template-columns: 2fr 1fr; gap: 30px; }
         .narration { grid-column: 1 / -1; }
+        
         .total-line { display: flex; justify-content: space-between; padding: 8px 0; font-size: 14px; border-bottom: 1px solid #f1f5f9; }
         .grand-total { font-size: 20px; font-weight: 800; border-top: 2px solid var(--border); padding-top: 15px; margin-top: 10px; background: #f8fafc; }
+        
         .actions { margin: 30px 0; text-align: right; }
         .save-btn { background: var(--green); color: white; border: none; padding: 14px 50px; border-radius: 8px; font-size: 16px; font-weight: 700; cursor: pointer; transition: 0.2s; }
         .save-btn:hover { background: #059669; box-shadow: 0 4px 15px rgba(16,185,129,0.3); }
+        
         .toast { position: fixed; bottom: 40px; right: 40px; background: var(--green); color: white; padding: 16px 32px; border-radius: 10px; box-shadow: 0 6px 20px rgba(0,0,0,0.25); z-index: 1000; display: none; font-weight: 600; }
+        
         @media print {
             .top-bar, .actions, .add-row, .toast { display: none !important; }
             .container { margin: 0; padding: 0; max-width: 100%; }
@@ -116,7 +127,7 @@
     <script src="db.js"></script>
     <script>
         let itemsList = [];
-        let ledgersList = [];
+        let ledgersList = []; // For party + tax lookup
 
         window.onload = async () => {
             try {
@@ -131,24 +142,38 @@
                         saveInvoice();
                     }
                 });
-            } catch(e) {
+            } catch(e) { 
                 console.error("Init Error:", e);
-                alert("Database Error - Check Console");
+                alert("Database Error - Check Console"); 
             }
         };
 
         async function loadParties() {
-            ledgersList = await DB.getLedgers();
+            // Corrected Logic to load Customers (Debtors)
+            const ledgers = await DB.getAll('ledgers');
+            const groups = await DB.getAll('groups');
+
+            const debtorGrp = groups.find(g => g.name === 'Sundry Debtors');
+            const cashGrp = groups.find(g => g.name === 'Cash-in-Hand');
+            
+            const validGroupIds = [];
+            if (debtorGrp) validGroupIds.push(debtorGrp.id);
+            if (cashGrp) validGroupIds.push(cashGrp.id);
+
             const sel = document.getElementById('partySelect');
-            sel.innerHTML = '<option value="">-- Select Customer (Debtors) --</option>';
-            ledgersList.filter(l => l.group_name?.toLowerCase().includes("sundry debtors") || l.group_name?.includes("Debtors") || l.name.toLowerCase().includes("cash"))
-                       .sort((a,b) => a.name.localeCompare(b.name))
-                       .forEach(l => {
-                           let opt = document.createElement('option');
-                           opt.value = l.id;
-                           opt.text = l.name;
-                           sel.appendChild(opt);
-                       });
+            sel.innerHTML = '<option value="">-- Select Customer --</option>';
+            
+            ledgers.filter(l => validGroupIds.includes(l.group_id))
+                   .sort((a,b) => a.name.localeCompare(b.name))
+                   .forEach(p => {
+                       let opt = document.createElement('option');
+                       opt.value = p.id;
+                       opt.text = p.name;
+                       sel.appendChild(opt);
+                   });
+                   
+            // Cache full list for accounting lookups
+            ledgersList = ledgers;
         }
 
         async function loadItems() {
@@ -156,7 +181,7 @@
         }
 
         function generateInvoiceNo() {
-            // Simple incremental - in production use DB last voucher
+            // Simple incremental for demo
             const random = Math.floor(100000 + Math.random() * 900000);
             document.getElementById('invNo').value = `SAL-${random}`;
         }
@@ -223,20 +248,21 @@
         function calcTotals() {
             let subTotal = 0, discTotal = 0, taxable = 0, cgst = 0, sgst = 0;
             document.querySelectorAll('#itemRows tr').forEach(tr => {
-                subTotal += parseFloat(tr.dataset.taxable || 0) + parseFloat(tr.dataset.tax || 0);
+                subTotal += parseFloat(tr.dataset.taxable || 0) + parseFloat(tr.dataset.tax || 0); // Approx
                 discTotal += parseFloat(tr.dataset.discAmt || 0);
                 taxable += parseFloat(tr.dataset.taxable || 0);
                 cgst += parseFloat(tr.dataset.tax || 0) / 2;
                 sgst += parseFloat(tr.dataset.tax || 0) / 2;
             });
 
-            document.getElementById('subTotal').textContent = `₹${subTotal.toFixed(2)}`;
+            document.getElementById('subTotal').textContent = `₹${(taxable + discTotal).toFixed(2)}`;
+            document.getElementById('discTotal').textContent = `₹${discTotal.toFixed(2)}`;
             document.getElementById('taxableAmt').textContent = `₹${taxable.toFixed(2)}`;
             document.getElementById('cgstAmt').textContent = `₹${cgst.toFixed(2)}`;
             document.getElementById('sgstAmt').textContent = `₹${sgst.toFixed(2)}`;
-            document.getElementById('igstAmt').textContent = `₹0.00`; // Add IGST logic later
+            document.getElementById('igstAmt').textContent = `₹0.00`; 
             const grand = taxable + cgst + sgst;
-            document.getElementById('grandTotal').textContent = `₹${grand.toFixed(2)}`;
+            document.getElementById('grandTotal').textContent = `₹${Math.round(grand).toFixed(2)}`;
         }
 
         async function saveInvoice() {
@@ -278,17 +304,17 @@
                 narration: document.getElementById('narration').value || ''
             };
 
-            // Accounting Entries (Double-Entry)
+            // Double Entry Accounting
             let acctEntries = [];
 
-            // 1. Debit Customer (Receivables increase)
+            // 1. Debit Customer
             acctEntries.push({
                 ledger_id: parseInt(partyId),
                 debit: grandTotal,
                 credit: 0
             });
 
-            // 2. Credit Sales (Income)
+            // 2. Credit Sales Account
             const salesLedger = ledgersList.find(l => l.name === 'Local Sales');
             if (salesLedger) {
                 acctEntries.push({
@@ -298,7 +324,7 @@
                 });
             }
 
-            // 3. Credit Tax Liability (Output Tax)
+            // 3. Credit Output Tax
             const cgstLedger = ledgersList.find(l => l.name === 'Output CGST');
             const sgstLedger = ledgersList.find(l => l.name === 'Output SGST');
 
@@ -309,7 +335,7 @@
                 await DB.saveVoucher(voucherData, inventoryEntries, acctEntries);
                 showToast("Invoice Saved Successfully!");
                 setTimeout(() => window.print(), 800);
-                setTimeout(() => location.reload(), 2500); // Reset for next invoice
+                setTimeout(() => location.reload(), 2500); 
             } catch (e) {
                 alert("Save Failed: " + e.message);
             }

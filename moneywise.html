@@ -206,12 +206,12 @@
             document.getElementById('name').focus();
         }
 
-        async function saveLedger() {
+async function saveLedger() {
             const name = document.getElementById('name').value.trim();
             if (!name) return alert("Ledger Name is required");
 
+            // Data Object WITHOUT ID first
             const data = {
-                id: document.getElementById('ledgerId').value ? parseInt(document.getElementById('ledgerId').value) : undefined,
                 name: name,
                 group_id: parseInt(document.getElementById('groupSelect').value) || null,
                 state_code: document.getElementById('stateSelect').value || null,
@@ -219,13 +219,20 @@
                 gstin: document.getElementById('gstin').value.trim() || null
             };
 
+            // Only add ID if we are Editing (NOT Creating)
+            const idVal = document.getElementById('ledgerId').value;
+            if (idVal) {
+                data.id = parseInt(idVal);
+            }
+
             try {
                 await DB.createLedger(data);
                 showToast("Ledger Saved!");
                 resetForm();
                 renderList(document.getElementById('searchInput').value);
             } catch(e) {
-                alert("Error: " + (e.message || "Name already exists?"));
+                console.error(e);
+                alert("Error: Name might already exist or DB Issue.");
             }
         }
 

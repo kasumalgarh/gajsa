@@ -56,7 +56,9 @@
         <a href="purchase_invoice.html" class="nav-link"><span class="nav-icon">🚚</span> Purchase Entry</a>
         <a href="#" class="nav-link active"><span class="nav-icon">📦</span> Inventory</a>
         <a href="moneywise.html" class="nav-link"><span class="nav-icon">👥</span> Parties / Ledgers</a>
-    </div>
+<a href="coa.html" class="nav-link"><span class="nav-icon">🗂️</span> Chart of Accounts</a>
+    
+    <a href="settings.html" class="nav-link"><span class="nav-icon">⚙️</span> Settings</a>    </div>
 
     <div class="main">
         <div class="list-panel">
@@ -148,7 +150,6 @@
             units = await DB.getUnits();
             const sel = document.getElementById('unit');
             sel.innerHTML = '<option value="">-- Select Unit --</option>';
-            // Default fallback if no units
             if (units.length === 0) {
                 ['Pcs', 'Kg', 'Box', 'Nos', 'Mtr', 'Ltr'].forEach(u => {
                     let opt = document.createElement('option');
@@ -227,8 +228,8 @@
             const name = document.getElementById('name').value.trim();
             if (!name) return alert("Item Name is required");
 
+            // Construct Data Object (NO ID by default)
             const data = {
-                id: document.getElementById('itemId').value ? parseInt(document.getElementById('itemId').value) : undefined,
                 name: name,
                 unit: document.getElementById('unit').value || 'Pcs',
                 gst_rate: parseFloat(document.getElementById('gst').value) || 18,
@@ -239,13 +240,20 @@
                 op_qty: parseFloat(document.getElementById('opQty').value) || 0
             };
 
+            // Only Add ID if Editing
+            const idVal = document.getElementById('itemId').value;
+            if (idVal) {
+                data.id = parseInt(idVal);
+            }
+
             try {
                 await DB.createItem(data);
                 showToast("Item Saved!");
                 resetForm();
                 renderList(document.getElementById('searchInput').value);
             } catch(e) {
-                alert("Error: " + (e.message || "Item name already exists?"));
+                console.error(e);
+                alert("Error: Item name might already exist.");
             }
         }
 
@@ -254,21 +262,15 @@
             if (!id) return;
             if (!confirm("Delete this item? This cannot be undone.")) return;
 
-            // Check if used in inventory entries
             const entries = await DB.getAll('entries');
             const used = entries.some(e => e.item_id == id);
             if (used && !confirm("This item is used in transactions. Still delete?")) return;
 
             try {
-                // DB.deleteItem not present - add in db.js if needed
-                // For now, assume deleteItem method exists or implement simple delete
-                const tx = DB.db.transaction('items', 'readwrite');
-                tx.objectStore('items').delete(parseInt(id));
-                tx.oncomplete = () => {
-                    showToast("Item Deleted!");
-                    resetForm();
-                    renderList();
-                };
+                await DB.deleteItem(parseInt(id));
+                showToast("Item Deleted!");
+                resetForm();
+                renderList();
             } catch(e) {
                 alert("Delete Failed");
             }

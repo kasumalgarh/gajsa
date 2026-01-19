@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Money Wise Pro - Settings</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sidebar-bg: #0f172a; --sidebar-text: #94a3b8; --active-text: #f8fafc;
+            --bg: #f8fafc; --card-bg: #ffffff; --text: #1e293b; --border: #e2e8f0;
+            --accent: #6366f1; --red: #ef4444; --green: #10b981;
+        }
+        * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
+        body { display: flex; height: 100vh; background: var(--bg); color: var(--text); overflow: hidden; }
+
+        .sidebar { width: 260px; background: var(--sidebar-bg); padding: 20px; display: flex; flex-direction: column; flex-shrink: 0; }
+        .brand { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 40px; display: flex; align-items: center; gap: 10px; }
+        .nav-link { padding: 12px 15px; margin-bottom: 5px; border-radius: 8px; color: var(--sidebar-text); text-decoration: none; font-weight: 500; display: flex; align-items: center; gap: 12px; transition: 0.2s; font-size: 14px; }
+        .nav-link:hover, .nav-link.active { background: #1e293b; color: var(--active-text); }
+        .nav-icon { font-size: 18px; }
+
+        .main { flex: 1; padding: 40px; overflow-y: auto; }
+        .container { max-width: 800px; margin: 0 auto; }
+        
+        .header { margin-bottom: 30px; }
+        .title { font-size: 24px; font-weight: 800; margin-bottom: 5px; }
+        .subtitle { color: #64748b; font-size: 14px; }
+
+        .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: 1px solid var(--border); margin-bottom: 20px; }
+        .card-title { font-size: 18px; font-weight: 700; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
+        
+        .btn { padding: 12px 24px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-primary:hover { background: #4f46e5; }
+        .btn-danger { background: #fee2e2; color: var(--red); }
+        .btn-danger:hover { background: #fecaca; }
+        .btn-outline { border: 1px solid var(--border); background: white; color: var(--text); }
+        
+        input[type="file"] { display: none; }
+        .file-label { display: inline-block; padding: 12px 24px; border: 1px dashed var(--accent); color: var(--accent); border-radius: 8px; cursor: pointer; font-weight: 500; }
+        .file-label:hover { background: #f5f3ff; }
+
+        #restoreStatus { margin-top: 10px; font-size: 13px; color: #64748b; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="brand">🚀 MoneyWise Pro</div>
+        <a href="index.html" class="nav-link"><span class="nav-icon">📊</span> Dashboard</a>
+        <a href="reports.html" class="nav-link"><span class="nav-icon">📈</span> Reports</a>
+        <a href="sales_invoice.html" class="nav-link"><span class="nav-icon">🧾</span> Sales Invoice</a>
+        <a href="purchase_invoice.html" class="nav-link"><span class="nav-icon">🚚</span> Purchase Entry</a>
+        <a href="item_master.html" class="nav-link"><span class="nav-icon">📦</span> Inventory</a>
+        <a href="moneywise.html" class="nav-link"><span class="nav-icon">👥</span> Parties / Ledgers</a>
+<a href="coa.html" class="nav-link"><span class="nav-icon">🗂️</span> Chart of Accounts</a>
+    
+    <a href="settings.html" class="nav-link"><span class="nav-icon">⚙️</span> Settings</a>        <a href="#" class="nav-link active"><span class="nav-icon">⚙️</span> Settings</a>
+    </div>
+
+    <div class="main">
+        <div class="container">
+            <div class="header">
+                <div class="title">Data Management</div>
+                <div class="subtitle">Backup, Restore and Reset your application data</div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">📥 Backup Data</div>
+                <p style="color:#64748b; margin-bottom:20px; font-size:14px;">Download a complete copy of your data (Parties, Items, Invoices). Keep this safe.</p>
+                <button class="btn btn-primary" onclick="DB.exportBackup()">Download Backup JSON</button>
+            </div>
+
+            <div class="card">
+                <div class="card-title">📤 Restore Data</div>
+                <p style="color:#64748b; margin-bottom:20px; font-size:14px;">Restore data from a previously downloaded Backup file. <strong>Warning: Current data will be replaced.</strong></p>
+                
+                <label class="file-label">
+                    Choose Backup File
+                    <input type="file" id="backupFile" accept=".json" onchange="handleFileUpload(this)">
+                </label>
+                <div id="restoreStatus"></div>
+            </div>
+
+            <div class="card" style="border-color: #fecaca; background: #fffafa;">
+                <div class="card-title" style="color:var(--red)">🗑️ Hard Reset</div>
+                <p style="color:#ef4444; margin-bottom:20px; font-size:14px;">This will wipe out EVERYTHING. All invoices, parties, and items will be deleted permanently.</p>
+                <button class="btn btn-danger" onclick="hardReset()">Delete All Data</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="db.js"></script>
+    <script>
+        window.onload = async () => { await DB.init(); };
+
+        function handleFileUpload(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (!confirm(`Restore data from file "${file.name}"? Current data will be merged/overwritten.`)) {
+                        input.value = ''; // clear
+                        return;
+                    }
+                    
+                    document.getElementById('restoreStatus').innerText = "Restoring... please wait.";
+                    await restoreData(data);
+                    document.getElementById('restoreStatus').innerText = "✅ Restore Complete!";
+                    alert("Data Restored Successfully!");
+                    location.reload();
+                } catch (err) {
+                    alert("Invalid Backup File!");
+                    console.error(err);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        async function restoreData(data) {
+            const stores = ["groups", "states", "ledgers", "units", "items", "vouchers", "entries", "acct_entries"];
+            const tx = DB.db.transaction(stores, "readwrite");
+
+            for (const storeName of stores) {
+                if (data[storeName] && Array.isArray(data[storeName])) {
+                    const store = tx.objectStore(storeName);
+                    // Optional: Clear existing data before restore?
+                    // await store.clear(); 
+                    
+                    for (const item of data[storeName]) {
+                        store.put(item);
+                    }
+                }
+            }
+            
+            return new Promise((resolve, reject) => {
+                tx.oncomplete = () => resolve();
+                tx.onerror = () => reject(tx.error);
+            });
+        }
+
+        async function hardReset() {
+            if (confirm("ARE YOU SURE? All data will be lost forever!") && confirm("Really? This cannot be undone!")) {
+                const req = indexedDB.deleteDatabase("MoneyWise_Pro_DB");
+                req.onsuccess = () => {
+                    alert("System Reset Complete. Reloading...");
+                    location.reload();
+                };
+                req.onerror = () => alert("Reset Failed");
+            }
+        }
+    </script>
+</body>
+</html>

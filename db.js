@@ -1,13 +1,13 @@
 /* FILENAME: db.js
-   PURPOSE: Complete ERP Engine (Double-Entry + Stock Safety + Backup + Full India Support)
-   VERSION: 16.0 (Final Platinum)
+   PURPOSE: Complete ERP Engine (Double-Entry + Stock Safety + Backup + Auto-Healing)
+   VERSION: 17.0 (Auto-Fix Indexes)
    AUTHOR: Money Wise Pro
 */
 
 class MoneyWiseDB {
     constructor() {
         this.dbName = "MoneyWise_Pro_DB";
-        this.dbVersion = 16;
+        this.dbVersion = 17; // Version Bumped to force upgrade
         this.db = null;
     }
 
@@ -17,57 +17,69 @@ class MoneyWiseDB {
 
             request.onupgradeneeded = (event) => {
                 const db = event.target.result;
+                const tx = event.target.transaction;
 
-                // 1. Groups (Chart of Accounts)
+                // --- 1. GROUPS ---
                 if (!db.objectStoreNames.contains("groups")) {
                     const store = db.createObjectStore("groups", { keyPath: "id", autoIncrement: true });
                     store.createIndex("name", "name", { unique: true });
                     this._seedGroups(store);
                 }
 
-                // 2. States (GST - Full List)
+                // --- 2. STATES ---
                 if (!db.objectStoreNames.contains("states")) {
                     const store = db.createObjectStore("states", { keyPath: "code" });
                     this._seedIndianStates(store);
                 }
 
-                // 3. Ledgers (Parties)
+                // --- 3. LEDGERS ---
                 if (!db.objectStoreNames.contains("ledgers")) {
                     const store = db.createObjectStore("ledgers", { keyPath: "id", autoIncrement: true });
                     store.createIndex("name", "name", { unique: true });
                     store.createIndex("group_id", "group_id");
                 }
 
-                // 4. Units
+                // --- 4. UNITS ---
                 if (!db.objectStoreNames.contains("units")) {
                     const store = db.createObjectStore("units", { keyPath: "id", autoIncrement: true });
                     store.createIndex("name", "name", { unique: true });
                     this._seedDefaultUnits(store);
                 }
 
-                // 5. Items
+                // --- 5. ITEMS ---
                 if (!db.objectStoreNames.contains("items")) {
                     const store = db.createObjectStore("items", { keyPath: "id", autoIncrement: true });
                     store.createIndex("name", "name", { unique: true });
                     store.createIndex("sku", "sku");
                 }
 
-                // 6. Vouchers
+                // --- 6. VOUCHERS (The Fix for Index Error) ---
+                let vStore;
                 if (!db.objectStoreNames.contains("vouchers")) {
-                    const store = db.createObjectStore("vouchers", { keyPath: "id", autoIncrement: true });
-                    store.createIndex("voucher_no", "voucher_no", { unique: true });
-                    store.createIndex("date", "date");
-                    store.createIndex("type", "type");
+                    vStore = db.createObjectStore("vouchers", { keyPath: "id", autoIncrement: true });
+                } else {
+                    vStore = tx.objectStore("vouchers");
+                }
+                
+                // Ensure Indexes exist
+                if (!vStore.indexNames.contains("voucher_no")) {
+                    vStore.createIndex("voucher_no", "voucher_no", { unique: true });
+                }
+                if (!vStore.indexNames.contains("date")) {
+                    vStore.createIndex("date", "date");
+                }
+                if (!vStore.indexNames.contains("type")) {
+                    vStore.createIndex("type", "type");
                 }
 
-                // 7. Inventory Entries
+                // --- 7. ENTRIES ---
                 if (!db.objectStoreNames.contains("entries")) {
                     const store = db.createObjectStore("entries", { keyPath: "id", autoIncrement: true });
                     store.createIndex("voucher_id", "voucher_id");
                     store.createIndex("item_id", "item_id");
                 }
 
-                // 8. Accounting Entries
+                // --- 8. ACCT ENTRIES ---
                 if (!db.objectStoreNames.contains("acct_entries")) {
                     const store = db.createObjectStore("acct_entries", { keyPath: "id", autoIncrement: true });
                     store.createIndex("voucher_id", "voucher_id");
@@ -77,12 +89,16 @@ class MoneyWiseDB {
 
             request.onsuccess = (event) => {
                 this.db = event.target.result;
-                console.log("MoneyWise DB Ready - v16.0 (Stable)");
+                console.log("MoneyWise DB Ready - v17.0");
                 this._ensureSystemLedgers().then(() => resolve(this.db));
             };
 
             request.onerror = (e) => {
                 console.error("DB Open Error:", e);
+                // Auto-recover if version error
+                if(e.target.error.name === 'VersionError') {
+                    alert("Database version conflict. Please clear browser data.");
+                }
                 reject(e.target.error);
             };
         });
@@ -175,13 +191,13 @@ class MoneyWiseDB {
         });
     }
 
-    // --- COMPATIBILITY GETTERS ---
+    // --- GETTERS ---
     async getLedgers() { return this.getAll("ledgers"); }
     async getItems() { return this.getAll("items"); }
     async getGroups() { return this.getAll("groups"); }
     async getUnits() { return this.getAll("units"); }
     async getStates() { return this.getAll("states"); }
-    async getStockGroups() { return [{name: "General"}, {name: "Electronics"}, {name: "Grocery"}, {name: "Hardware"}]; }
+    async getStockGroups() { return [{name: "General"}, {name: "Electronics"}]; }
 
     async getAll(storeName) {
         return new Promise(resolve => {
@@ -192,7 +208,7 @@ class MoneyWiseDB {
         });
     }
 
-    // --- CRUD OPERATIONS ---
+    // --- CRUD ---
     async createLedger(data) {
         return new Promise((resolve, reject) => {
             const tx = this.db.transaction("ledgers", "readwrite");
@@ -211,7 +227,6 @@ class MoneyWiseDB {
         });
     }
 
-    // Fixed: Preserves Stock on Edit
     async createItem(data) {
         return new Promise((resolve, reject) => {
             const tx = this.db.transaction("items", "readwrite");
@@ -221,7 +236,7 @@ class MoneyWiseDB {
                 const getReq = store.get(data.id);
                 getReq.onsuccess = () => {
                     const old = getReq.result;
-                    data.current_stock = old?.current_stock || 0; // Preserve stock
+                    data.current_stock = old?.current_stock || 0;
                     store.put(data);
                     resolve({ id: data.id });
                 };
@@ -233,7 +248,17 @@ class MoneyWiseDB {
         });
     }
 
-    // --- CORE TRANSACTION: SAVE VOUCHER ---
+    async deleteItem(id) {
+        return new Promise((resolve, reject) => {
+            const tx = this.db.transaction("items", "readwrite");
+            const store = tx.objectStore("items");
+            store.delete(id);
+            tx.oncomplete = () => resolve(true);
+            tx.onerror = () => reject(tx.error);
+        });
+    }
+
+    // --- TRANSACTION ---
     async saveVoucher(voucherData, inventoryEntries = [], acctEntries = []) {
         return new Promise((resolve, reject) => {
             const tx = this.db.transaction(["vouchers", "entries", "acct_entries", "items", "ledgers"], "readwrite");
@@ -243,24 +268,23 @@ class MoneyWiseDB {
                 reject(e.target.error);
             };
 
-            // 1. Validate Voucher No (Atomic Check)
+            // Voucher No Check
             const vStore = tx.objectStore("vouchers");
             const checkReq = vStore.index("voucher_no").get(voucherData.voucher_no);
             
             checkReq.onsuccess = () => {
                 if (checkReq.result && checkReq.result.id !== voucherData.id) {
-                    tx.abort(); // STOP EVERYTHING
-                    reject("Duplicate Voucher Number! Transaction Aborted.");
+                    tx.abort();
+                    reject("Duplicate Voucher Number!");
                     return;
                 }
 
-                // 2. Save Voucher
                 const vReq = voucherData.id ? vStore.put(voucherData) : vStore.add(voucherData);
                 
                 vReq.onsuccess = (e) => {
                     const vid = e.target.result;
 
-                    // 3. Inventory & Stock
+                    // Inventory
                     if (inventoryEntries.length > 0) {
                         const iStore = tx.objectStore("items");
                         const eStore = tx.objectStore("entries");
@@ -268,23 +292,18 @@ class MoneyWiseDB {
                             ent.voucher_id = vid;
                             eStore.add(ent);
                             
-                            // Stock Logic
                             const iReq = iStore.get(ent.item_id);
                             iReq.onsuccess = () => {
                                 const item = iReq.result;
                                 if(item) {
                                     const change = ent.qty * (voucherData.type === 'Sales' ? -1 : 1);
                                     const newStock = (item.current_stock || 0) + change;
-
-                                    // NEGATIVE STOCK CHECK
+                                    
                                     if (newStock < 0 && voucherData.type === 'Sales') {
-                                        console.warn(`Warning: Negative Stock for ${item.name}. New Stock: ${newStock}`);
-                                        // Uncomment below to block sale on negative stock:
-                                        // tx.abort(); reject(`Stock insufficient for ${item.name}`); return;
+                                        console.warn(`Negative Stock: ${item.name}`);
                                     }
 
                                     item.current_stock = newStock;
-                                    // Update cost if purchase
                                     if(voucherData.type === 'Purchase') item.std_cost = ent.rate;
                                     iStore.put(item);
                                 }
@@ -292,7 +311,7 @@ class MoneyWiseDB {
                         });
                     }
 
-                    // 4. Accounting
+                    // Accounting
                     if (acctEntries.length > 0) {
                         const aeStore = tx.objectStore("acct_entries");
                         acctEntries.forEach(ae => {
@@ -328,12 +347,3 @@ class MoneyWiseDB {
 }
 
 const DB = new MoneyWiseDB();
-async deleteItem(id) {
-    return new Promise((resolve, reject) => {
-        const tx = this.db.transaction("items", "readwrite");
-        const store = tx.objectStore("items");
-        store.delete(id);
-        tx.oncomplete = () => resolve(true);
-        tx.onerror = () => reject(tx.error);
-    });
-}

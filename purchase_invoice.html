@@ -13,41 +13,41 @@
         }
         * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
         body { background: var(--bg); color: var(--text); min-height: 100vh; }
-       
+        
         .top-bar { background: var(--header-bg); color: white; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; }
         .logo { font-size: 20px; font-weight: 800; letter-spacing: 1px; display: flex; align-items: center; gap: 10px; }
         .close { cursor: pointer; font-size: 18px; }
-       
+        
         .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
         .invoice-header { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 25px; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; border-left: 5px solid var(--accent); }
-       
+        
         .form-group { display: flex; flex-direction: column; gap: 6px; }
         .form-group label { font-size: 13px; font-weight: 600; color: var(--muted); }
         input, select { padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; outline:none; }
         input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(16,185,129,0.1); }
-       
+        
         .item-grid { background: white; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); overflow-x: auto; margin-bottom: 25px; }
         table { width: 100%; border-collapse: collapse; min-width: 900px; }
         th { background: #ecfdf5; color: var(--text); font-weight: 700; padding: 12px; text-align: left; font-size: 12px; border-bottom: 2px solid var(--border); }
         td { padding: 12px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
-       
+        
         .qty, .rate, .gst { text-align: right; width: 80px; }
         .text-right { text-align: right; }
-       
+        
         .add-row { background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; margin: 15px; display: block; }
-       
+        
         .totals { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: grid; grid-template-columns: 2fr 1fr; gap: 30px; }
         .narration textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; }
-       
+        
         .total-line { display: flex; justify-content: space-between; padding: 8px 0; font-size: 14px; }
         .grand-total { font-size: 18px; font-weight: 800; border-top: 2px solid var(--border); padding-top: 15px; margin-top: 10px; color: var(--header-bg); }
-       
+        
         .actions { margin-top: 30px; text-align: right; margin-bottom: 50px; }
         .save-btn { background: var(--header-bg); color: white; border: none; padding: 14px 40px; border-radius: 8px; font-size: 16px; font-weight: 700; cursor: pointer; transition: 0.2s; }
         .save-btn:hover { background: #065f46; box-shadow: 0 4px 12px rgba(6, 95, 70, 0.3); }
-       
+        
         #toast { position: fixed; bottom: 30px; right: 30px; background: var(--header-bg); color: white; padding: 16px 30px; border-radius: 8px; display: none; font-weight: 600; box-shadow: 0 6px 20px rgba(0,0,0,0.25); }
-       
+        
         @media print {
             .top-bar, .actions, .add-row, #toast { display: none !important; }
             .container { margin: 0; padding: 0; max-width: 100%; }
@@ -73,7 +73,7 @@
                 <input type="date" id="invDate" required>
             </div>
             <div class="form-group" style="grid-column: 1 / -1;">
-                <label>Supplier / Vendor (Sundry Creditors)</label>
+                <label>Supplier / Vendor</label>
                 <select id="partySelect" required>
                     <option value="">Loading...</option>
                 </select>
@@ -139,22 +139,32 @@
         };
 
         async function loadParties() {
-            ledgersList = await DB.getLedgers();
+            // Fetch All Data
+            ledgersList = await DB.getAll('ledgers');
+            const groups = await DB.getAll('groups');
+
+            // Find Relevant Group IDs (Flexible Search)
+            const validGroupIds = groups.filter(g => 
+                g.name.includes("Sundry Creditors") || 
+                g.name.includes("Creditor") || 
+                g.name.includes("Cash-in-Hand") ||
+                g.name.includes("Current Liabilities")
+            ).map(g => g.id);
+
+            // Populate Dropdown
             const sel = document.getElementById('partySelect');
             sel.innerHTML = '<option value="">-- Select Supplier --</option>';
-            ledgersList.filter(l => l.group_name?.toLowerCase().includes("sundry creditors") || l.group_name?.includes("Creditors") || l.name.toLowerCase().includes("supplier"))
+            
+            ledgersList.filter(l => validGroupIds.includes(l.group_id))
                        .sort((a,b) => a.name.localeCompare(b.name))
                        .forEach(l => {
                            let opt = document.createElement('option');
-                           opt.value = l.id;
-                           opt.text = l.name;
+                           opt.value = l.id; opt.text = l.name;
                            sel.appendChild(opt);
                        });
         }
 
-        async function loadItems() {
-            itemsList = await DB.getItems();
-        }
+        async function loadItems() { itemsList = await DB.getItems(); }
 
         function addItemRow() {
             const tbody = document.getElementById('itemRows');
@@ -162,21 +172,17 @@
             row.innerHTML = `
                 <td>${tbody.children.length + 1}</td>
                 <td>
-                    <select class="item-select" onchange="updateItemDetails(this)">
+                    <select class="item-select" onchange="updateItemDetails(this)" style="width:100%">
                         <option value="">-- Select Item --</option>
-                        ${itemsList.map(i => `<option value="${i.id}" 
-                            data-rate="${i.std_cost || 0}" 
-                            data-gst="${i.gst_rate || 18}">
-                            ${i.name}
-                        </option>`).join('')}
+                        ${itemsList.map(i => `<option value="${i.id}" data-rate="${i.std_cost||0}" data-gst="${i.gst_rate||18}">${i.name}</option>`).join('')}
                     </select>
                 </td>
                 <td><input type="number" class="qty" min="1" value="1" onchange="calcRow(this)"></td>
-                <td><input type="text" class="unit" readonly style="border:none; text-align:center;"></td>
+                <td><input type="text" class="unit" readonly style="border:none; text-align:center"></td>
                 <td><input type="number" class="rate" step="0.01" onchange="calcRow(this)"></td>
                 <td><input type="number" class="gst" step="0.01" readonly style="background:#f0fdf4"></td>
                 <td class="text-right amt" style="font-weight:bold;">₹0.00</td>
-                <td><button onclick="this.closest('tr').remove(); calcTotals()" style="color:var(--red); background:none; border:none; cursor:pointer;">×</button></td>
+                <td><button onclick="this.closest('tr').remove(); calcTotals()" style="color:red; background:none; border:none; cursor:pointer;">×</button></td>
             `;
             tbody.appendChild(row);
         }
@@ -202,7 +208,7 @@
             tr.querySelector('.amt').textContent = `₹${total.toFixed(2)}`;
             tr.dataset.taxable = taxable;
             tr.dataset.tax = taxAmt;
-
+            
             calcTotals();
         }
 
@@ -212,10 +218,11 @@
                 taxable += parseFloat(tr.dataset.taxable || 0);
                 tax += parseFloat(tr.dataset.tax || 0);
             });
+
             document.getElementById('taxableAmt').textContent = `₹${taxable.toFixed(2)}`;
             document.getElementById('cgstAmt').textContent = `₹${(tax/2).toFixed(2)}`;
             document.getElementById('sgstAmt').textContent = `₹${(tax/2).toFixed(2)}`;
-            document.getElementById('grandTotal').textContent = `₹${(taxable + tax).toFixed(2)}`;
+            document.getElementById('grandTotal').textContent = `₹${Math.round(taxable + tax).toFixed(2)}`;
         }
 
         async function savePurchase() {

@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Money Wise Pro - Chart of Accounts</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sidebar-bg: #0f172a; --sidebar-text: #94a3b8; --active-text: #f8fafc;
+            --bg: #f8fafc; --card-bg: #ffffff;
+            --accent: #8b5cf6; /* Violet for Groups */
+            --text: #1e293b; --border: #e2e8f0; --muted: #64748b;
+        }
+        * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
+        body { display: flex; height: 100vh; background: var(--bg); color: var(--text); overflow: hidden; }
+
+        .sidebar { width: 260px; background: var(--sidebar-bg); padding: 20px; display: flex; flex-direction: column; flex-shrink: 0; }
+        .brand { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 40px; display: flex; align-items: center; gap: 10px; }
+        .nav-link { padding: 12px 15px; margin-bottom: 5px; border-radius: 8px; color: var(--sidebar-text); text-decoration: none; font-weight: 500; display: flex; align-items: center; gap: 12px; transition: 0.2s; font-size: 14px; }
+        .nav-link:hover, .nav-link.active { background: #1e293b; color: var(--active-text); }
+        .nav-icon { font-size: 18px; }
+
+        .main { flex: 1; display: flex; padding: 20px; gap: 20px; overflow: hidden; }
+        
+        .list-panel { width: 400px; background: #fff; border-radius: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; }
+        .search-box { padding: 15px; border-bottom: 1px solid var(--border); }
+        .search-box input { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; outline: none; }
+        .list-content { flex: 1; overflow-y: auto; padding: 0; }
+        
+        .tree-item { padding: 10px 15px; border-bottom: 1px solid #f1f5f9; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .tree-item:hover { background: #f8fafc; }
+        .tree-item.active { background: #f3e8ff; border-left: 4px solid var(--accent); }
+        
+        .badge { padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; text-transform: uppercase; }
+        .badge-asset { background: #dbeafe; color: #1e40af; }
+        .badge-liab { background: #fee2e2; color: #991b1b; }
+        .badge-inc { background: #dcfce7; color: #166534; }
+        .badge-exp { background: #ffedd5; color: #9a3412; }
+
+        .form-panel { flex: 1; background: #fff; border-radius: 12px; border: 1px solid var(--border); padding: 30px; display: flex; flex-direction: column; }
+        .form-header { font-size: 20px; font-weight: 700; margin-bottom: 25px; color: #0f172a; border-bottom: 1px solid var(--border); padding-bottom: 15px; display: flex; justify-content: space-between; }
+        
+        .form-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
+        .field { margin-bottom: 15px; }
+        label { display: block; font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 5px; }
+        input, select { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; outline: none; }
+        input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.1); }
+
+        .actions { margin-top: auto; padding-top: 25px; border-top: 1px solid var(--border); display: flex; gap: 10px; }
+        .btn { padding: 10px 24px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .btn-save { background: var(--accent); color: white; }
+        .btn-save:hover { background: #7c3aed; }
+        .btn-new { background: #e2e8f0; color: var(--text); }
+        
+        #toast { position: fixed; top: 20px; right: 20px; background: var(--accent); color: white; padding: 12px 24px; border-radius: 6px; display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="brand">🚀 MoneyWise Pro</div>
+        <a href="index.html" class="nav-link"><span class="nav-icon">📊</span> Dashboard</a>
+        <a href="reports.html" class="nav-link"><span class="nav-icon">📈</span> Reports</a>
+        <a href="sales_invoice.html" class="nav-link"><span class="nav-icon">🧾</span> Sales Invoice</a>
+        <a href="purchase_invoice.html" class="nav-link"><span class="nav-icon">🚚</span> Purchase Entry</a>
+        <a href="item_master.html" class="nav-link"><span class="nav-icon">📦</span> Inventory</a>
+        <a href="moneywise.html" class="nav-link"><span class="nav-icon">👥</span> Parties / Ledgers</a>
+<a href="coa.html" class="nav-link"><span class="nav-icon">🗂️</span> Chart of Accounts</a>
+    
+    <a href="settings.html" class="nav-link"><span class="nav-icon">⚙️</span> Settings</a>        <a href="#" class="nav-link active"><span class="nav-icon">🗂️</span> Chart of Accounts</a>
+    </div>
+
+    <div class="main">
+        <div class="list-panel">
+            <div class="search-box">
+                <input type="text" placeholder="Search Groups..." onkeyup="renderList(this.value)">
+            </div>
+            <div class="list-content" id="groupList"></div>
+        </div>
+
+        <div class="form-panel">
+            <div class="form-header">
+                <span>Account Group</span>
+                <button class="btn btn-new" onclick="resetForm()">New Group</button>
+            </div>
+            <input type="hidden" id="groupId">
+
+            <div class="form-grid">
+                <div class="field">
+                    <label>Group Name *</label>
+                    <input type="text" id="name" placeholder="e.g. Indirect Incomes" required>
+                </div>
+                <div class="field">
+                    <label>Primary Nature *</label>
+                    <select id="nature" onchange="filterParents()">
+                        <option value="Asset">Asset</option>
+                        <option value="Liability">Liability</option>
+                        <option value="Income">Income</option>
+                        <option value="Expense">Expense</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Under / Parent Group (Optional)</label>
+                    <select id="parentSelect">
+                        <option value="">-- Primary --</option>
+                    </select>
+                    <small style="color:var(--muted)">Select existing group to make this a sub-group.</small>
+                </div>
+            </div>
+
+            <div class="actions">
+                <button class="btn btn-save" onclick="saveGroup()">Save Group</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast">Group Saved!</div>
+
+    <script src="db.js"></script>
+    <script>
+        let groups = [];
+
+        window.onload = async () => {
+            try {
+                await DB.init();
+                await refreshData();
+            } catch(e) { console.error(e); }
+        };
+
+        async function refreshData() {
+            groups = await DB.getAll('groups');
+            renderList();
+            populateParents();
+        }
+
+        function renderList(query = '') {
+            const listDiv = document.getElementById('groupList');
+            listDiv.innerHTML = '';
+            
+            const filtered = groups.filter(g => g.name.toLowerCase().includes(query.toLowerCase()));
+            
+            // Sort: Nature first, then Name
+            filtered.sort((a,b) => a.nature.localeCompare(b.nature) || a.name.localeCompare(b.name));
+
+            filtered.forEach(g => {
+                let badgeClass = '';
+                if(g.nature === 'Asset') badgeClass = 'badge-asset';
+                else if(g.nature === 'Liability') badgeClass = 'badge-liab';
+                else if(g.nature === 'Income') badgeClass = 'badge-inc';
+                else badgeClass = 'badge-exp';
+
+                const el = document.createElement('div');
+                el.className = 'tree-item';
+                el.innerHTML = `
+                    <div>
+                        <div style="font-weight:600; font-size:14px;">${g.name}</div>
+                        <div style="font-size:11px; color:#64748b;">Under: ${g.parent || 'Primary'}</div>
+                    </div>
+                    <span class="badge ${badgeClass}">${g.nature}</span>
+                `;
+                el.onclick = () => loadGroup(g);
+                listDiv.appendChild(el);
+            });
+        }
+
+        function populateParents() {
+            const sel = document.getElementById('parentSelect');
+            sel.innerHTML = '<option value="">-- Primary --</option>';
+            groups.sort((a,b) => a.name.localeCompare(b.name)).forEach(g => {
+                let opt = document.createElement('option');
+                opt.value = g.name; // Storing Name as Parent Key for simplicity in V1
+                opt.text = g.name;
+                opt.dataset.nature = g.nature;
+                sel.appendChild(opt);
+            });
+        }
+
+        function filterParents() {
+            // Optional: You could hide parents that don't match the selected nature
+            // For now, we leave it flexible
+        }
+
+        function loadGroup(g) {
+            document.getElementById('groupId').value = g.id;
+            document.getElementById('name').value = g.name;
+            document.getElementById('nature').value = g.nature;
+            document.getElementById('parentSelect').value = g.parent || '';
+            
+            // Lock Nature for System Groups to prevent breaking Reports
+            const systemGroups = ["Sundry Debtors", "Sundry Creditors", "Cash-in-Hand", "Sales Accounts", "Purchase Accounts"];
+            document.getElementById('nature').disabled = systemGroups.includes(g.name);
+        }
+
+        function resetForm() {
+            document.getElementById('groupId').value = '';
+            document.getElementById('name').value = '';
+            document.getElementById('parentSelect').value = '';
+            document.getElementById('nature').disabled = false;
+            document.getElementById('name').focus();
+        }
+
+        async function saveGroup() {
+            const name = document.getElementById('name').value.trim();
+            if(!name) return alert("Group Name is required");
+
+            const parentSel = document.getElementById('parentSelect');
+            const parentName = parentSel.value;
+            
+            // Inherit nature from parent if sub-group
+            let nature = document.getElementById('nature').value;
+            if(parentName) {
+                const p = groups.find(g => g.name === parentName);
+                if(p) nature = p.nature; 
+            }
+
+            const data = {
+                name: name,
+                nature: nature,
+                parent: parentName || null
+            };
+
+            const idVal = document.getElementById('groupId').value;
+            if(idVal) data.id = parseInt(idVal);
+
+            try {
+                // We need to add createGroup method to DB or use transaction manually
+                const tx = DB.db.transaction('groups', 'readwrite');
+                const store = tx.objectStore('groups');
+                if(data.id) store.put(data); else store.add(data);
+                
+                tx.oncomplete = () => {
+                    showToast();
+                    resetForm();
+                    refreshData();
+                };
+                tx.onerror = () => alert("Error: Group Name must be unique");
+            } catch(e) { console.error(e); }
+        }
+
+        function showToast() {
+            const t = document.getElementById('toast');
+            t.style.display = 'block';
+            setTimeout(() => t.style.display = 'none', 2000);
+        }
+    </script>
+</body>
+</html>
