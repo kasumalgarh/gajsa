@@ -1,13 +1,13 @@
 /* FILENAME: db.js
    PURPOSE: Complete ERP Engine (Full Double-Entry + Async Safe)
-   VERSION: 12.0 (Final Polished)
+   VERSION: 14.0 (Fixed: Stock Reset on Edit Bug)
    AUTHOR: Money Wise Pro
 */
 
 class MoneyWiseDB {
     constructor() {
         this.dbName = "MoneyWise_Pro_DB";
-        this.dbVersion = 10; // Bumped version to force update if needed
+        this.dbVersion = 10;
         this.db = null;
     }
 
@@ -61,7 +61,7 @@ class MoneyWiseDB {
             request.onsuccess = async (event) => {
                 this.db = event.target.result;
                 await this._ensureDefaultSystemLedgers();
-                console.log("DB Ready: Version 12 (Stable)");
+                console.log("DB Ready: Version 14 (Stock Safe)");
                 resolve(this.db);
             };
 
@@ -215,6 +215,11 @@ class MoneyWiseDB {
             req.onerror = () => reject(req.error);
         });
     }
+    
+    // !!! FIX FOR ITEM MASTER (Missing Function) !!!
+    async getStockGroups() {
+        return [{name: "General"}, {name: "Electronics"}, {name: "Grocery"}, {name: "Hardware"}];
+    }
 
     async getStates() {
         return new Promise((resolve, reject) => {
@@ -234,15 +239,42 @@ class MoneyWiseDB {
         });
     }
 
+    // ✅ FIXED: Preserves Current Stock when Editing
     async createItem(data) {
         return new Promise((resolve, reject) => {
-            if (!data.id && data.op_qty !== undefined && data.current_stock === undefined) {
-                data.current_stock = data.op_qty;
+            const tx = this.db.transaction("items", "readwrite");
+            const store = tx.objectStore("items");
+
+            if (data.id) {
+                // UPDATE: Fetch old item first
+                const getReq = store.get(data.id);
+                getReq.onsuccess = () => {
+                    const existingItem = getReq.result;
+                    if (existingItem) {
+                        // Keep the running stock, don't overwrite with form data
+                        data.current_stock = existingItem.current_stock;
+                        
+                        // Logic: If user changed Op Qty, adjust stock difference
+                        const oldOp = parseFloat(existingItem.op_qty) || 0;
+                        const newOp = parseFloat(data.op_qty) || 0;
+                        if (oldOp !== newOp) {
+                            data.current_stock = (data.current_stock || 0) + (newOp - oldOp);
+                        }
+                    }
+                    // Now save
+                    const putReq = store.put(data);
+                    putReq.onsuccess = () => resolve({ id: putReq.result });
+                    putReq.onerror = (e) => reject("Error updating item");
+                };
+            } else {
+                // NEW: Set initial stock
+                if (data.op_qty !== undefined && data.current_stock === undefined) {
+                    data.current_stock = data.op_qty;
+                }
+                const addReq = store.add(data);
+                addReq.onsuccess = () => resolve({ id: addReq.result });
+                addReq.onerror = (e) => reject("Error creating item");
             }
-            const tx = this.db.transaction("items", "readwrite"); // Correct Store
-            const req = data.id ? tx.objectStore("items").put(data) : tx.objectStore("items").add(data);
-            req.onsuccess = () => resolve({ id: req.result });
-            req.onerror = (e) => reject("Error creating item");
         });
     }
 
