@@ -328,3 +328,12 @@ class MoneyWiseDB {
 }
 
 const DB = new MoneyWiseDB();
+async deleteItem(id) {
+    return new Promise((resolve, reject) => {
+        const tx = this.db.transaction("items", "readwrite");
+        const store = tx.objectStore("items");
+        store.delete(id);
+        tx.oncomplete = () => resolve(true);
+        tx.onerror = () => reject(tx.error);
+    });
+}
