@@ -3,337 +3,369 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Money Wise Pro - Reports Center</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>Money Wise Pro - Reports</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --sidebar-bg: #0f172a; --sidebar-text: #94a3b8; --active-text: #f8fafc;
-            --bg: #f8fafc; --card-bg: #ffffff;
-            --accent: #6366f1; --green: #10b981; --red: #ef4444; --orange: #f59e0b;
-            --text: #1e293b; --border: #e2e8f0; --muted: #64748b;
+            --bg: #f1f5f9; --card-bg: #ffffff; --text: #334155; --border: #cbd5e1;
+            --accent: #2563eb; 
         }
         * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
         body { display: flex; height: 100vh; background: var(--bg); color: var(--text); overflow: hidden; }
+
         .sidebar { width: 260px; background: var(--sidebar-bg); padding: 20px; display: flex; flex-direction: column; flex-shrink: 0; }
         .brand { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 40px; display: flex; align-items: center; gap: 10px; }
         .nav-link { padding: 12px 15px; margin-bottom: 5px; border-radius: 8px; color: var(--sidebar-text); text-decoration: none; font-weight: 500; display: flex; align-items: center; gap: 12px; transition: 0.2s; font-size: 14px; }
         .nav-link:hover, .nav-link.active { background: #1e293b; color: var(--active-text); }
         .nav-icon { font-size: 18px; }
-        .main { flex: 1; overflow-y: auto; padding: 30px; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 15px; }
-        .page-title { font-size: 24px; font-weight: 800; color: #0f172a; }
-        .filter-bar { background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 25px; display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-end; border: 1px solid var(--border); }
-        .filter-group { display: flex; flex-direction: column; gap: 6px; min-width: 160px; flex: 1; }
-        .filter-group label { font-size: 12px; font-weight: 600; color: var(--muted); }
-        input, select { padding: 10px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; width: 100%; outline: none; }
-        input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(99,102,241,0.1); }
-        button { background: var(--accent); color: white; border: none; padding: 11px 24px; border-radius: 6px; cursor: pointer; font-weight: 600; transition: 0.2s; height: 40px; }
-        button:hover { background: #4f46e5; }
-        .btn-print { background: #334155; } .btn-print:hover { background: #475569; }
-        .report-panel { background: #fff; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); padding: 30px; flex: 1; overflow-y: auto; border: 1px solid var(--border); position: relative; }
-        .report-header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid var(--bg); padding-bottom: 20px; display: none; }
-        .report-header h2 { font-size: 22px; margin-bottom: 5px; color: var(--text); }
-        .report-header p { color: var(--muted); font-size: 13px; }
-        table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
-        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #f1f5f9; }
-        th { background: #f8fafc; color: var(--muted); font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; position: sticky; top: 0; z-index: 10; }
-        .amt-pos { color: var(--green); font-weight: 600; text-align: right; }
-        .amt-neg { color: var(--red); font-weight: 600; text-align: right; }
-        .amt-neu { color: var(--text); font-weight: 600; text-align: right; }
-        .low-stock { color: var(--orange); font-weight: 600; background: #fff7ed; padding: 2px 6px; border-radius: 4px; }
-        .empty-state { text-align: center; padding: 100px 20px; color: var(--muted); font-size: 15px; }
-        .empty-icon { font-size: 48px; margin-bottom: 15px; opacity: 0.6; display: block; }
-        .loading { text-align: center; padding: 100px; color: var(--muted); font-size: 15px; }
+
+        .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .top-header { background: white; padding: 15px 25px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .report-title { font-size: 18px; font-weight: 700; color: #0f172a; }
+
+        .filters { background: white; padding: 15px 25px; display: flex; gap: 15px; align-items: center; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+        select, input { padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; outline: none; font-size: 14px; }
+        .btn-go { background: var(--accent); color: white; border: none; padding: 8px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+        .btn-print { background: #475569; color: white; border: none; padding: 8px 20px; border-radius: 6px; cursor: pointer; margin-left: auto; }
+
+        .content-area { flex: 1; overflow-y: auto; padding: 25px; }
+        .report-card { background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid var(--border); }
+        
+        table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        th { background: #f8fafc; padding: 10px 12px; text-align: left; font-weight: 700; color: #475569; border-bottom: 2px solid var(--border); }
+        td { padding: 8px 12px; border-bottom: 1px solid var(--border); color: #334155; }
+        tr:last-child td { border-bottom: none; }
+        .amount { text-align: right; font-family: 'Courier New', monospace; font-weight: 600; }
+        
+        .dr { color: #16a34a; } /* Green */
+        .cr { color: #dc2626; } /* Red */
+        .bold-row { background: #f8fafc; font-weight: 700; }
+        
+        /* Specific coloring for Cash/Bank Book */
+        .cash-col { background-color: #f0fdf4; }
+        .bank-col { background-color: #eff6ff; }
+
         @media print {
-            .sidebar, .filter-bar, .header, .btn-print { display: none !important; }
-            body, .main, .report-panel { background: white; height: auto; overflow: visible; padding: 0; margin: 0; box-shadow: none; border: none; }
-            .report-header { display: block !important; }
-            table { page-break-inside: avoid; }
-            ::-webkit-scrollbar { display: none; }
-        }
-        @media (max-width: 1024px) {
-            .filter-bar { flex-direction: column; gap: 12px; }
-            .filter-group { min-width: 100%; }
+            .sidebar, .filters, .btn-print { display: none !important; }
+            .main { width: 100%; height: auto; }
+            .content-area { padding: 0; overflow: visible; }
+            .report-card { border: none; box-shadow: none; }
         }
     </style>
 </head>
 <body>
+
     <div class="sidebar">
         <div class="brand">🚀 MoneyWise Pro</div>
         <a href="index.html" class="nav-link"><span class="nav-icon">📊</span> Dashboard</a>
         <a href="#" class="nav-link active"><span class="nav-icon">📈</span> Reports</a>
         <a href="sales_invoice.html" class="nav-link"><span class="nav-icon">🧾</span> Sales Invoice</a>
         <a href="purchase_invoice.html" class="nav-link"><span class="nav-icon">🚚</span> Purchase Entry</a>
+        <a href="vouchers.html" class="nav-link"><span class="nav-icon">💸</span> Vouchers</a>
         <a href="item_master.html" class="nav-link"><span class="nav-icon">📦</span> Inventory</a>
         <a href="moneywise.html" class="nav-link"><span class="nav-icon">👥</span> Parties / Ledgers</a>
-<a href="coa.html" class="nav-link"><span class="nav-icon">🗂️</span> Chart of Accounts</a>
-    
-    <a href="settings.html" class="nav-link"><span class="nav-icon">⚙️</span> Settings</a><a href="vouchers.html" class="nav-link"><span class="nav-icon">💸</span> Vouchers (Payment/Receipt)</a>    </div>
+        <a href="coa.html" class="nav-link"><span class="nav-icon">🗂️</span> Chart of Accounts</a>
+        <a href="settings.html" class="nav-link"><span class="nav-icon">⚙️</span> Settings</a>
+    </div>
 
     <div class="main">
-        <div class="header">
-            <div>
-                <div class="page-title">Reports & Insights</div>
-                <div style="font-size:13px; color:var(--muted);">Financial & Compliance Reports</div>
-            </div>
+        <div class="top-header">
+            <div class="report-title">Reports & Analysis</div>
+            <div style="font-size:12px; color:#64748b;" id="dateDisplay"></div>
         </div>
 
-        <div class="filter-bar">
-            <div class="filter-group">
-                <label>Report Type</label>
-                <select id="reportType" onchange="toggleFilters()">
-                    <option value="daybook">Day Book</option>
-                    <option value="ledger">Party Ledger</option>
-                    <option value="stock">Stock Summary</option>
-                    <option value="gst">GST Tax Report</option>
-                    <option value="profit">Profit & Loss</option>
-                </select>
+        <div class="filters">
+            <select id="reportType" onchange="toggleFilters()">
+                <option value="CashBankBook">💰 Cash & Bank Book</option>
+                <option value="DayBook">📅 Day Book (Roznamcha)</option>
+                <option value="Ledger">👤 Party Statement (Khata)</option>
+                <option value="TrialBalance">⚖️ Trial Balance</option>
+                <option value="MonthlySummary">📊 Business Summary</option>
+                <option value="Stock">📦 Stock Summary</option>
+                <option value="PL">📉 Profit & Loss</option>
+            </select>
+
+            <div id="partyFilter" style="display:none;">
+                <input type="text" id="partyInput" list="partyList" placeholder="🔍 Search Ledger..." style="width: 200px;" onchange="resolvePartyId()">
+                <datalist id="partyList"></datalist>
+                <input type="hidden" id="finalPartyId">
             </div>
-            <div class="filter-group" id="ledgerDiv" style="display:none;">
-                <label>Select Party/Ledger</label>
-                <select id="ledgerSelect"><option value="">Loading...</option></select>
-            </div>
-            <div class="filter-group">
-                <label>From Date</label>
-                <input type="date" id="fromDate">
-            </div>
-            <div class="filter-group">
-                <label>To Date</label>
-                <input type="date" id="toDate">
-            </div>
-            <button onclick="generateReport()">Generate Report</button>
-            <button class="btn-print" onclick="window.print()">🖨️ Print</button>
+
+            <input type="date" id="fromDate">
+            <input type="date" id="toDate">
+            <button class="btn-go" onclick="generateReport()">Show</button>
+            <button class="btn-print" onclick="window.print()">Print</button>
         </div>
 
-        <div class="report-panel" id="printArea">
-            <div class="report-header" id="printHeader">
-                <h2 id="rTitle">Money Wise Pro</h2>
-                <p id="rSub">Report Generated on <%= new Date().toLocaleDateString('en-IN') %></p>
+        <div class="content-area">
+            <div class="report-card">
+                <table id="reportTable">
+                    <thead></thead>
+                    <tbody></tbody>
+                </table>
             </div>
-            <div id="reportContent">
-                <div class="empty-state">
-                    <span class="empty-icon">📑</span>
-                    Select report type, date range and generate.
-                </div>
-            </div>
+            <div id="emptyState" style="text-align:center; padding:50px; color:#94a3b8; display:none;">No records found.</div>
         </div>
     </div>
 
     <script src="db.js"></script>
     <script>
-        // Default Dates: Current Month
-        const today = new Date();
-        document.getElementById('toDate').valueAsDate = today;
-        document.getElementById('fromDate').valueAsDate = new Date(today.getFullYear(), today.getMonth(), 1);
-
-        let allLedgers = [];
+        let ledgers = [];
+        let items = [];
+        let groups = [];
+        let ledgerMap = {};
 
         window.onload = async () => {
-            try {
-                await DB.init();
-                await loadLedgers();
-            } catch(e) {
-                console.error("Reports Init Error:", e);
-                document.getElementById('reportContent').innerHTML = '<div class="empty-state">Database Error - Check Console</div>';
-            }
+            await DB.init();
+            ledgers = await DB.getLedgers();
+            items = await DB.getItems();
+            groups = await DB.getGroups();
+            
+            const d = new Date();
+            document.getElementById('toDate').valueAsDate = d;
+            document.getElementById('fromDate').valueAsDate = new Date(d.getFullYear(), d.getMonth(), 1);
+            
+            populateParties();
+            generateReport(); 
         };
 
-        async function loadLedgers() {
-            allLedgers = await DB.getLedgers();
-            const sel = document.getElementById('ledgerSelect');
-            sel.innerHTML = '<option value="">-- All Ledgers --</option>';
-            allLedgers.sort((a,b) => a.name.localeCompare(b.name)).forEach(l => {
+        function populateParties() {
+            const list = document.getElementById('partyList');
+            list.innerHTML = '';
+            ledgerMap = {};
+            ledgers.sort((a,b) => a.name.localeCompare(b.name));
+            ledgers.forEach(l => {
+                const g = groups.find(grp => grp.id == l.group_id)?.name || 'Unknown';
+                const displayName = `${l.name} [${g}]`;
+                ledgerMap[displayName] = l.id;
                 let opt = document.createElement('option');
-                opt.value = l.id;
-                opt.text = l.name;
-                sel.appendChild(opt);
+                opt.value = displayName;
+                list.appendChild(opt);
             });
+        }
+
+        function resolvePartyId() {
+            const val = document.getElementById('partyInput').value;
+            const id = ledgerMap[val];
+            document.getElementById('finalPartyId').value = id || '';
         }
 
         function toggleFilters() {
             const type = document.getElementById('reportType').value;
-            document.getElementById('ledgerDiv').style.display = (type === 'ledger') ? 'flex' : 'none';
+            document.getElementById('partyFilter').style.display = (type === 'Ledger') ? 'block' : 'none';
         }
 
         async function generateReport() {
             const type = document.getElementById('reportType').value;
             const from = document.getElementById('fromDate').value;
             const to = document.getElementById('toDate').value;
-            const ledgerId = document.getElementById('ledgerSelect').value;
+            const partyId = document.getElementById('finalPartyId').value;
 
-            if (!from || !to) return alert("Please select date range");
+            const table = document.getElementById('reportTable');
+            const thead = table.querySelector('thead');
+            const tbody = table.querySelector('tbody');
+            tbody.innerHTML = '';
+            document.getElementById('emptyState').style.display = 'none';
 
-            document.getElementById('reportContent').innerHTML = '<div class="loading">Generating Report...</div>';
+            if (type === 'CashBankBook') await renderCashBankBook(thead, tbody, from, to);
+            else if (type === 'DayBook') await renderDayBook(thead, tbody, from, to);
+            else if (type === 'Ledger') await renderLedger(thead, tbody, partyId, from, to);
+            else if (type === 'TrialBalance') await renderTrialBalance(thead, tbody, from, to);
+            else if (type === 'MonthlySummary') await renderMonthlySummary(thead, tbody);
+            else if (type === 'Stock') await renderStock(thead, tbody);
+            else if (type === 'PL') await renderPL(thead, tbody);
+        }
 
-            try {
-                const [vouchers, entries, items, ledgers, groups] = await Promise.all([
-                    DB.getAll('vouchers'),
-                    DB.getAll('acct_entries'),
-                    DB.getAll('items'),
-                    DB.getAll('ledgers'),
-                    DB.getAll('groups')
-                ]);
+        // --- 1. CASH & BANK BOOK (NEW) ---
+        async function renderCashBankBook(thead, tbody, from, to) {
+            thead.innerHTML = `
+                <tr>
+                    <th rowspan="2">Date</th>
+                    <th rowspan="2">Voucher</th>
+                    <th rowspan="2">Particulars</th>
+                    <th colspan="2" style="text-align:center; background:#f0fdf4;">CASH</th>
+                    <th colspan="2" style="text-align:center; background:#eff6ff;">BANK</th>
+                </tr>
+                <tr>
+                    <th class="amount cash-col">In (Dr)</th>
+                    <th class="amount cash-col">Out (Cr)</th>
+                    <th class="amount bank-col">In (Dr)</th>
+                    <th class="amount bank-col">Out (Cr)</th>
+                </tr>`;
 
-                const fromDate = new Date(from);
-                const toDate = new Date(to);
-                toDate.setHours(23,59,59,999);
+            const acctEntries = await DB.getAll('acct_entries');
+            const vouchers = await DB.getAll('vouchers');
 
-                const periodVouchers = vouchers.filter(v => {
-                    const d = new Date(v.date);
-                    return d >= fromDate && d <= toDate;
-                });
+            // Identify Cash and Bank Ledgers
+            const cashIds = ledgers.filter(l => {
+                const g = groups.find(grp => grp.id == l.group_id);
+                return g && g.name.includes("Cash");
+            }).map(l => l.id);
 
-                let html = '';
+            const bankIds = ledgers.filter(l => {
+                const g = groups.find(grp => grp.id == l.group_id);
+                return g && g.name.includes("Bank");
+            }).map(l => l.id);
 
-                switch(type) {
-                    case 'daybook':
-                        html = renderDayBook(periodVouchers, ledgers);
-                        break;
-                    case 'ledger':
-                        if(!ledgerId) return alert("Select a ledger/party");
-                        html = renderLedgerReport(periodVouchers, entries, parseInt(ledgerId), ledgers);
-                        break;
-                    case 'stock':
-                        html = renderStockSummary(items);
-                        break;
-                    case 'gst':
-                        html = renderGSTSummary(entries, ledgers, groups);
-                        break;
-                    case 'profit':
-                        html = renderProfitLoss(periodVouchers, items);
-                        break;
-                }
+            // Filter Entries
+            const filtered = acctEntries.filter(e => {
+                const isCashOrBank = cashIds.includes(e.ledger_id) || bankIds.includes(e.ledger_id);
+                if (!isCashOrBank) return false;
+                
+                const v = vouchers.find(vx => vx.id == e.voucher_id);
+                return v && v.date >= from && v.date <= to;
+            });
 
-                document.getElementById('reportContent').innerHTML = html || '<div class="empty-state"><span class="empty-icon">📉</span>No data found</div>';
-            } catch(e) {
-                console.error(e);
-                document.getElementById('reportContent').innerHTML = '<div class="empty-state">Error loading data</div>';
+            if (filtered.length === 0) return showEmpty();
+
+            // Enrich and Sort
+            const rows = filtered.map(e => {
+                const v = vouchers.find(vx => vx.id == e.voucher_id);
+                return { ...e, date: v.date, vNo: v.voucher_no, narr: v.narration || '' };
+            }).sort((a,b) => a.date.localeCompare(b.date));
+
+            let totCIn=0, totCOut=0, totBIn=0, totBOut=0;
+
+            rows.forEach(r => {
+                const isCash = cashIds.includes(r.ledger_id);
+                const cashIn = isCash ? r.debit : 0;
+                const cashOut = isCash ? r.credit : 0;
+                const bankIn = !isCash ? r.debit : 0;
+                const bankOut = !isCash ? r.credit : 0;
+
+                totCIn += cashIn; totCOut += cashOut;
+                totBIn += bankIn; totBOut += bankOut;
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${r.date}</td>
+                    <td>${r.vNo}</td>
+                    <td><small>${r.narr}</small></td>
+                    <td class="amount cash-col">${cashIn ? cashIn.toFixed(2) : '-'}</td>
+                    <td class="amount cash-col">${cashOut ? cashOut.toFixed(2) : '-'}</td>
+                    <td class="amount bank-col">${bankIn ? bankIn.toFixed(2) : '-'}</td>
+                    <td class="amount bank-col">${bankOut ? bankOut.toFixed(2) : '-'}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            tbody.innerHTML += `
+                <tr class="bold-row">
+                    <td colspan="3">Total Period</td>
+                    <td class="amount">${totCIn.toFixed(2)}</td>
+                    <td class="amount">${totCOut.toFixed(2)}</td>
+                    <td class="amount">${totBIn.toFixed(2)}</td>
+                    <td class="amount">${totBOut.toFixed(2)}</td>
+                </tr>`;
+        }
+
+        // --- 2. DAY BOOK ---
+        async function renderDayBook(thead, tbody, from, to) {
+            thead.innerHTML = `<tr><th>Date</th><th>Voucher No</th><th>Particulars</th><th>Type</th><th class="amount">Amount</th></tr>`;
+            const vouchers = await DB.getAll('vouchers');
+            const filtered = vouchers.filter(v => v.date >= from && v.date <= to).sort((a,b) => a.date.localeCompare(b.date));
+            if(filtered.length === 0) return showEmpty();
+
+            filtered.forEach(v => {
+                const party = ledgers.find(l => l.id == v.party_id)?.name || 'Unknown';
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${v.date}</td>
+                    <td>${v.voucher_no}</td>
+                    <td>${party} <br><small style="color:#64748b">${v.narration || ''}</small></td>
+                    <td>${v.type}</td>
+                    <td class="amount">₹${v.amount.toFixed(2)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // --- 3. LEDGER STATEMENT ---
+        async function renderLedger(thead, tbody, partyId, from, to) {
+            if(!partyId) return alert("Select a Party first");
+            const party = ledgers.find(l => l.id == partyId);
+            thead.innerHTML = `<tr><th>Date</th><th>Voucher</th><th>Narration</th><th class="amount">Debit</th><th class="amount">Credit</th></tr>`;
+            
+            let runningBal = party.opening_balance || 0;
+            tbody.innerHTML += `<tr style="background:#fffbeb"><td colspan="3"><strong>Op. Balance</strong></td><td class="amount dr">${runningBal>=0?runningBal.toFixed(2):''}</td><td class="amount cr">${runningBal<0?Math.abs(runningBal).toFixed(2):''}</td></tr>`;
+
+            const acctEntries = await DB.getAll('acct_entries');
+            const vouchers = await DB.getAll('vouchers');
+            const enriched = acctEntries.filter(e => e.ledger_id == partyId).map(e => {
+                const v = vouchers.find(vx => vx.id == e.voucher_id);
+                return { ...e, date: v?.date, vNo: v?.voucher_no, narr: v?.narration };
+            }).filter(e => e.date >= from && e.date <= to).sort((a,b) => a.date.localeCompare(b.date));
+
+            let tDr=0, tCr=0;
+            enriched.forEach(e => {
+                tDr += e.debit; tCr += e.credit;
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${e.date}</td><td>${e.vNo}</td><td>${e.narr||'-'}</td><td class="amount">${e.debit||'-'}</td><td class="amount">${e.credit||'-'}</td>`;
+                tbody.appendChild(tr);
+            });
+            tbody.innerHTML += `<tr class="bold-row"><td colspan="3">Total</td><td class="amount">${tDr.toFixed(2)}</td><td class="amount">${tCr.toFixed(2)}</td></tr>`;
+        }
+
+        // --- 4. TRIAL BALANCE ---
+        async function renderTrialBalance(thead, tbody, from, to) {
+            thead.innerHTML = `<tr><th>Account Name</th><th>Group</th><th class="amount">Total Debit</th><th class="amount">Total Credit</th><th class="amount">Closing Balance</th></tr>`;
+            const acctEntries = await DB.getAll('acct_entries');
+            const vouchers = await DB.getAll('vouchers');
+            
+            for (const l of ledgers) {
+                const g = groups.find(grp => grp.id == l.group_id)?.name || 'Unknown';
+                const lEntries = acctEntries.filter(e => e.ledger_id == l.id && vouchers.find(v=>v.id==e.voucher_id)?.date >= from); // simplified date check
+                
+                if (lEntries.length === 0 && (l.opening_balance||0)===0) continue;
+                
+                let dr=0, cr=0;
+                lEntries.forEach(e => { dr+=e.debit; cr+=e.credit; });
+                let net = (l.opening_balance||0) + (dr - cr);
+                
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td><strong>${l.name}</strong></td><td><small>${g}</small></td><td class="amount">${dr||'-'}</td><td class="amount">${cr||'-'}</td><td class="amount" style="color:${net>=0?'green':'red'}">${Math.abs(net).toFixed(2)} ${net>=0?'Dr':'Cr'}</td>`;
+                tbody.appendChild(tr);
             }
         }
 
-        function renderDayBook(vouchers, ledgers) {
-            if(!vouchers.length) return '<div class="empty-state"><span class="empty-icon">📅</span>No transactions</div>';
-            let html = '<table><thead><tr><th>Date</th><th>Vch No</th><th>Type</th><th>Party</th><th class="text-right">Amount</th><th>Narration</th></tr></thead><tbody>';
+        // --- 5. MONTHLY SUMMARY ---
+        async function renderMonthlySummary(thead, tbody) {
+            thead.innerHTML = `<tr><th>Month</th><th class="amount">Sales</th><th class="amount">Purchase</th><th class="amount">Rcpt</th><th class="amount">Pmt</th></tr>`;
+            const vouchers = await DB.getAll('vouchers');
+            const sum = {};
             vouchers.forEach(v => {
-                const party = ledgers.find(l => l.id === v.party_id)?.name || 'Cash';
-                html += `<tr>
-                    <td>${v.date}</td>
-                    <td>${v.voucher_no}</td>
-                    <td>${v.type}</td>
-                    <td>${party}</td>
-                    <td class="text-right ${v.type==='Sales'?'amt-pos':'amt-neg'}">${fmt(v.amount)}</td>
-                    <td>${v.narration||'-'}</td>
-                </tr>`;
+                const k = v.date.substring(0,7);
+                if(!sum[k]) sum[k] = {s:0, p:0, r:0, pay:0};
+                if(v.type==='Sales') sum[k].s += v.amount;
+                if(v.type==='Purchase') sum[k].p += v.amount;
+                if(v.type==='Receipt') sum[k].r += v.amount;
+                if(v.type==='Payment') sum[k].pay += v.amount;
             });
-            html += '</tbody></table>';
-            return html;
+            Object.keys(sum).sort().forEach(m => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${m}</td><td class="amount dr">${sum[m].s}</td><td class="amount cr">${sum[m].p}</td><td class="amount dr">${sum[m].r}</td><td class="amount cr">${sum[m].pay}</td>`;
+                tbody.appendChild(tr);
+            });
         }
 
-        function renderLedgerReport(vouchers, entries, ledgerId, ledgers) {
-            const ledger = ledgers.find(l => l.id == ledgerId);
-            if(!ledger) return '<div class="empty-state">Ledger not found</div>';
-
-            let balance = ledger.opening_balance || 0;
-            let html = `<div style="font-size:18px; margin-bottom:15px; font-weight:700;">${ledger.name} Ledger</div>
-                        <table><thead><tr><th>Date</th><th>Vch</th><th>Particulars</th><th class="text-right">Debit</th><th class="text-right">Credit</th><th class="text-right">Balance</th></tr></thead><tbody>
-                        <tr><td colspan="5"><strong>Opening Balance</strong></td><td class="text-right amt-neu">${fmt(balance)}</td></tr>`;
-
-            const periodEntries = entries.filter(e => e.ledger_id == ledgerId);
-            periodEntries.sort((a,b) => a.id - b.id).forEach(e => {
-                balance += (e.debit || 0) - (e.credit || 0);
-                html += `<tr>
-                    <td>${e.date || '-'}</td>
-                    <td>${e.voucher_no || '-'}</td>
-                    <td>${e.narration || 'Transaction'}</td>
-                    <td class="text-right">${e.debit ? fmt(e.debit) : '-'}</td>
-                    <td class="text-right">${e.credit ? fmt(e.credit) : '-'}</td>
-                    <td class="text-right amt-neu">${fmt(Math.abs(balance))} ${balance >= 0 ? 'Dr' : 'Cr'}</td>
-                </tr>`;
-            });
-
-            html += `<tr style="background:#f8fafc; font-weight:bold;"><td colspan="5" class="text-right">Closing Balance</td><td class="text-right amt-neu">${fmt(Math.abs(balance))} ${balance >= 0 ? 'Dr' : 'Cr'}</td></tr></tbody></table>`;
-            return html;
-        }
-
-        function renderStockSummary(items) {
-            if(!items.length) return '<div class="empty-state"><span class="empty-icon">📦</span>No items in stock</div>';
-            let totalVal = 0;
-            let html = '<table><thead><tr><th>Item</th><th class="text-right">Stock</th><th class="text-right">Cost</th><th class="text-right">Value</th><th>Reorder</th><th>Status</th></tr></thead><tbody>';
+        // --- 6. STOCK & PL ---
+        async function renderStock(thead, tbody) {
+            thead.innerHTML = `<tr><th>Item</th><th>Qty</th><th class="amount">Value</th></tr>`;
             items.forEach(i => {
-                const qty = i.current_stock || 0;
-                const cost = i.std_cost || 0;
-                const val = qty * cost;
-                totalVal += val;
-                const status = qty <= (i.reorder_level || 5) ? '<span class="low-stock">Low</span>' : 'OK';
-                html += `<tr>
-                    <td>${i.name}</td>
-                    <td class="text-right">${qty}</td>
-                    <td class="text-right">${fmt(cost)}</td>
-                    <td class="text-right">${fmt(val)}</td>
-                    <td class="text-right">${i.reorder_level || '-'}</td>
-                    <td>${status}</td>
-                </tr>`;
+                tbody.innerHTML += `<tr><td>${i.name}</td><td>${i.current_stock}</td><td class="amount">${(i.current_stock*i.std_cost).toFixed(2)}</td></tr>`;
             });
-            html += `<tr style="background:#f8fafc; font-weight:bold;"><td colspan="3" class="text-right">Total Stock Value</td><td colspan="3" class="text-right">${fmt(totalVal)}</td></tr></tbody></table>`;
-            return html;
         }
 
-        function renderGSTSummary(entries, ledgers, groups) {
-            const taxGroupId = groups.find(g => g.name === "Duties & Taxes")?.id;
-            if(!taxGroupId) return '<div class="empty-state">Tax group not found</div>';
-
-            let input = 0, output = 0;
-            ledgers.filter(l => l.group_id === taxGroupId).forEach(l => {
-                let bal = l.opening_balance || 0;
-                entries.filter(e => e.ledger_id === l.id).forEach(e => bal += (e.debit||0) - (e.credit||0));
-                if(bal > 0) input += bal;
-                else output += Math.abs(bal);
-            });
-
-            let net = output - input;
-            let html = `<div style="max-width:600px; margin:0 auto; text-align:center;">
-                <h3 style="margin-bottom:20px;">GST Summary (All Time)</h3>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:30px; font-size:16px;">
-                    <div><strong>Input Tax Credit</strong><br><span style="color:var(--green); font-size:24px;">${fmt(input)}</span></div>
-                    <div><strong>Output Tax Liability</strong><br><span style="color:var(--red); font-size:24px;">${fmt(output)}</span></div>
-                </div>
-                <div style="margin-top:30px; font-size:20px; font-weight:700; color:${net>0?'var(--red)':'var(--green)'}">
-                    Net GST ${net>0?'Payable':'Credit'}: ${fmt(Math.abs(net))}
-                </div>
-            </div>`;
-            return html;
+        async function renderPL(thead, tbody) {
+            thead.innerHTML = `<tr><th>Particulars</th><th class="amount">Amount</th></tr>`;
+            let s=0, p=0;
+            const vouchers = await DB.getAll('vouchers');
+            vouchers.forEach(v => { if(v.type==='Sales')s+=v.amount; if(v.type==='Purchase')p+=v.amount; });
+            tbody.innerHTML = `<tr><td>Sales</td><td class="amount">${s}</td></tr><tr><td>Purchase</td><td class="amount">${p}</td></tr><tr class="bold-row"><td>Gross Profit</td><td class="amount">${s-p}</td></tr>`;
         }
 
-        function renderProfitLoss(vouchers, items) {
-            let sales = 0, purchases = 0;
-            vouchers.forEach(v => {
-                if(v.type === 'Sales') sales += v.amount || 0;
-                if(v.type === 'Purchase') purchases += v.amount || 0;
-            });
-
-            const opStock = items.reduce((s, i) => s + (parseFloat(i.op_value) || (parseFloat(i.op_qty||0) * parseFloat(i.std_cost||0))), 0);
-            const clStock = items.reduce((s, i) => s + ((i.current_stock||0) * (i.std_cost||0)), 0);
-            const cogs = opStock + purchases - clStock;
-            const grossProfit = sales - cogs;
-
-            let html = `<div style="max-width:700px; margin:0 auto; padding:20px; border:1px solid #ddd; border-radius:8px;">
-                <h3 style="text-align:center; margin-bottom:25px;">Trading & Profit & Loss Account</h3>
-                <table style="width:100%;">
-                    <tr><td><strong>Sales</strong></td><td class="text-right amt-pos">${fmt(sales)}</td></tr>
-                    <tr><td><strong>Cost of Goods Sold</strong></td><td class="text-right amt-neg">${fmt(cogs)}</td></tr>
-                    <tr style="font-size:18px; font-weight:700; border-top:2px solid #000;">
-                        <td>Gross Profit / (Loss)</td>
-                        <td class="text-right" style="color:${grossProfit>=0?'var(--green)':'var(--red)'}">${fmt(grossProfit)}</td>
-                    </tr>
-                </table>
-                <p style="text-align:center; font-size:12px; color:var(--muted); margin-top:20px;">* Simplified Trading Account (No Expenses)</p>
-            </div>`;
-            return html;
-        }
-
-        function fmt(num) {
-            return "₹ " + (num || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        }
+        function showEmpty() { document.getElementById('emptyState').style.display = 'block'; }
     </script>
 </body>
 </html>
