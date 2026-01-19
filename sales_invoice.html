@@ -167,7 +167,6 @@
                     <div>Bank Name: <b id="bankName">HDFC Bank</b></div>
                     <div>A/c No: <b id="acNo">XXXXXXXXXX</b></div>
                     <div>IFSC Code: <b id="ifsc">HDFC0001234</b></div>
-                    
                 </div>
 
                 <div style="font-size:11px; color:#64748b;">
@@ -217,6 +216,7 @@
     <script src="auth.js"></script>
     <script>
         let itemsList = [];
+        let ledgersList = []; // Stores full ledger objects for lookup
         
         window.onload = async () => {
             await DB.init();
@@ -229,7 +229,6 @@
                 document.getElementById('cmpAddr').innerText = set.address || "Address";
                 document.getElementById('cmpGST').innerText = set.gstin || "-";
                 document.getElementById('cmpPhone').innerText = set.phone || "-";
-                // Bank placeholder logic (can be added to settings later)
             }
 
             // 2. Load Parties & Items
@@ -245,25 +244,45 @@
         async function loadParties() {
             const ledgers = await DB.getAll('ledgers');
             const groups = await DB.getAll('groups');
-            // Filter Debtors
+            ledgersList = ledgers; // Save globally for auto-fill
+
+            // Filter Debtors & Cash
             const debtorId = groups.find(g=>g.name==='Sundry Debtors')?.id;
             const cashId = groups.find(g=>g.name==='Cash-in-Hand')?.id;
             
             const sel = document.getElementById('partySelect');
+            sel.innerHTML = '<option value="">-- Select Party --</option>';
+
             ledgers.filter(l => l.group_id === debtorId || l.group_id === cashId)
+                   .sort((a,b) => a.name.localeCompare(b.name))
                    .forEach(l => {
                        const opt = document.createElement('option');
                        opt.value = l.id;
                        opt.text = l.name;
-                       opt.dataset.gst = "GSTIN_PLACEHOLDER"; // If ledger has GST field
                        sel.appendChild(opt);
                    });
         }
 
         function loadPartyDetails() {
-            // In a real app, we would fetch address from Ledger DB
-            // For now, we clear the address to let user type or standard placeholder
-            // document.getElementById('billAddr').value = "Address from DB...";
+            const partyId = document.getElementById('partySelect').value;
+            
+            // Reset fields
+            document.getElementById('billAddr').value = "";
+            document.getElementById('partyGst').value = "";
+
+            if(!partyId) return;
+
+            // Find party in memory
+            const party = ledgersList.find(l => l.id == partyId);
+            
+            if(party) {
+                // Auto-fill Address & GST
+                let fullAddr = party.address || "";
+                if(party.phone) fullAddr += `\n(Contact: ${party.phone})`;
+                
+                document.getElementById('billAddr').value = fullAddr;
+                document.getElementById('partyGst').value = party.gstin || "";
+            }
         }
 
         function copyAddr(chk) {
@@ -338,6 +357,7 @@
             document.getElementById('taxableVal').innerText = taxVal.toFixed(2);
             
             // Assume Intra-State for now (CGST+SGST)
+            // Logic: In future we can compare Party State vs Company State
             document.getElementById('cgstVal').innerText = (taxAmt/2).toFixed(2);
             document.getElementById('sgstVal').innerText = (taxAmt/2).toFixed(2);
             document.getElementById('igstVal').innerText = "0.00";
@@ -354,7 +374,10 @@
             
             // Prepare Data for DB
             let totalAmt = 0;
+            let taxableTotal = 0;
+            let taxTotal = 0;
             let invEntries = [];
+            
             document.querySelectorAll('#itemRows tr').forEach(tr => {
                 const itemId = tr.querySelector('select').value;
                 if(itemId) {
@@ -363,6 +386,8 @@
                     if(qty>0) {
                         invEntries.push({ item_id: parseInt(itemId), qty, rate });
                         totalAmt += (parseFloat(tr.querySelector('.amt').innerText));
+                        taxableTotal += parseFloat(tr.dataset.taxable || 0);
+                        taxTotal += parseFloat(tr.dataset.tax || 0);
                     }
                 }
             });
@@ -379,14 +404,34 @@
                 narration: "Sales Invoice Generated"
             };
 
-            // Basic Accounting Entries (Simplified for now)
-            // 1. Party Dr (Total)
-            // 2. Sales Cr (Basic)
-            // 3. Tax Cr (Output Tax)
-            // *Detailed splitting requires fetching Ledger IDs again like previous code*
-            // For now, we focus on Saving the VOUCHER record which is key for Reports
-            const acctEntries = []; 
-            // (You can copy the detailed accounting logic from the previous file if strict double-entry is needed here)
+            // FULL ACCOUNTING ENTRIES (Double Entry System)
+            const acctEntries = [];
+
+            // 1. DEBIT: Party (Debtor) - Full Amount
+            acctEntries.push({
+                ledger_id: parseInt(partyId),
+                debit: Math.round(totalAmt),
+                credit: 0
+            });
+
+            // 2. CREDIT: Sales Account - Taxable Amount
+            // Look for 'Local Sales' ledger id
+            const salesLedger = ledgersList.find(l => l.name === 'Local Sales');
+            if(salesLedger) {
+                acctEntries.push({
+                    ledger_id: salesLedger.id,
+                    debit: 0,
+                    credit: taxableTotal
+                });
+            }
+
+            // 3. CREDIT: Output Tax (Liability)
+            // Look for CGST/SGST ledgers
+            const cgstLedger = ledgersList.find(l => l.name === 'Output CGST');
+            const sgstLedger = ledgersList.find(l => l.name === 'Output SGST');
+
+            if(cgstLedger) acctEntries.push({ ledger_id: cgstLedger.id, debit: 0, credit: taxTotal/2 });
+            if(sgstLedger) acctEntries.push({ ledger_id: sgstLedger.id, debit: 0, credit: taxTotal/2 });
 
             try {
                 await DB.saveVoucher(vData, invEntries, acctEntries);
