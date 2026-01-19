@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Purchase Entry - Money Wise Pro</title>
+    <style>
+        /* THEME: Same as Sales but with distinct header color to avoid confusion */
+        :root { --header-bg: #064e3b; /* Dark Green for Purchase */ --accent: #10b981; --bg: #f3f4f6; --border: #d1d5db; }
+        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; font-size: 13px; }
+        body { margin: 0; display: flex; flex-direction: column; height: 100vh; background: var(--bg); overflow: hidden; }
+
+        .top-bar { background: var(--header-bg); color: #fff; padding: 10px 15px; display: flex; justify-content: space-between; border-bottom: 3px solid var(--accent); }
+        .title { font-weight: bold; font-size: 15px; letter-spacing: 0.5px; }
+        .close { cursor: pointer; color: #fff; font-weight: bold; border: 1px solid transparent; padding: 2px 8px; border-radius: 4px; }
+        .close:hover { background: #ef4444; border-color: #ef4444; }
+
+        .wrapper { flex: 1; display: flex; flex-direction: column; padding: 15px; overflow: hidden; max-width: 1200px; margin: 0 auto; width: 100%; }
+        
+        .header-info { background: #fff; padding: 15px; border: 1px solid var(--border); display: flex; gap: 15px; border-radius: 4px; margin-bottom: 10px; }
+        .field { display: flex; flex-direction: column; flex: 1; }
+        .field-small { width: 130px; display: flex; flex-direction: column; }
+        label { font-weight: 700; color: #4b5563; margin-bottom: 5px; font-size: 12px; }
+        input, select { padding: 8px 10px; border: 1px solid #9ca3af; outline: none; border-radius: 3px; background: #fff; }
+        input:focus, select:focus { border-color: var(--accent); background: #ecfdf5; }
+        
+        /* Grid Layout */
+        .grid-container { flex: 1; background: #fff; border: 1px solid var(--border); overflow-y: auto; position: relative; border-radius: 4px; display: flex; flex-direction: column; }
+        table { width: 100%; border-collapse: collapse; min-width: 800px; }
+        thead { background: #374151; color: #fff; position: sticky; top: 0; z-index: 10; }
+        th { padding: 10px; font-weight: 600; text-align: left; border-right: 1px solid #4b5563; font-size: 12px; }
+        td { border-bottom: 1px solid #e5e7eb; border-right: 1px solid #e5e7eb; padding: 0; }
+        td input { border: none; width: 100%; height: 35px; padding: 0 8px; background: transparent; font-size: 13px; outline: none; }
+        td input:focus { background: #fffbeb; box-shadow: inset 0 0 0 2px var(--accent); }
+        
+        .row-del { color: #ef4444; cursor: pointer; text-align: center; font-weight: bold; font-size: 16px; width: 35px; }
+        .row-del:hover { background: #fee2e2; }
+
+        .footer { background: #fff; border: 1px solid var(--border); margin-top: 10px; display: flex; height: 150px; border-radius: 4px; }
+        .left-foot { flex: 2; padding: 15px; border-right: 1px solid var(--border); display: flex; flex-direction: column; justify-content: space-between; }
+        .right-foot { flex: 1; padding: 15px; background: #f9fafb; display: flex; flex-direction: column; gap: 5px; }
+        .total-line { display: flex; justify-content: space-between; font-size: 13px; color: #374151; }
+        .grand-total { font-size: 18px; font-weight: bold; color: var(--accent); border-top: 2px solid #374151; padding-top: 8px; margin-top: auto; }
+
+        .actions { background: #111827; padding: 8px 20px; display: flex; gap: 20px; color: #9ca3af; border-top: 1px solid #374151; align-items: center; }
+        .key { color: #38bdf8; font-weight: bold; background: #1f2937; padding: 3px 8px; border-radius: 4px; font-family: monospace; border: 1px solid #374151; margin-right: 5px; }
+
+        #toast { position: fixed; top: 20px; right: 20px; background: #059669; color: #fff; padding: 12px 24px; border-radius: 4px; display: none; font-weight: bold; z-index: 9999; }
+        #toast.error { background: #dc2626; }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <div class="title">PURCHASE ENTRY (INWARD)</div>
+        <div class="close" onclick="window.location.href='index.html'">[ESC] CLOSE</div>
+    </div>
+
+    <div class="wrapper">
+        <div class="header-info">
+            <div class="field-small"><label>Supplier Inv No</label><input type="text" id="invNo" placeholder="Enter Bill No"></div>
+            <div class="field-small"><label>Date</label><input type="date" id="invDate"></div>
+            <div class="field"><label>Party Name (Sundry Creditors)</label><select id="party" onchange="partyChanged()"><option value="">-- Select Supplier --</option></select></div>
+            <div class="field"><label>Place of Supply</label><input type="text" id="partyState" readonly></div>
+        </div>
+
+        <div class="grid-container">
+            <table id="grid">
+                <thead>
+                    <tr><th style="width:40px;">#</th><th>Item Description</th><th style="width:80px;">Qty</th><th style="width:70px;">Unit</th><th style="width:100px;">Rate (Pur)</th><th style="width:70px;">Disc%</th><th style="width:130px;text-align:right;">Amount</th><th style="width:40px;"></th></tr>
+                </thead>
+                <tbody id="tbody"></tbody>
+            </table>
+            <div class="add-row-btn" style="padding:10px;text-align:center;cursor:pointer;background:#ecfdf5;font-weight:600;border-top:1px solid #e5e7eb; color: #064e3b;" onclick="addRow()">+ ADD ITEM</div>
+        </div>
+
+        <div class="footer">
+            <div class="left-foot">
+                <div><label>Narration</label><input type="text" id="narration" style="width:100%; border-bottom:1px solid #d1d5db;" placeholder="Enter narration (e.g. Goods received via truck...)"></div>
+                <div id="words" style="font-weight:bold;font-size:14px;font-style:italic;margin-top:10px;">Zero Rupees Only</div>
+            </div>
+            <div class="right-foot">
+                <div class="total-line"><span>Sub Total:</span> <span id="subTotal">0.00</span></div>
+                <div class="total-line" id="cgstRow"><span>Input CGST:</span> <span id="cgstVal">0.00</span></div>
+                <div class="total-line" id="sgstRow"><span>Input SGST:</span> <span id="sgstVal">0.00</span></div>
+                <div class="total-line" id="igstRow" style="display:none;"><span>Input IGST:</span> <span id="igstVal">0.00</span></div>
+                <div class="total-line"><span>Round Off:</span> <span id="roundOff">0.00</span></div>
+                <div class="grand-total total-line"><span>GRAND TOTAL:</span> <span id="grandTotal">0.00</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="actions">
+        <span><span class="key">Alt+S</span> SAVE</span>
+        <span><span class="key">Esc</span> EXIT</span>
+    </div>
+
+    <div id="toast">Purchase Saved!</div>
+    <script src="db.js"></script>
+
+    <script>
+        const MY_STATE = "Rajasthan"; // Your State
+        let ITEMS = [], ITEM_MAP = {};
+
+        window.onload = async () => {
+            try {
+                await DB.init();
+                document.getElementById('invDate').valueAsDate = new Date();
+                
+                // IMPORTANT: Ensure Purchase Ledgers Exist
+                await ensurePurchaseLedgers();
+                
+                await loadParties();
+                await loadItems();
+                addRow();
+                document.getElementById('invNo').focus();
+            } catch (e) { console.error(e); alert("DB Error: " + e); }
+        };
+
+        // --- 1. AUTO CREATE PURCHASE LEDGERS IF MISSING ---
+        async function ensurePurchaseLedgers() {
+            const purGrp = await DB.getGroupId("Purchase Accounts");
+            const taxGrp = await DB.getGroupId("Duties & Taxes");
+
+            const needed = [
+                { name: "Local Purchase", group_id: purGrp, dr_cr: "Dr" },
+                { name: "Inter-State Purchase", group_id: purGrp, dr_cr: "Dr" },
+                { name: "Input CGST", group_id: taxGrp, dr_cr: "Dr" },
+                { name: "Input SGST", group_id: taxGrp, dr_cr: "Dr" },
+                { name: "Input IGST", group_id: taxGrp, dr_cr: "Dr" }
+            ];
+
+            for(let l of needed) {
+                let exists = await DB.getLedgerId(l.name);
+                if(!exists) await DB.createLedger(l);
+            }
+        }
+
+        // --- 2. LOAD DATA ---
+        async function loadParties() {
+            const ledgers = await DB.getLedgers();
+            const credGroupId = await DB.getGroupId("Sundry Creditors");
+            const cashGroupId = await DB.getGroupId("Cash-in-Hand");
+            const partySel = document.getElementById('party');
+            
+            ledgers.forEach(l => {
+                // Show Creditors + Cash
+                if (!credGroupId || l.group_id === credGroupId || l.group_id === cashGroupId || l.name === "Cash") {
+                    let opt = document.createElement('option');
+                    opt.value = l.id;
+                    opt.innerText = l.name;
+                    opt.dataset.state = l.state || '';
+                    partySel.appendChild(opt);
+                }
+            });
+        }
+
+        async function loadItems() {
+            ITEMS = await DB.getItems();
+            let dl = document.createElement('datalist'); dl.id = 'itemList';
+            ITEMS.forEach(i => {
+                let opt = document.createElement('option'); opt.value = i.name; dl.appendChild(opt);
+                ITEM_MAP[i.name] = i;
+            });
+            document.body.appendChild(dl);
+        }
+
+        // --- 3. UI LOGIC ---
+        function partyChanged() {
+            const sel = document.getElementById('party');
+            if(sel.selectedIndex <= 0) return;
+            const state = sel.options[sel.selectedIndex].dataset.state;
+            document.getElementById('partyState').value = state;
+            calcTotal();
+        }
+
+        function addRow() {
+            const tbody = document.getElementById('tbody');
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="text-align:center;">${tbody.rows.length+1}</td>
+                <td><input type="text" list="itemList" onchange="itemSelect(this)" placeholder="Item"><input type="hidden" class="h-id"><input type="hidden" class="h-gst"></td>
+                <td><input type="number" class="qty" oninput="rowCalc(this)" onkeydown="next(event)"></td>
+                <td><input type="text" class="unit" readonly tabindex="-1"></td>
+                <td><input type="number" class="rate" oninput="rowCalc(this)" onkeydown="next(event)"></td>
+                <td><input type="number" class="disc" oninput="rowCalc(this)" onkeydown="next(event)"></td>
+                <td><input type="number" class="amt" readonly tabindex="-1" style="text-align:right;font-weight:bold;"></td>
+                <td class="row-del" onclick="delRow(this)">×</td>
+            `;
+            tbody.appendChild(tr);
+            tr.querySelector('input').focus();
+        }
+
+        function delRow(btn) {
+            btn.closest('tr').remove();
+            calcTotal();
+        }
+
+        function itemSelect(inp) {
+            const item = ITEM_MAP[inp.value];
+            const row = inp.closest('tr');
+            if(item) {
+                row.querySelector('.h-id').value = item.id;
+                row.querySelector('.h-gst').value = item.gst_rate || 0;
+                row.querySelector('.unit').value = item.unit;
+                // Use Standard Cost for Purchase
+                row.querySelector('.rate').value = item.std_cost || 0; 
+                row.querySelector('.qty').focus();
+            }
+        }
+
+        function rowCalc(inp) {
+            const row = inp.closest('tr');
+            let qty = parseFloat(row.querySelector('.qty').value) || 0;
+            let rate = parseFloat(row.querySelector('.rate').value) || 0;
+            let disc = parseFloat(row.querySelector('.disc').value) || 0;
+            let val = qty * rate;
+            if(disc > 0) val -= (val * disc / 100);
+            row.querySelector('.amt').value = val.toFixed(2);
+            calcTotal();
+        }
+
+        function next(e) { if(e.key === 'Enter') addRow(); }
+
+        function calcTotal() {
+            let sub = 0, cgst = 0, sgst = 0, igst = 0;
+            const pState = document.getElementById('partyState').value;
+            const isInter = pState && pState.toLowerCase() !== MY_STATE.toLowerCase();
+
+            document.querySelectorAll('#tbody tr').forEach(r => {
+                const amt = parseFloat(r.querySelector('.amt').value) || 0;
+                const gst = parseFloat(r.querySelector('.h-gst').value) || 0;
+                sub += amt;
+                let tax = (amt * gst / 100);
+                if(isInter) igst += tax; else { cgst += tax/2; sgst += tax/2; }
+            });
+
+            document.getElementById('subTotal').innerText = sub.toFixed(2);
+            if(isInter) {
+                document.getElementById('cgstRow').style.display='none'; document.getElementById('sgstRow').style.display='none'; document.getElementById('igstRow').style.display='flex';
+                document.getElementById('igstVal').innerText = igst.toFixed(2);
+            } else {
+                document.getElementById('cgstRow').style.display='flex'; document.getElementById('sgstRow').style.display='flex'; document.getElementById('igstRow').style.display='none';
+                document.getElementById('cgstVal').innerText = cgst.toFixed(2); document.getElementById('sgstVal').innerText = sgst.toFixed(2);
+            }
+
+            let totalTax = isInter ? igst : (cgst+sgst);
+            let grand = sub + totalTax;
+            let round = Math.round(grand);
+            document.getElementById('roundOff').innerText = (round - grand).toFixed(2);
+            document.getElementById('grandTotal').innerText = round.toFixed(2);
+            document.getElementById('words').innerText = numberToWords(round);
+        }
+
+        function numberToWords(num) {
+            if (num === 0) return "Zero Rupees Only";
+            const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+            const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+            function convert(n) {
+                if (n === 0) return '';
+                if (n < 20) return ones[n];
+                if (n < 100) return tens[Math.floor(n / 10)] + (n % 10 ? ' ' + ones[n % 10] : '');
+                return ones[Math.floor(n / 100)] + ' Hundred' + (n % 100 ? ' ' + convert(n % 100) : '');
+            }
+            let crore = Math.floor(num / 10000000);
+            let lakh = Math.floor((num % 10000000) / 100000);
+            let thousand = Math.floor((num % 100000) / 1000);
+            let hundred = num % 1000;
+            let str = '';
+            if (crore) str += convert(crore) + ' Crore ';
+            if (lakh) str += convert(lakh) + ' Lakh ';
+            if (thousand) str += convert(thousand) + ' Thousand ';
+            if (hundred) str += convert(hundred);
+            return (str.trim() || 'Zero') + " Rupees Only";
+        }
+
+        // --- 4. SAVE LOGIC (INWARD) ---
+        async function saveInvoice() {
+            const partyId = document.getElementById('party').value;
+            const invNo = document.getElementById('invNo').value;
+            const grandTotal = parseFloat(document.getElementById('grandTotal').innerText);
+            
+            if(!invNo) { showToast("Enter Supplier Bill No!", true); return; }
+            if(!partyId) { showToast("Select Supplier!", true); return; }
+            if(grandTotal <= 0) { showToast("Amount is 0!", true); return; }
+
+            // Ledger IDs
+            const pState = document.getElementById('partyState').value;
+            const isInter = pState && pState.toLowerCase() !== MY_STATE.toLowerCase();
+            const purName = isInter ? "Inter-State Purchase" : "Local Purchase";
+            
+            const purId = await DB.getLedgerId(purName);
+            const cgstId = await DB.getLedgerId("Input CGST");
+            const sgstId = await DB.getLedgerId("Input SGST");
+            const igstId = await DB.getLedgerId("Input IGST");
+
+            // Prepare Rows
+            const rows = document.querySelectorAll('#tbody tr');
+            let entries = [], subTotal = 0, totalTax = 0;
+            rows.forEach(r => {
+                let amt = parseFloat(r.querySelector('.amt').value) || 0;
+                let gst = parseFloat(r.querySelector('.h-gst').value) || 0;
+                if(amt > 0) {
+                    entries.push({
+                        item_id: parseInt(r.querySelector('.h-id').value),
+                        qty: parseFloat(r.querySelector('.qty').value),
+                        rate: parseFloat(r.querySelector('.rate').value),
+                        amount: amt
+                    });
+                    subTotal += amt;
+                    totalTax += (amt * gst / 100);
+                }
+            });
+
+            if(entries.length === 0) return;
+
+            // --- TRANSACTION START ---
+            const tx = DB.db.transaction(['vouchers', 'entries', 'items', 'acct_entries', 'ledgers'], 'readwrite');
+            
+            // 1. Voucher (Type: Purchase)
+            const vid = await new Promise((resolve) => {
+                const req = tx.objectStore('vouchers').add({
+                    voucher_no: invNo, // Supplier Ref No
+                    date: document.getElementById('invDate').value,
+                    party_id: parseInt(partyId),
+                    amount: grandTotal,
+                    narration: document.getElementById('narration').value,
+                    type: 'Purchase',
+                    created_at: new Date()
+                });
+                req.onsuccess = e => resolve(e.target.result);
+            });
+
+            // 2. Inventory (INCREASE STOCK)
+            const iStore = tx.objectStore('items');
+            entries.forEach(e => {
+                e.voucher_id = vid;
+                tx.objectStore('entries').add(e);
+                const iReq = iStore.get(e.item_id);
+                iReq.onsuccess = () => {
+                    let item = iReq.result;
+                    // Logic: Add to stock
+                    item.current_stock = (item.current_stock || 0) + e.qty;
+                    // Optional: Update Last Purchase Cost
+                    item.std_cost = e.rate; 
+                    iStore.put(item);
+                };
+            });
+
+            // 3. Accounting (Purchase Logic)
+            const aStore = tx.objectStore('acct_entries');
+            // Credit Party (Liability Increases)
+            aStore.add({ voucher_id: vid, ledger_id: parseInt(partyId), debit: 0, credit: grandTotal }); 
+            // Debit Purchase A/c
+            if(purId) aStore.add({ voucher_id: vid, ledger_id: purId, debit: subTotal, credit: 0 }); 
+            // Debit Input Taxes
+            if(totalTax > 0) {
+                if(isInter) { if(igstId) aStore.add({ voucher_id: vid, ledger_id: igstId, debit: totalTax, credit: 0 }); } 
+                else { 
+                    if(cgstId) aStore.add({ voucher_id: vid, ledger_id: cgstId, debit: totalTax/2, credit: 0 });
+                    if(sgstId) aStore.add({ voucher_id: vid, ledger_id: sgstId, debit: totalTax/2, credit: 0 });
+                }
+            }
+
+            // 4. Update Party Balance (Ledger)
+            const lStore = tx.objectStore('ledgers');
+            const lReq = lStore.get(parseInt(partyId));
+            lReq.onsuccess = () => {
+                let l = lReq.result;
+                // Credit means liability increases (negative balance logic depends on view, but adding to credit side)
+                // Simply: closing balance logic will be calc later. Here we just update if we track running balance field.
+                // For now, let's leave running balance logic for Reports.
+            };
+
+            tx.oncomplete = () => {
+                showToast("Purchase Saved!");
+                setTimeout(() => window.location.reload(), 1000);
+            };
+        }
+
+        function showToast(msg, isError) {
+            const t = document.getElementById('toast');
+            t.innerText = msg; t.className = isError ? 'error' : '';
+            t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 3000);
+        }
+
+        document.addEventListener('keydown', e => {
+            if(e.altKey && e.key === 's') saveInvoice();
+            if(e.key === 'Escape') window.location.href = 'index.html';
+        });
+    </script>
+</body>
+</html>
