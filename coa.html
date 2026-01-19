@@ -15,17 +15,14 @@
         * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
         body { display: flex; height: 100vh; background: var(--bg); color: var(--text); overflow: hidden; }
 
-        /* SIDEBAR */
         .sidebar { width: 260px; background: var(--sidebar-bg); padding: 20px; display: flex; flex-direction: column; flex-shrink: 0; }
         .brand { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 40px; display: flex; align-items: center; gap: 10px; }
         .nav-link { padding: 12px 15px; margin-bottom: 5px; border-radius: 8px; color: var(--sidebar-text); text-decoration: none; font-weight: 500; display: flex; align-items: center; gap: 12px; transition: 0.2s; font-size: 14px; }
         .nav-link:hover, .nav-link.active { background: #1e293b; color: var(--active-text); }
         .nav-icon { font-size: 18px; }
 
-        /* MAIN CONTENT */
         .main { flex: 1; display: flex; padding: 20px; gap: 20px; overflow: hidden; }
         
-        /* LIST PANEL */
         .list-panel { width: 400px; background: #fff; border-radius: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; }
         .search-box { padding: 15px; border-bottom: 1px solid var(--border); }
         .search-box input { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; outline: none; }
@@ -41,7 +38,6 @@
         .badge-inc { background: #dcfce7; color: #166534; }
         .badge-exp { background: #ffedd5; color: #9a3412; }
 
-        /* FORM PANEL */
         .form-panel { flex: 1; background: #fff; border-radius: 12px; border: 1px solid var(--border); padding: 30px; display: flex; flex-direction: column; }
         .form-header { font-size: 20px; font-weight: 700; margin-bottom: 25px; color: #0f172a; border-bottom: 1px solid var(--border); padding-bottom: 15px; display: flex; justify-content: space-between; }
         
@@ -58,7 +54,11 @@
         .btn-new { background: #e2e8f0; color: var(--text); }
         .btn-del { background: #fee2e2; color: #991b1b; margin-left: auto; }
         
-        #toast { position: fixed; top: 20px; right: 20px; background: var(--green); color: white; padding: 12px 24px; border-radius: 6px; display: none; z-index: 999; }
+        /* New Classes to fix Inline Styles */
+        .helper-text { color: var(--muted); margin-top: 5px; display: block; font-size: 12px; }
+        #delBtn { display: none; } /* Hidden by default via CSS */
+        
+        #toast { position: fixed; top: 20px; right: 20px; background: var(--accent); color: white; padding: 12px 24px; border-radius: 6px; display: none; }
     </style>
 </head>
 <body>
@@ -80,49 +80,49 @@
     <div class="main">
         <div class="list-panel">
             <div class="search-box">
-                <input type="text" placeholder="🔍 Search Groups..." onkeyup="renderList(this.value)">
+                <input type="text" placeholder="Search Groups..." aria-label="Search Groups" onkeyup="renderList(this.value)">
             </div>
             <div class="list-content" id="groupList"></div>
         </div>
 
         <div class="form-panel">
             <div class="form-header">
-                <span>Account Group Master</span>
-                <button class="btn btn-new" onclick="resetForm()">+ New Group</button>
+                <span>Account Group</span>
+                <button class="btn btn-new" onclick="resetForm()">New Group</button>
             </div>
             <input type="hidden" id="groupId">
 
             <div class="form-grid">
                 <div class="field">
-                    <label>Group Name *</label>
+                    <label for="name">Group Name *</label>
                     <input type="text" id="name" placeholder="e.g. Indirect Incomes" required>
                 </div>
                 <div class="field">
-                    <label>Primary Nature *</label>
+                    <label for="nature">Primary Nature *</label>
                     <select id="nature" onchange="filterParents()">
-                        <option value="Asset">Asset (संपत्ति)</option>
-                        <option value="Liability">Liability (देनदारी)</option>
-                        <option value="Income">Income (आय)</option>
-                        <option value="Expense">Expense (खर्चा)</option>
+                        <option value="Asset">Asset</option>
+                        <option value="Liability">Liability</option>
+                        <option value="Income">Income</option>
+                        <option value="Expense">Expense</option>
                     </select>
                 </div>
                 <div class="field">
-                    <label>Under / Parent Group (Optional)</label>
+                    <label for="parentSelect">Under / Parent Group (Optional)</label>
                     <select id="parentSelect">
-                        <option value="">-- Primary (Main) --</option>
+                        <option value="">-- Primary --</option>
                     </select>
-                    <small style="color:var(--muted); margin-top:5px; display:block;">Select an existing group to make this a sub-group.</small>
+                    <small class="helper-text">Select existing group to make this a sub-group.</small>
                 </div>
             </div>
 
             <div class="actions">
                 <button class="btn btn-save" onclick="saveGroup()">Save Group</button>
-                <button class="btn btn-del" onclick="deleteGroup()" id="delBtn" style="display:none;">Delete</button>
+                <button class="btn btn-del" onclick="deleteGroup()" id="delBtn">Delete</button>
             </div>
         </div>
     </div>
 
-    <div id="toast">✅ Action Successful!</div>
+    <div id="toast">Group Saved!</div>
 
     <script src="db.js"></script><script src="auth.js"></script>
     <script>
@@ -183,7 +183,7 @@
         }
 
         function filterParents() {
-            // Optional: Hide incompatible parents
+            // Optional: You could hide parents that don't match the selected nature
         }
 
         function loadGroup(g) {
@@ -192,15 +192,16 @@
             document.getElementById('nature').value = g.nature;
             document.getElementById('parentSelect').value = g.parent || '';
             
-            // PROTECT SYSTEM GROUPS
-            const systemGroups = ["Sundry Debtors", "Sundry Creditors", "Cash-in-Hand", "Sales Accounts", "Purchase Accounts", "Duties & Taxes", "Bank Accounts"];
+            // Protect System Groups
+            const systemGroups = ["Sundry Debtors", "Sundry Creditors", "Cash-in-Hand", "Sales Accounts", "Purchase Accounts", "Duties & Taxes"];
             const isSystem = systemGroups.includes(g.name);
             
             document.getElementById('name').disabled = isSystem;
             document.getElementById('nature').disabled = isSystem;
+            // Use JS to toggle display instead of inline style
             document.getElementById('delBtn').style.display = isSystem ? 'none' : 'block';
             
-            // Highlight
+            // Highlight active
             document.querySelectorAll('.tree-item').forEach(x => x.classList.remove('active'));
         }
 
@@ -240,22 +241,14 @@
                     resetForm();
                     refreshData();
                 };
-                tx.onerror = () => alert("Error: Name might already exist.");
+                tx.onerror = () => alert("Error: Group Name must be unique");
             } catch(e) { console.error(e); }
         }
 
         async function deleteGroup() {
             const id = document.getElementById('groupId').value;
             if(!id) return;
-            
-            if(!confirm("⚠️ Are you sure you want to delete this group?")) return;
-
-            // Optional: Check if used by Ledgers (Advanced)
-            const ledgers = await DB.getAll('ledgers');
-            const grpName = document.getElementById('name').value;
-            const used = ledgers.some(l => l.group_id == id);
-            
-            if(used) return alert("Cannot Delete: Ledgers are using this group!");
+            if(!confirm("Are you sure?")) return;
 
             try {
                 const tx = DB.db.transaction('groups', 'readwrite');
