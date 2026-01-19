@@ -483,5 +483,16 @@
         function getAll(store) { return new Promise(resolve => { const req = store.getAll(); req.onsuccess = () => resolve(req.result); }); }
         function fmt(num) { return "₹ " + (num || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
     </script>
+    <script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js')
+        .then(reg => console.log('PWA Ready!'))
+        .catch(err => console.log('PWA Failed', err));
+    });
+  }
+</script>
+
+<link rel="manifest" href="manifest.json">
 </body>
 </html>
