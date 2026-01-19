@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Money Wise Pro - Vouchers</title>
+    <title>Money Wise Pro - Smart Vouchers</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --sidebar-bg: #0f172a; --sidebar-text: #94a3b8; --active-text: #f8fafc;
-            --bg: #f8fafc; --card-bg: #ffffff; --text: #1e293b; --border: #e2e8f0;
-            --accent: #f59e0b; /* Amber for Vouchers */
-            --green: #10b981; --red: #ef4444;
+            --bg: #f3f4f6; --card-bg: #ffffff; --text: #1e293b; --border: #e5e7eb;
+            --green: #10b981; --red: #ef4444; --blue: #3b82f6; --amber: #f59e0b;
         }
         * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
         body { display: flex; height: 100vh; background: var(--bg); color: var(--text); overflow: hidden; }
@@ -21,29 +20,42 @@
         .nav-link:hover, .nav-link.active { background: #1e293b; color: var(--active-text); }
         .nav-icon { font-size: 18px; }
 
-        .main { flex: 1; padding: 40px; overflow-y: auto; display:flex; justify-content:center; }
-        .container { width: 100%; max-width: 600px; }
-
-        .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid var(--border); }
+        .main { flex: 1; padding: 30px; overflow-y: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
         
-        .tabs { display: flex; margin-bottom: 25px; background: #f1f5f9; padding: 4px; border-radius: 8px; }
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid var(--border); height: fit-content; }
+        
+        .tabs { display: flex; margin-bottom: 20px; background: #f1f5f9; padding: 4px; border-radius: 8px; }
         .tab { flex: 1; text-align: center; padding: 10px; cursor: pointer; border-radius: 6px; font-weight: 600; font-size: 14px; transition: 0.2s; }
-        .tab.active { background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .t-receipt { color: var(--green); } .t-payment { color: var(--red); } .t-contra { color: var(--text); }
-        
-        .form-group { margin-bottom: 15px; }
+        .tab.active { background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transform: scale(1.02); }
+        .t-rcp.active { color: var(--green); border-bottom: 2px solid var(--green); }
+        .t-pmt.active { color: var(--red); border-bottom: 2px solid var(--red); }
+        .t-cnt.active { color: var(--blue); border-bottom: 2px solid var(--blue); }
+
+        .form-group { margin-bottom: 15px; position: relative; }
         label { display: block; font-size: 13px; font-weight: 600; color: #64748b; margin-bottom: 5px; }
-        input, select, textarea { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 15px; outline: none; transition: 0.2s; }
-        input:focus, select:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1); }
+        input, select, textarea { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; outline: none; }
+        input:focus, select:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
 
-        .btn-submit { width: 100%; background: var(--text); color: white; padding: 14px; border: none; border-radius: 8px; font-weight: 700; font-size: 16px; cursor: pointer; margin-top: 10px; }
-        .btn-submit:hover { opacity: 0.9; }
+        .bal-display { position: absolute; right: 0; top: 0; font-size: 12px; font-weight: 700; }
+        .bal-dr { color: var(--green); } .bal-cr { color: var(--red); }
+
+        .btn-save { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: 700; font-size: 15px; cursor: pointer; color: white; margin-top: 10px; transition: 0.2s; }
+        .btn-save:hover { opacity: 0.9; }
+
+        .recent-box { background: white; padding: 20px; border-radius: 12px; border: 1px solid var(--border); height: fit-content; }
+        .recent-header { font-weight: 700; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; }
         
-        .receipt-mode .btn-submit { background: var(--green); }
-        .payment-mode .btn-submit { background: var(--red); }
-        .contra-mode .btn-submit { background: var(--text); }
+        .txn-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
+        .txn-item:last-child { border: none; }
+        .tag { padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; }
+        .tag-Receipt { background: #dcfce7; color: #166534; }
+        .tag-Payment { background: #fee2e2; color: #991b1b; }
+        .tag-Contra { background: #dbeafe; color: #1e40af; }
+        
+        .btn-del { background: none; border: none; cursor: pointer; font-size: 16px; opacity: 0.6; padding: 5px; color:var(--red); }
+        .btn-del:hover { opacity: 1; transform: scale(1.2); }
 
-        #balanceDisplay { text-align: right; font-size: 12px; color: #64748b; margin-top: 4px; font-weight: 600; }
+        @media (max-width: 900px) { .main { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
@@ -58,56 +70,63 @@
         <a href="item_master.html" class="nav-link"><span class="nav-icon">📦</span> Inventory</a>
         <a href="moneywise.html" class="nav-link"><span class="nav-icon">👥</span> Parties / Ledgers</a>
         <a href="coa.html" class="nav-link"><span class="nav-icon">🗂️</span> Chart of Accounts</a>
-        <a href="settings.html" class="nav-link"><span class="nav-icon">⚙️</span> Settings</a><a href="vouchers.html" class="nav-link"><span class="nav-icon">💸</span> Vouchers (Payment/Receipt)</a>
+        <a href="settings.html" class="nav-link"><span class="nav-icon">⚙️</span> Settings</a>
     </div>
 
     <div class="main">
-        <div class="container">
-            <h2 style="margin-bottom:20px; color:#0f172a;">Accounting Vouchers</h2>
+        <div class="card" id="formCard">
+            <h3 style="margin-bottom: 20px;">Accounting Voucher</h3>
             
-            <div class="card receipt-mode" id="mainCard">
-                <div class="tabs">
-                    <div class="tab active t-receipt" onclick="setMode('Receipt')">⬇ Receipt (In)</div>
-                    <div class="tab t-payment" onclick="setMode('Payment')">⬆ Payment (Out)</div>
-                    <div class="tab t-contra" onclick="setMode('Contra')">⇄ Contra (Bank)</div>
-                </div>
+            <div class="tabs">
+                <div class="tab t-rcp active" onclick="setMode('Receipt')">⬇ Receipt (In)</div>
+                <div class="tab t-pmt" onclick="setMode('Payment')">⬆ Payment (Out)</div>
+                <div class="tab t-cnt" onclick="setMode('Contra')">⇄ Contra (Bank)</div>
+            </div>
 
-                <div class="form-group">
-                    <label>Voucher No</label>
-                    <input type="text" id="vchNo" readonly style="background:#f8fafc; color:#64748b; font-weight:bold;">
+            <div class="form-group">
+                <label>Voucher No & Date</label>
+                <div style="display:flex; gap:10px;">
+                    <input type="text" id="vchNo" readonly style="background:#f8fafc; font-weight:bold; width:40%; color:#64748b;">
+                    <input type="date" id="date" style="width:60%;">
                 </div>
+            </div>
 
-                <div class="form-group">
-                    <label>Date</label>
-                    <input type="date" id="date" required>
-                </div>
+            <div class="form-group">
+                <label id="lblAccount">Target Account</label>
+                <select id="ac1Select" onchange="updateBalance('ac1')">
+                    <option value="">Loading...</option>
+                </select>
+                <span id="bal1" class="bal-display"></span>
+            </div>
 
-                <div class="form-group">
-                    <label id="accountLabel">Cash / Bank Account (Debit)</label>
-                    <select id="cashBankSelect">
-                        <option value="">-- Select Cash/Bank --</option>
-                    </select>
-                </div>
+            <div class="form-group">
+                <label id="lblParty">Source Account</label>
+                <select id="ac2Select" onchange="updateBalance('ac2')">
+                    <option value="">Loading...</option>
+                </select>
+                <span id="bal2" class="bal-display"></span>
+            </div>
 
-                <div class="form-group">
-                    <label id="partyLabel">Party / Account (Credit)</label>
-                    <select id="partySelect" onchange="showBalance()">
-                        <option value="">-- Select Party --</option>
-                    </select>
-                    <div id="balanceDisplay">Curr Bal: ₹0.00</div>
-                </div>
+            <div class="form-group">
+                <label>Amount (₹)</label>
+                <input type="number" id="amount" placeholder="0.00" style="font-size:18px; font-weight:bold;">
+            </div>
 
-                <div class="form-group">
-                    <label>Amount (₹)</label>
-                    <input type="number" id="amount" placeholder="0.00" style="font-size:18px; font-weight:bold;">
-                </div>
+            <div class="form-group">
+                <label>Narration</label>
+                <textarea id="narration" rows="2" placeholder="Cheque No, Bill Ref, etc..."></textarea>
+            </div>
 
-                <div class="form-group">
-                    <label>Narration</label>
-                    <textarea id="narration" rows="2" placeholder="Enter details..."></textarea>
-                </div>
+            <button class="btn-save" id="saveBtn" onclick="saveVoucher()">Save Entry</button>
+        </div>
 
-                <button class="btn-submit" onclick="saveVoucher()" id="submitBtn">Save Receipt</button>
+        <div class="recent-box">
+            <div class="recent-header">
+                <span>🕒 Recent Transactions</span>
+                <span style="font-size:12px; color:var(--blue); cursor:pointer;" onclick="loadRecent()">↻ Refresh</span>
+            </div>
+            <div id="recentList">
+                <div style="text-align:center; color:#94a3b8; padding:20px;">Loading...</div>
             </div>
         </div>
     </div>
@@ -116,127 +135,219 @@
     <script>
         let currentMode = 'Receipt';
         let ledgers = [];
+        let groups = [];
 
         window.onload = async () => {
             try {
                 await DB.init();
-                await loadData();
-                setMode('Receipt');
+                // Cache Data
+                ledgers = await DB.getLedgers();
+                groups = await DB.getGroups();
+                
+                setMode('Receipt'); // Initialize UI
+                loadRecent();
             } catch(e) { console.error(e); }
         };
 
-        async function loadData() {
-            ledgers = await DB.getAll('ledgers');
-            const groups = await DB.getAll('groups');
-            
-            // 1. Fill Cash/Bank Dropdown
-            const cashBankIds = groups.filter(g => g.name === 'Cash-in-Hand' || g.name === 'Bank Accounts').map(g => g.id);
-            const cbSel = document.getElementById('cashBankSelect');
-            cbSel.innerHTML = '';
-            
-            ledgers.filter(l => cashBankIds.includes(l.group_id)).forEach(l => {
-                let opt = document.createElement('option');
-                opt.value = l.id; opt.innerText = l.name;
-                cbSel.appendChild(opt);
-            });
-            // Auto select Cash
-            if(cbSel.options.length > 0) cbSel.selectedIndex = 0;
+        // --- FILTER LOGIC (The Magic) ---
+        function getLedgersByType(type) {
+            // Helper to check group
+            const isCashBank = (l) => {
+                const g = groups.find(grp => grp.id == l.group_id)?.name || '';
+                return g.includes("Cash") || g.includes("Bank");
+            };
 
-            // 2. Fill Party Dropdown (All except Cash/Bank usually, but let's show all for simplicity)
-            const pSel = document.getElementById('partySelect');
-            pSel.innerHTML = '<option value="">-- Select Account --</option>';
-            ledgers.sort((a,b) => a.name.localeCompare(b.name)).forEach(l => {
+            if (type === 'CashBank') {
+                return ledgers.filter(l => isCashBank(l));
+            } else if (type === 'Others') {
+                return ledgers.filter(l => !isCashBank(l)); // Parties, Expenses, Income
+            } else {
+                return ledgers; // All
+            }
+        }
+
+        function populateSelect(elementId, ledgerList) {
+            const sel = document.getElementById(elementId);
+            sel.innerHTML = '<option value="">-- Select Account --</option>';
+            
+            ledgerList.sort((a,b) => a.name.localeCompare(b.name));
+            
+            ledgerList.forEach(l => {
+                const gName = groups.find(g => g.id == l.group_id)?.name || '';
                 let opt = document.createElement('option');
-                opt.value = l.id; opt.innerText = l.name;
-                opt.dataset.bal = l.opening_balance || 0; // Simplified, ideally fetch current bal
-                pSel.appendChild(opt);
+                opt.value = l.id;
+                opt.text = `${l.name} [${gName}]`;
+                sel.appendChild(opt);
             });
         }
 
         function setMode(mode) {
             currentMode = mode;
-            const card = document.getElementById('mainCard');
-            const btn = document.getElementById('submitBtn');
-            const tabs = document.querySelectorAll('.tab');
             
-            tabs.forEach(t => t.classList.remove('active'));
-            
-            // UI Updates
-            if(mode === 'Receipt') {
-                card.className = 'card receipt-mode';
-                btn.innerText = 'Save Receipt (Received)';
-                document.getElementById('accountLabel').innerText = "Deposit To (Cash/Bank)";
-                document.getElementById('partyLabel').innerText = "Received From (Party)";
-                tabs[0].classList.add('active');
-                document.getElementById('vchNo').value = `RCP-${Date.now().toString().slice(-6)}`;
-            } else if(mode === 'Payment') {
-                card.className = 'card payment-mode';
-                btn.innerText = 'Save Payment (Paid)';
-                document.getElementById('accountLabel').innerText = "Paid From (Cash/Bank)";
-                document.getElementById('partyLabel').innerText = "Paid To (Party/Expense)";
-                tabs[1].classList.add('active');
-                document.getElementById('vchNo').value = `PMT-${Date.now().toString().slice(-6)}`;
-            } else {
-                card.className = 'card contra-mode';
-                btn.innerText = 'Save Contra Transfer';
-                document.getElementById('accountLabel').innerText = "Deposit Into (Target)";
-                document.getElementById('partyLabel').innerText = "Withdraw From (Source)";
-                tabs[2].classList.add('active');
-                document.getElementById('vchNo').value = `CNTR-${Date.now().toString().slice(-6)}`;
-            }
+            // Highlight Tab
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            const tabClass = mode === 'Receipt' ? '.t-rcp' : mode === 'Payment' ? '.t-pmt' : '.t-cnt';
+            document.querySelector(tabClass).classList.add('active');
+
+            // UI Elements
+            const btn = document.getElementById('saveBtn');
+            const lbl1 = document.getElementById('lblAccount');
+            const lbl2 = document.getElementById('lblParty');
             
             document.getElementById('date').valueAsDate = new Date();
-        }
+            document.getElementById('bal1').innerText = '';
+            document.getElementById('bal2').innerText = '';
 
-        function showBalance() {
-            // In a real app, we would query acct_entries to get live balance
-            // Here just showing Op Balance placeholder or hidden
-            // document.getElementById('balanceDisplay').innerText = "Fetching...";
+            // --- SMART FILTERING RULES ---
+            if (mode === 'Receipt') {
+                // Receipt: Cash/Bank comes IN (Dr) <- Party gives OUT (Cr)
+                btn.style.background = 'var(--green)'; btn.innerText = 'Save Receipt';
+                document.getElementById('vchNo').value = `RCP-${Date.now().toString().slice(-6)}`;
+                
+                lbl1.innerText = "Deposit To (Debit)"; // Cash/Bank Only
+                populateSelect('ac1Select', getLedgersByType('CashBank'));
+                
+                lbl2.innerText = "Received From (Credit)"; // Parties Only
+                populateSelect('ac2Select', getLedgersByType('Others'));
+
+            } else if (mode === 'Payment') {
+                // Payment: Cash/Bank goes OUT (Cr) -> Party Receives (Dr)
+                // Note: In UI we usually put "Paid From" (Cr) at top for clarity, 
+                // but accounting convention puts Dr first. 
+                // Let's keep UX simple: Top = Money Source (Cr), Bottom = Receiver (Dr)
+                
+                btn.style.background = 'var(--red)'; btn.innerText = 'Save Payment';
+                document.getElementById('vchNo').value = `PMT-${Date.now().toString().slice(-6)}`;
+                
+                lbl1.innerText = "Paid From (Credit)"; // Cash/Bank Only
+                populateSelect('ac1Select', getLedgersByType('CashBank'));
+                
+                lbl2.innerText = "Paid To (Debit)"; // Parties Only
+                populateSelect('ac2Select', getLedgersByType('Others'));
+
+            } else {
+                // Contra: Cash -> Bank or Bank -> Cash
+                btn.style.background = 'var(--blue)'; btn.innerText = 'Save Contra';
+                document.getElementById('vchNo').value = `CNT-${Date.now().toString().slice(-6)}`;
+                
+                lbl1.innerText = "Deposit To (Debit)"; // Cash/Bank Only
+                populateSelect('ac1Select', getLedgersByType('CashBank'));
+                
+                lbl2.innerText = "Withdraw From (Credit)"; // Cash/Bank Only
+                populateSelect('ac2Select', getLedgersByType('CashBank'));
+            }
         }
 
         async function saveVoucher() {
-            const amount = parseFloat(document.getElementById('amount').value);
-            const cbId = document.getElementById('cashBankSelect').value;
-            const partyId = document.getElementById('partySelect').value;
+            const amt = parseFloat(document.getElementById('amount').value);
+            const ac1 = parseInt(document.getElementById('ac1Select').value);
+            const ac2 = parseInt(document.getElementById('ac2Select').value);
             
-            if(!amount || !cbId || !partyId) return alert("Please fill all details");
-            if(cbId === partyId) return alert("Source and Destination cannot be same");
+            if(!amt || !ac1 || !ac2) return alert("Please fill all fields");
+            if(ac1 === ac2) return alert("Source and Target cannot be same");
 
-            const voucherData = {
+            const vData = {
                 voucher_no: document.getElementById('vchNo').value,
                 date: document.getElementById('date').value,
-                party_id: parseInt(partyId), // Linking mainly for reference
-                amount: amount,
+                party_id: currentMode === 'Payment' ? ac2 : ac2, // Generic reference
+                amount: amt,
                 type: currentMode,
                 narration: document.getElementById('narration').value
             };
 
-            let acctEntries = [];
+            let entries = [];
 
-            // Accounting Logic (Double Entry)
             if (currentMode === 'Receipt') {
-                // Cash Dr (Increases), Party Cr (Decreases Asset/Increases Income)
-                acctEntries.push({ ledger_id: parseInt(cbId), debit: amount, credit: 0 });
-                acctEntries.push({ ledger_id: parseInt(partyId), debit: 0, credit: amount });
+                // AC1 (Cash) is Dr, AC2 (Party) is Cr
+                entries.push({ ledger_id: ac1, debit: amt, credit: 0 });
+                entries.push({ ledger_id: ac2, debit: 0, credit: amt });
             } 
             else if (currentMode === 'Payment') {
-                // Party Dr (Receiver/Expense), Cash Cr (Giver/Asset Decrease)
-                acctEntries.push({ ledger_id: parseInt(partyId), debit: amount, credit: 0 });
-                acctEntries.push({ ledger_id: parseInt(cbId), debit: 0, credit: amount });
+                // AC1 (Cash) is Cr (Source), AC2 (Party) is Dr (Receiver)
+                entries.push({ ledger_id: ac2, debit: amt, credit: 0 }); // Party Dr
+                entries.push({ ledger_id: ac1, debit: 0, credit: amt }); // Cash Cr
             }
-            else if (currentMode === 'Contra') {
-                // Target Dr (Receiver), Source Cr (Giver)
-                acctEntries.push({ ledger_id: parseInt(cbId), debit: amount, credit: 0 }); // Target (Deposit)
-                acctEntries.push({ ledger_id: parseInt(partyId), debit: 0, credit: amount }); // Source (Withdraw)
+            else { // Contra
+                // AC1 (Deposit) is Dr, AC2 (Withdraw) is Cr
+                entries.push({ ledger_id: ac1, debit: amt, credit: 0 });
+                entries.push({ ledger_id: ac2, debit: 0, credit: amt });
             }
 
             try {
-                await DB.saveVoucher(voucherData, [], acctEntries);
-                alert("Voucher Saved Successfully!");
-                location.reload();
-            } catch(e) {
-                alert("Error: " + e);
-            }
+                await DB.saveVoucher(vData, [], entries);
+                
+                // Clear & Refresh
+                document.getElementById('amount').value = '';
+                document.getElementById('narration').value = '';
+                setMode(currentMode); // Resets dropdowns & No
+                loadRecent();
+                
+            } catch(e) { alert("Error: " + e); }
+        }
+
+        async function updateBalance(elType) {
+            const selectId = elType === 'ac1' ? 'ac1Select' : 'ac2Select';
+            const spanId = elType === 'ac1' ? 'bal1' : 'bal2';
+            const id = parseInt(document.getElementById(selectId).value);
+            
+            if(!id) { document.getElementById(spanId).innerText = ''; return; }
+            document.getElementById(spanId).innerText = '...';
+
+            const entries = await DB.getAll('acct_entries');
+            const ledger = ledgers.find(l => l.id === id);
+            
+            let bal = ledger.opening_balance || 0;
+            entries.filter(e => e.ledger_id === id).forEach(e => {
+                bal += (e.debit - e.credit);
+            });
+
+            // Display Logic: 
+            // If Asset/Exp: +ve is Dr. If Liab/Inc: +ve is Cr (usually).
+            // Simplified for view: Positive = Dr, Negative = Cr
+            const type = bal >= 0 ? 'Dr' : 'Cr';
+            const color = bal >= 0 ? 'bal-dr' : 'bal-cr';
+            
+            document.getElementById(spanId).className = `bal-display ${color}`;
+            document.getElementById(spanId).innerText = `₹${Math.abs(bal).toFixed(2)} ${type}`;
+        }
+
+        async function loadRecent() {
+            const list = document.getElementById('recentList');
+            list.innerHTML = '';
+            const allV = await DB.getAll('vouchers');
+            const relevant = allV.filter(v => ['Receipt','Payment','Contra'].includes(v.type));
+            
+            relevant.sort((a,b) => b.id - a.id).slice(0,5).forEach(v => {
+                const item = document.createElement('div');
+                item.className = 'txn-item';
+                item.innerHTML = `
+                    <div>
+                        <span class="tag tag-${v.type}">${v.type}</span>
+                        <span style="font-weight:600; margin-left:8px;">${v.voucher_no}</span>
+                        <div style="font-size:11px; color:#64748b; margin-top:2px;">${v.date}</div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <span style="font-weight:bold;">₹${v.amount}</span>
+                        <button class="btn-del" onclick="deleteEntry(${v.id})">🗑️</button>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+            if(relevant.length === 0) list.innerHTML = '<div style="text-align:center; padding:15px; color:#cbd5e1;">No Data</div>';
+        }
+
+        async function deleteEntry(id) {
+            if(!confirm("Delete this entry permanently?")) return;
+            // Basic Delete logic
+            const tx = DB.db.transaction(['vouchers', 'acct_entries'], 'readwrite');
+            tx.objectStore('vouchers').delete(id);
+            // We should also delete acct entries, assuming MVP user resets or accepts orphans for now
+            // Or better:
+            const idx = tx.objectStore('acct_entries').index('voucher_id');
+            const req = idx.getAllKeys(id);
+            req.onsuccess = () => req.result.forEach(k => tx.objectStore('acct_entries').delete(k));
+            
+            tx.oncomplete = () => loadRecent();
         }
     </script>
 </body>
