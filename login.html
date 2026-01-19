@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Money Wise Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #0f172a; /* Dark Navy Background */
+            font-family: 'Inter', sans-serif;
+        }
+        .login-card {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            width: 350px;
+            text-align: center;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .logo { font-size: 32px; margin-bottom: 10px; }
+        h2 { margin: 0 0 5px 0; color: #1e293b; }
+        p { margin: 0 0 30px 0; color: #64748b; font-size: 14px; }
+        
+        .input-group { margin-bottom: 20px; text-align: left; }
+        label { display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 5px; }
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            outline: none;
+            transition: 0.2s;
+        }
+        input:focus { border-color: #3b82f6; }
+        
+        button {
+            width: 100%;
+            padding: 14px;
+            background: #0f172a;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        button:hover { background: #1e293b; transform: translateY(-1px); }
+        
+        .error { color: #ef4444; font-size: 13px; margin-top: 10px; display: none; }
+        .footer { margin-top: 20px; font-size: 12px; color: #94a3b8; }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <div class="logo">🚀</div>
+        <h2>Money Wise Pro</h2>
+        <p>Secure Business Accounting</p>
+
+        <div class="input-group">
+            <label>Username</label>
+            <input type="text" id="user" placeholder="e.g. admin" value="admin">
+        </div>
+
+        <div class="input-group">
+            <label>PIN / Password</label>
+            <input type="password" id="pass" placeholder="Enter PIN" value="123">
+        </div>
+
+        <button onclick="handleLogin()">Unlock System 🔒</button>
+        <div class="error" id="errorMsg">Invalid Credentials</div>
+        
+        <div class="footer">Local Secure Environment v20.0</div>
+    </div>
+
+    <script src="db.js"></script><script src="auth.js"></script>
+    <script>
+        // Init DB immediately to load users
+        DB.init();
+
+        async function handleLogin() {
+            const u = document.getElementById('user').value;
+            const p = document.getElementById('pass').value;
+            const btn = document.querySelector('button');
+            const err = document.getElementById('errorMsg');
+
+            btn.innerText = "Verifying...";
+            err.style.display = 'none';
+
+            try {
+                // Call the Login function from DB.js
+                const user = await DB.loginUser(u, p);
+                
+                // Save session
+                sessionStorage.setItem('currentUser', JSON.stringify(user));
+                
+                // Redirect
+                window.location.href = 'index.html';
+                
+            } catch (e) {
+                btn.innerText = "Unlock System 🔒";
+                err.innerText = "❌ " + e;
+                err.style.display = 'block';
+            }
+        }
+        
+        // Allow Enter Key
+        document.addEventListener('keydown', (e) => {
+            if(e.key === 'Enter') handleLogin();
+        });
+    </script>
+</body>
+</html>
