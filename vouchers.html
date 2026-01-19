@@ -3,31 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Money Wise Pro - Accounting Vouchers</title>
+    <title>Accounting Vouchers - Money Wise Pro</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --sidebar-bg: #0f172a; --sidebar-text: #94a3b8; --active-text: #f8fafc;
-            --bg: #f3f4f6; --card-bg: #ffffff; --text: #1e293b; --border: #e5e7eb;
-            --green: #10b981; --red: #ef4444; --blue: #3b82f6; --amber: #f59e0b; --purple: #8b5cf6;
+            --bg: #f3f4f6; --text: #1e293b; --border: #e5e7eb;
+            --green: #10b981; --red: #ef4444; --blue: #3b82f6; --purple: #8b5cf6;
         }
         * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
         body { display: flex; height: 100vh; background: var(--bg); color: var(--text); overflow: hidden; }
 
-        .sidebar { width: 260px; background: var(--sidebar-bg); padding: 20px; display: flex; flex-direction: column; flex-shrink: 0; }
+        .sidebar { width: 260px; background: #0f172a; padding: 20px; display: flex; flex-direction: column; flex-shrink: 0; }
         .brand { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 40px; display: flex; align-items: center; gap: 10px; }
-        .nav-link { padding: 12px 15px; margin-bottom: 5px; border-radius: 8px; color: var(--sidebar-text); text-decoration: none; font-weight: 500; display: flex; align-items: center; gap: 12px; transition: 0.2s; font-size: 14px; }
-        .nav-link:hover, .nav-link.active { background: #1e293b; color: var(--active-text); }
+        .nav-link { padding: 12px 15px; margin-bottom: 5px; border-radius: 8px; color: #94a3b8; text-decoration: none; font-weight: 500; display: flex; align-items: center; gap: 12px; transition: 0.2s; font-size: 14px; }
+        .nav-link:hover, .nav-link.active { background: #1e293b; color: #f8fafc; }
         .nav-icon { font-size: 18px; }
 
         .main { flex: 1; padding: 30px; overflow-y: auto; display: grid; grid-template-columns: 1.5fr 1fr; gap: 30px; }
         
         .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid var(--border); height: fit-content; }
         
+        /* TABS */
         .tabs { display: flex; margin-bottom: 20px; background: #f1f5f9; padding: 4px; border-radius: 8px; }
-        .tab { flex: 1; text-align: center; padding: 10px; cursor: pointer; border-radius: 6px; font-weight: 600; font-size: 13px; transition: 0.2s; white-space: nowrap; }
+        .tab { flex: 1; text-align: center; padding: 10px; cursor: pointer; border-radius: 6px; font-weight: 600; font-size: 13px; transition: 0.2s; }
         .tab.active { background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transform: scale(1.02); }
-        
         .t-rcp.active { color: var(--green); border-bottom: 2px solid var(--green); }
         .t-pmt.active { color: var(--red); border-bottom: 2px solid var(--red); }
         .t-cnt.active { color: var(--blue); border-bottom: 2px solid var(--blue); }
@@ -35,16 +34,18 @@
 
         .form-group { margin-bottom: 15px; position: relative; }
         label { display: block; font-size: 13px; font-weight: 600; color: #64748b; margin-bottom: 5px; }
-        input, select, textarea { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; outline: none; }
-        input:focus, select:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+        input, select, textarea { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; outline: none; transition: 0.2s; }
+        input:focus, select:focus, textarea:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
 
         .bal-display { position: absolute; right: 0; top: 0; font-size: 12px; font-weight: 700; }
         .bal-dr { color: var(--green); } .bal-cr { color: var(--red); }
 
-        .btn-save { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: 700; font-size: 15px; cursor: pointer; color: white; margin-top: 10px; transition: 0.2s; }
+        .btn-group { display: flex; gap: 10px; margin-top: 15px; }
+        .btn-save { flex: 2; padding: 12px; border: none; border-radius: 8px; font-weight: 700; font-size: 15px; cursor: pointer; color: white; transition: 0.2s; }
+        .btn-print { flex: 1; background: #64748b; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; }
         .btn-save:hover { opacity: 0.9; }
 
-        /* JOURNAL TABLE STYLES */
+        /* JOURNAL GRID */
         .journal-grid { display: none; margin-bottom: 15px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
         .journal-row { display: flex; border-bottom: 1px solid var(--border); background: #fff; }
         .journal-row:last-child { border-bottom: none; }
@@ -72,7 +73,7 @@
 </head>
 <body>
 
-   <div class="sidebar">
+    <div class="sidebar">
         <div class="brand">🚀 MoneyWise Pro</div>
         <a href="index.html" class="nav-link"><span class="nav-icon">📊</span> Dashboard</a>
         <a href="reports.html" class="nav-link"><span class="nav-icon">📈</span> Reports</a>
@@ -91,43 +92,41 @@
             <h3 style="margin-bottom: 20px;">Accounting Voucher</h3>
             
             <div class="tabs">
-                <div class="tab t-rcp active" onclick="setMode('Receipt')">⬇ Receipt</div>
-                <div class="tab t-pmt" onclick="setMode('Payment')">⬆ Payment</div>
-                <div class="tab t-cnt" onclick="setMode('Contra')">⇄ Contra</div>
-                <div class="tab t-jrn" onclick="setMode('Journal')">📓 Journal (JV)</div>
+                <div class="tab t-rcp active" onclick="setMode('Receipt')">⬇ Receipt (F6)</div>
+                <div class="tab t-pmt" onclick="setMode('Payment')">⬆ Payment (F5)</div>
+                <div class="tab t-cnt" onclick="setMode('Contra')">⇄ Contra (F4)</div>
+                <div class="tab t-jrn" onclick="setMode('Journal')">📓 Journal (F7)</div>
             </div>
 
             <div class="form-group">
                 <label>Voucher No & Date</label>
                 <div style="display:flex; gap:10px;">
-                    <input type="text" id="vchNo" readonly style="background:#f8fafc; font-weight:bold; width:40%; color:#64748b;">
-                    <input type="date" id="date" style="width:60%;">
+                    <input type="text" id="vchNo" readonly style="background:#f8fafc; font-weight:bold; width:40%; color:#64748b;" tabindex="-1">
+                    <input type="date" id="date" style="width:60%;" class="input-field">
                 </div>
             </div>
 
             <div id="standardInputs">
                 <div class="form-group">
-                    <label id="lblAccount">Target Account</label>
-                    <select id="ac1Select" onchange="updateBalance('ac1')"><option value="">Loading...</option></select>
+                    <label id="lblAccount">Account (Cash/Bank)</label>
+                    <select id="ac1Select" class="input-field" onchange="updateBalance('ac1')"><option value="">Loading...</option></select>
                     <span id="bal1" class="bal-display"></span>
                 </div>
                 <div class="form-group">
-                    <label id="lblParty">Source Account</label>
-                    <select id="ac2Select" onchange="updateBalance('ac2')"><option value="">Loading...</option></select>
+                    <label id="lblParty">Party / Ledger</label>
+                    <select id="ac2Select" class="input-field" onchange="updateBalance('ac2')"><option value="">Loading...</option></select>
                     <span id="bal2" class="bal-display"></span>
                 </div>
                 <div class="form-group">
                     <label>Amount (₹)</label>
-                    <input type="number" id="amount" placeholder="0.00" style="font-size:18px; font-weight:bold;">
+                    <input type="number" id="amount" placeholder="0.00" style="font-size:18px; font-weight:bold;" class="input-field">
                 </div>
             </div>
 
             <div id="journalInputs" style="display:none;">
                 <label style="margin-bottom:5px;">Journal Entries (Dr/Cr)</label>
-                <div class="journal-grid" id="journalRows">
-                    </div>
+                <div class="journal-grid" id="journalRows"></div>
                 <button type="button" onclick="addJournalRow()" style="width:100%; padding:8px; border:1px dashed var(--border); background:#f8fafc; cursor:pointer; margin-bottom:15px; font-size:12px;">+ Add Ledger Line</button>
-                
                 <div class="journal-footer">
                     <span>Total Debit: <span id="totDr">0.00</span></span>
                     <span>Total Credit: <span id="totCr">0.00</span></span>
@@ -137,10 +136,13 @@
 
             <div class="form-group">
                 <label>Narration</label>
-                <textarea id="narration" rows="2" placeholder="Being interest charged / depreciation..."></textarea>
+                <textarea id="narration" rows="2" placeholder="Being amount paid/received..." class="input-field"></textarea>
             </div>
 
-            <button class="btn-save" id="saveBtn" onclick="saveVoucher()">Save Entry</button>
+            <div class="btn-group">
+                <button class="btn-save" id="saveBtn" onclick="saveVoucher(false)">Save Only (Enter)</button>
+                <button class="btn-print" onclick="saveVoucher(true)">Save & Print (Alt+P)</button>
+            </div>
         </div>
 
         <div class="recent-box">
@@ -154,7 +156,8 @@
         </div>
     </div>
 
-    <script src="db.js"></script><script src="auth.js"></script>
+    <script src="db.js"></script>
+    <script src="auth.js"></script>
     <script>
         let currentMode = 'Receipt';
         let ledgers = [];
@@ -166,16 +169,17 @@
             groups = await DB.getGroups();
             setMode('Receipt');
             loadRecent();
+            setupEnterNavigation(); // Enable Key Nav
         };
 
-        // --- FILTER HELPERS ---
+        // --- STRICT FILTER LOGIC ---
         function getLedgersByType(type) {
             const isCashBank = (l) => {
                 const g = groups.find(grp => grp.id == l.group_id)?.name || '';
                 return g.includes("Cash") || g.includes("Bank");
             };
             if (type === 'CashBank') return ledgers.filter(l => isCashBank(l));
-            if (type === 'Others') return ledgers.filter(l => !isCashBank(l));
+            if (type === 'Others') return ledgers.filter(l => !isCashBank(l)); // Hide Cash/Bank here
             return ledgers;
         }
 
@@ -192,7 +196,7 @@
             });
         }
 
-        function setMode(mode) {
+        async function setMode(mode) {
             currentMode = mode;
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             const map = {'Receipt':'.t-rcp', 'Payment':'.t-pmt', 'Contra':'.t-cnt', 'Journal':'.t-jrn'};
@@ -202,31 +206,32 @@
             const std = document.getElementById('standardInputs');
             const jrn = document.getElementById('journalInputs');
             
+            // Auto Voucher Number
             document.getElementById('date').valueAsDate = new Date();
-            document.getElementById('vchNo').value = `${mode.substring(0,3).toUpperCase()}-${Date.now().toString().slice(-6)}`;
+            const count = (await DB.getAll('vouchers')).filter(v => v.type === mode).length + 1;
+            document.getElementById('vchNo').value = `${mode.substring(0,3).toUpperCase()}-${String(count).padStart(4, '0')}`;
 
             if(mode === 'Journal') {
                 std.style.display = 'none';
                 jrn.style.display = 'block';
-                btn.style.background = 'var(--purple)'; btn.innerText = 'Save Journal Entry';
+                btn.style.background = 'var(--purple)'; btn.innerText = 'Save Journal';
                 document.getElementById('journalRows').innerHTML = '';
-                addJournalRow('Dr');
-                addJournalRow('Cr');
+                addJournalRow('Dr'); addJournalRow('Cr');
                 calcJournalTotal();
             } else {
                 std.style.display = 'block';
                 jrn.style.display = 'none';
-                // Standard modes Logic
+                
                 if (mode === 'Receipt') {
                     btn.style.background = 'var(--green)'; btn.innerText = 'Save Receipt';
-                    document.getElementById('lblAccount').innerText = "Deposit To (Debit)";
-                    populateSelect('ac1Select', getLedgersByType('CashBank'));
+                    document.getElementById('lblAccount').innerText = "Deposit To (Debit) - Cash/Bank Only";
+                    populateSelect('ac1Select', getLedgersByType('CashBank')); // Strict Filter
                     document.getElementById('lblParty').innerText = "Received From (Credit)";
                     populateSelect('ac2Select', getLedgersByType('Others'));
                 } else if (mode === 'Payment') {
                     btn.style.background = 'var(--red)'; btn.innerText = 'Save Payment';
-                    document.getElementById('lblAccount').innerText = "Paid From (Credit)";
-                    populateSelect('ac1Select', getLedgersByType('CashBank'));
+                    document.getElementById('lblAccount').innerText = "Paid From (Credit) - Cash/Bank Only";
+                    populateSelect('ac1Select', getLedgersByType('CashBank')); // Strict Filter
                     document.getElementById('lblParty').innerText = "Paid To (Debit)";
                     populateSelect('ac2Select', getLedgersByType('Others'));
                 } else { // Contra
@@ -237,32 +242,21 @@
                     populateSelect('ac2Select', getLedgersByType('CashBank'));
                 }
             }
+            // Focus first field
+            setTimeout(() => document.getElementById('date').focus(), 100);
         }
 
         // --- JOURNAL LOGIC ---
         function addJournalRow(defaultType = 'Dr') {
             const div = document.createElement('div');
             div.className = 'journal-row';
-            
-            // Ledger Options
             let opts = `<option value="">Select Ledger</option>`;
-            ledgers.sort((a,b)=>a.name.localeCompare(b.name)).forEach(l => {
-                 opts += `<option value="${l.id}">${l.name}</option>`;
-            });
+            ledgers.sort((a,b)=>a.name.localeCompare(b.name)).forEach(l => { opts += `<option value="${l.id}">${l.name}</option>`; });
 
             div.innerHTML = `
-                <div class="j-type">
-                    <select class="row-type" onchange="calcJournalTotal()" style="padding:5px; border:none; font-weight:bold;">
-                        <option value="Dr" ${defaultType==='Dr'?'selected':''}>Dr</option>
-                        <option value="Cr" ${defaultType==='Cr'?'selected':''}>Cr</option>
-                    </select>
-                </div>
-                <div class="j-ac">
-                    <select class="row-ledger" style="padding:5px; border:none; width:100%;">${opts}</select>
-                </div>
-                <div class="j-amt">
-                    <input type="number" class="row-amt" placeholder="0.00" onchange="calcJournalTotal()" style="padding:5px; border:none; text-align:right;">
-                </div>
+                <div class="j-type"><select class="row-type input-field" onchange="calcJournalTotal()"><option value="Dr" ${defaultType==='Dr'?'selected':''}>Dr</option><option value="Cr" ${defaultType==='Cr'?'selected':''}>Cr</option></select></div>
+                <div class="j-ac"><select class="row-ledger input-field">${opts}</select></div>
+                <div class="j-amt"><input type="number" class="row-amt input-field" placeholder="0.00" onchange="calcJournalTotal()"></div>
                 <div class="j-act" onclick="this.parentElement.remove(); calcJournalTotal()">×</div>
             `;
             document.getElementById('journalRows').appendChild(div);
@@ -275,10 +269,8 @@
                 const amt = parseFloat(row.querySelector('.row-amt').value) || 0;
                 if(type === 'Dr') dr += amt; else cr += amt;
             });
-            
             document.getElementById('totDr').textContent = dr.toFixed(2);
             document.getElementById('totCr').textContent = cr.toFixed(2);
-            
             const diff = dr - cr;
             const diffEl = document.getElementById('diffDisplay');
             diffEl.textContent = `Diff: ${Math.abs(diff).toFixed(2)}`;
@@ -294,13 +286,13 @@
             }
         }
 
-        async function saveVoucher() {
+        async function saveVoucher(doPrint = false) {
             const narration = document.getElementById('narration').value;
             const vData = {
                 voucher_no: document.getElementById('vchNo').value,
                 date: document.getElementById('date').value,
                 type: currentMode,
-                amount: 0, // Calculated below
+                amount: 0, 
                 party_id: null,
                 narration: narration
             };
@@ -309,33 +301,24 @@
             let totalAmt = 0;
 
             if(currentMode === 'Journal') {
-                // Process Journal Rows
                 document.querySelectorAll('.journal-row').forEach(row => {
                     const type = row.querySelector('.row-type').value;
                     const lid = parseInt(row.querySelector('.row-ledger').value);
                     const amt = parseFloat(row.querySelector('.row-amt').value);
-                    
                     if(lid && amt) {
-                        entries.push({
-                            ledger_id: lid,
-                            debit: type === 'Dr' ? amt : 0,
-                            credit: type === 'Cr' ? amt : 0
-                        });
+                        entries.push({ ledger_id: lid, debit: type === 'Dr' ? amt : 0, credit: type === 'Cr' ? amt : 0 });
                         if(type === 'Dr') totalAmt += amt;
                     }
                 });
-                // Validation handled by calcJournalTotal button state
             } else {
-                // Standard Modes
                 const amt = parseFloat(document.getElementById('amount').value);
                 const ac1 = parseInt(document.getElementById('ac1Select').value);
                 const ac2 = parseInt(document.getElementById('ac2Select').value);
-                
                 if(!amt || !ac1 || !ac2) return alert("Fill all fields");
                 if(ac1 === ac2) return alert("Accounts must be different");
 
                 totalAmt = amt;
-                vData.party_id = ac2; // Reference
+                vData.party_id = ac2; 
 
                 if (currentMode === 'Receipt') {
                     entries.push({ ledger_id: ac1, debit: amt, credit: 0 }); // Cash Dr
@@ -352,21 +335,21 @@
             vData.amount = totalAmt;
 
             try {
-                if(entries.length === 0) return alert("No valid entries found");
+                if(entries.length === 0) return alert("No valid entries");
                 await DB.saveVoucher(vData, [], entries);
                 
-                // Reset
-                if(currentMode === 'Journal') {
-                    document.getElementById('journalRows').innerHTML = '';
-                    addJournalRow('Dr'); addJournalRow('Cr');
-                    calcJournalTotal();
+                if(doPrint) {
+                    alert("Entry Saved! Printing...");
+                    window.print();
                 } else {
-                    document.getElementById('amount').value = '';
+                    // Quick Reset for next entry
+                    if(currentMode !== 'Journal') document.getElementById('amount').value = '';
+                    document.getElementById('narration').value = '';
+                    setMode(currentMode); // Regen VCH NO
+                    loadRecent();
+                    // Focus back to first field
+                    document.getElementById('date').focus();
                 }
-                document.getElementById('narration').value = '';
-                setMode(currentMode); // Regen VCH NO
-                loadRecent();
-                alert("Saved!");
             } catch(e) { alert("Error: " + e); }
         }
 
@@ -394,23 +377,53 @@
             all.sort((a,b)=>b.id-a.id).slice(0,5).forEach(v => {
                 const item = document.createElement('div');
                 item.className = 'txn-item';
-                item.innerHTML = `
-                    <div><span class="tag tag-${v.type}">${v.type}</span> <b>${v.voucher_no}</b></div>
-                    <div><b>₹${v.amount}</b> <button class="btn-del" onclick="del(${v.id})">🗑️</button></div>
-                `;
+                item.innerHTML = `<div><span class="tag tag-${v.type}">${v.type}</span> <b>${v.voucher_no}</b></div><div><b>₹${v.amount}</b> <button class="btn-del" onclick="del(${v.id})">🗑️</button></div>`;
                 list.appendChild(item);
             });
         }
         
         async function del(id) {
-             if(confirm('Delete?')) {
-                 const tx = DB.db.transaction(['vouchers', 'acct_entries'], 'readwrite');
-                 tx.objectStore('vouchers').delete(id);
-                 // Cleanup
-                 const idx = tx.objectStore('acct_entries').index('voucher_id');
-                 idx.getAllKeys(id).onsuccess = (e) => e.target.result.forEach(k => tx.objectStore('acct_entries').delete(k));
-                 tx.oncomplete = () => loadRecent();
+             if(confirm('Delete Voucher? Action will be logged.')) {
+                 try { await DB.deleteVoucher(id); loadRecent(); } catch(e) { alert("Error: " + e); }
              }
+        }
+
+        // --- ENTER KEY NAVIGATION (MAGIC SCRIPT) ---
+        function setupEnterNavigation() {
+            document.addEventListener('keydown', (e) => {
+                // Ignore if Alt key is pressed (for shortcuts)
+                if (e.altKey) {
+                    if(e.key.toLowerCase() === 'p') saveVoucher(true);
+                    return;
+                }
+
+                if (e.key === 'Enter') {
+                    // Don't interfere with buttons or textarea
+                    if(e.target.tagName === 'BUTTON' || e.target.tagName === 'TEXTAREA') return;
+                    
+                    e.preventDefault();
+                    
+                    // Find all focusable inputs
+                    const inputs = Array.from(document.querySelectorAll('.input-field, select, input:not([type=hidden])'));
+                    const index = inputs.indexOf(e.target);
+                    
+                    if (index > -1 && index < inputs.length - 1) {
+                        inputs[index + 1].focus(); // Go to next
+                    } else {
+                        // If last field (Narration usually), trigger save
+                        // Check if we are on narration or last input
+                        if(e.target.id === 'narration' || index === inputs.length - 1) {
+                            saveVoucher(false); // Save without print
+                        }
+                    }
+                }
+                
+                // Function Keys Mapping
+                if (e.key === 'F4') { e.preventDefault(); setMode('Contra'); }
+                if (e.key === 'F5') { e.preventDefault(); setMode('Payment'); }
+                if (e.key === 'F6') { e.preventDefault(); setMode('Receipt'); }
+                if (e.key === 'F7') { e.preventDefault(); setMode('Journal'); }
+            });
         }
     </script>
 </body>

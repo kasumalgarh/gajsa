@@ -7,49 +7,68 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --sidebar-bg: #0f172a; --sidebar-text: #94a3b8; --active-text: #f8fafc;
-            --bg: #f8fafc; --card-bg: #ffffff;
-            --accent: #0ea5e9; --text: #1e293b; --border: #e2e8f0; --muted: #64748b;
-            --green: #10b981; --red: #ef4444; --orange: #f59e0b;
+            --sidebar-bg: #0f172a; --active-text: #f8fafc;
+            --bg: #f8fafc; --text: #1e293b; --border: #e2e8f0; --muted: #64748b;
+            --accent: #0ea5e9; --green: #10b981; --red: #ef4444; --orange: #f59e0b;
         }
         * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
         body { display: flex; height: 100vh; background: var(--bg); color: var(--text); overflow: hidden; }
+
+        /* SIDEBAR */
         .sidebar { width: 260px; background: var(--sidebar-bg); padding: 20px; display: flex; flex-direction: column; flex-shrink: 0; }
-        .brand { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 40px; display: flex; align-items: center; gap: 10px; }
-        .nav-link { padding: 12px 15px; margin-bottom: 5px; border-radius: 8px; color: var(--sidebar-text); text-decoration: none; font-weight: 500; display: flex; align-items: center; gap: 12px; transition: 0.2s; font-size: 14px; }
+        .nav-link { padding: 12px 15px; margin-bottom: 5px; border-radius: 8px; color: #94a3b8; text-decoration: none; font-weight: 500; display: flex; align-items: center; gap: 12px; font-size: 14px; }
         .nav-link:hover, .nav-link.active { background: #1e293b; color: var(--active-text); }
         .nav-icon { font-size: 18px; }
+
+        /* MAIN LAYOUT */
         .main { flex: 1; display: flex; padding: 20px; gap: 20px; overflow: hidden; }
-        .list-panel { width: 320px; background: #fff; border-radius: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; }
-        .search-box { padding: 15px; border-bottom: 1px solid var(--border); }
+        
+        /* LEFT PANEL (LIST) */
+        .list-panel { width: 340px; background: #fff; border-radius: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; }
+        .search-box { padding: 15px; border-bottom: 1px solid var(--border); background: #f8fafc; border-radius: 12px 12px 0 0; }
         .search-box input { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; outline: none; }
+        
+        .filter-tabs { display: flex; border-bottom: 1px solid var(--border); }
+        .ftab { flex: 1; text-align: center; padding: 10px; font-size: 12px; font-weight: 600; cursor: pointer; background: #fff; }
+        .ftab.active { background: #e0f2fe; color: var(--accent); border-bottom: 2px solid var(--accent); }
+
         .list-content { flex: 1; overflow-y: auto; }
-        .list-item { padding: 12px 15px; border-bottom: 1px solid #f1f5f9; cursor: pointer; display: flex; flex-direction: column; gap: 4px; }
+        .list-item { padding: 12px 15px; border-bottom: 1px solid #f1f5f9; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; }
         .list-item:hover { background: #f0f9ff; }
-        .list-item strong { font-size: 14px; }
-        .list-item small { color: var(--muted); font-size: 12px; }
+        .list-item.low-stock-alert { border-left: 4px solid var(--red); background: #fef2f2; }
+        
+        .item-info strong { display: block; font-size: 14px; color: #0f172a; }
+        .item-info span { font-size: 12px; color: var(--muted); }
+        .stock-badge { font-size: 12px; font-weight: 700; text-align: right; }
+        .val-badge { font-size: 11px; color: var(--muted); display: block; }
+
+        .list-footer { padding: 10px 15px; border-top: 1px solid var(--border); background: #f1f5f9; font-size: 12px; color: var(--muted); display: flex; justify-content: space-between; border-radius: 0 0 12px 12px; }
+
+        /* RIGHT PANEL (FORM) */
         .form-panel { flex: 1; background: #fff; border-radius: 12px; border: 1px solid var(--border); padding: 30px; display: flex; flex-direction: column; overflow-y: auto; }
-        .form-header { font-size: 20px; font-weight: 700; margin-bottom: 25px; color: #0f172a; border-bottom: 1px solid var(--border); padding-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
-        .field { margin-bottom: 15px; }
+        .form-header { font-size: 20px; font-weight: 700; margin-bottom: 20px; color: #0f172a; display: flex; justify-content: space-between; align-items: center; }
+        
+        .form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .field { margin-bottom: 5px; }
         .full-width { grid-column: span 3; }
-        label { display: block; font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 5px; }
-        input, select { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; outline: none; }
-        input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(14,165,233,0.1); }
-        .actions { margin-top: auto; padding-top: 25px; border-top: 1px solid var(--border); display: flex; gap: 10px; flex-wrap: wrap; }
-        .btn { padding: 10px 24px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; transition: 0.2s; min-width: 100px; }
+        .half-width { grid-column: span 2; }
+        
+        label { display: block; font-size: 12px; font-weight: 700; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; }
+        input, select { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; outline: none; transition: 0.2s; }
+        input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(14,165,233,0.1); }
+
+        .btn { padding: 10px 20px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; }
         .btn-save { background: var(--accent); color: white; }
-        .btn-save:hover { background: #0284c7; }
         .btn-new { background: #e2e8f0; color: var(--text); }
-        .btn-del { background: #fee2e2; color: #dc2626; margin-left: auto; }
-        #toast { position: fixed; top: 20px; right: 20px; background: #0ea5e9; color: white; padding: 12px 24px; border-radius: 6px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); display: none; font-weight: 600; z-index: 1000; }
-        .current-stock { color: var(--green); font-weight: 600; }
-        .low-stock { color: var(--orange); font-weight: 600; }
+        .btn-del { background: #fee2e2; color: var(--red); float: right; }
+
+        #toast { position: fixed; top: 20px; right: 20px; background: var(--accent); color: white; padding: 12px 24px; border-radius: 6px; display: none; font-weight: 600; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
     </style>
 </head>
 <body>
-   <div class="sidebar">
-        <div class="brand">🚀 MoneyWise Pro</div>
+
+    <div class="sidebar">
+        <div style="font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 40px;">🚀 MoneyWise Pro</div>
         <a href="index.html" class="nav-link"><span class="nav-icon">📊</span> Dashboard</a>
         <a href="reports.html" class="nav-link"><span class="nav-icon">📈</span> Reports</a>
         <a href="gst_filing.html" class="nav-link"><span class="nav-icon">🏛️</span> GST Filing</a>
@@ -65,237 +84,239 @@
     <div class="main">
         <div class="list-panel">
             <div class="search-box">
-                <input type="text" id="searchInput" placeholder="Search Item..." onkeyup="renderList(this.value)">
+                <input type="text" id="searchInput" placeholder="Search by Name or SKU..." onkeyup="renderList(this.value)">
             </div>
-            <div class="list-content" id="itemList"></div>
+            <div class="filter-tabs">
+                <div class="ftab active" onclick="filterList('all')">All Items</div>
+                <div class="ftab" onclick="filterList('low')">⚠️ Low Stock</div>
+            </div>
+            <div class="list-content" id="itemList">
+                </div>
+            <div class="list-footer">
+                <span id="totalCount">0 Items</span>
+                <span id="totalValue">Value: ₹0.00</span>
+            </div>
         </div>
 
         <div class="form-panel">
             <div class="form-header">
-                <span>Item / Product Master</span>
-                <button class="btn btn-new" onclick="resetForm()">New Item</button>
+                <span>Product Details</span>
+                <button class="btn btn-new" onclick="resetForm()">+ New Product</button>
             </div>
             <input type="hidden" id="itemId">
 
             <div class="form-grid">
-                <div class="field full-width">
+                <div class="field half-width">
                     <label>Item Name *</label>
-                    <input type="text" id="name" placeholder="e.g. Samsung Galaxy S24" required>
+                    <input type="text" id="name" placeholder="Product Name" required>
+                </div>
+                <div class="field">
+                    <label>SKU / Code</label>
+                    <input type="text" id="sku" placeholder="e.g. 1001">
+                </div>
+
+                <div class="field">
+                    <label>Category</label>
+                    <input type="text" id="category" placeholder="e.g. Electronics" list="catList">
+                    <datalist id="catList"></datalist>
                 </div>
                 <div class="field">
                     <label>Unit</label>
-                    <select id="unit"></select>
-                </div>
-                <div class="field">
-                    <label>GST Rate (%)</label>
-                    <select id="gst">
-                        <option value="0">0% (Exempt)</option>
-                        <option value="5">5%</option>
-                        <option value="12">12%</option>
-                        <option value="18" selected>18%</option>
-                        <option value="28">28%</option>
+                    <select id="unit">
+                        <option value="Pcs">Pcs</option><option value="Kg">Kg</option>
+                        <option value="Box">Box</option><option value="Mtr">Mtr</option>
                     </select>
                 </div>
                 <div class="field">
-                    <label>HSN / SAC Code</label>
-                    <input type="text" id="hsn" placeholder="e.g. 8517">
+                    <label>GST Rate</label>
+                    <select id="gst">
+                        <option value="0">0%</option><option value="5">5%</option>
+                        <option value="12">12%</option><option value="18" selected>18%</option>
+                        <option value="28">28%</option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label>HSN Code</label>
+                    <input type="text" id="hsn" placeholder="e.g. 8544">
                 </div>
                 <div class="field">
-                    <label>Standard Cost (Purchase Rate)</label>
+                    <label>Std Cost (Buy Rate)</label>
                     <input type="number" id="stdCost" step="0.01" value="0">
                 </div>
                 <div class="field">
-                    <label>Standard Price (Sales Rate)</label>
+                    <label>Std Price (Sell Rate)</label>
                     <input type="number" id="stdPrice" step="0.01" value="0">
                 </div>
-                <div class="field">
-                    <label>Reorder Level</label>
-                    <input type="number" id="reorder" value="5">
-                </div>
-                <div class="field full-width" style="background:#f0f9ff; padding:15px; border-radius:8px;">
-                    <label style="color:#0369a1;">Opening Quantity</label>
-                    <input type="number" id="opQty" value="0" step="0.01">
-                    <small style="color:#64748b;">This sets initial stock. Current stock = Opening + Purchases - Sales</small>
-                </div>
-                <div class="field full-width">
-                    <label>Current Stock (Read-only)</label>
-                    <input type="text" id="currentStock" readonly style="background:#f8fafc; font-weight:600; color:var(--green);">
+
+                <div class="field full-width" style="background:#f0f9ff; padding:15px; border-radius:8px; border:1px solid #bae6fd; margin-top:10px;">
+                    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:15px;">
+                        <div>
+                            <label style="color:#0284c7;">Opening Qty</label>
+                            <input type="number" id="opQty" value="0">
+                        </div>
+                        <div>
+                            <label style="color:#0284c7;">Reorder Level</label>
+                            <input type="number" id="reorder" value="5">
+                        </div>
+                        <div>
+                            <label style="color:#0284c7;">Current Stock</label>
+                            <input type="text" id="currentStock" readonly style="background:#fff; font-weight:bold; color:var(--green);">
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="actions">
-                <button class="btn btn-save" onclick="saveItem()">Save Item (Alt+S)</button>
-                <button class="btn btn-del" onclick="deleteItem()" id="deleteBtn" style="display:none;">Delete Item</button>
+            <div style="margin-top:30px; display:flex; justify-content:space-between;">
+                <button class="btn btn-save" onclick="saveItem()">Save Product (Alt+S)</button>
+                <button class="btn btn-del" onclick="deleteItem()" id="delBtn" style="display:none;">Delete</button>
             </div>
         </div>
     </div>
 
-    <div id="toast">Item Saved Successfully!</div>
+    <div id="toast">Saved Successfully!</div>
 
     <script src="db.js"></script><script src="auth.js"></script>
     <script>
         let items = [];
-        let units = [];
+        let filterMode = 'all';
 
         window.onload = async () => {
-            try {
-                await DB.init();
-                await loadUnits();
-                await renderList();
-            } catch(e) {
-                console.error("Item Master Init Error:", e);
-                alert("Database Error");
-            }
+            await DB.init();
+            renderList();
+            
+            // Populate Category Datalist
+            const cats = new Set();
+            (await DB.getItems()).forEach(i => { if(i.category) cats.add(i.category); });
+            const dl = document.getElementById('catList');
+            cats.forEach(c => { let op = document.createElement('option'); op.value = c; dl.appendChild(op); });
         };
 
-        async function loadUnits() {
-            units = await DB.getUnits();
-            const sel = document.getElementById('unit');
-            sel.innerHTML = '<option value="">-- Select Unit --</option>';
-            if (units.length === 0) {
-                ['Pcs', 'Kg', 'Box', 'Nos', 'Mtr', 'Ltr'].forEach(u => {
-                    let opt = document.createElement('option');
-                    opt.value = u; opt.text = u;
-                    sel.appendChild(opt);
-                });
-            } else {
-                units.sort((a,b) => a.name.localeCompare(b.name)).forEach(u => {
-                    let opt = document.createElement('option');
-                    opt.value = u.name;
-                    opt.text = u.name;
-                    sel.appendChild(opt);
-                });
-            }
+        function filterList(mode) {
+            filterMode = mode;
+            document.querySelectorAll('.ftab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            renderList(document.getElementById('searchInput').value);
         }
 
-        async function renderList(query = '') {
+        async function renderList(q = '') {
             items = await DB.getItems();
             const listDiv = document.getElementById('itemList');
             listDiv.innerHTML = '';
+            
+            let totalVal = 0;
+            let count = 0;
 
-            const filtered = items.filter(i => i.name.toLowerCase().includes(query.toLowerCase()));
-            if (filtered.length === 0) {
-                listDiv.innerHTML = '<div class="empty-state" style="padding:40px;">No items found</div>';
-                return;
-            }
+            const filtered = items.filter(i => {
+                const match = (i.name.toLowerCase().includes(q.toLowerCase()) || (i.sku && i.sku.toLowerCase().includes(q.toLowerCase())));
+                if(!match) return false;
+                if(filterMode === 'low') return (i.current_stock || 0) <= (i.reorder_level || 5);
+                return true;
+            });
 
             filtered.sort((a,b) => a.name.localeCompare(b.name)).forEach(i => {
                 const stock = i.current_stock || 0;
-                const value = (stock * (i.std_cost || 0)).toFixed(2);
-                const status = stock <= (i.reorder_level || 5) ? '<span class="low-stock">Low</span>' : '<span class="current-stock">OK</span>';
+                const val = stock * (i.std_cost || 0);
+                totalVal += val;
+                count++;
 
-                const item = document.createElement('div');
-                item.className = 'list-item';
-                item.innerHTML = `
-                    <div>
+                const isLow = stock <= (i.reorder_level || 5);
+                const el = document.createElement('div');
+                el.className = `list-item ${isLow ? 'low-stock-alert' : ''}`;
+                el.onclick = () => loadItem(i);
+                el.innerHTML = `
+                    <div class="item-info">
                         <strong>${i.name}</strong>
-                        <small>${stock} ${i.unit || 'Pcs'} • ₹${value}</small>
+                        <span>${i.sku || '-'} • ${i.category || 'General'}</span>
                     </div>
-                    <small>${status}</small>
+                    <div>
+                        <div class="stock-badge" style="color:${isLow ? 'var(--red)' : 'var(--green)'}">${stock} ${i.unit}</div>
+                        <span class="val-badge">₹${val.toFixed(0)}</span>
+                    </div>
                 `;
-                item.onclick = () => loadItem(i);
-                listDiv.appendChild(item);
+                listDiv.appendChild(el);
             });
+
+            document.getElementById('totalCount').innerText = `${count} Items`;
+            document.getElementById('totalValue').innerText = `Value: ₹${totalVal.toLocaleString('en-IN')}`;
         }
 
-        function loadItem(item) {
-            document.getElementById('itemId').value = item.id;
-            document.getElementById('name').value = item.name;
-            document.getElementById('unit').value = item.unit || '';
-            document.getElementById('gst').value = item.gst_rate || 18;
-            document.getElementById('hsn').value = item.hsn || '';
-            document.getElementById('stdCost').value = item.std_cost || 0;
-            document.getElementById('stdPrice').value = item.std_price || 0;
-            document.getElementById('reorder').value = item.reorder_level || 5;
-            document.getElementById('opQty').value = item.op_qty || 0;
-            document.getElementById('currentStock').value = `${item.current_stock || 0} ${item.unit || 'Pcs'} (₹${(item.current_stock * (item.std_cost || 0)).toFixed(2)})`;
-            document.getElementById('deleteBtn').style.display = 'block';
+        function loadItem(i) {
+            document.getElementById('itemId').value = i.id;
+            document.getElementById('name').value = i.name;
+            document.getElementById('sku').value = i.sku || '';
+            document.getElementById('category').value = i.category || '';
+            document.getElementById('unit').value = i.unit || 'Pcs';
+            document.getElementById('gst').value = i.gst_rate || 18;
+            document.getElementById('hsn').value = i.hsn || '';
+            document.getElementById('stdCost').value = i.std_cost || 0;
+            document.getElementById('stdPrice').value = i.std_price || 0;
+            document.getElementById('opQty').value = i.op_qty || 0;
+            document.getElementById('reorder').value = i.reorder_level || 5;
+            document.getElementById('currentStock').value = i.current_stock || 0;
+            
+            document.getElementById('delBtn').style.display = 'block';
         }
 
         function resetForm() {
-            document.querySelectorAll('input, select').forEach(el => {
-                if (el.type === 'number') el.value = el.defaultValue || 0;
-                else if (el.tagName === 'SELECT') el.selectedIndex = 0;
-                else el.value = '';
-            });
-            document.getElementById('itemId').value = '';
+            document.querySelectorAll('input').forEach(i => i.value = '');
             document.getElementById('gst').value = 18;
+            document.getElementById('unit').value = 'Pcs';
+            document.getElementById('stdCost').value = 0;
+            document.getElementById('stdPrice').value = 0;
+            document.getElementById('opQty').value = 0;
             document.getElementById('reorder').value = 5;
-            document.getElementById('currentStock').value = '';
-            document.getElementById('deleteBtn').style.display = 'none';
+            document.getElementById('delBtn').style.display = 'none';
             document.getElementById('name').focus();
         }
 
         async function saveItem() {
-            const name = document.getElementById('name').value.trim();
-            if (!name) return alert("Item Name is required");
+            const name = document.getElementById('name').value;
+            if(!name) return alert("Name is required");
 
-            // Construct Data Object (NO ID by default)
             const data = {
                 name: name,
-                unit: document.getElementById('unit').value || 'Pcs',
-                gst_rate: parseFloat(document.getElementById('gst').value) || 18,
-                hsn: document.getElementById('hsn').value.trim() || null,
-                std_cost: parseFloat(document.getElementById('stdCost').value) || 0,
-                std_price: parseFloat(document.getElementById('stdPrice').value) || 0,
-                reorder_level: parseInt(document.getElementById('reorder').value) || 5,
-                op_qty: parseFloat(document.getElementById('opQty').value) || 0
+                sku: document.getElementById('sku').value,
+                category: document.getElementById('category').value,
+                unit: document.getElementById('unit').value,
+                gst_rate: parseFloat(document.getElementById('gst').value),
+                hsn: document.getElementById('hsn').value,
+                std_cost: parseFloat(document.getElementById('stdCost').value)||0,
+                std_price: parseFloat(document.getElementById('stdPrice').value)||0,
+                op_qty: parseFloat(document.getElementById('opQty').value)||0,
+                reorder_level: parseFloat(document.getElementById('reorder').value)||5
             };
 
-            // Only Add ID if Editing
-            const idVal = document.getElementById('itemId').value;
-            if (idVal) {
-                data.id = parseInt(idVal);
-            }
+            const id = document.getElementById('itemId').value;
+            if(id) data.id = parseInt(id);
 
             try {
                 await DB.createItem(data);
-                showToast("Item Saved!");
+                showToast();
                 resetForm();
-                renderList(document.getElementById('searchInput').value);
-            } catch(e) {
-                console.error(e);
-                alert("Error: Item name might already exist.");
-            }
+                renderList();
+            } catch(e) { alert("Error: " + e); }
         }
 
         async function deleteItem() {
             const id = document.getElementById('itemId').value;
-            if (!id) return;
-            if (!confirm("Delete this item? This cannot be undone.")) return;
-
-            const entries = await DB.getAll('entries');
-            const used = entries.some(e => e.item_id == id);
-            if (used && !confirm("This item is used in transactions. Still delete?")) return;
-
-            try {
+            if(confirm("Delete this item?")) {
                 await DB.deleteItem(parseInt(id));
-                showToast("Item Deleted!");
                 resetForm();
                 renderList();
-            } catch(e) {
-                alert("Delete Failed");
             }
         }
 
-        function showToast(msg = "Saved Successfully!") {
+        function showToast() {
             const t = document.getElementById('toast');
-            t.textContent = msg;
             t.style.display = 'block';
-            setTimeout(() => t.style.display = 'none', 2500);
+            setTimeout(() => t.style.display='none', 2000);
         }
 
+        // Shortcuts
         document.addEventListener('keydown', e => {
-            if (e.altKey) {
-                if (e.key.toLowerCase() === 's') {
-                    e.preventDefault();
-                    saveItem();
-                }
-                if (e.key.toLowerCase() === 'n') {
-                    e.preventDefault();
-                    resetForm();
-                }
-            }
+            if(e.altKey && e.key.toLowerCase() === 's') saveItem();
+            if(e.altKey && e.key.toLowerCase() === 'n') resetForm();
         });
     </script>
 </body>

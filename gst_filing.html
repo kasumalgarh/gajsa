@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Money Wise Pro - GST Filing</title>
+    <title>Money Wise Pro - GST Compliance</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root { --sidebar-bg: #0f172a; --bg: #f1f5f9; --accent: #2563eb; --text: #1e293b; --border: #cbd5e1; }
         * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
         body { display: flex; height: 100vh; background: var(--bg); color: var(--text); overflow: hidden; }
         .sidebar { width: 260px; background: var(--sidebar-bg); padding: 20px; display: flex; flex-direction: column; flex-shrink: 0; }
-        .nav-link { padding: 12px; color: #94a3b8; text-decoration: none; margin-bottom: 5px; display:block; }
-        .nav-link:hover, .nav-link.active { color: #fff; background: #1e293b; border-radius: 8px; }
+        .nav-link { padding: 12px; color: #94a3b8; text-decoration: none; margin-bottom: 5px; display:block; border-radius: 8px; }
+        .nav-link:hover, .nav-link.active { color: #fff; background: #1e293b; }
         
         .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
         .top-bar { background: white; padding: 15px 25px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
@@ -39,24 +39,24 @@
 </head>
 <body>
    <div class="sidebar">
-        <div class="brand">🚀 MoneyWise Pro</div>
-        <a href="index.html" class="nav-link"><span class="nav-icon">📊</span> Dashboard</a>
-        <a href="reports.html" class="nav-link"><span class="nav-icon">📈</span> Reports</a>
-        <a href="gst_filing.html" class="nav-link active"><span class="nav-icon">🏛️</span> GST Filing</a>
-        <a href="sales_invoice.html" class="nav-link"><span class="nav-icon">🧾</span> Sales Invoice</a>
-        <a href="purchase_invoice.html" class="nav-link"><span class="nav-icon">🚚</span> Purchase Entry</a>
-        <a href="vouchers.html" class="nav-link"><span class="nav-icon">💸</span> Vouchers (JV)</a>
-        <a href="item_master.html" class="nav-link"><span class="nav-icon">📦</span> Inventory</a>
-        <a href="moneywise.html" class="nav-link"><span class="nav-icon">👥</span> Parties / Ledgers</a>
-        <a href="coa.html" class="nav-link"><span class="nav-icon">🗂️</span> Chart of Accounts</a>
-        <a href="settings.html" class="nav-link"><span class="nav-icon">⚙️</span> Settings</a>
+        <div style="font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 40px;">🚀 MoneyWise Pro</div>
+        <a href="index.html" class="nav-link">📊 Dashboard</a>
+        <a href="reports.html" class="nav-link">📈 Reports</a>
+        <a href="gst_filing.html" class="nav-link active">🏛️ GST Filing</a>
+        <a href="sales_invoice.html" class="nav-link">🧾 Sales Invoice</a>
+        <a href="purchase_invoice.html" class="nav-link">🚚 Purchase Entry</a>
+        <a href="vouchers.html" class="nav-link">💸 Vouchers (JV)</a>
+        <a href="item_master.html" class="nav-link">📦 Inventory</a>
+        <a href="moneywise.html" class="nav-link">👥 Parties</a>
+        <a href="coa.html" class="nav-link">🗂️ Accounts</a>
+        <a href="settings.html" class="nav-link">⚙️ Settings</a>
     </div>
 
     <div class="main">
         <div class="top-bar">
             <h2>GST Compliance Portal</h2>
             <div style="display:flex; gap:10px;">
-                <input type="month" id="gstMonth" onchange="loadGSTData()">
+                <input type="month" id="gstMonth" onchange="loadGSTData()" style="padding:8px; border:1px solid #cbd5e1; border-radius:6px;">
                 <button class="btn-json" onclick="downloadJSON()">📥 Download GSTR-1 JSON</button>
             </div>
         </div>
@@ -86,7 +86,9 @@
             
             <div class="report-box">
                 <h3>⚠️ GST Validation Errors</h3>
-                <ul id="errorList" style="color:#dc2626; margin-top:10px; padding-left:20px;"></ul>
+                <ul id="errorList" style="color:#dc2626; margin-top:10px; padding-left:20px;">
+                    <li style="color:#16a34a">No critical errors found. System is ready.</li>
+                </ul>
             </div>
         </div>
 
@@ -122,7 +124,7 @@
 
     <script src="db.js"></script><script src="auth.js"></script>
     <script>
-        let vouchers=[], items=[], ledgers=[], entries=[];
+        let vouchers=[], items=[], ledgers=[], entries=[], companySettings={};
         let gstData = { b2b:[], b2cs:[], hsn:[], itc:{} };
 
         window.onload = async () => {
@@ -140,18 +142,18 @@
         }
 
         async function loadGSTData() {
-            [vouchers, ledgers, items, entries] = await Promise.all([
-                DB.getAll('vouchers'), DB.getLedgers(), DB.getItems(), DB.getAll('entries')
+            [vouchers, ledgers, items, entries, companySettings] = await Promise.all([
+                DB.getAll('vouchers'), DB.getLedgers(), DB.getItems(), DB.getAll('entries'), DB.getSettings()
             ]);
 
+            // Default State Code if settings missing (Fix)
+            if(!companySettings.state_code) companySettings.state_code = "09"; 
+
             const [year, month] = document.getElementById('gstMonth').value.split('-');
-            
-            // Filter Data for Selected Month
             const filteredVouchers = vouchers.filter(v => v.date.startsWith(`${year}-${month}`));
             
             processGSTR1(filteredVouchers);
             processGSTR3B(filteredVouchers);
-            renderDashboard();
         }
 
         function processGSTR1(vList) {
@@ -160,27 +162,24 @@
             errorList.innerHTML = '';
 
             const sales = vList.filter(v => v.type === 'Sales');
+            const myState = companySettings.state_code; // DYNAMIC STATE
 
             sales.forEach(v => {
                 const party = ledgers.find(l => l.id == v.party_id);
-                // Get Items for this voucher
                 const vEntries = entries.filter(e => e.voucher_id == v.id);
 
-                // Calc Tax Breakdown
-                let taxable=0, igst=0, cgst=0, sgst=0, total=0;
+                let taxable=0, igst=0, cgst=0, sgst=0;
                 
                 vEntries.forEach(e => {
                     const item = items.find(i => i.id == e.item_id);
-                    const itemTaxable = e.qty * e.rate; // Assuming rate is basic
+                    const itemTaxable = e.qty * e.rate;
                     const taxRate = item.gst_rate || 0;
                     
-                    // Simple Logic: If Party State != MyState -> IGST
-                    // We assume MyState = '09' (UP) for demo. Real app needs Settings.
-                    const myState = "09"; 
-                    const pState = party.state || "09";
+                    // State Check Logic
+                    // Ensure party.state_code exists in DB (Ledger Master)
+                    const pState = party.state_code || myState; 
                     
                     let i_amt=0, c_amt=0, s_amt=0;
-                    
                     if(pState !== myState) {
                         i_amt = itemTaxable * (taxRate/100);
                     } else {
@@ -191,7 +190,7 @@
                     taxable += itemTaxable;
                     igst += i_amt; cgst += c_amt; sgst += s_amt;
 
-                    // HSN Summary logic
+                    // HSN Summary
                     const hsn = item.hsn || 'GENERAL';
                     if(!gstData.hsn[hsn]) gstData.hsn[hsn] = { desc: item.name, uqc: item.unit, qty:0, val:0, i:0, c:0, s:0 };
                     gstData.hsn[hsn].qty += e.qty;
@@ -199,18 +198,14 @@
                     gstData.hsn[hsn].i += i_amt; gstData.hsn[hsn].c += c_amt; gstData.hsn[hsn].s += s_amt;
                 });
 
-                // Classify B2B vs B2C
+                // B2B vs B2C Logic
                 if(party.gstin && party.gstin.length > 5) {
                     gstData.b2b.push({ 
                         ctin: party.gstin, name: party.name, inv: v.voucher_no, dt: v.date, 
                         val: (taxable+igst+cgst+sgst), tax: taxable, i:igst, c:cgst, s:sgst 
                     });
                 } else {
-                    if(!party.gstin) {
-                       // errorList.innerHTML += `<li>Invoice ${v.voucher_no}: Party '${party.name}' has no GSTIN (Marked as B2C)</li>`;
-                    }
-                    gstData.b2cs.push({ state: party.state||"09", rate: "18%", tax: taxable, i:igst, c:cgst, s:sgst }); 
-                    // Note: Real B2CS needs grouping by State & Rate
+                    gstData.b2cs.push({ state: party.state_code||myState, rate: "18%", tax: taxable, i:igst, c:cgst, s:sgst }); 
                 }
             });
 
@@ -218,29 +213,50 @@
         }
 
         function processGSTR3B(vList) {
-            // Simplified Logic
             let out_tax=0, out_igst=0, out_cgst=0, out_sgst=0;
-            let in_tax=0, in_igst=0, in_cgst=0, in_sgst=0;
+            let in_igst=0, in_cgst=0, in_sgst=0;
 
-            // Sales (Outward)
-            vList.filter(v => v.type === 'Sales').forEach(v => {
-                // Re-using calculations would be better, but approximating here for brevity
-                // Assuming flat 18% for demo if complex calculation skipped
-                const val = v.amount / 1.18; 
-                out_tax += val;
-                out_cgst += val * 0.09; out_sgst += val * 0.09; // Intra assumption
+            // 1. OUTPUT TAX (From Sales)
+            // Ideally we calculate from entries like above, but for summary we can approximate or reuse
+            // Re-calculating correctly:
+            const sales = vList.filter(v => v.type === 'Sales');
+            const myState = companySettings.state_code;
+
+            sales.forEach(v => {
+                const party = ledgers.find(l => l.id == v.party_id);
+                const pState = party.state_code || myState;
+                const vEntries = entries.filter(e => e.voucher_id == v.id);
+                
+                vEntries.forEach(e => {
+                    const item = items.find(i => i.id == e.item_id);
+                    const val = e.qty * e.rate;
+                    const rt = item.gst_rate || 0;
+                    out_tax += val;
+                    if(pState !== myState) out_igst += val*(rt/100);
+                    else { out_cgst += val*(rt/200); out_sgst += val*(rt/200); }
+                });
             });
 
-            // Purchase (Inward -> ITC)
-            vList.filter(v => v.type === 'Purchase').forEach(v => {
-                 const val = v.amount / 1.18;
-                 in_tax += val;
-                 in_cgst += val * 0.09; in_sgst += val * 0.09;
+            // 2. INPUT TAX (From Purchase)
+            const purchases = vList.filter(v => v.type === 'Purchase');
+            purchases.forEach(v => {
+                const party = ledgers.find(l => l.id == v.party_id);
+                const pState = party.state_code || myState;
+                const vEntries = entries.filter(e => e.voucher_id == v.id);
+
+                vEntries.forEach(e => {
+                    const item = items.find(i => i.id == e.item_id);
+                    const val = e.qty * e.rate; // Purchase Rate
+                    const rt = item.gst_rate || 0;
+                    
+                    if(pState !== myState) in_igst += val*(rt/100);
+                    else { in_cgst += val*(rt/200); in_sgst += val*(rt/200); }
+                });
             });
 
             gstData.itc = { i: in_igst, c: in_cgst, s: in_sgst };
             
-            // Render 3B
+            // Render
             const t3b = document.getElementById('tbl3B_Out').querySelector('tbody');
             t3b.innerHTML = `<tr><td>Outward Taxable Supplies</td><td class="amt">${out_tax.toFixed(2)}</td><td class="amt">${out_igst.toFixed(2)}</td><td class="amt">${out_cgst.toFixed(2)}</td><td class="amt">${out_sgst.toFixed(2)}</td></tr>`;
             
@@ -248,24 +264,19 @@
             titc.innerHTML = `<tr><td>All other ITC</td><td class="amt">${in_igst.toFixed(2)}</td><td class="amt">${in_cgst.toFixed(2)}</td><td class="amt">${in_sgst.toFixed(2)}</td></tr>`;
 
             // Dashboard
-            document.getElementById('dispOutput').innerText = `₹${(out_igst+out_cgst+out_sgst).toFixed(2)}`;
-            document.getElementById('dispInput').innerText = `₹${(in_igst+in_cgst+in_sgst).toFixed(2)}`;
-            const net = (out_igst+out_cgst+out_sgst) - (in_igst+in_cgst+in_sgst);
-            document.getElementById('dispPayable').innerText = `₹${Math.max(0, net).toFixed(2)}`;
+            const totOutput = out_igst+out_cgst+out_sgst;
+            const totInput = in_igst+in_cgst+in_sgst;
+            document.getElementById('dispOutput').innerText = `₹${totOutput.toFixed(2)}`;
+            document.getElementById('dispInput').innerText = `₹${totInput.toFixed(2)}`;
+            document.getElementById('dispPayable').innerText = `₹${Math.max(0, totOutput - totInput).toFixed(2)}`;
         }
 
         function renderGSTR1() {
             const tb2b = document.getElementById('tblB2B').querySelector('tbody');
-            tb2b.innerHTML = '';
-            gstData.b2b.forEach(r => {
-                tb2b.innerHTML += `<tr><td>${r.ctin}</td><td>${r.name}</td><td>${r.inv}</td><td>${r.dt}</td><td class="amt">${r.val.toFixed(2)}</td><td class="amt">${r.tax.toFixed(2)}</td><td class="amt">${(r.i+r.c+r.s).toFixed(2)}</td></tr>`;
-            });
+            tb2b.innerHTML = gstData.b2b.map(r => `<tr><td>${r.ctin}</td><td>${r.name}</td><td>${r.inv}</td><td>${r.dt}</td><td class="amt">${r.val.toFixed(2)}</td><td class="amt">${r.tax.toFixed(2)}</td><td class="amt">${(r.i+r.c+r.s).toFixed(2)}</td></tr>`).join('');
 
             const tb2cs = document.getElementById('tblB2CS').querySelector('tbody');
-            tb2cs.innerHTML = '';
-            gstData.b2cs.forEach(r => {
-                tb2cs.innerHTML += `<tr><td>${r.state}</td><td>${r.rate}</td><td class="amt">${r.tax.toFixed(2)}</td><td class="amt">${(r.i+r.c+r.s).toFixed(2)}</td></tr>`;
-            });
+            tb2cs.innerHTML = gstData.b2cs.map(r => `<tr><td>${r.state}</td><td>${r.rate}</td><td class="amt">${r.tax.toFixed(2)}</td><td class="amt">${(r.i+r.c+r.s).toFixed(2)}</td></tr>`).join('');
 
             const thsn = document.getElementById('tblHSN').querySelector('tbody');
             thsn.innerHTML = '';
@@ -275,20 +286,13 @@
         }
 
         function downloadJSON() {
-            // Simplified JSON Structure matching GST Offline Tool
             const finalJSON = {
-                "gstin": "YOURGSTIN", // Should come from Settings
+                "gstin": companySettings.gstin || "NOT_SET",
                 "fp": document.getElementById('gstMonth').value.replace('-',''),
-                "b2b": gstData.b2b.map(x => ({
-                    "ctin": x.ctin,
-                    "inv": [{ "inum": x.inv, "idt": x.dt.split('-').reverse().join('-'), "val": x.val, "itms": [{"num":1, "itm_det": {"txval": x.tax, "rt": 18, "iamt": x.i, "camt": x.c, "samt": x.s }}] }] 
-                })),
-                "b2cs": gstData.b2cs.map(x => ({
-                    "sply_ty": "INTRA", "rt": 18, "typ": "OE", "txval": x.tax, "iamt": x.i, "camt": x.c, "samt": x.s
-                })),
+                "b2b": gstData.b2b.map(x => ({ "ctin": x.ctin, "inv": [{ "inum": x.inv, "idt": x.dt.split('-').reverse().join('-'), "val": x.val, "itms": [{"num":1, "itm_det": {"txval": x.tax, "rt": 18, "iamt": x.i, "camt": x.c, "samt": x.s }}] }] })),
+                "b2cs": gstData.b2cs.map(x => ({ "sply_ty": "INTRA", "rt": 18, "typ": "OE", "txval": x.tax, "iamt": x.i, "camt": x.c, "samt": x.s })),
                 "hsn": { "data": Object.entries(gstData.hsn).map(([k,v]) => ({ "num":1, "hsn_sc": k, "desc": v.desc, "uqc": v.uqc, "qty": v.qty, "txval": v.val, "iamt": v.i, "camt": v.c, "samt": v.s })) }
             };
-
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(finalJSON, null, 2));
             const dlAnchorElem = document.createElement('a');
             dlAnchorElem.setAttribute("href", dataStr);

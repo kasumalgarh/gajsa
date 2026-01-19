@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Money Wise Pro - Financial Reports</title>
+    <title>Financial Reports - Money Wise Pro</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --sidebar-bg: #0f172a; --sidebar-text: #94a3b8; --active-text: #f8fafc;
-            --bg: #f8fafc; --text: #1e293b; --border: #cbd5e1;
+            --bg: #f1f5f9; --text: #1e293b; --border: #cbd5e1;
             --accent: #2563eb; 
         }
         * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
@@ -29,19 +29,18 @@
         .btn-print { background: #475569; color: white; border: none; padding: 8px 20px; border-radius: 6px; cursor: pointer; margin-left: auto; }
 
         .content-area { flex: 1; overflow-y: auto; padding: 25px; }
-        .report-card { background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid var(--border); padding: 5px; }
+        .report-card { background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid var(--border); min-height: 400px; padding: 20px; }
         
         table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        th { background: #f1f5f9; padding: 10px 12px; text-align: left; font-weight: 700; color: #475569; border-bottom: 2px solid var(--border); }
+        th { background: #f8fafc; padding: 10px 12px; text-align: left; font-weight: 700; color: #475569; border-bottom: 2px solid var(--border); }
         td { padding: 8px 12px; border-bottom: 1px solid #e2e8f0; color: #334155; }
         .amount { text-align: right; font-family: 'Courier New', monospace; font-weight: 600; }
         
-        .bold-row { background: #f8fafc; font-weight: 700; border-top: 2px solid #cbd5e1; }
+        .bold-row { background: #f1f5f9; font-weight: 700; border-top: 2px solid #cbd5e1; }
         
         /* Balance Sheet Split View */
-        .bs-container { display: flex; width: 100%; }
-        .bs-side { flex: 1; border-right: 1px solid var(--border); }
-        .bs-side:last-child { border-right: none; }
+        .bs-container { display: flex; width: 100%; gap: 20px; }
+        .bs-side { flex: 1; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
         .bs-header { background: #e2e8f0; padding: 10px; font-weight: 800; text-align: center; text-transform: uppercase; font-size: 14px; }
 
         @media print {
@@ -53,7 +52,7 @@
 </head>
 <body>
 
-  <div class="sidebar">
+    <div class="sidebar">
         <div class="brand">🚀 MoneyWise Pro</div>
         <a href="index.html" class="nav-link"><span class="nav-icon">📊</span> Dashboard</a>
         <a href="reports.html" class="nav-link active"><span class="nav-icon">📈</span> Reports</a>
@@ -70,56 +69,61 @@
     <div class="main">
         <div class="top-header">
             <h2 style="font-size:18px;">Financial Reports</h2>
-            <div id="dateDisplay" style="font-size:12px; color:#64748b;"></div>
+            <div style="font-size:12px; color:#64748b;">Auto-Generated</div>
         </div>
 
         <div class="filters">
             <select id="reportType" onchange="toggleFilters()">
-                <option value="BalanceSheet">⚖️ Balance Sheet (Auto)</option>
-                <option value="PL">📉 Profit & Loss (Auto)</option>
+                <option value="BalanceSheet">⚖️ Balance Sheet</option>
+                <option value="PL">📉 Profit & Loss A/c</option>
                 <option value="TrialBalance">📑 Trial Balance</option>
-                <option value="CashBankBook">💰 Cash & Bank Book</option>
                 <option value="DayBook">📅 Day Book</option>
-                <option value="Ledger">👤 Party Statement</option>
+                <option value="Ledger">👤 Ledger Statement</option>
                 <option value="Stock">📦 Stock Summary</option>
             </select>
 
             <div id="partyFilter" style="display:none;">
-                <input type="text" id="partyInput" list="partyList" placeholder="🔍 Search Ledger..." onchange="resolvePartyId()">
+                <input type="text" id="partyInput" list="partyList" placeholder="Select Party..." onchange="resolvePartyId()">
                 <datalist id="partyList"></datalist>
                 <input type="hidden" id="finalPartyId">
             </div>
 
+            <span style="font-size:13px; font-weight:600;">From:</span>
             <input type="date" id="fromDate">
+            <span style="font-size:13px; font-weight:600;">To:</span>
             <input type="date" id="toDate">
+            
             <button class="btn-go" onclick="generateReport()">Show Report</button>
-            <button class="btn-print" onclick="window.print()">Print</button>
+            <button class="btn-print" onclick="window.print()">Print Report</button>
         </div>
 
         <div class="content-area">
             <div class="report-card" id="reportContainer">
-                </div>
+                <div style="text-align:center; padding:50px; color:#94a3b8;">Select a report type and click 'Show Report'</div>
+            </div>
         </div>
     </div>
 
-    <script src="db.js"></script><script src="auth.js"></script>
+    <script src="db.js"></script>
+    <script src="auth.js"></script>
     <script>
         let ledgers = [], items = [], groups = [], acctEntries = [], vouchers = [];
         let ledgerMap = {};
 
         window.onload = async () => {
             await DB.init();
-            // Cache Data
+            // Load Data
             [ledgers, items, groups, acctEntries, vouchers] = await Promise.all([
                 DB.getLedgers(), DB.getItems(), DB.getGroups(), DB.getAll('acct_entries'), DB.getAll('vouchers')
             ]);
             
+            // Set Default Dates (Current FY or Month)
             const d = new Date();
             document.getElementById('toDate').valueAsDate = d;
-            document.getElementById('fromDate').valueAsDate = new Date(d.getFullYear(), 0, 1);
+            document.getElementById('fromDate').valueAsDate = new Date(d.getFullYear(), d.getMonth(), 1); // 1st of current month
             
             populateParties();
-            generateReport();
+            generateReport(); // Load default
         };
 
         function populateParties() {
@@ -133,7 +137,8 @@
             });
         }
         function resolvePartyId() {
-            document.getElementById('finalPartyId').value = ledgerMap[document.getElementById('partyInput').value] || '';
+            const val = document.getElementById('partyInput').value;
+            document.getElementById('finalPartyId').value = ledgerMap[val] || '';
         }
         function toggleFilters() {
             const type = document.getElementById('reportType').value;
@@ -149,205 +154,203 @@
             const container = document.getElementById('reportContainer');
             container.innerHTML = '<div style="text-align:center; padding:20px;">Calculating...</div>';
 
-            if(type === 'BalanceSheet') await renderBalanceSheet(container, to); // BS is usually "As on Date"
-            else if(type === 'PL') await renderPL(container, from, to);
+            if(type === 'BalanceSheet') await renderBalanceSheet(container);
+            else if(type === 'PL') await renderPL(container);
             else if(type === 'TrialBalance') await renderTB(container);
-            else if(type === 'CashBankBook') await renderCashBook(container, from, to);
             else if(type === 'DayBook') await renderDayBook(container, from, to);
             else if(type === 'Stock') await renderStock(container);
             else if(type === 'Ledger') await renderLedger(container, pid, from, to);
         }
 
-        // --- 1. BALANCE SHEET (The Big One) ---
-        async function renderBalanceSheet(container, asOnDate) {
-            // Logic:
-            // 1. Calculate Net Profit/Loss first
-            // 2. Group Ledgers into Assets and Liabilities
-            // 3. Add Closing Stock to Assets
-            // 4. Add Profit to Liabilities (Reserves)
-
+        // --- 1. BALANCE SHEET ---
+        async function renderBalanceSheet(container) {
             let liabilities = [], assets = [];
             let totalLiab = 0, totalAsset = 0;
 
-            // Step A: Calculate Closing Stock
-            let closingStockVal = 0;
-            items.forEach(i => closingStockVal += (i.current_stock * i.std_cost));
-
-            // Step B: Calculate Net Profit (Simplified)
-            let income = 0, expense = 0;
-            const plEntries = acctEntries.filter(e => {
-                const l = ledgers.find(lx => lx.id == e.ledger_id);
-                const g = groups.find(gx => gx.id == l.group_id);
-                const nature = g?.nature; // Asset, Liability, Income, Expense
-                
-                // Calculate Running Balance
-                // Note: This is simplified. Proper way involves strict group hierarchy check
-                if(nature === 'Income') income += (e.credit - e.debit);
-                if(nature === 'Expense') expense += (e.debit - e.credit);
-                return false; // Just calculating P&L
-            });
-            
-            // Add Closing Stock to Income (Trading A/c Logic)
-            let netProfit = (income + closingStockVal) - expense;
-
-            // Step C: Process Balance Sheet Items
-            for(const l of ledgers) {
-                const g = groups.find(gx => gx.id == l.group_id);
-                if(!g) continue;
-                
-                // Calculate Net Balance
-                let dr=0, cr=0;
-                acctEntries.filter(e => e.ledger_id == l.id).forEach(e => {dr+=e.debit; cr+=e.credit;});
-                let net = (l.opening_balance || 0) + (dr - cr); // Assumes Asset (Dr +). For Liab we adjust below.
-                
-                if(net === 0) continue;
-
-                if(g.nature === 'Liability') {
-                    // Liabilities are usually Credit positive. 
-                    // If net is negative here (Credit > Debit), make it positive for display
-                    let val = -net; // Convert (Dr - Cr) to (Cr - Dr)
-                    liabilities.push({name: l.name, group: g.name, amount: val});
-                    totalLiab += val;
-                } 
-                else if(g.nature === 'Asset') {
-                    assets.push({name: l.name, group: g.name, amount: net});
-                    totalAsset += net;
-                }
-            }
-
-            // Add Closing Stock to Assets
-            assets.push({name: "Closing Stock", group: "Stock-in-Hand", amount: closingStockVal});
-            totalAsset += closingStockVal;
-
-            // Add Net Profit to Liabilities (Capital/Reserves)
-            if(netProfit !== 0) {
-                liabilities.push({name: "Net Profit / (Loss)", group: "Reserves & Surplus", amount: netProfit});
-                totalLiab += netProfit;
-            }
-
-            // RENDER
-            let liabHTML = liabilities.map(x => `<tr><td>${x.name} <br><small style="color:#64748b">${x.group}</small></td><td class="amount">₹${x.amount.toFixed(2)}</td></tr>`).join('');
-            let assetHTML = assets.map(x => `<tr><td>${x.name} <br><small style="color:#64748b">${x.group}</small></td><td class="amount">₹${x.amount.toFixed(2)}</td></tr>`).join('');
-
-            container.innerHTML = `
-                <div class="bs-container">
-                    <div class="bs-side">
-                        <div class="bs-header">Liabilities</div>
-                        <table>${liabHTML}</table>
-                    </div>
-                    <div class="bs-side">
-                        <div class="bs-header">Assets</div>
-                        <table>${assetHTML}</table>
-                    </div>
-                </div>
-                <div class="bs-container" style="background:#f1f5f9; border-top:2px solid #cbd5e1;">
-                    <div class="bs-side" style="padding:10px; display:flex; justify-content:space-between;">
-                        <b>Total Liabilities</b> <b>₹${totalLiab.toFixed(2)}</b>
-                    </div>
-                    <div class="bs-side" style="padding:10px; display:flex; justify-content:space-between;">
-                        <b>Total Assets</b> <b>₹${totalAsset.toFixed(2)}</b>
-                    </div>
-                </div>
-            `;
-        }
-
-        // --- 2. PROFIT & LOSS (Detailed) ---
-        async function renderPL(container, from, to) {
-            // Simplified Trading & PL
-            let sales=0, purchase=0, directExp=0, indirectExp=0, otherInc=0;
+            // Closing Stock
             let closingStock = 0;
             items.forEach(i => closingStock += (i.current_stock * i.std_cost));
 
-            // Iterate Ledgers
-            for(const l of ledgers) {
-                const g = groups.find(gx => gx.id == l.group_id);
-                // Calc balance
-                let dr=0, cr=0;
-                acctEntries.filter(e => e.ledger_id == l.id).forEach(e => {dr+=e.debit; cr+=e.credit;});
-                let net = dr - cr; // Dr positive
+            // Net Profit Calc
+            let income=0, expense=0;
+            // Iterate Ledger Balances
+            const balances = {};
+            acctEntries.forEach(e => {
+                balances[e.ledger_id] = (balances[e.ledger_id] || 0) + (e.debit - e.credit);
+            });
 
-                if(g.name === 'Sales Accounts') sales += Math.abs(net); // Usually Cr
-                else if(g.name === 'Purchase Accounts') purchase += net;
-                else if(g.nature === 'Expense') indirectExp += net;
-                else if(g.nature === 'Income' && g.name !== 'Sales Accounts') otherInc += Math.abs(net);
+            ledgers.forEach(l => {
+                const g = groups.find(x => x.id == l.group_id);
+                const net = (l.opening_balance || 0) + (balances[l.id] || 0);
+                if(net === 0) return;
+
+                if(g.nature === 'Income') income += Math.abs(net); // Cr is negative in calc, so Abs
+                else if(g.nature === 'Expense') expense += net; // Dr is positive
+                else if(g.nature === 'Asset') {
+                    assets.push({name: l.name, amt: net});
+                    totalAsset += net;
+                } else if(g.nature === 'Liability') {
+                    liabilities.push({name: l.name, amt: Math.abs(net)});
+                    totalLiab += Math.abs(net);
+                }
+            });
+
+            // Adjust Profit
+            // Trading: Sales + Closing Stock - Purchase - Direct Exp
+            // For simplicity here: Income + Closing Stock - Expense
+            const netProfit = (income + closingStock) - expense;
+            if(netProfit !== 0) {
+                liabilities.push({name: "Net Profit / (Loss)", amt: netProfit});
+                totalLiab += netProfit;
             }
+            assets.push({name: "Closing Stock", amt: closingStock});
+            totalAsset += closingStock;
 
-            const grossProfit = (sales + closingStock) - purchase;
-            const netProfit = (grossProfit + otherInc) - indirectExp;
+            let lHtml = liabilities.map(x=>`<tr><td>${x.name}</td><td class="amount">₹${x.amt.toFixed(2)}</td></tr>`).join('');
+            let aHtml = assets.map(x=>`<tr><td>${x.name}</td><td class="amount">₹${x.amt.toFixed(2)}</td></tr>`).join('');
 
             container.innerHTML = `
+                <h3 style="text-align:center; margin-bottom:20px;">Balance Sheet</h3>
+                <div class="bs-container">
+                    <div class="bs-side">
+                        <div class="bs-header">Liabilities</div>
+                        <table>${lHtml}<tr class="bold-row"><td>Total</td><td class="amount">₹${totalLiab.toFixed(2)}</td></tr></table>
+                    </div>
+                    <div class="bs-side">
+                        <div class="bs-header">Assets</div>
+                        <table>${aHtml}<tr class="bold-row"><td>Total</td><td class="amount">₹${totalAsset.toFixed(2)}</td></tr></table>
+                    </div>
+                </div>`;
+        }
+
+        // --- 2. PROFIT & LOSS ---
+        async function renderPL(container) {
+            // Simplified for brevity
+            let sales=0, purchase=0, expenses=0, otherInc=0;
+            let closingStock = 0; items.forEach(i => closingStock += (i.current_stock * i.std_cost));
+
+            // Calc Balances
+            const balances = {};
+            acctEntries.forEach(e => { balances[e.ledger_id] = (balances[e.ledger_id] || 0) + (e.debit - e.credit); });
+
+            ledgers.forEach(l => {
+                const g = groups.find(x => x.id == l.group_id);
+                const net = (balances[l.id] || 0); // Exclude Op Bal for P&L usually
+                if(net === 0) return;
+
+                if(g.name === 'Sales Accounts') sales += Math.abs(net);
+                else if(g.name === 'Purchase Accounts') purchase += net;
+                else if(g.nature === 'Expense') expenses += net;
+                else if(g.nature === 'Income') otherInc += Math.abs(net);
+            });
+
+            const gp = (sales + closingStock) - purchase;
+            const np = (gp + otherInc) - expenses;
+
+            container.innerHTML = `
+                <h3 style="text-align:center;">Profit & Loss Account</h3>
                 <table style="max-width:800px; margin:auto; border:1px solid #ddd;">
-                    <tr><td colspan="2" style="background:#e2e8f0; font-weight:bold;">Trading Account</td></tr>
                     <tr><td>Sales</td><td class="amount">₹${sales.toFixed(2)}</td></tr>
-                    <tr><td>Less: Cost of Goods Sold (Purchase)</td><td class="amount">(₹${purchase.toFixed(2)})</td></tr>
-                    <tr><td>Add: Closing Stock</td><td class="amount">₹${closingStock.toFixed(2)}</td></tr>
-                    <tr class="bold-row"><td>Gross Profit</td><td class="amount">₹${grossProfit.toFixed(2)}</td></tr>
-                    
-                    <tr><td colspan="2" style="height:20px;"></td></tr>
-                    <tr><td colspan="2" style="background:#e2e8f0; font-weight:bold;">P & L Account</td></tr>
-                    <tr><td>Gross Profit b/f</td><td class="amount">₹${grossProfit.toFixed(2)}</td></tr>
-                    <tr><td>Add: Indirect Income</td><td class="amount">₹${otherInc.toFixed(2)}</td></tr>
-                    <tr><td>Less: Indirect Expenses (Rent, Salary, Dep, Int)</td><td class="amount">(₹${indirectExp.toFixed(2)})</td></tr>
-                    <tr class="bold-row" style="font-size:16px; color:${netProfit>=0?'green':'red'}">
-                        <td>Net Profit / (Loss)</td>
-                        <td class="amount">₹${netProfit.toFixed(2)}</td>
-                    </tr>
-                </table>
-            `;
+                    <tr><td>Purchase</td><td class="amount">(₹${purchase.toFixed(2)})</td></tr>
+                    <tr><td>Closing Stock</td><td class="amount">₹${closingStock.toFixed(2)}</td></tr>
+                    <tr class="bold-row"><td>Gross Profit</td><td class="amount">₹${gp.toFixed(2)}</td></tr>
+                    <tr><td colspan="2" style="height:10px;"></td></tr>
+                    <tr><td>Indirect Income</td><td class="amount">₹${otherInc.toFixed(2)}</td></tr>
+                    <tr><td>Indirect Expenses</td><td class="amount">(₹${expenses.toFixed(2)})</td></tr>
+                    <tr class="bold-row"><td>Net Profit</td><td class="amount">₹${np.toFixed(2)}</td></tr>
+                </table>`;
         }
 
-        // --- 3. STANDARD REPORTS ---
+        // --- 3. TRIAL BALANCE ---
         async function renderTB(container) {
-             let html = `<table><thead><tr><th>Account</th><th>Group</th><th class="amount">Debit</th><th class="amount">Credit</th></tr></thead><tbody>`;
-             let totDr=0, totCr=0;
-             
-             ledgers.forEach(l => {
-                 let dr=0, cr=0;
-                 acctEntries.filter(e => e.ledger_id == l.id).forEach(e => {dr+=e.debit; cr+=e.credit;});
-                 let bal = (l.opening_balance||0) + (dr - cr);
-                 if(bal === 0) return;
-                 
-                 const g = groups.find(gx => gx.id == l.group_id)?.name;
-                 // Trial Balance Logic: Debit Bal vs Credit Bal
-                 const finalDr = bal > 0 ? bal : 0;
-                 const finalCr = bal < 0 ? Math.abs(bal) : 0;
-                 
-                 totDr += finalDr; totCr += finalCr;
-                 html += `<tr><td>${l.name}</td><td>${g}</td><td class="amount">${finalDr?finalDr.toFixed(2):''}</td><td class="amount">${finalCr?finalCr.toFixed(2):''}</td></tr>`;
-             });
-             html += `<tr class="bold-row"><td colspan="2">Total</td><td class="amount">${totDr.toFixed(2)}</td><td class="amount">${totCr.toFixed(2)}</td></tr></tbody></table>`;
-             container.innerHTML = html;
+            let html = `<table><thead><tr><th>Account</th><th>Dr</th><th>Cr</th></tr></thead><tbody>`;
+            let tDr=0, tCr=0;
+            
+            // Calculate balances
+            const balances = {};
+            acctEntries.forEach(e => { balances[e.ledger_id] = (balances[e.ledger_id] || 0) + (e.debit - e.credit); });
+
+            ledgers.forEach(l => {
+                const bal = (l.opening_balance || 0) + (balances[l.id] || 0);
+                if(bal === 0) return;
+                const dr = bal > 0 ? bal : 0;
+                const cr = bal < 0 ? Math.abs(bal) : 0;
+                tDr += dr; tCr += cr;
+                html += `<tr><td>${l.name}</td><td class="amount">${dr?dr.toFixed(2):''}</td><td class="amount">${cr?cr.toFixed(2):''}</td></tr>`;
+            });
+            html += `<tr class="bold-row"><td>Total</td><td class="amount">${tDr.toFixed(2)}</td><td class="amount">${tCr.toFixed(2)}</td></tr></tbody></table>`;
+            container.innerHTML = html;
         }
 
-        async function renderCashBook(container, from, to) {
-            // Simplified View
-            let html = `<table><thead><tr><th>Date</th><th>Particulars</th><th class="amount">Cash In</th><th class="amount">Cash Out</th></tr></thead><tbody>`;
-            // ... (Logic same as previous, filtered for Cash Groups) ...
-            container.innerHTML = "Select specific filters or check detailed logic in previous version. (Merged for brevity)";
-            // Re-using logic from previous detailed code is recommended here.
+        // --- 4. DAY BOOK ---
+        async function renderDayBook(container, from, to) {
+            const filtered = vouchers.filter(v => v.date >= from && v.date <= to).sort((a,b) => new Date(a.date) - new Date(b.date));
+            let html = `<table><thead><tr><th>Date</th><th>Vch No</th><th>Type</th><th>Narration</th><th class="amount">Amount</th></tr></thead><tbody>`;
+            let total = 0;
+            filtered.forEach(v => {
+                total += v.amount;
+                html += `<tr><td>${v.date}</td><td>${v.voucher_no}</td><td>${v.type}</td><td>${v.narration}</td><td class="amount">${v.amount.toFixed(2)}</td></tr>`;
+            });
+            html += `<tr class="bold-row"><td colspan="4">Total</td><td class="amount">${total.toFixed(2)}</td></tr></tbody></table>`;
+            container.innerHTML = filtered.length ? html : '<div style="padding:20px; text-align:center">No entries found</div>';
         }
-        
-        // (DayBook, Ledger, Stock - Same as previous versions, just injecting into container)
-        async function renderStock(container) {
-            let html = `<table><thead><tr><th>Item</th><th>Stock</th><th class="amount">Value</th></tr></thead><tbody>`;
-            items.forEach(i => html+=`<tr><td>${i.name}</td><td>${i.current_stock}</td><td class="amount">${(i.current_stock*i.std_cost).toFixed(2)}</td></tr>`);
-            container.innerHTML = html + `</tbody></table>`;
-        }
-        
+
+        // --- 5. LEDGER STATEMENT ---
         async function renderLedger(container, pid, from, to) {
-            if(!pid) return container.innerHTML = "Select Party";
-            // ... Use previous Ledger Logic ...
-             container.innerHTML = "Ledger Report Loaded (Logic same as V2).";
-        }
-        
-        async function renderDayBook(container, f, t) {
-             let html = `<table><thead><tr><th>Date</th><th>Vch</th><th>Narration</th><th class="amount">Amt</th></tr></thead><tbody>`;
-             vouchers.filter(v=>v.date>=f && v.date<=t).forEach(v => {
-                 html += `<tr><td>${v.date}</td><td>${v.voucher_no}</td><td>${v.narration}</td><td class="amount">${v.amount}</td></tr>`;
-             });
-             container.innerHTML = html + `</tbody></table>`;
+            if(!pid) return container.innerHTML = '<div style="padding:20px; text-align:center">Select a Party first</div>';
+            
+            const l = ledgers.find(x => x.id == pid);
+            let bal = l.opening_balance || 0;
+            
+            // Calculate Opening Balance before 'From Date'
+            acctEntries.filter(e => e.ledger_id == pid).forEach(e => {
+                const v = vouchers.find(vx => vx.id == e.voucher_id);
+                if(v && v.date < from) bal += (e.debit - e.credit);
+            });
+
+            let html = `<h3>${l.name}</h3><p>From: ${from} To: ${to}</p>
+            <table><thead><tr><th>Date</th><th>Vch No</th><th>Particulars</th><th class="amount">Debit</th><th class="amount">Credit</th><th class="amount">Balance</th></tr></thead><tbody>
+            <tr style="background:#fff7ed"><td>-</td><td>-</td><td><b>Opening Balance</b></td><td></td><td></td><td class="amount">${bal.toFixed(2)}</td></tr>`;
+
+            // Filter entries within range
+            const relevantEntries = acctEntries.filter(e => e.ledger_id == pid);
+            // Sort by voucher date
+            const sortedEntries = [];
+            relevantEntries.forEach(e => {
+                const v = vouchers.find(vx => vx.id == e.voucher_id);
+                if(v && v.date >= from && v.date <= to) sortedEntries.push({e, v});
+            });
+            sortedEntries.sort((a,b) => new Date(a.v.date) - new Date(b.v.date));
+
+            sortedEntries.forEach(item => {
+                const {e, v} = item;
+                bal += (e.debit - e.credit);
+                html += `<tr>
+                    <td>${v.date}</td>
+                    <td>${v.voucher_no}</td>
+                    <td>${v.type} (${v.narration})</td>
+                    <td class="amount">${e.debit ? e.debit.toFixed(2) : ''}</td>
+                    <td class="amount">${e.credit ? e.credit.toFixed(2) : ''}</td>
+                    <td class="amount" style="color:${bal<0?'red':'green'}">${Math.abs(bal).toFixed(2)} ${bal>=0?'Dr':'Cr'}</td>
+                </tr>`;
+            });
+            
+            html += `<tr class="bold-row"><td colspan="5">Closing Balance</td><td class="amount">${Math.abs(bal).toFixed(2)} ${bal>=0?'Dr':'Cr'}</td></tr></tbody></table>`;
+            container.innerHTML = html;
         }
 
+        // --- 6. STOCK ---
+        async function renderStock(container) {
+            let html = `<table><thead><tr><th>Item Name</th><th class="amount">Qty</th><th>Unit</th><th class="amount">Avg Cost</th><th class="amount">Value</th></tr></thead><tbody>`;
+            let totalVal = 0;
+            items.forEach(i => {
+                const val = i.current_stock * i.std_cost;
+                totalVal += val;
+                html += `<tr><td>${i.name}</td><td class="amount">${i.current_stock}</td><td>${i.unit}</td><td class="amount">${i.std_cost.toFixed(2)}</td><td class="amount">${val.toFixed(2)}</td></tr>`;
+            });
+            html += `<tr class="bold-row"><td colspan="4">Total Inventory Value</td><td class="amount">${totalVal.toFixed(2)}</td></tr></tbody></table>`;
+            container.innerHTML = html;
+        }
     </script>
 </body>
 </html>

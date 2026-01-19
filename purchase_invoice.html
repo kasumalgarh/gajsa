@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Money Wise Pro - Purchase Entry</title>
+    <title>Purchase Entry - Money Wise Pro</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -12,151 +12,193 @@
             --green: #10b981; --red: #ef4444; --muted: #64748b;
         }
         * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
-        body { background: var(--bg); color: var(--text); min-height: 100vh; }
+        body { background: var(--bg); color: var(--text); padding: 20px; }
+
+        /* TOOLBAR */
+        .toolbar {
+            max-width: 210mm; margin: 0 auto 20px; display: flex; justify-content: space-between; align-items: center;
+        }
+        .btn { padding: 10px 20px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; color: white; display: flex; align-items: center; gap: 8px; }
+        .btn-save { background: var(--header-bg); } .btn-save:hover { opacity: 0.9; }
+        .btn-new { background: var(--accent); } .btn-back { background: #64748b; }
+
+        /* MAIN INVOICE BOX (A4 Style) */
+        .container { 
+            background: white; width: 210mm; min-height: 297mm; margin: 0 auto;
+            padding: 15mm; box-shadow: 0 5px 15px rgba(0,0,0,0.05); 
+            border: 1px solid var(--border); border-top: 5px solid var(--header-bg);
+            display: flex; flex-direction: column;
+        }
+
+        /* HEADER */
+        .invoice-header { display: flex; justify-content: space-between; margin-bottom: 30px; }
+        .title-section h1 { font-size: 24px; color: var(--header-bg); text-transform: uppercase; }
+        .title-section p { font-size: 13px; color: var(--muted); }
         
-        .top-bar { background: var(--header-bg); color: white; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; }
-        .logo { font-size: 20px; font-weight: 800; letter-spacing: 1px; display: flex; align-items: center; gap: 10px; }
-        .close { cursor: pointer; font-size: 18px; }
-        
-        .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
-        .invoice-header { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 25px; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; border-left: 5px solid var(--accent); }
-        
-        .form-group { display: flex; flex-direction: column; gap: 6px; }
-        .form-group label { font-size: 13px; font-weight: 600; color: var(--muted); }
-        input, select { padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; outline:none; }
-        input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(16,185,129,0.1); }
-        
-        .item-grid { background: white; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); overflow-x: auto; margin-bottom: 25px; }
-        table { width: 100%; border-collapse: collapse; min-width: 900px; }
-        th { background: #ecfdf5; color: var(--text); font-weight: 700; padding: 12px; text-align: left; font-size: 12px; border-bottom: 2px solid var(--border); }
-        td { padding: 12px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
-        
-        .qty, .rate, .gst { text-align: right; width: 80px; }
+        .meta-grid { text-align: right; display: grid; grid-template-columns: auto auto; gap: 8px 15px; font-size: 13px; }
+        .meta-label { font-weight: 600; color: var(--muted); }
+        .meta-val input { text-align: right; border: 1px solid var(--border); padding: 5px; border-radius: 4px; width: 140px; font-weight: 700; color: var(--header-bg); }
+
+        /* SUPPLIER SECTION */
+        .supplier-section { background: #f0fdf4; padding: 15px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 20px; }
+        .form-group { margin-bottom: 10px; }
+        .form-group label { display: block; font-size: 12px; font-weight: 700; color: var(--muted); margin-bottom: 4px; }
+        select, textarea, input[type="text"] { width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 13px; outline: none; background: white; }
+        select:focus, input:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(16,185,129,0.1); }
+
+        /* TABLE */
+        .item-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 20px; }
+        .item-table th { background: var(--header-bg); color: white; padding: 10px; text-align: left; }
+        .item-table td { border-bottom: 1px solid var(--border); padding: 8px; vertical-align: middle; }
+        .item-table input, .item-table select { border: none; background: transparent; width: 100%; padding: 5px; }
+        .item-table input:focus { background: #ecfdf5; }
         .text-right { text-align: right; }
+
+        .add-btn { width: 100%; padding: 8px; background: #ecfdf5; border: 1px dashed var(--accent); color: var(--header-bg); cursor: pointer; font-size: 12px; font-weight: 600; }
         
-        .add-row { background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; margin: 15px; display: block; }
-        
-        .totals { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: grid; grid-template-columns: 2fr 1fr; gap: 30px; }
-        .narration textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; }
-        
-        .total-line { display: flex; justify-content: space-between; padding: 8px 0; font-size: 14px; }
-        .grand-total { font-size: 18px; font-weight: 800; border-top: 2px solid var(--border); padding-top: 15px; margin-top: 10px; color: var(--header-bg); }
-        
-        .actions { margin-top: 30px; text-align: right; margin-bottom: 50px; }
-        .save-btn { background: var(--header-bg); color: white; border: none; padding: 14px 40px; border-radius: 8px; font-size: 16px; font-weight: 700; cursor: pointer; transition: 0.2s; }
-        .save-btn:hover { background: #065f46; box-shadow: 0 4px 12px rgba(6, 95, 70, 0.3); }
-        
-        #toast { position: fixed; bottom: 30px; right: 30px; background: var(--header-bg); color: white; padding: 16px 30px; border-radius: 8px; display: none; font-weight: 600; box-shadow: 0 6px 20px rgba(0,0,0,0.25); }
+        /* FOOTER */
+        .totals-section { margin-top: auto; display: flex; gap: 30px; padding-top: 20px; border-top: 2px solid var(--border); }
+        .narration-box { flex: 2; }
+        .calc-box { flex: 1; font-size: 13px; }
+        .total-row { display: flex; justify-content: space-between; padding: 6px 0; }
+        .grand-total { font-size: 18px; font-weight: 800; color: var(--header-bg); border-top: 1px solid var(--border); padding-top: 10px; margin-top: 5px; }
+
+        /* RECENT HISTORY */
+        .recent-section { max-width: 210mm; margin: 30px auto; background: white; padding: 20px; border-radius: 8px; border: 1px solid var(--border); }
+        .recent-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
+        .recent-table th { background: #f1f5f9; padding: 10px; text-align: left; }
+        .recent-table td { padding: 10px; border-bottom: 1px solid #e2e8f0; }
         
         @media print {
-            .top-bar, .actions, .add-row, #toast { display: none !important; }
-            .container { margin: 0; padding: 0; max-width: 100%; }
-            .invoice-header, .item-grid, .totals { box-shadow: none; border: 1px solid #000; margin-bottom: 20px; }
-            input, select, textarea { border: none; background: transparent; padding: 0; }
-            th { background: #f0f0f0 !important; }
+            .toolbar, .recent-section, .add-btn, #toast { display: none !important; }
+            body { background: white; padding: 0; }
+            .container { box-shadow: none; border: none; margin: 0; width: 100%; }
         }
     </style>
 </head>
 <body>
-    <div class="top-bar">
-        <div class="logo">🚚 Purchase Entry</div>
-        <div class="close" onclick="window.location='index.html'">✕</div>
+
+    <div class="toolbar">
+        <button class="btn btn-back" onclick="window.location='index.html'">← Dashboard</button>
+        <div style="text-align:center;">
+            <div style="font-weight:700; font-size:18px;">Purchase Entry</div>
+            <div style="font-size:12px; color:var(--muted);" id="modeStatus">New Invoice Mode</div>
+        </div>
+        <div style="display:flex; gap:10px;">
+            <button class="btn btn-new" onclick="resetPage()">📄 New</button>
+            <button class="btn btn-save" onclick="savePurchase()">💾 Save Entry (Alt+S)</button>
+        </div>
     </div>
+
     <div class="container">
         <div class="invoice-header">
-            <div class="form-group">
-                <label>Supplier Invoice No</label>
-                <input type="text" id="invNo" placeholder="Enter Supplier Bill No" required>
+            <div class="title-section">
+                <h1>Purchase Invoice</h1>
+                <p>Inward Supply Record</p>
             </div>
-            <div class="form-group">
-                <label>Date</label>
-                <input type="date" id="invDate" required>
+            <div class="meta-grid">
+                <span class="meta-label">Supplier Inv No:</span>
+                <span class="meta-val"><input type="text" id="invNo" placeholder="e.g. GST/001" class="input-field"></span>
+                
+                <span class="meta-label">Date:</span>
+                <span class="meta-val"><input type="date" id="invDate" class="input-field"></span>
             </div>
-            <div class="form-group" style="grid-column: 1 / -1;">
-                <label>Supplier / Vendor</label>
-                <select id="partySelect" required>
-                    <option value="">Loading...</option>
+        </div>
+
+        <div class="supplier-section">
+            <div class="form-group">
+                <label>Supplier / Vendor (Credit Party)</label>
+                <select id="partySelect" class="input-field" onchange="loadPartyDetails()">
+                    <option value="">-- Select Supplier --</option>
                 </select>
             </div>
-        </div>
-        <div class="item-grid">
-            <table id="itemTable">
-                <thead>
-                    <tr>
-                        <th width="5%">#</th>
-                        <th width="35%">Item Name</th>
-                        <th width="10%">Qty</th>
-                        <th width="10%">Unit</th>
-                        <th width="15%">Purchase Rate</th>
-                        <th width="10%">GST %</th>
-                        <th width="15%" class="text-right">Total</th>
-                        <th width="5%"></th>
-                    </tr>
-                </thead>
-                <tbody id="itemRows"></tbody>
-            </table>
-            <button class="add-row" onclick="addItemRow()">+ Add Item</button>
-        </div>
-        <div class="totals">
-            <div class="narration">
-                <label>Narration</label>
-                <textarea id="narration" rows="3" placeholder="Being goods purchased from..."></textarea>
-            </div>
-            <div>
-                <div class="total-line"><span>Taxable Value</span><span id="taxableAmt">₹ 0.00</span></div>
-                <div class="total-line"><span>Input CGST</span><span id="cgstAmt">₹ 0.00</span></div>
-                <div class="total-line"><span>Input SGST</span><span id="sgstAmt">₹ 0.00</span></div>
-                <div class="total-line grand-total"><span>Net Payable</span><span id="grandTotal">₹ 0.00</span></div>
+            <div class="form-group">
+                <label>Address / GSTIN</label>
+                <input type="text" id="partyDetails" readonly style="background:#f8fafc; color:#64748b; border:none;">
             </div>
         </div>
-        <div class="actions">
-            <button class="save-btn" onclick="savePurchase()">Save Purchase Entry (Alt+S)</button>
+
+        <table class="item-table">
+            <thead>
+                <tr>
+                    <th width="5%">#</th>
+                    <th width="35%">Item Name</th>
+                    <th width="10%">Qty</th>
+                    <th width="10%">Unit</th>
+                    <th width="15%">Cost Rate</th>
+                    <th width="10%">GST %</th>
+                    <th width="15%" class="text-right">Total</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="itemRows"></tbody>
+        </table>
+        <button class="add-btn" onclick="addItemRow()">+ Add Item Row</button>
+
+        <div class="totals-section">
+            <div class="narration-box">
+                <label style="font-size:12px; font-weight:700; color:var(--muted);">Narration / Remarks</label>
+                <textarea id="narration" rows="3" class="input-field" placeholder="Being goods purchased against bill no..."></textarea>
+            </div>
+            <div class="calc-box">
+                <div class="total-row"><span>Taxable Value</span><span id="taxableAmt">0.00</span></div>
+                <div class="total-row"><span>Input CGST</span><span id="cgstAmt">0.00</span></div>
+                <div class="total-row"><span>Input SGST</span><span id="sgstAmt">0.00</span></div>
+                <div class="total-row grand-total"><span>Net Payable</span><span id="grandTotal">₹ 0.00</span></div>
+            </div>
         </div>
     </div>
-    <div id="toast">Purchase Saved Successfully!</div>
 
-    <script src="db.js"></script><script src="auth.js"></script>
+    <div class="recent-section">
+        <h3>🕒 Recent Purchases</h3>
+        <table class="recent-table">
+            <thead><tr><th>Date</th><th>Inv No</th><th>Supplier</th><th>Amount</th><th>Action</th></tr></thead>
+            <tbody id="recentList"></tbody>
+        </table>
+    </div>
+
+    <script src="db.js"></script>
+    <script src="auth.js"></script>
     <script>
         let itemsList = [];
         let ledgersList = [];
+        let currentVoucherId = null;
 
         window.onload = async () => {
-            try {
-                await DB.init();
-                await Promise.all([loadParties(), loadItems()]);
-                document.getElementById('invDate').valueAsDate = new Date();
-                addItemRow();
-                document.addEventListener('keydown', e => {
-                    if (e.altKey && e.key.toLowerCase() === 's') {
-                        e.preventDefault();
-                        savePurchase();
-                    }
-                });
-            } catch(e) {
-                console.error(e);
-                alert("Database Error");
+            await DB.init();
+            
+            // Check URL for ID (Reprint/Edit Mode)
+            const urlParams = new URLSearchParams(window.location.search);
+            const id = urlParams.get('id');
+
+            await Promise.all([loadParties(), loadItems()]);
+            
+            if(id) {
+                await loadInvoiceForEdit(parseInt(id));
+            } else {
+                resetPage();
             }
+            
+            loadRecentPurchases();
+            setupEnterNavigation();
         };
 
         async function loadParties() {
-            // Fetch All Data
             ledgersList = await DB.getAll('ledgers');
             const groups = await DB.getAll('groups');
 
-            // Find Relevant Group IDs (Flexible Search)
+            // Flexible Search for Creditors
             const validGroupIds = groups.filter(g => 
                 g.name.includes("Sundry Creditors") || 
                 g.name.includes("Creditor") || 
-                g.name.includes("Cash-in-Hand") ||
-                g.name.includes("Current Liabilities")
+                g.name.includes("Cash") || 
+                g.name.includes("Liabilities")
             ).map(g => g.id);
 
-            // Populate Dropdown
             const sel = document.getElementById('partySelect');
             sel.innerHTML = '<option value="">-- Select Supplier --</option>';
-            
             ledgersList.filter(l => validGroupIds.includes(l.group_id))
-                       .sort((a,b) => a.name.localeCompare(b.name))
+                       .sort((a,b)=>a.name.localeCompare(b.name))
                        .forEach(l => {
                            let opt = document.createElement('option');
                            opt.value = l.id; opt.text = l.name;
@@ -166,36 +208,64 @@
 
         async function loadItems() { itemsList = await DB.getItems(); }
 
-        function addItemRow() {
+        function loadPartyDetails() {
+            const pid = document.getElementById('partySelect').value;
+            const p = ledgersList.find(l => l.id == pid);
+            if(p) document.getElementById('partyDetails').value = `${p.address || ''} | GST: ${p.gstin || 'N/A'}`;
+            else document.getElementById('partyDetails').value = '';
+        }
+
+        function resetPage() {
+            currentVoucherId = null;
+            document.getElementById('modeStatus').innerText = "New Invoice Mode";
+            document.getElementById('modeStatus').style.color = "#64748b";
+            document.getElementById('invDate').valueAsDate = new Date();
+            document.getElementById('invNo').value = "";
+            document.getElementById('partySelect').value = "";
+            document.getElementById('itemRows').innerHTML = "";
+            document.getElementById('narration').value = "";
+            addItemRow();
+            calcTotals();
+        }
+
+        function addItemRow(data = null) {
             const tbody = document.getElementById('itemRows');
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${tbody.children.length + 1}</td>
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="text-center">${tbody.children.length + 1}</td>
                 <td>
-                    <select class="item-select" onchange="updateItemDetails(this)" style="width:100%">
-                        <option value="">-- Select Item --</option>
-                        ${itemsList.map(i => `<option value="${i.id}" data-rate="${i.std_cost||0}" data-gst="${i.gst_rate||18}">${i.name}</option>`).join('')}
+                    <select class="item-select input-field" onchange="fillItem(this)">
+                        <option value="">Select Item</option>
+                        ${itemsList.map(i => `<option value="${i.id}" data-rate="${i.std_cost||0}" data-gst="${i.gst_rate||18}" ${data && data.item_id==i.id ? 'selected':''}>${i.name}</option>`).join('')}
                     </select>
                 </td>
-                <td><input type="number" class="qty" min="1" value="1" onchange="calcRow(this)"></td>
-                <td><input type="text" class="unit" readonly style="border:none; text-align:center"></td>
-                <td><input type="number" class="rate" step="0.01" onchange="calcRow(this)"></td>
-                <td><input type="number" class="gst" step="0.01" readonly style="background:#f0fdf4"></td>
-                <td class="text-right amt" style="font-weight:bold;">₹0.00</td>
+                <td><input type="number" class="qty input-field text-right" value="${data ? data.qty : 1}" onchange="calc(this)"></td>
+                <td><input type="text" class="unit" readonly style="text-align:center;"></td>
+                <td><input type="number" class="rate input-field text-right" value="${data ? data.rate : 0}" onchange="calc(this)"></td>
+                <td><input type="number" class="gst input-field text-right" value="18" readonly></td>
+                <td class="text-right amt" style="font-weight:bold;">0.00</td>
                 <td><button onclick="this.closest('tr').remove(); calcTotals()" style="color:red; background:none; border:none; cursor:pointer;">×</button></td>
             `;
-            tbody.appendChild(row);
+            tbody.appendChild(tr);
+            const sel = tr.querySelector('select');
+            if(data) {
+                const opt = sel.options[sel.selectedIndex];
+                tr.querySelector('.gst').value = opt.dataset.gst || 18;
+            } else {
+                fillItem(sel);
+            }
+            calc(sel);
         }
 
-        function updateItemDetails(select) {
-            const opt = select.options[select.selectedIndex];
-            const tr = select.closest('tr');
-            tr.querySelector('.rate').value = opt.dataset.rate || 0;
+        function fillItem(sel) {
+            const opt = sel.options[sel.selectedIndex];
+            const tr = sel.closest('tr');
+            tr.querySelector('.rate').value = opt.dataset.rate || 0; // Load Cost Price
             tr.querySelector('.gst').value = opt.dataset.gst || 18;
-            calcRow(select);
+            calc(sel);
         }
 
-        function calcRow(el) {
+        function calc(el) {
             const tr = el.closest('tr');
             const qty = parseFloat(tr.querySelector('.qty').value) || 0;
             const rate = parseFloat(tr.querySelector('.rate').value) || 0;
@@ -205,10 +275,9 @@
             const taxAmt = taxable * (gst / 100);
             const total = taxable + taxAmt;
 
-            tr.querySelector('.amt').textContent = `₹${total.toFixed(2)}`;
+            tr.querySelector('.amt').innerText = total.toFixed(2);
             tr.dataset.taxable = taxable;
             tr.dataset.tax = taxAmt;
-            
             calcTotals();
         }
 
@@ -218,92 +287,133 @@
                 taxable += parseFloat(tr.dataset.taxable || 0);
                 tax += parseFloat(tr.dataset.tax || 0);
             });
-
-            document.getElementById('taxableAmt').textContent = `₹${taxable.toFixed(2)}`;
-            document.getElementById('cgstAmt').textContent = `₹${(tax/2).toFixed(2)}`;
-            document.getElementById('sgstAmt').textContent = `₹${(tax/2).toFixed(2)}`;
-            document.getElementById('grandTotal').textContent = `₹${Math.round(taxable + tax).toFixed(2)}`;
+            document.getElementById('taxableAmt').innerText = taxable.toFixed(2);
+            document.getElementById('cgstAmt').innerText = (tax/2).toFixed(2);
+            document.getElementById('sgstAmt').innerText = (tax/2).toFixed(2);
+            document.getElementById('grandTotal').innerText = "₹ " + Math.round(taxable + tax).toFixed(2);
         }
 
         async function savePurchase() {
-            const partyId = document.getElementById('partySelect').value;
+            const pid = document.getElementById('partySelect').value;
             const invNo = document.getElementById('invNo').value.trim();
-            if (!partyId) return alert("Select Supplier");
-            if (!invNo) return alert("Enter Supplier Invoice No");
+            
+            if(!pid) return alert("Select Supplier");
+            if(!invNo) return alert("Enter Supplier Bill No");
 
+            let entries = [], taxable = 0, tax = 0, total = 0;
+            
+            // 1. Prepare Inventory Entries
             const rows = document.querySelectorAll('#itemRows tr');
-            let inventoryEntries = [];
-            let taxableTotal = 0, taxTotal = 0;
-
-            for (let tr of rows) {
-                const itemId = tr.querySelector('.item-select').value;
-                if (!itemId) continue;
-
-                const qty = parseFloat(tr.querySelector('.qty').value) || 0;
-                const rate = parseFloat(tr.querySelector('.rate').value) || 0;
-
-                if (qty > 0) {
-                    inventoryEntries.push({
-                        item_id: parseInt(itemId),
-                        qty: qty,
-                        rate: rate
-                    });
-                    taxableTotal += parseFloat(tr.dataset.taxable || 0);
-                    taxTotal += parseFloat(tr.dataset.tax || 0);
+            for(let tr of rows) {
+                const iid = tr.querySelector('select').value;
+                if(iid) {
+                    const q = parseFloat(tr.querySelector('.qty').value);
+                    const r = parseFloat(tr.querySelector('.rate').value);
+                    if(q>0) {
+                        entries.push({ item_id: parseInt(iid), qty: q, rate: r });
+                        taxable += parseFloat(tr.dataset.taxable);
+                        tax += parseFloat(tr.dataset.tax);
+                    }
                 }
             }
+            if(entries.length === 0) return alert("Add items");
+            total = Math.round(taxable + tax);
 
-            if (inventoryEntries.length === 0) return alert("Add at least one item");
-
-            const grandTotal = Math.round(taxableTotal + taxTotal);
-
-            const voucherData = {
-                voucher_no: invNo,
+            const vData = {
+                id: currentVoucherId,
+                voucher_no: invNo, // Use Supplier Bill No
                 date: document.getElementById('invDate').value,
-                party_id: parseInt(partyId),
-                amount: grandTotal,
+                party_id: parseInt(pid),
+                amount: total,
                 type: 'Purchase',
-                narration: document.getElementById('narration').value || ''
+                narration: document.getElementById('narration').value
             };
 
-            // Accounting Entries for Purchase
-            let acctEntries = [];
-
-            // 1. Credit Supplier (We owe them)
-            acctEntries.push({
-                ledger_id: parseInt(partyId),
-                debit: 0,
-                credit: grandTotal
-            });
-
-            // 2. Debit Purchase Account (Expense)
-            const purLedger = ledgersList.find(l => l.name === 'Local Purchase');
-            if (purLedger) {
-                acctEntries.push({
-                    ledger_id: purLedger.id,
-                    debit: taxableTotal,
-                    credit: 0
-                });
-            }
-
-            // 3. Debit Input Tax (Asset - ITC)
-            const cgstLedger = ledgersList.find(l => l.name === 'Input CGST');
-            const sgstLedger = ledgersList.find(l => l.name === 'Input SGST');
-
-            if (cgstLedger) acctEntries.push({ ledger_id: cgstLedger.id, debit: taxTotal / 2, credit: 0 });
-            if (sgstLedger) acctEntries.push({ ledger_id: sgstLedger.id, debit: taxTotal / 2, credit: 0 });
+            // 2. Accounting Entries (Corrected)
+            const acct = [
+                { ledger_id: parseInt(pid), debit: 0, credit: total }, // Party Cr
+                { ledger_id: ledgersList.find(l=>l.name==='Local Purchase')?.id, debit: taxable, credit: 0 }, // Purchase Dr
+                { ledger_id: ledgersList.find(l=>l.name==='Input CGST')?.id, debit: tax/2, credit: 0 }, // Tax Dr (Asset)
+                { ledger_id: ledgersList.find(l=>l.name==='Input SGST')?.id, debit: tax/2, credit: 0 }
+            ].filter(x => x.ledger_id);
 
             try {
-                await DB.saveVoucher(voucherData, inventoryEntries, acctEntries);
-                const t = document.getElementById('toast');
-                t.style.display = 'block';
-                setTimeout(() => {
-                    t.style.display = 'none';
-                    location.reload(); // Reset for next entry
-                }, 2000);
-            } catch (e) {
-                alert("Save Failed: " + e.message);
-            }
+                // 3. MASTER STROKE: Update Item Cost Price
+                const tx = DB.db.transaction('items', 'readwrite');
+                const store = tx.objectStore('items');
+                
+                // Update cost for each item bought
+                for(let ent of entries) {
+                    const req = store.get(ent.item_id);
+                    req.onsuccess = () => {
+                        const item = req.result;
+                        if(item) {
+                            item.std_cost = ent.rate; // Update Cost Price
+                            store.put(item);
+                        }
+                    };
+                }
+
+                // 4. Save Voucher
+                await DB.saveVoucher(vData, entries, acct);
+                
+                alert("Purchase Saved! Stock & Costs Updated.");
+                resetPage();
+                loadRecentPurchases();
+            } catch(e) { alert("Error: "+e); }
+        }
+
+        async function loadInvoiceForEdit(id) {
+            const vouchers = await DB.getAll('vouchers');
+            const v = vouchers.find(x => x.id === id);
+            if(!v) return;
+
+            currentVoucherId = id;
+            document.getElementById('invNo').value = v.voucher_no;
+            document.getElementById('invDate').value = v.date;
+            document.getElementById('partySelect').value = v.party_id;
+            document.getElementById('narration').value = v.narration || '';
+            loadPartyDetails();
+
+            const entries = await DB.getAll('entries');
+            const vEntries = entries.filter(e => e.voucher_id === id);
+            
+            document.getElementById('itemRows').innerHTML = '';
+            vEntries.forEach(e => addItemRow(e));
+            calcTotals();
+
+            document.getElementById('modeStatus').innerText = "Editing Mode";
+            document.getElementById('modeStatus').style.color = "orange";
+        }
+
+        async function loadRecentPurchases() {
+            const tbody = document.getElementById('recentList');
+            tbody.innerHTML = '';
+            const all = await DB.getAll('vouchers');
+            all.filter(v => v.type === 'Purchase').sort((a,b)=>b.id-a.id).slice(0, 10).forEach(v => {
+                const pName = ledgersList.find(l => l.id == v.party_id)?.name || 'Unknown';
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${v.date}</td>
+                    <td><b>${v.voucher_no}</b></td>
+                    <td>${pName}</td>
+                    <td>₹${v.amount}</td>
+                    <td><button onclick="window.location.href='?id=${v.id}'" style="cursor:pointer; padding:2px 8px;">Edit/View</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function setupEnterNavigation() {
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    if(e.target.tagName === 'BUTTON' || e.target.tagName === 'TEXTAREA') return;
+                    e.preventDefault();
+                    const inputs = Array.from(document.querySelectorAll('.input-field, select, input:not([type=hidden])'));
+                    const index = inputs.indexOf(e.target);
+                    if (index > -1 && index < inputs.length - 1) inputs[index + 1].focus();
+                }
+            });
         }
     </script>
 </body>
