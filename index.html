@@ -192,17 +192,6 @@
         <a href="sales_invoice.html" class="fab f-sale" title="New Sale">＋</a>
         <a href="purchase_invoice.html" class="fab f-pur" title="Purchase">🚚</a>
     </div>
-    <div class="fab-group">
-    <a href="sales_invoice.html" class="fab f-sale" title="New Sale">＋</a>
-    <a href="purchase_invoice.html" class="fab f-pur" title="Purchase">🚚</a>
-    <!-- नया Backup Button -->
-    <button class="fab" style="background:#8b5cf6;" title="Backup Data" onclick="backupData()">
-        💾
-    </button>
-</div>
-
-<!-- Toast for Backup -->
-<div class="toast" id="backupToast" style="background:#8b5cf6; bottom:100px;">Backup Downloaded!</div>
 
     <script src="db.js"></script>
     <script>
@@ -486,17 +475,6 @@
         function fmt(num) {
             return "₹ " + (num || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
-        async function backupData() {
-    try {
-        await DB.exportBackup();
-        const toast = document.getElementById('backupToast');
-        toast.style.display = 'block';
-        setTimeout(() => toast.style.display = 'none', 3000);
-    } catch(e) {
-        console.error("Backup failed:", e);
-        alert("Backup Failed! Check console.");
-    }
-}
     </script>
 </body>
 </html>
