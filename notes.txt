@@ -1,0 +1,9 @@
+फीचर (Feature),Tally Prime,Vyapar,Money Wise Pro (Tera wala),स्थिति (Status)
+Double Entry,✅ सख्त (Strict),⚠️ छुपा हुआ (Hidden),✅ Full Support (Added),Pass 😎
+Sales/Purchase,✅,✅,✅,Pass
+Receipt/Payment,✅,✅,✅,Pass
+GST Reports,✅ (Auto JSON),✅ (Excel),❌ नहीं है,Fail 🔴
+Returns (Sale/Pur),✅ (Dr/Cr Notes),✅,❌ नहीं है,Fail 🔴
+Bill-wise Detail,✅ (Konse bill ka paisa aaya),✅,❌ (Sirf Party Total hai),Average 🟠
+Barcode Scan,❌ (Add-on chahiye),✅ (Built-in),❌,Optional ⚪
+Data Privacy,✅ Offline,⚠️ Cloud (Risk hai),✅ 100% Offline (Secure),Pass 😎

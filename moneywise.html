@@ -14,11 +14,13 @@
         }
         * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
         body { display: flex; height: 100vh; background: var(--bg); color: var(--text); overflow: hidden; }
+
         .sidebar { width: 260px; background: var(--sidebar-bg); padding: 20px; display: flex; flex-direction: column; flex-shrink: 0; }
         .brand { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 40px; display: flex; align-items: center; gap: 10px; }
         .nav-link { padding: 12px 15px; margin-bottom: 5px; border-radius: 8px; color: var(--sidebar-text); text-decoration: none; font-weight: 500; display: flex; align-items: center; gap: 12px; transition: 0.2s; font-size: 14px; }
         .nav-link:hover, .nav-link.active { background: #1e293b; color: var(--active-text); }
         .nav-icon { font-size: 18px; }
+
         .main { flex: 1; display: flex; padding: 20px; gap: 20px; overflow: hidden; }
         .list-panel { width: 320px; background: #fff; border-radius: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; }
         .search-box { padding: 15px; border-bottom: 1px solid var(--border); }
@@ -28,13 +30,20 @@
         .list-item:hover { background: #f8fafc; }
         .list-item strong { font-size: 14px; }
         .list-item small { color: var(--muted); font-size: 12px; }
+
         .form-panel { flex: 1; background: #fff; border-radius: 12px; border: 1px solid var(--border); padding: 30px; display: flex; flex-direction: column; overflow-y: auto; }
         .form-header { font-size: 20px; font-weight: 700; margin-bottom: 25px; color: #0f172a; border-bottom: 1px solid var(--border); padding-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+        
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .field { margin-bottom: 15px; }
         label { display: block; font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 5px; }
         input, select { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; outline: none; }
         input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(99,102,241,0.1); }
+        
+        /* GST Validation Styles */
+        .valid-gst { border-color: var(--green); background: #f0fdf4; }
+        .invalid-gst { border-color: var(--red); background: #fef2f2; }
+        
         .actions { margin-top: auto; padding-top: 25px; border-top: 1px solid var(--border); display: flex; gap: 10px; flex-wrap: wrap; }
         .btn { padding: 10px 24px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; transition: 0.2s; min-width: 100px; }
         .btn-save { background: var(--accent); color: white; }
@@ -42,6 +51,7 @@
         .btn-new { background: #e2e8f0; color: var(--text); }
         .btn-new:hover { background: #cbd5e1; }
         .btn-del { background: #fee2e2; color: #dc2626; margin-left: auto; }
+        
         #toast { position: fixed; top: 20px; right: 20px; background: #10b981; color: white; padding: 12px 24px; border-radius: 6px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); display: none; font-weight: 600; z-index: 1000; }
         .dr { color: var(--green); } .cr { color: var(--red); }
     </style>
@@ -53,8 +63,12 @@
         <a href="reports.html" class="nav-link"><span class="nav-icon">📈</span> Reports</a>
         <a href="sales_invoice.html" class="nav-link"><span class="nav-icon">🧾</span> Sales Invoice</a>
         <a href="purchase_invoice.html" class="nav-link"><span class="nav-icon">🚚</span> Purchase Entry</a>
+        <a href="vouchers.html" class="nav-link"><span class="nav-icon">💸</span> Vouchers (JV)</a>
         <a href="item_master.html" class="nav-link"><span class="nav-icon">📦</span> Inventory</a>
         <a href="#" class="nav-link active"><span class="nav-icon">👥</span> Parties / Ledgers</a>
+        <a href="coa.html" class="nav-link"><span class="nav-icon">🗂️</span> Chart of Accounts</a>
+        <a href="gst_filing.html" class="nav-link"><span class="nav-icon">🏛️</span> GST Filing</a>
+        <a href="settings.html" class="nav-link"><span class="nav-icon">⚙️</span> Settings</a>
     </div>
 
     <div class="main">
@@ -97,7 +111,8 @@
                 </div>
                 <div class="field" style="grid-column: span 2;">
                     <label>GSTIN (Optional)</label>
-                    <input type="text" id="gstin" placeholder="22AAAAA0000A1Z5" maxlength="15">
+                    <input type="text" id="gstin" placeholder="e.g. 29ABCDE1234F1Z5" maxlength="15" oninput="validateGST(this)" style="text-transform: uppercase;">
+                    <small id="gstMsg" style="font-size:11px; margin-top:4px; display:block; height:14px;"></small>
                 </div>
             </div>
 
@@ -134,7 +149,7 @@
             // Group Select
             const gSel = document.getElementById('groupSelect');
             gSel.innerHTML = '<option value="">-- Select Group --</option>';
-            groups.forEach(g => {
+            groups.sort((a,b)=>a.name.localeCompare(b.name)).forEach(g => {
                 let opt = document.createElement('option');
                 opt.value = g.id;
                 opt.text = g.name;
@@ -147,10 +162,44 @@
             states.forEach(s => {
                 let opt = document.createElement('option');
                 opt.value = s.code;
-                opt.text = s.name;
-                if (s.name === "Rajasthan") opt.selected = true;
+                opt.text = `${s.code} - ${s.name}`;
+                // Default to user's state if known, here hardcoded example
+                if (s.name === "Rajasthan") opt.selected = true; 
                 sSel.appendChild(opt);
             });
+        }
+
+        function validateGST(el) {
+            const val = el.value.toUpperCase();
+            const msg = document.getElementById('gstMsg');
+            // Standard GST Regex
+            const regex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
+
+            if(val.length === 0) {
+                el.className = ''; 
+                msg.innerText = '';
+                return;
+            }
+
+            if(regex.test(val)) {
+                el.className = 'valid-gst';
+                msg.innerText = '✅ Valid GSTIN Format';
+                msg.style.color = 'var(--green)';
+                
+                // Auto Select State from first 2 digits
+                const code = val.substring(0,2);
+                const sSel = document.getElementById('stateSelect');
+                for(let i=0; i<sSel.options.length; i++) {
+                    if(sSel.options[i].value === code) {
+                        sSel.selectedIndex = i;
+                        break;
+                    }
+                }
+            } else {
+                el.className = 'invalid-gst';
+                msg.innerText = '❌ Invalid GSTIN Format';
+                msg.style.color = 'var(--red)';
+            }
         }
 
         async function renderList(query = '') {
@@ -160,7 +209,7 @@
 
             const filtered = ledgers.filter(l => l.name.toLowerCase().includes(query.toLowerCase()));
             if (filtered.length === 0) {
-                listDiv.innerHTML = '<div class="empty-state" style="padding:40px;">No ledgers found</div>';
+                listDiv.innerHTML = '<div class="empty-state" style="padding:40px; text-align:center; color:#94a3b8;">No ledgers found</div>';
                 return;
             }
 
@@ -174,7 +223,7 @@
                 item.innerHTML = `
                     <div>
                         <strong>${l.name}</strong>
-                        <small>${groupName} • GSTIN: ${l.gstin || '-'}</small>
+                        <small>${groupName} ${l.gstin ? '• ' + l.gstin : ''}</small>
                     </div>
                     <small>${balText}</small>
                 `;
@@ -187,10 +236,14 @@
             document.getElementById('ledgerId').value = ledger.id;
             document.getElementById('name').value = ledger.name;
             document.getElementById('groupSelect').value = ledger.group_id || '';
-            document.getElementById('stateSelect').value = ledger.state_code || '';
+            document.getElementById('stateSelect').value = ledger.state_code || (ledger.state || ''); // Handle both keys
             document.getElementById('opBal').value = Math.abs(ledger.opening_balance || 0);
             document.getElementById('drCr').value = (ledger.opening_balance || 0) >= 0 ? 'Dr' : 'Cr';
             document.getElementById('gstin').value = ledger.gstin || '';
+            
+            const gstEl = document.getElementById('gstin');
+            if(ledger.gstin) validateGST(gstEl); else { gstEl.className = ''; document.getElementById('gstMsg').innerText=''; }
+
             document.getElementById('deleteBtn').style.display = 'block';
         }
 
@@ -202,28 +255,30 @@
             document.getElementById('opBal').value = '0';
             document.getElementById('drCr').value = 'Dr';
             document.getElementById('gstin').value = '';
+            document.getElementById('gstin').className = '';
+            document.getElementById('gstMsg').innerText = '';
             document.getElementById('deleteBtn').style.display = 'none';
             document.getElementById('name').focus();
         }
 
-async function saveLedger() {
+        async function saveLedger() {
             const name = document.getElementById('name').value.trim();
             if (!name) return alert("Ledger Name is required");
 
-            // Data Object WITHOUT ID first
+            const opBal = parseFloat(document.getElementById('opBal').value || 0);
+            const drCr = document.getElementById('drCr').value;
+            const finalBal = opBal * (drCr === 'Cr' ? -1 : 1);
+
             const data = {
                 name: name,
                 group_id: parseInt(document.getElementById('groupSelect').value) || null,
                 state_code: document.getElementById('stateSelect').value || null,
-                opening_balance: parseFloat(document.getElementById('opBal').value || 0) * (document.getElementById('drCr').value === 'Cr' ? -1 : 1),
-                gstin: document.getElementById('gstin').value.trim() || null
+                opening_balance: finalBal,
+                gstin: document.getElementById('gstin').value.trim().toUpperCase() || null
             };
 
-            // Only add ID if we are Editing (NOT Creating)
             const idVal = document.getElementById('ledgerId').value;
-            if (idVal) {
-                data.id = parseInt(idVal);
-            }
+            if (idVal) data.id = parseInt(idVal);
 
             try {
                 await DB.createLedger(data);
@@ -232,7 +287,7 @@ async function saveLedger() {
                 renderList(document.getElementById('searchInput').value);
             } catch(e) {
                 console.error(e);
-                alert("Error: Name might already exist or DB Issue.");
+                alert("Error: Name might already exist.");
             }
         }
 
@@ -241,7 +296,6 @@ async function saveLedger() {
             if (!id) return;
             if (!confirm("Delete this ledger? This cannot be undone.")) return;
 
-            // Optional: Check if used in vouchers
             const vouchers = await DB.getAll('vouchers');
             const used = vouchers.some(v => v.party_id == id);
             if (used && !confirm("This ledger is used in transactions. Still delete?")) return;
@@ -256,7 +310,7 @@ async function saveLedger() {
             }
         }
 
-        function showToast(msg = "Saved Successfully!") {
+        function showToast(msg) {
             const t = document.getElementById('toast');
             t.textContent = msg;
             t.style.display = 'block';
@@ -265,14 +319,8 @@ async function saveLedger() {
 
         document.addEventListener('keydown', e => {
             if (e.altKey) {
-                if (e.key.toLowerCase() === 's') {
-                    e.preventDefault();
-                    saveLedger();
-                }
-                if (e.key.toLowerCase() === 'n') {
-                    e.preventDefault();
-                    resetForm();
-                }
+                if (e.key.toLowerCase() === 's') { e.preventDefault(); saveLedger(); }
+                if (e.key.toLowerCase() === 'n') { e.preventDefault(); resetForm(); }
             }
         });
     </script>
