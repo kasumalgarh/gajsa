@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Money Wise Pro - Purchase Entry</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --header-bg: #064e3b; --accent: #10b981; --bg: #f0fdf4;
+            --card-bg: #ffffff; --border: #d1fae5; --text: #064e3b;
+            --green: #10b981; --red: #ef4444; --muted: #64748b;
+        }
+        * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
+        body { background: var(--bg); color: var(--text); min-height: 100vh; }
+       
+        .top-bar { background: var(--header-bg); color: white; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 20px; font-weight: 800; letter-spacing: 1px; display: flex; align-items: center; gap: 10px; }
+        .close { cursor: pointer; font-size: 18px; }
+       
+        .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
+        .invoice-header { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 25px; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; border-left: 5px solid var(--accent); }
+       
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        .form-group label { font-size: 13px; font-weight: 600; color: var(--muted); }
+        input, select { padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; outline:none; }
+        input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(16,185,129,0.1); }
+       
+        .item-grid { background: white; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); overflow-x: auto; margin-bottom: 25px; }
+        table { width: 100%; border-collapse: collapse; min-width: 900px; }
+        th { background: #ecfdf5; color: var(--text); font-weight: 700; padding: 12px; text-align: left; font-size: 12px; border-bottom: 2px solid var(--border); }
+        td { padding: 12px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+       
+        .qty, .rate, .gst { text-align: right; width: 80px; }
+        .text-right { text-align: right; }
+       
+        .add-row { background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; margin: 15px; display: block; }
+       
+        .totals { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: grid; grid-template-columns: 2fr 1fr; gap: 30px; }
+        .narration textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; }
+       
+        .total-line { display: flex; justify-content: space-between; padding: 8px 0; font-size: 14px; }
+        .grand-total { font-size: 18px; font-weight: 800; border-top: 2px solid var(--border); padding-top: 15px; margin-top: 10px; color: var(--header-bg); }
+       
+        .actions { margin-top: 30px; text-align: right; margin-bottom: 50px; }
+        .save-btn { background: var(--header-bg); color: white; border: none; padding: 14px 40px; border-radius: 8px; font-size: 16px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+        .save-btn:hover { background: #065f46; box-shadow: 0 4px 12px rgba(6, 95, 70, 0.3); }
+       
+        #toast { position: fixed; bottom: 30px; right: 30px; background: var(--header-bg); color: white; padding: 16px 30px; border-radius: 8px; display: none; font-weight: 600; box-shadow: 0 6px 20px rgba(0,0,0,0.25); }
+       
+        @media print {
+            .top-bar, .actions, .add-row, #toast { display: none !important; }
+            .container { margin: 0; padding: 0; max-width: 100%; }
+            .invoice-header, .item-grid, .totals { box-shadow: none; border: 1px solid #000; margin-bottom: 20px; }
+            input, select, textarea { border: none; background: transparent; padding: 0; }
+            th { background: #f0f0f0 !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <div class="logo">🚚 Purchase Entry</div>
+        <div class="close" onclick="window.location='index.html'">✕</div>
+    </div>
+    <div class="container">
+        <div class="invoice-header">
+            <div class="form-group">
+                <label>Supplier Invoice No</label>
+                <input type="text" id="invNo" placeholder="Enter Supplier Bill No" required>
+            </div>
+            <div class="form-group">
+                <label>Date</label>
+                <input type="date" id="invDate" required>
+            </div>
+            <div class="form-group" style="grid-column: 1 / -1;">
+                <label>Supplier / Vendor (Sundry Creditors)</label>
+                <select id="partySelect" required>
+                    <option value="">Loading...</option>
+                </select>
+            </div>
+        </div>
+        <div class="item-grid">
+            <table id="itemTable">
+                <thead>
+                    <tr>
+                        <th width="5%">#</th>
+                        <th width="35%">Item Name</th>
+                        <th width="10%">Qty</th>
+                        <th width="10%">Unit</th>
+                        <th width="15%">Purchase Rate</th>
+                        <th width="10%">GST %</th>
+                        <th width="15%" class="text-right">Total</th>
+                        <th width="5%"></th>
+                    </tr>
+                </thead>
+                <tbody id="itemRows"></tbody>
+            </table>
+            <button class="add-row" onclick="addItemRow()">+ Add Item</button>
+        </div>
+        <div class="totals">
+            <div class="narration">
+                <label>Narration</label>
+                <textarea id="narration" rows="3" placeholder="Being goods purchased from..."></textarea>
+            </div>
+            <div>
+                <div class="total-line"><span>Taxable Value</span><span id="taxableAmt">₹ 0.00</span></div>
+                <div class="total-line"><span>Input CGST</span><span id="cgstAmt">₹ 0.00</span></div>
+                <div class="total-line"><span>Input SGST</span><span id="sgstAmt">₹ 0.00</span></div>
+                <div class="total-line grand-total"><span>Net Payable</span><span id="grandTotal">₹ 0.00</span></div>
+            </div>
+        </div>
+        <div class="actions">
+            <button class="save-btn" onclick="savePurchase()">Save Purchase Entry (Alt+S)</button>
+        </div>
+    </div>
+    <div id="toast">Purchase Saved Successfully!</div>
+
+    <script src="db.js"></script>
+    <script>
+        let itemsList = [];
+        let ledgersList = [];
+
+        window.onload = async () => {
+            try {
+                await DB.init();
+                await Promise.all([loadParties(), loadItems()]);
+                document.getElementById('invDate').valueAsDate = new Date();
+                addItemRow();
+                document.addEventListener('keydown', e => {
+                    if (e.altKey && e.key.toLowerCase() === 's') {
+                        e.preventDefault();
+                        savePurchase();
+                    }
+                });
+            } catch(e) {
+                console.error(e);
+                alert("Database Error");
+            }
+        };
+
+        async function loadParties() {
+            ledgersList = await DB.getLedgers();
+            const sel = document.getElementById('partySelect');
+            sel.innerHTML = '<option value="">-- Select Supplier --</option>';
+            ledgersList.filter(l => l.group_name?.toLowerCase().includes("sundry creditors") || l.group_name?.includes("Creditors") || l.name.toLowerCase().includes("supplier"))
+                       .sort((a,b) => a.name.localeCompare(b.name))
+                       .forEach(l => {
+                           let opt = document.createElement('option');
+                           opt.value = l.id;
+                           opt.text = l.name;
+                           sel.appendChild(opt);
+                       });
+        }
+
+        async function loadItems() {
+            itemsList = await DB.getItems();
+        }
+
+        function addItemRow() {
+            const tbody = document.getElementById('itemRows');
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${tbody.children.length + 1}</td>
+                <td>
+                    <select class="item-select" onchange="updateItemDetails(this)">
+                        <option value="">-- Select Item --</option>
+                        ${itemsList.map(i => `<option value="${i.id}" 
+                            data-rate="${i.std_cost || 0}" 
+                            data-gst="${i.gst_rate || 18}">
+                            ${i.name}
+                        </option>`).join('')}
+                    </select>
+                </td>
+                <td><input type="number" class="qty" min="1" value="1" onchange="calcRow(this)"></td>
+                <td><input type="text" class="unit" readonly style="border:none; text-align:center;"></td>
+                <td><input type="number" class="rate" step="0.01" onchange="calcRow(this)"></td>
+                <td><input type="number" class="gst" step="0.01" readonly style="background:#f0fdf4"></td>
+                <td class="text-right amt" style="font-weight:bold;">₹0.00</td>
+                <td><button onclick="this.closest('tr').remove(); calcTotals()" style="color:var(--red); background:none; border:none; cursor:pointer;">×</button></td>
+            `;
+            tbody.appendChild(row);
+        }
+
+        function updateItemDetails(select) {
+            const opt = select.options[select.selectedIndex];
+            const tr = select.closest('tr');
+            tr.querySelector('.rate').value = opt.dataset.rate || 0;
+            tr.querySelector('.gst').value = opt.dataset.gst || 18;
+            calcRow(select);
+        }
+
+        function calcRow(el) {
+            const tr = el.closest('tr');
+            const qty = parseFloat(tr.querySelector('.qty').value) || 0;
+            const rate = parseFloat(tr.querySelector('.rate').value) || 0;
+            const gst = parseFloat(tr.querySelector('.gst').value) || 0;
+
+            const taxable = qty * rate;
+            const taxAmt = taxable * (gst / 100);
+            const total = taxable + taxAmt;
+
+            tr.querySelector('.amt').textContent = `₹${total.toFixed(2)}`;
+            tr.dataset.taxable = taxable;
+            tr.dataset.tax = taxAmt;
+
+            calcTotals();
+        }
+
+        function calcTotals() {
+            let taxable = 0, tax = 0;
+            document.querySelectorAll('#itemRows tr').forEach(tr => {
+                taxable += parseFloat(tr.dataset.taxable || 0);
+                tax += parseFloat(tr.dataset.tax || 0);
+            });
+            document.getElementById('taxableAmt').textContent = `₹${taxable.toFixed(2)}`;
+            document.getElementById('cgstAmt').textContent = `₹${(tax/2).toFixed(2)}`;
+            document.getElementById('sgstAmt').textContent = `₹${(tax/2).toFixed(2)}`;
+            document.getElementById('grandTotal').textContent = `₹${(taxable + tax).toFixed(2)}`;
+        }
+
+        async function savePurchase() {
+            const partyId = document.getElementById('partySelect').value;
+            const invNo = document.getElementById('invNo').value.trim();
+            if (!partyId) return alert("Select Supplier");
+            if (!invNo) return alert("Enter Supplier Invoice No");
+
+            const rows = document.querySelectorAll('#itemRows tr');
+            let inventoryEntries = [];
+            let taxableTotal = 0, taxTotal = 0;
+
+            for (let tr of rows) {
+                const itemId = tr.querySelector('.item-select').value;
+                if (!itemId) continue;
+
+                const qty = parseFloat(tr.querySelector('.qty').value) || 0;
+                const rate = parseFloat(tr.querySelector('.rate').value) || 0;
+
+                if (qty > 0) {
+                    inventoryEntries.push({
+                        item_id: parseInt(itemId),
+                        qty: qty,
+                        rate: rate
+                    });
+                    taxableTotal += parseFloat(tr.dataset.taxable || 0);
+                    taxTotal += parseFloat(tr.dataset.tax || 0);
+                }
+            }
+
+            if (inventoryEntries.length === 0) return alert("Add at least one item");
+
+            const grandTotal = Math.round(taxableTotal + taxTotal);
+
+            const voucherData = {
+                voucher_no: invNo,
+                date: document.getElementById('invDate').value,
+                party_id: parseInt(partyId),
+                amount: grandTotal,
+                type: 'Purchase',
+                narration: document.getElementById('narration').value || ''
+            };
+
+            // Accounting Entries for Purchase
+            let acctEntries = [];
+
+            // 1. Credit Supplier (We owe them)
+            acctEntries.push({
+                ledger_id: parseInt(partyId),
+                debit: 0,
+                credit: grandTotal
+            });
+
+            // 2. Debit Purchase Account (Expense)
+            const purLedger = ledgersList.find(l => l.name === 'Local Purchase');
+            if (purLedger) {
+                acctEntries.push({
+                    ledger_id: purLedger.id,
+                    debit: taxableTotal,
+                    credit: 0
+                });
+            }
+
+            // 3. Debit Input Tax (Asset - ITC)
+            const cgstLedger = ledgersList.find(l => l.name === 'Input CGST');
+            const sgstLedger = ledgersList.find(l => l.name === 'Input SGST');
+
+            if (cgstLedger) acctEntries.push({ ledger_id: cgstLedger.id, debit: taxTotal / 2, credit: 0 });
+            if (sgstLedger) acctEntries.push({ ledger_id: sgstLedger.id, debit: taxTotal / 2, credit: 0 });
+
+            try {
+                await DB.saveVoucher(voucherData, inventoryEntries, acctEntries);
+                const t = document.getElementById('toast');
+                t.style.display = 'block';
+                setTimeout(() => {
+                    t.style.display = 'none';
+                    location.reload(); // Reset for next entry
+                }, 2000);
+            } catch (e) {
+                alert("Save Failed: " + e.message);
+            }
+        }
+    </script>
+</body>
+</html>
