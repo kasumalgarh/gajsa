@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ledger Master - Money Wise</title>
+    <style>
+        /* --- PROFESSIONAL TALLY / CA STYLE THEME --- */
+        :root {
+            --bg-color: #f1f5f9;
+            --header-bg: #0f172a;
+            --accent-color: #0ea5e9; /* Light Blue */
+            --focus-bg: #fef9c3; /* Tally Yellow Focus */
+            --focus-border: #f59e0b;
+            --border-color: #cbd5e1;
+            --text-color: #334155;
+        }
+
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        
+        body { 
+            margin: 0; padding: 0; 
+            height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+            background-color: var(--bg-color); 
+            overflow: hidden; /* No scroll on body */
+        }
+
+        /* 1. TOP HEADER */
+        .top-bar {
+            background: var(--header-bg);
+            color: white;
+            padding: 0 15px;
+            height: 45px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid var(--accent-color);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .app-title { font-weight: bold; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .close-btn { color: #ef4444; font-weight: bold; cursor: pointer; font-size: 13px; padding: 5px 10px; border: 1px solid transparent; }
+        .close-btn:hover { border: 1px solid #ef4444; background: #450a0a; border-radius: 4px; }
+
+        /* 2. MAIN SPLIT LAYOUT */
+        .container {
+            flex: 1;
+            display: flex;
+            height: calc(100vh - 75px); /* Full height minus header & footer */
+        }
+
+        /* --- LEFT SIDE: LIST VIEW --- */
+        .list-panel {
+            width: 30%;
+            background: white;
+            border-right: 1px solid #94a3b8;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .search-area {
+            padding: 8px;
+            background: #e2e8f0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .search-box {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #94a3b8;
+            font-size: 13px;
+            outline: none;
+        }
+        .search-box:focus { border-color: var(--accent-color); box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.2); }
+
+        .ledger-list {
+            flex: 1;
+            overflow-y: auto;
+        }
+        .list-item {
+            padding: 8px 12px;
+            border-bottom: 1px solid #f1f5f9;
+            cursor: pointer;
+            font-size: 13px;
+            color: var(--text-color);
+            display: flex;
+            justify-content: space-between;
+
+        }
+        /* Active Item Highlight (Blue Border) */
+        .list-item.active { 
+            background-color: #bae6fd; 
+            font-weight: bold; 
+            border-left: 4px solid var(--accent-color); 
+        }
+        
+        /* Delete Button (Red Cross) */
+        .delete-btn {
+            color: #ef4444; 
+            font-weight: bold; 
+            padding: 2px 6px; 
+            border-radius: 4px;
+            visibility: hidden; 
+            font-size: 14px;
+            margin-left: 10px;
+        }
+        .list-item:hover .delete-btn { visibility: visible; }
+        .delete-btn:hover { background: #fee2e2; }
+        .list-item span.grp { font-size: 11px; color: #64748b; font-style: italic; }
+        .list-item:hover { background-color: #e0f2fe; }
+        .list-item.active { background-color: #bae6fd; font-weight: bold; border-left: 4px solid var(--accent-color); }
+
+        /* --- RIGHT SIDE: FORM VIEW --- */
+        .form-panel {
+            width: 70%;
+            background: #f8fafc;
+            padding: 20px 40px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Center form horizontally */
+        }
+
+        .form-container {
+            width: 100%;
+            max-width: 800px;
+            background: white;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            border-radius: 4px;
+        }
+
+        .form-section-header {
+            font-size: 12px; font-weight: bold; color: var(--accent-color);
+            text-transform: uppercase; border-bottom: 1px solid #e2e8f0;
+            margin-bottom: 15px; padding-bottom: 5px; margin-top: 10px;
+        }
+
+        /* GRID SYSTEM FOR FORM */
+        .row { display: flex; gap: 20px; margin-bottom: 12px; }
+        .col { flex: 1; display: flex; flex-direction: column; }
+        .col-half { flex: 0.5; display: flex; flex-direction: column; }
+
+        label { font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 4px; }
+        
+        input, select {
+            padding: 6px 10px;
+            border: 1px solid #94a3b8;
+            font-size: 14px;
+            outline: none;
+            border-radius: 2px;
+            width: 100%;
+            background: white;
+            transition: all 0.1s;
+        }
+
+        /* TALLY STYLE FOCUS */
+        input:focus, select:focus {
+            background-color: var(--focus-bg); /* Yellow */
+            border-color: var(--focus-border);
+            box-shadow: 0 0 0 1px var(--focus-border);
+        }
+
+        input:read-only { background-color: #e2e8f0; color: #94a3b8; cursor: not-allowed; }
+
+        /* 3. FOOTER (STATUS BAR) */
+        .footer {
+            height: 30px;
+            background: var(--header-bg);
+            color: white;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            font-size: 11px;
+            gap: 15px;
+            border-top: 1px solid #334155;
+        }
+        .key-badge {
+            background: #334155; color: #38bdf8; padding: 2px 6px; 
+            border-radius: 3px; font-weight: bold; margin-right: 5px;
+        }
+
+        /* TOAST NOTIFICATION */
+        #toast {
+            position: fixed; top: 60px; right: 20px;
+            background: #166534; color: white; padding: 12px 24px;
+            border-radius: 4px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            font-size: 14px; font-weight: bold; display: none; z-index: 1000;
+        }
+        #toast.error { background: #991b1b; }
+
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <div class="app-title">Ledger Creation (Master)</div>
+        <div class="close-btn" onclick="window.location.href='index.html'">[ESC] Close</div>
+    </div>
+
+    <div class="container">
+        
+        <div class="list-panel">
+            <div class="search-area">
+                <input type="text" id="search" class="search-box" placeholder="Search Ledger..." onkeyup="renderLedgerList(this.value)">
+            </div>
+            <div class="ledger-list" id="ledgerList">
+                <div style="padding:10px; text-align:center; color:#94a3b8;">Loading...</div>
+            </div>
+        </div>
+
+        <div class="form-panel">
+            <div class="form-container">
+                <input type="hidden" id="ledgerId"> <div class="row">
+                    <div class="col">
+                        <label>Ledger Name *</label>
+                        <input type="text" id="name" placeholder="e.g. Rahul Traders">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <label>Under Group *</label>
+                        <select id="group" onchange="autoSetNature()">
+                            <option value="">-- Select Group --</option>
+                            </select>
+                    </div>
+                </div>
+
+                <div class="form-section-header">Mailing Details</div>
+                <div class="row">
+                    <div class="col">
+                        <label>Mailing Name</label>
+                        <input type="text" id="mailingName">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <label>Address</label>
+                        <input type="text" id="address" placeholder="Street, Area">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <label>State</label>
+                        <select id="state">
+                            <option value="">-- Select State --</option>
+                            </select>
+                    </div>
+                    <div class="col">
+                        <label>Pincode</label>
+                        <input type="text" id="pincode" maxlength="6">
+                    </div>
+                </div>
+
+                <div class="form-section-header">Tax Registration</div>
+                <div class="row">
+                    <div class="col">
+                        <label>PAN Number</label>
+                        <input type="text" id="pan" style="text-transform: uppercase;" maxlength="10">
+                    </div>
+                    <div class="col">
+                        <label>GSTIN / UIN</label>
+                        <input type="text" id="gstin" style="text-transform: uppercase;" maxlength="15">
+                    </div>
+                </div>
+
+                <div class="form-section-header">Opening Balance</div>
+                <div class="row">
+                    <div class="col">
+                        <label>Opening Balance</label>
+                        <input type="number" id="opBalance" value="0" step="0.01">
+                    </div>
+                    <div class="col-half">
+                        <label>Dr / Cr</label>
+                        <select id="drcr">
+                            <option value="Dr">Dr</option>
+                            <option value="Cr">Cr</option>
+                        </select>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <div><span class="key-badge">Alt + S</span> Save</div>
+        <div><span class="key-badge">Alt + N</span> New</div>
+        <div><span class="key-badge">Enter</span> Next Field</div>
+        <div><span class="key-badge">Esc</span> Back/Close</div>
+    </div>
+
+    <div id="toast">Saved Successfully!</div>
+
+    <script src="db.js"></script>
+
+    <script>
+        // --- 1. INITIALIZATION ---
+        window.onload = async function() {
+            try {
+                await DB.init(); // Connect to db.js
+                await loadGroups(); // Load 28 Groups
+                await loadStates(); // Load 36 States
+                await renderLedgerList(); // Show existing parties
+                
+                // Focus on Name field
+                document.getElementById('name').focus();
+            } catch (e) {
+                console.error("Initialization failed", e);
+                alert("Database Error: Make sure db.js is in the same folder.");
+            }
+        };
+
+        // --- 2. LOAD DROPDOWNS ---
+        
+        // Load Groups and Attach Nature Logic
+        async function loadGroups() {
+            const groups = await DB.getGroups();
+            const select = document.getElementById('group');
+            select.innerHTML = '<option value="">-- Select Group --</option>';
+            
+            // Sort Alphabetically
+            groups.sort((a, b) => a.name.localeCompare(b.name));
+
+            groups.forEach(g => {
+                let opt = document.createElement('option');
+                opt.value = g.id; // Store ID as value (Relational DB style)
+                opt.innerText = g.name;
+                opt.dataset.nature = g.nature; // Hidden data for logic
+                select.appendChild(opt);
+            });
+        }
+
+        // Load States from DB
+        async function loadStates() {
+            const states = await DB.getStates();
+            const select = document.getElementById('state');
+            select.innerHTML = '<option value="">-- Select State --</option>';
+            
+            // Sort Alphabetically
+            states.sort((a, b) => a.name.localeCompare(b.name));
+
+            states.forEach(s => {
+                let opt = document.createElement('option');
+                opt.value = s.name; // We save State Name for invoices
+                opt.innerText = s.name;
+                select.appendChild(opt);
+            });
+        }
+
+        // --- 3. UI RENDERING ---
+        
+       // UPDATED RENDER FUNCTION
+        async function renderLedgerList(query = '') {
+            const ledgers = await DB.getLedgers();
+            const listDiv = document.getElementById('ledgerList');
+            listDiv.innerHTML = '';
+
+            const filtered = ledgers.filter(l => l.name.toLowerCase().includes(query.toLowerCase()));
+            
+            // Map group names for display
+            const groups = await DB.getGroups();
+            const groupMap = {};
+            groups.forEach(g => groupMap[g.id] = g.name);
+
+            if (filtered.length === 0) {
+                listDiv.innerHTML = '<div style="padding:10px;color:#94a3b8;text-align:center;">No Ledgers Found</div>';
+                return;
+            }
+
+            filtered.forEach(l => {
+                let div = document.createElement('div');
+                // Logic for Active Class
+                const isActive = (l.id == document.getElementById('ledgerId').value) ? 'active' : '';
+                div.className = `list-item ${isActive}`;
+                
+                // Click to Edit
+                div.onclick = () => loadLedgerForEdit(l);
+                
+                div.innerHTML = `
+                    <div style="flex:1;">
+                        <span>${l.name}</span> <br>
+                        <span style="font-size:11px;color:#64748b;font-style:italic;">${groupMap[l.group_id] || '-'}</span>
+                    </div>
+                    <span class="delete-btn" onclick="deleteLedger(event, ${l.id})">✖</span>
+                `;
+                listDiv.appendChild(div);
+            });
+        }
+
+        // --- 4. TALLY LOGIC (The Brain) ---
+        
+        function autoSetNature() {
+            const select = document.getElementById('group');
+            if(select.selectedIndex === 0) return;
+
+            const selectedOption = select.options[select.selectedIndex];
+            const nature = selectedOption.dataset.nature; // Get Nature (Asset/Liab) from DB
+            const drcr = document.getElementById('drcr');
+
+            // Logic: 
+            // Asset/Expenses usually have Debit Balance
+            // Liability/Income usually have Credit Balance
+            if(nature === 'Assets' || nature === 'Expense') {
+                drcr.value = 'Dr';
+            } else if (nature === 'Liability' || nature === 'Income') {
+                drcr.value = 'Cr';
+            }
+        }
+
+        // --- 5. CRUD ACTIONS ---
+
+        async function saveLedger() {
+            const id = document.getElementById('ledgerId').value;
+            const name = document.getElementById('name').value.trim();
+            const groupId = document.getElementById('group').value;
+
+            // VALIDATION
+            if(!name) { showToast("Ledger Name is required!", true); return; }
+            if(!groupId) { showToast("Group Selection is required!", true); return; }// GROK SUGGESTION: GSTIN Validation
+            const gstinVal = document.getElementById('gstin').value.trim();
+            if(gstinVal && gstinVal.length !== 15) {
+                showToast("GSTIN must be exactly 15 characters!", true);
+                return;
+            }
+
+            const ledgerData = {
+                id: id ? parseInt(id) : undefined, // Keep ID if editing
+                name: name,
+                group_id: parseInt(groupId),
+                mailing_name: document.getElementById('mailingName').value || name,
+                address: document.getElementById('address').value,
+                state: document.getElementById('state').value,
+                pincode: document.getElementById('pincode').value,
+                pan: document.getElementById('pan').value.toUpperCase(),
+                gstin: document.getElementById('gstin').value.toUpperCase(),
+                opening_balance: parseFloat(document.getElementById('opBalance').value) || 0,
+                dr_cr: document.getElementById('drcr').value
+            };
+
+            try {
+                await DB.createLedger(ledgerData);
+                showToast("Ledger Saved Successfully!");
+                resetForm();
+                renderLedgerList(); // Refresh list
+            } catch(e) {
+                showToast("Error: Name already exists!", true);
+            }
+        }
+        // GROK SUGGESTION: Delete Ledger
+        async function deleteLedger(e, id) {
+            e.stopPropagation(); // Click list par na jaye, sirf button dabe
+            if(confirm("Are you sure you want to delete this Ledger?")) {
+                await DB.deleteLedger(id);
+                showToast("Ledger Deleted Successfully!");
+                
+                // Agar wahi ledger khula tha, to form clear kar do
+                if(document.getElementById('ledgerId').value == id) {
+                    resetForm();
+                }
+                renderLedgerList();
+            }
+        }
+
+        function loadLedgerForEdit(l) {
+            // Fill Form
+            document.getElementById('ledgerId').value = l.id;
+            document.getElementById('name').value = l.name;
+            document.getElementById('group').value = l.group_id;
+            document.getElementById('mailingName').value = l.mailing_name || l.name;
+            document.getElementById('address').value = l.address || '';
+            document.getElementById('state').value = l.state || '';
+            document.getElementById('pincode').value = l.pincode || '';
+            document.getElementById('pan').value = l.pan || '';
+            document.getElementById('gstin').value = l.gstin || '';
+            document.getElementById('opBalance').value = l.opening_balance || 0;
+            document.getElementById('drcr').value = l.dr_cr || 'Dr';
+
+            // Highlight Active
+            const allItems = document.querySelectorAll('.list-item');
+            allItems.forEach(i => i.classList.remove('active'));
+            // (Note: In a real app we would highlight the clicked item, but list refreshes on save)
+        }
+
+        function resetForm() {
+            document.getElementById('ledgerId').value = '';
+            document.querySelectorAll('input').forEach(i => i.value = '');
+            document.getElementById('group').selectedIndex = 0;
+            document.getElementById('state').selectedIndex = 0;
+            document.getElementById('opBalance').value = 0;
+            document.getElementById('drcr').value = 'Dr';
+            document.getElementById('name').focus();
+        }
+
+        function showToast(msg, isError = false) {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.className = isError ? 'error' : '';
+            t.style.display = 'block';
+            setTimeout(() => t.style.display = 'none', 3000);
+        }
+
+        // --- 6. KEYBOARD NAVIGATION ---
+        document.addEventListener('keydown', (e) => {
+            // ALT+S to Save
+            if (e.altKey && e.key.toLowerCase() === 's') {
+                e.preventDefault();
+                saveLedger();
+            }
+            // ALT+N to New
+            if (e.altKey && e.key.toLowerCase() === 'n') {
+                e.preventDefault();
+                resetForm();
+            }
+            // ESC to Close
+            if (e.key === 'Escape') {
+                window.location.href = 'index.html'; // Or window.close()
+            }
+            // ENTER to Navigate Fields
+            if (e.key === 'Enter') {
+                e.preventDefault(); // Stop default form submit
+                const inputs = Array.from(document.querySelectorAll('input, select'));
+                const active = document.activeElement;
+                const index = inputs.indexOf(active);
+                
+                if (index > -1 && index < inputs.length - 1) {
+                    inputs[index + 1].focus();
+                } else if (index === inputs.length - 1) {
+                    // If on last field, maybe save? For now, do nothing or loop.
+                    // saveLedger(); // Uncomment if you want Enter on last field to save
+                }
+            }
+        });
+
+    </script>
+</body>
+</html>
