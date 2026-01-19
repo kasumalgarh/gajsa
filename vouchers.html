@@ -3,93 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Accounting Vouchers - Money Wise Pro</title>
+    <title>Accounting Desk - Money Wise Pro</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg: #f3f4f6; --text: #1e293b; --border: #e5e7eb;
-            --green: #10b981; --red: #ef4444; --blue: #3b82f6; --purple: #8b5cf6;
-        }
+        :root { --bg: #f3f4f6; --text: #1e293b; --border: #e5e7eb; --green: #10b981; --red: #ef4444; --blue: #3b82f6; --purple: #8b5cf6; }
         * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
         body { display: flex; height: 100vh; background: var(--bg); color: var(--text); overflow: hidden; }
 
+        /* SIDEBAR */
         .sidebar { width: 260px; background: #0f172a; padding: 20px; display: flex; flex-direction: column; flex-shrink: 0; }
-        .brand { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 40px; display: flex; align-items: center; gap: 10px; }
-        .nav-link { padding: 12px 15px; margin-bottom: 5px; border-radius: 8px; color: #94a3b8; text-decoration: none; font-weight: 500; display: flex; align-items: center; gap: 12px; transition: 0.2s; font-size: 14px; }
+        .nav-link { padding: 12px 15px; margin-bottom: 5px; border-radius: 8px; color: #94a3b8; text-decoration: none; font-weight: 500; display: block; font-size: 14px; }
         .nav-link:hover, .nav-link.active { background: #1e293b; color: #f8fafc; }
-        .nav-icon { font-size: 18px; }
 
-        .main { flex: 1; padding: 30px; overflow-y: auto; display: grid; grid-template-columns: 1.5fr 1fr; gap: 30px; }
+        /* MAIN LAYOUT */
+        .main { flex: 1; padding: 20px; overflow-y: auto; display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
         
-        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid var(--border); height: fit-content; }
+        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid var(--border); height: fit-content; }
         
         /* TABS */
         .tabs { display: flex; margin-bottom: 20px; background: #f1f5f9; padding: 4px; border-radius: 8px; }
         .tab { flex: 1; text-align: center; padding: 10px; cursor: pointer; border-radius: 6px; font-weight: 600; font-size: 13px; transition: 0.2s; }
-        .tab.active { background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transform: scale(1.02); }
-        .t-rcp.active { color: var(--green); border-bottom: 2px solid var(--green); }
-        .t-pmt.active { color: var(--red); border-bottom: 2px solid var(--red); }
-        .t-cnt.active { color: var(--blue); border-bottom: 2px solid var(--blue); }
-        .t-jrn.active { color: var(--purple); border-bottom: 2px solid var(--purple); }
+        .tab.active { background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .t-rcp.active { border-bottom: 3px solid var(--green); color: var(--green); }
+        .t-pmt.active { border-bottom: 3px solid var(--red); color: var(--red); }
+        .t-cnt.active { border-bottom: 3px solid var(--blue); color: var(--blue); }
+        .t-jrn.active { border-bottom: 3px solid var(--purple); color: var(--purple); }
 
-        .form-group { margin-bottom: 15px; position: relative; }
-        label { display: block; font-size: 13px; font-weight: 600; color: #64748b; margin-bottom: 5px; }
-        input, select, textarea { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; outline: none; transition: 0.2s; }
-        input:focus, select:focus, textarea:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+        /* FORMS */
+        .form-row { display: flex; gap: 15px; margin-bottom: 15px; }
+        .form-group { flex: 1; position: relative; margin-bottom: 15px; }
+        label { display: block; font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 5px; }
+        input, select, textarea { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; outline: none; }
+        input:focus, select:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
 
-        .bal-display { position: absolute; right: 0; top: 0; font-size: 12px; font-weight: 700; }
+        .bal-display { position: absolute; right: 0; top: 0; font-size: 11px; font-weight: 700; }
         .bal-dr { color: var(--green); } .bal-cr { color: var(--red); }
 
-        .btn-group { display: flex; gap: 10px; margin-top: 15px; }
-        .btn-save { flex: 2; padding: 12px; border: none; border-radius: 8px; font-weight: 700; font-size: 15px; cursor: pointer; color: white; transition: 0.2s; }
-        .btn-print { flex: 1; background: #64748b; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; }
-        .btn-save:hover { opacity: 0.9; }
+        /* ADVANCED OPTIONS */
+        .advanced-box { background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px dashed var(--border); margin-bottom: 15px; display: none; }
+        .checkbox-group { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; cursor: pointer; margin-bottom: 10px; }
+        .checkbox-group input { width: auto; }
 
         /* JOURNAL GRID */
         .journal-grid { display: none; margin-bottom: 15px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
         .journal-row { display: flex; border-bottom: 1px solid var(--border); background: #fff; }
-        .journal-row:last-child { border-bottom: none; }
-        .j-type { width: 80px; padding: 8px; border-right: 1px solid var(--border); }
-        .j-ac { flex: 1; padding: 8px; border-right: 1px solid var(--border); }
-        .j-amt { width: 120px; padding: 8px; }
-        .j-act { width: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--red); }
-        
-        .journal-footer { display: flex; justify-content: space-between; padding: 10px; background: #f8fafc; font-weight: 700; font-size: 13px; border-top: 1px solid var(--border); }
-        .diff-err { color: var(--red); } .diff-ok { color: var(--green); }
+        .j-type { width: 70px; } .j-ac { flex: 1; } .j-amt { width: 100px; } .j-act { width: 30px; text-align: center; cursor: pointer; color: red; padding-top: 8px; }
+        .journal-row select, .journal-row input { border: none; border-radius: 0; background: transparent; }
 
-        /* RECENT TRANSACTIONS */
-        .recent-box { background: white; padding: 20px; border-radius: 12px; border: 1px solid var(--border); height: fit-content; }
-        .txn-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
+        /* BUTTONS */
+        .btn-group { display: flex; gap: 10px; margin-top: 15px; }
+        .btn-save { flex: 2; padding: 12px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; color: white; transition: 0.2s; background: var(--green); }
+        .btn-print { flex: 1; background: #64748b; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; }
+        
+        /* RECENT LIST */
+        .txn-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
         .tag { padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; }
-        .tag-Receipt { background: #dcfce7; color: #166534; }
-        .tag-Payment { background: #fee2e2; color: #991b1b; }
-        .tag-Contra { background: #dbeafe; color: #1e40af; }
-        .tag-Journal { background: #f3e8ff; color: #6b21a8; }
-        
-        .btn-del { background: none; border: none; cursor: pointer; font-size: 16px; opacity: 0.6; padding: 5px; color:var(--red); }
-
-        @media (max-width: 1000px) { .main { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 
     <div class="sidebar">
-        <div class="brand">🚀 MoneyWise Pro</div>
-        <a href="index.html" class="nav-link"><span class="nav-icon">📊</span> Dashboard</a>
-        <a href="reports.html" class="nav-link"><span class="nav-icon">📈</span> Reports</a>
-        <a href="gst_filing.html" class="nav-link"><span class="nav-icon">🏛️</span> GST Filing</a>
-        <a href="sales_invoice.html" class="nav-link"><span class="nav-icon">🧾</span> Sales Invoice</a>
-        <a href="purchase_invoice.html" class="nav-link"><span class="nav-icon">🚚</span> Purchase Entry</a>
-        <a href="vouchers.html" class="nav-link active"><span class="nav-icon">💸</span> Vouchers (JV)</a>
-        <a href="item_master.html" class="nav-link"><span class="nav-icon">📦</span> Inventory</a>
-        <a href="moneywise.html" class="nav-link"><span class="nav-icon">👥</span> Parties / Ledgers</a>
-        <a href="coa.html" class="nav-link"><span class="nav-icon">🗂️</span> Chart of Accounts</a>
-        <a href="settings.html" class="nav-link"><span class="nav-icon">⚙️</span> Settings</a>
+        <div style="font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 40px;">🚀 MoneyWise Pro</div>
+        <a href="index.html" class="nav-link">📊 Dashboard</a>
+        <a href="reports.html" class="nav-link">📈 Reports</a>
+        <a href="gst_filing.html" class="nav-link">🏛️ GST Filing</a>
+        <a href="sales_invoice.html" class="nav-link">🧾 Sales Invoice</a>
+        <a href="purchase_invoice.html" class="nav-link">🚚 Purchase Entry</a>
+        <a href="vouchers.html" class="nav-link active">💸 Vouchers (JV)</a>
+        <a href="item_master.html" class="nav-link">📦 Inventory</a>
+        <a href="moneywise.html" class="nav-link">👥 Parties</a>
+        <a href="coa.html" class="nav-link">🗂️ Accounts</a>
+        <a href="settings.html" class="nav-link">⚙️ Settings</a>
     </div>
 
     <div class="main">
-        <div class="card" id="formCard">
-            <h3 style="margin-bottom: 20px;">Accounting Voucher</h3>
+        <div class="card">
+            <h3 style="margin-bottom: 20px;">Entry Desk</h3>
             
             <div class="tabs">
                 <div class="tab t-rcp active" onclick="setMode('Receipt')">⬇ Receipt (F6)</div>
@@ -98,70 +87,80 @@
                 <div class="tab t-jrn" onclick="setMode('Journal')">📓 Journal (F7)</div>
             </div>
 
-            <div class="form-group">
-                <label>Voucher No & Date</label>
-                <div style="display:flex; gap:10px;">
-                    <input type="text" id="vchNo" readonly style="background:#f8fafc; font-weight:bold; width:40%; color:#64748b;" tabindex="-1">
-                    <input type="date" id="date" style="width:60%;" class="input-field">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Voucher No</label>
+                    <input type="text" id="vchNo" readonly style="background:#f8fafc; font-weight:bold; color:#64748b;">
+                </div>
+                <div class="form-group">
+                    <label>Date</label>
+                    <input type="date" id="date">
                 </div>
             </div>
 
             <div id="standardInputs">
                 <div class="form-group">
-                    <label id="lblAccount">Account (Cash/Bank)</label>
-                    <select id="ac1Select" class="input-field" onchange="updateBalance('ac1')"><option value="">Loading...</option></select>
+                    <label id="lblAccount">Account (Bank/Cash)</label>
+                    <select id="ac1Select" onchange="checkBank(this); updateBalance('ac1')"><option value="">Loading...</option></select>
                     <span id="bal1" class="bal-display"></span>
                 </div>
+                
+                <div id="bankOptions" class="advanced-box">
+                    <div style="display:flex; justify-content:space-between;">
+                        <label class="checkbox-group"><input type="checkbox" id="isPDC"> Post Dated Cheque (PDC)</label>
+                        <button onclick="printCheque()" style="padding:2px 8px; font-size:11px; cursor:pointer;">🖨️ Print Cheque</button>
+                    </div>
+                    <div class="form-row" style="margin-bottom:0;">
+                        <div class="form-group" style="margin-bottom:0;"><label>Cheque No</label><input type="text" id="chqNo"></div>
+                        <div class="form-group" style="margin-bottom:0;"><label>Cheque Date</label><input type="date" id="chqDate"></div>
+                    </div>
+                </div>
+
                 <div class="form-group">
                     <label id="lblParty">Party / Ledger</label>
-                    <select id="ac2Select" class="input-field" onchange="updateBalance('ac2')"><option value="">Loading...</option></select>
+                    <select id="ac2Select" onchange="updateBalance('ac2')"><option value="">Loading...</option></select>
                     <span id="bal2" class="bal-display"></span>
                 </div>
                 <div class="form-group">
                     <label>Amount (₹)</label>
-                    <input type="number" id="amount" placeholder="0.00" style="font-size:18px; font-weight:bold;" class="input-field">
+                    <input type="number" id="amount" placeholder="0.00" style="font-size:18px; font-weight:bold;">
                 </div>
             </div>
 
             <div id="journalInputs" style="display:none;">
-                <label style="margin-bottom:5px;">Journal Entries (Dr/Cr)</label>
                 <div class="journal-grid" id="journalRows"></div>
-                <button type="button" onclick="addJournalRow()" style="width:100%; padding:8px; border:1px dashed var(--border); background:#f8fafc; cursor:pointer; margin-bottom:15px; font-size:12px;">+ Add Ledger Line</button>
-                <div class="journal-footer">
+                <button type="button" onclick="addJournalRow()" style="width:100%; padding:8px; border:1px dashed #ccc; cursor:pointer;">+ Add Row</button>
+                <div style="padding:10px; display:flex; justify-content:space-between; font-weight:bold; font-size:13px;">
                     <span>Total Debit: <span id="totDr">0.00</span></span>
                     <span>Total Credit: <span id="totCr">0.00</span></span>
-                    <span id="diffDisplay" class="diff-ok">Diff: 0.00</span>
+                    <span id="diffDisplay" style="color:red;">Diff: 0.00</span>
                 </div>
             </div>
 
             <div class="form-group">
                 <label>Narration</label>
-                <textarea id="narration" rows="2" placeholder="Being amount paid/received..." class="input-field"></textarea>
+                <textarea id="narration" rows="2" placeholder="Being amount paid..."></textarea>
             </div>
 
             <div class="btn-group">
                 <button class="btn-save" id="saveBtn" onclick="saveVoucher(false)">Save Only (Enter)</button>
-                <button class="btn-print" onclick="saveVoucher(true)">Save & Print (Alt+P)</button>
+                <button class="btn-print" onclick="saveVoucher(true)">Save & Print</button>
             </div>
         </div>
 
-        <div class="recent-box">
-            <div class="recent-header">
-                <span>🕒 Recent Transactions</span>
+        <div class="card">
+            <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
+                <span style="font-weight:700;">Recent Transactions</span>
                 <span style="font-size:12px; color:var(--blue); cursor:pointer;" onclick="loadRecent()">↻ Refresh</span>
             </div>
-            <div id="recentList">
-                <div style="text-align:center; color:#94a3b8; padding:20px;">Loading...</div>
-            </div>
+            <div id="recentList"></div>
         </div>
     </div>
 
-    <script src="db.js"></script>
-    <script src="auth.js"></script>
+    <script src="db.js"></script><script src="auth.js"></script>
     <script>
         let currentMode = 'Receipt';
-        let ledgers = [];
-        let groups = [];
+        let ledgers = [], groups = [];
 
         window.onload = async () => {
             await DB.init();
@@ -169,30 +168,28 @@
             groups = await DB.getGroups();
             setMode('Receipt');
             loadRecent();
-            setupEnterNavigation(); // Enable Key Nav
+            
+            // Shortcuts
+            document.addEventListener('keydown', e => {
+                if(e.key === 'F5') { e.preventDefault(); setMode('Payment'); }
+                if(e.key === 'F6') { e.preventDefault(); setMode('Receipt'); }
+                if(e.key === 'F7') { e.preventDefault(); setMode('Journal'); }
+                if(e.key === 'F4') { e.preventDefault(); setMode('Contra'); }
+            });
         };
 
-        // --- STRICT FILTER LOGIC ---
         function getLedgersByType(type) {
-            const isCashBank = (l) => {
-                const g = groups.find(grp => grp.id == l.group_id)?.name || '';
-                return g.includes("Cash") || g.includes("Bank");
-            };
-            if (type === 'CashBank') return ledgers.filter(l => isCashBank(l));
-            if (type === 'Others') return ledgers.filter(l => !isCashBank(l)); // Hide Cash/Bank here
+            const isBank = l => { const g = groups.find(x=>x.id==l.group_id)?.name||''; return g.includes('Bank') || g.includes('Cash'); };
+            if(type === 'CashBank') return ledgers.filter(l => isBank(l));
+            if(type === 'Others') return ledgers.filter(l => !isBank(l));
             return ledgers;
         }
 
-        function populateSelect(elementId, ledgerList) {
-            const sel = document.getElementById(elementId);
-            sel.innerHTML = '<option value="">-- Select Account --</option>';
-            ledgerList.sort((a,b) => a.name.localeCompare(b.name));
-            ledgerList.forEach(l => {
-                const gName = groups.find(g => g.id == l.group_id)?.name || '';
-                let opt = document.createElement('option');
-                opt.value = l.id;
-                opt.text = `${l.name} [${gName}]`;
-                sel.appendChild(opt);
+        function populateSelect(id, list) {
+            const sel = document.getElementById(id);
+            sel.innerHTML = '<option value="">-- Select --</option>';
+            list.sort((a,b)=>a.name.localeCompare(b.name)).forEach(l => {
+                sel.innerHTML += `<option value="${l.id}">${l.name}</option>`;
             });
         }
 
@@ -206,32 +203,29 @@
             const std = document.getElementById('standardInputs');
             const jrn = document.getElementById('journalInputs');
             
-            // Auto Voucher Number
+            // Generate Voucher No
             document.getElementById('date').valueAsDate = new Date();
             const count = (await DB.getAll('vouchers')).filter(v => v.type === mode).length + 1;
-            document.getElementById('vchNo').value = `${mode.substring(0,3).toUpperCase()}-${String(count).padStart(4, '0')}`;
+            document.getElementById('vchNo').value = `${mode.substring(0,3).toUpperCase()}-${String(count).padStart(4,'0')}`;
 
             if(mode === 'Journal') {
-                std.style.display = 'none';
-                jrn.style.display = 'block';
+                std.style.display = 'none'; jrn.style.display = 'block';
                 btn.style.background = 'var(--purple)'; btn.innerText = 'Save Journal';
                 document.getElementById('journalRows').innerHTML = '';
                 addJournalRow('Dr'); addJournalRow('Cr');
-                calcJournalTotal();
             } else {
-                std.style.display = 'block';
-                jrn.style.display = 'none';
+                std.style.display = 'block'; jrn.style.display = 'none';
                 
                 if (mode === 'Receipt') {
                     btn.style.background = 'var(--green)'; btn.innerText = 'Save Receipt';
-                    document.getElementById('lblAccount').innerText = "Deposit To (Debit) - Cash/Bank Only";
-                    populateSelect('ac1Select', getLedgersByType('CashBank')); // Strict Filter
+                    document.getElementById('lblAccount').innerText = "Deposit To (Debit)";
+                    populateSelect('ac1Select', getLedgersByType('CashBank'));
                     document.getElementById('lblParty').innerText = "Received From (Credit)";
                     populateSelect('ac2Select', getLedgersByType('Others'));
                 } else if (mode === 'Payment') {
                     btn.style.background = 'var(--red)'; btn.innerText = 'Save Payment';
-                    document.getElementById('lblAccount').innerText = "Paid From (Credit) - Cash/Bank Only";
-                    populateSelect('ac1Select', getLedgersByType('CashBank')); // Strict Filter
+                    document.getElementById('lblAccount').innerText = "Paid From (Credit)";
+                    populateSelect('ac1Select', getLedgersByType('CashBank'));
                     document.getElementById('lblParty').innerText = "Paid To (Debit)";
                     populateSelect('ac2Select', getLedgersByType('Others'));
                 } else { // Contra
@@ -242,188 +236,139 @@
                     populateSelect('ac2Select', getLedgersByType('CashBank'));
                 }
             }
-            // Focus first field
-            setTimeout(() => document.getElementById('date').focus(), 100);
         }
 
-        // --- JOURNAL LOGIC ---
-        function addJournalRow(defaultType = 'Dr') {
+        function checkBank(sel) {
+            const id = parseInt(sel.value);
+            const l = ledgers.find(x => x.id === id);
+            const g = groups.find(x => x.id === l?.group_id)?.name || '';
+            
+            if(g.includes("Bank")) {
+                document.getElementById('bankOptions').style.display = 'block';
+            } else {
+                document.getElementById('bankOptions').style.display = 'none';
+            }
+        }
+
+        function addJournalRow(type='Dr') {
             const div = document.createElement('div');
             div.className = 'journal-row';
-            let opts = `<option value="">Select Ledger</option>`;
-            ledgers.sort((a,b)=>a.name.localeCompare(b.name)).forEach(l => { opts += `<option value="${l.id}">${l.name}</option>`; });
-
+            let opts = '<option value="">Select</option>';
+            ledgers.forEach(l => opts += `<option value="${l.id}">${l.name}</option>`);
+            
             div.innerHTML = `
-                <div class="j-type"><select class="row-type input-field" onchange="calcJournalTotal()"><option value="Dr" ${defaultType==='Dr'?'selected':''}>Dr</option><option value="Cr" ${defaultType==='Cr'?'selected':''}>Cr</option></select></div>
-                <div class="j-ac"><select class="row-ledger input-field">${opts}</select></div>
-                <div class="j-amt"><input type="number" class="row-amt input-field" placeholder="0.00" onchange="calcJournalTotal()"></div>
-                <div class="j-act" onclick="this.parentElement.remove(); calcJournalTotal()">×</div>
+                <div class="j-type"><select class="j-t" onchange="calcJ()"><option value="Dr" ${type=='Dr'?'selected':''}>Dr</option><option value="Cr" ${type=='Cr'?'selected':''}>Cr</option></select></div>
+                <div class="j-ac"><select class="j-l">${opts}</select></div>
+                <div class="j-amt"><input type="number" class="j-a" placeholder="0.00" onchange="calcJ()"></div>
+                <div class="j-act" onclick="this.parentElement.remove();calcJ()">×</div>
             `;
             document.getElementById('journalRows').appendChild(div);
         }
 
-        function calcJournalTotal() {
-            let dr = 0, cr = 0;
+        function calcJ() {
+            let dr=0, cr=0;
             document.querySelectorAll('.journal-row').forEach(row => {
-                const type = row.querySelector('.row-type').value;
-                const amt = parseFloat(row.querySelector('.row-amt').value) || 0;
-                if(type === 'Dr') dr += amt; else cr += amt;
+                const t = row.querySelector('.j-t').value;
+                const a = parseFloat(row.querySelector('.j-a').value)||0;
+                if(t==='Dr') dr+=a; else cr+=a;
             });
-            document.getElementById('totDr').textContent = dr.toFixed(2);
-            document.getElementById('totCr').textContent = cr.toFixed(2);
-            const diff = dr - cr;
-            const diffEl = document.getElementById('diffDisplay');
-            diffEl.textContent = `Diff: ${Math.abs(diff).toFixed(2)}`;
-            
-            if(Math.abs(diff) < 0.01 && dr > 0) {
-                diffEl.className = 'diff-ok'; diffEl.textContent = 'Balanced ✅';
-                document.getElementById('saveBtn').disabled = false;
-                document.getElementById('saveBtn').style.opacity = 1;
-            } else {
-                diffEl.className = 'diff-err'; 
-                document.getElementById('saveBtn').disabled = true;
-                document.getElementById('saveBtn').style.opacity = 0.5;
-            }
+            document.getElementById('totDr').innerText = dr.toFixed(2);
+            document.getElementById('totCr').innerText = cr.toFixed(2);
+            const diff = dr-cr;
+            const dEl = document.getElementById('diffDisplay');
+            dEl.innerText = `Diff: ${Math.abs(diff).toFixed(2)}`;
+            dEl.style.color = Math.abs(diff)<0.01 ? 'green' : 'red';
+            document.getElementById('saveBtn').disabled = Math.abs(diff)>0.01;
         }
 
-        async function saveVoucher(doPrint = false) {
+        async function saveVoucher(print) {
+            let entries = [];
             const narration = document.getElementById('narration').value;
+            const pdc = document.getElementById('isPDC').checked;
+            const chq = document.getElementById('chqNo').value;
+            
             const vData = {
                 voucher_no: document.getElementById('vchNo').value,
                 date: document.getElementById('date').value,
                 type: currentMode,
-                amount: 0, 
-                party_id: null,
-                narration: narration
+                amount: 0,
+                narration: narration + (chq ? ` [Chq: ${chq}]` : ''),
+                is_pdc: pdc,
+                cheque_date: document.getElementById('chqDate').value
             };
-
-            let entries = [];
-            let totalAmt = 0;
 
             if(currentMode === 'Journal') {
                 document.querySelectorAll('.journal-row').forEach(row => {
-                    const type = row.querySelector('.row-type').value;
-                    const lid = parseInt(row.querySelector('.row-ledger').value);
-                    const amt = parseFloat(row.querySelector('.row-amt').value);
-                    if(lid && amt) {
-                        entries.push({ ledger_id: lid, debit: type === 'Dr' ? amt : 0, credit: type === 'Cr' ? amt : 0 });
-                        if(type === 'Dr') totalAmt += amt;
-                    }
+                    const t = row.querySelector('.j-t').value;
+                    const l = parseInt(row.querySelector('.j-l').value);
+                    const a = parseFloat(row.querySelector('.j-a').value);
+                    if(l && a) entries.push({ ledger_id: l, debit: t=='Dr'?a:0, credit: t=='Cr'?a:0 });
                 });
             } else {
                 const amt = parseFloat(document.getElementById('amount').value);
                 const ac1 = parseInt(document.getElementById('ac1Select').value);
                 const ac2 = parseInt(document.getElementById('ac2Select').value);
+                
                 if(!amt || !ac1 || !ac2) return alert("Fill all fields");
-                if(ac1 === ac2) return alert("Accounts must be different");
+                vData.amount = amt;
+                vData.party_id = ac2;
 
-                totalAmt = amt;
-                vData.party_id = ac2; 
-
-                if (currentMode === 'Receipt') {
-                    entries.push({ ledger_id: ac1, debit: amt, credit: 0 }); // Cash Dr
-                    entries.push({ ledger_id: ac2, debit: 0, credit: amt }); // Party Cr
-                } else if (currentMode === 'Payment') {
-                    entries.push({ ledger_id: ac2, debit: amt, credit: 0 }); // Party Dr
-                    entries.push({ ledger_id: ac1, debit: 0, credit: amt }); // Cash Cr
-                } else { // Contra
-                    entries.push({ ledger_id: ac1, debit: amt, credit: 0 }); // Target Dr
-                    entries.push({ ledger_id: ac2, debit: 0, credit: amt }); // Source Cr
+                if(currentMode === 'Receipt') {
+                    entries.push({ ledger_id: ac1, debit: amt, credit: 0 });
+                    entries.push({ ledger_id: ac2, debit: 0, credit: amt });
+                } else if(currentMode === 'Payment') {
+                    entries.push({ ledger_id: ac2, debit: amt, credit: 0 });
+                    entries.push({ ledger_id: ac1, debit: 0, credit: amt });
+                } else {
+                    entries.push({ ledger_id: ac1, debit: amt, credit: 0 });
+                    entries.push({ ledger_id: ac2, debit: 0, credit: amt });
                 }
             }
 
-            vData.amount = totalAmt;
-
             try {
-                if(entries.length === 0) return alert("No valid entries");
                 await DB.saveVoucher(vData, [], entries);
-                
-                if(doPrint) {
-                    alert("Entry Saved! Printing...");
-                    window.print();
-                } else {
-                    // Quick Reset for next entry
-                    if(currentMode !== 'Journal') document.getElementById('amount').value = '';
-                    document.getElementById('narration').value = '';
-                    setMode(currentMode); // Regen VCH NO
-                    loadRecent();
-                    // Focus back to first field
-                    document.getElementById('date').focus();
-                }
+                if(print) window.print();
+                alert("Saved!");
+                location.reload();
             } catch(e) { alert("Error: " + e); }
         }
 
-        async function updateBalance(elType) {
-            const selectId = elType === 'ac1' ? 'ac1Select' : 'ac2Select';
-            const spanId = elType === 'ac1' ? 'bal1' : 'bal2';
-            const id = parseInt(document.getElementById(selectId).value);
-            if(!id) { document.getElementById(spanId).innerText = ''; return; }
-            
+        async function updateBalance(el) {
+            const id = parseInt(document.getElementById(el === 'ac1' ? 'ac1Select' : 'ac2Select').value);
+            if(!id) return;
             const entries = await DB.getAll('acct_entries');
-            const ledger = ledgers.find(l => l.id === id);
-            let bal = ledger.opening_balance || 0;
-            entries.filter(e => e.ledger_id === id).forEach(e => { bal += (e.debit - e.credit); });
-            
-            const type = bal >= 0 ? 'Dr' : 'Cr';
-            const color = bal >= 0 ? 'bal-dr' : 'bal-cr';
-            document.getElementById(spanId).className = `bal-display ${color}`;
-            document.getElementById(spanId).innerText = `₹${Math.abs(bal).toFixed(2)} ${type}`;
+            const l = ledgers.find(x => x.id === id);
+            let bal = l.opening_balance || 0;
+            entries.filter(e => e.ledger_id === id).forEach(e => bal += (e.debit - e.credit));
+            const span = document.getElementById(el === 'ac1' ? 'bal1' : 'bal2');
+            span.innerText = `₹${Math.abs(bal).toFixed(2)} ${bal>=0?'Dr':'Cr'}`;
+            span.className = `bal-display ${bal>=0?'bal-dr':'bal-cr'}`;
         }
 
         async function loadRecent() {
+            const all = await DB.getAll('vouchers');
             const list = document.getElementById('recentList');
             list.innerHTML = '';
-            const all = await DB.getAll('vouchers');
             all.sort((a,b)=>b.id-a.id).slice(0,5).forEach(v => {
-                const item = document.createElement('div');
-                item.className = 'txn-item';
-                item.innerHTML = `<div><span class="tag tag-${v.type}">${v.type}</span> <b>${v.voucher_no}</b></div><div><b>₹${v.amount}</b> <button class="btn-del" onclick="del(${v.id})">🗑️</button></div>`;
-                list.appendChild(item);
+                list.innerHTML += `<div class="txn-item"><div><span class="tag" style="background:#eee;">${v.type}</span> <b>${v.voucher_no}</b></div><b>₹${v.amount}</b></div>`;
             });
         }
-        
-        async function del(id) {
-             if(confirm('Delete Voucher? Action will be logged.')) {
-                 try { await DB.deleteVoucher(id); loadRecent(); } catch(e) { alert("Error: " + e); }
-             }
-        }
 
-        // --- ENTER KEY NAVIGATION (MAGIC SCRIPT) ---
-        function setupEnterNavigation() {
-            document.addEventListener('keydown', (e) => {
-                // Ignore if Alt key is pressed (for shortcuts)
-                if (e.altKey) {
-                    if(e.key.toLowerCase() === 'p') saveVoucher(true);
-                    return;
-                }
-
-                if (e.key === 'Enter') {
-                    // Don't interfere with buttons or textarea
-                    if(e.target.tagName === 'BUTTON' || e.target.tagName === 'TEXTAREA') return;
-                    
-                    e.preventDefault();
-                    
-                    // Find all focusable inputs
-                    const inputs = Array.from(document.querySelectorAll('.input-field, select, input:not([type=hidden])'));
-                    const index = inputs.indexOf(e.target);
-                    
-                    if (index > -1 && index < inputs.length - 1) {
-                        inputs[index + 1].focus(); // Go to next
-                    } else {
-                        // If last field (Narration usually), trigger save
-                        // Check if we are on narration or last input
-                        if(e.target.id === 'narration' || index === inputs.length - 1) {
-                            saveVoucher(false); // Save without print
-                        }
-                    }
-                }
-                
-                // Function Keys Mapping
-                if (e.key === 'F4') { e.preventDefault(); setMode('Contra'); }
-                if (e.key === 'F5') { e.preventDefault(); setMode('Payment'); }
-                if (e.key === 'F6') { e.preventDefault(); setMode('Receipt'); }
-                if (e.key === 'F7') { e.preventDefault(); setMode('Journal'); }
-            });
+        function printCheque() {
+            const name = document.getElementById('ac2Select').selectedOptions[0].text;
+            const amt = document.getElementById('amount').value;
+            const date = document.getElementById('chqDate').value;
+            if(!amt || !date) return alert("Fill Amount & Cheque Date");
+            
+            // Simple Cheque Print Layout
+            const w = window.open('', '', 'width=800,height=400');
+            w.document.write(`<div style="padding:50px; font-family:monospace; transform: rotate(0deg);">
+                <div style="position:absolute; top:20px; right:50px;">${date.split('-').reverse().join('')}</div>
+                <div style="position:absolute; top:80px; left:100px;">Pay <b>${name.split('[')[0]}</b></div>
+                <div style="position:absolute; top:130px; left:100px;">Rupees ${amt} Only</div>
+                <div style="position:absolute; top:150px; right:50px; border:1px solid #000; padding:5px;">₹ ${amt}/-</div>
+            </div>`);
+            w.print();
         }
     </script>
 </body>

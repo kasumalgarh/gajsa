@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Purchase Entry - Money Wise Pro</title>
+    <title>Purchase & Inventory - Money Wise Pro</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        /* KEEPING YOUR OLD STYLES INTACT */
         :root {
             --header-bg: #064e3b; --accent: #10b981; --bg: #f0fdf4;
             --card-bg: #ffffff; --border: #d1fae5; --text: #064e3b;
@@ -14,15 +15,16 @@
         * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
         body { background: var(--bg); color: var(--text); padding: 20px; }
 
-        /* TOOLBAR */
-        .toolbar {
-            max-width: 210mm; margin: 0 auto 20px; display: flex; justify-content: space-between; align-items: center;
-        }
+        /* TOOLBAR - UPGRADED */
+        .toolbar { max-width: 210mm; margin: 0 auto 20px; display: flex; justify-content: space-between; align-items: center; }
         .btn { padding: 10px 20px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; color: white; display: flex; align-items: center; gap: 8px; }
-        .btn-save { background: var(--header-bg); } .btn-save:hover { opacity: 0.9; }
-        .btn-new { background: var(--accent); } .btn-back { background: #64748b; }
+        .btn-save { background: var(--header-bg); } 
+        .btn-new { background: var(--accent); } 
+        .btn-back { background: #64748b; }
+        
+        .mode-select { padding: 8px; border-radius: 6px; border: 2px solid var(--accent); font-weight: 700; color: var(--header-bg); outline: none; }
 
-        /* MAIN INVOICE BOX (A4 Style) */
+        /* MAIN CONTAINER */
         .container { 
             background: white; width: 210mm; min-height: 297mm; margin: 0 auto;
             padding: 15mm; box-shadow: 0 5px 15px rgba(0,0,0,0.05); 
@@ -30,48 +32,45 @@
             display: flex; flex-direction: column;
         }
 
-        /* HEADER */
-        .invoice-header { display: flex; justify-content: space-between; margin-bottom: 30px; }
+        /* HEADER & META */
+        .invoice-header { display: flex; justify-content: space-between; margin-bottom: 20px; }
         .title-section h1 { font-size: 24px; color: var(--header-bg); text-transform: uppercase; }
         .title-section p { font-size: 13px; color: var(--muted); }
-        
         .meta-grid { text-align: right; display: grid; grid-template-columns: auto auto; gap: 8px 15px; font-size: 13px; }
-        .meta-label { font-weight: 600; color: var(--muted); }
-        .meta-val input { text-align: right; border: 1px solid var(--border); padding: 5px; border-radius: 4px; width: 140px; font-weight: 700; color: var(--header-bg); }
-
+        .input-field { padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 13px; outline: none; }
+        
         /* SUPPLIER SECTION */
-        .supplier-section { background: #f0fdf4; padding: 15px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 20px; }
-        .form-group { margin-bottom: 10px; }
-        .form-group label { display: block; font-size: 12px; font-weight: 700; color: var(--muted); margin-bottom: 4px; }
-        select, textarea, input[type="text"] { width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 13px; outline: none; background: white; }
-        select:focus, input:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(16,185,129,0.1); }
+        .supplier-section { background: #f0fdf4; padding: 15px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 20px; display: flex; gap: 20px; }
+        .supp-left { flex: 2; }
+        .supp-right { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; }
+        .scan-input { width: 100%; padding: 10px; border: 2px solid var(--accent); border-radius: 6px; }
 
         /* TABLE */
         .item-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 20px; }
         .item-table th { background: var(--header-bg); color: white; padding: 10px; text-align: left; }
         .item-table td { border-bottom: 1px solid var(--border); padding: 8px; vertical-align: middle; }
-        .item-table input, .item-table select { border: none; background: transparent; width: 100%; padding: 5px; }
+        .item-table input, .item-table select { border: none; background: transparent; width: 100%; padding: 5px; outline: none; }
         .item-table input:focus { background: #ecfdf5; }
         .text-right { text-align: right; }
+        
+        .batch-field { width: 80px !important; font-size: 11px; border-bottom: 1px dashed #ccc !important; }
 
         .add-btn { width: 100%; padding: 8px; background: #ecfdf5; border: 1px dashed var(--accent); color: var(--header-bg); cursor: pointer; font-size: 12px; font-weight: 600; }
-        
+
         /* FOOTER */
         .totals-section { margin-top: auto; display: flex; gap: 30px; padding-top: 20px; border-top: 2px solid var(--border); }
-        .narration-box { flex: 2; }
         .calc-box { flex: 1; font-size: 13px; }
         .total-row { display: flex; justify-content: space-between; padding: 6px 0; }
         .grand-total { font-size: 18px; font-weight: 800; color: var(--header-bg); border-top: 1px solid var(--border); padding-top: 10px; margin-top: 5px; }
 
-        /* RECENT HISTORY */
+        /* RECENT SECTION */
         .recent-section { max-width: 210mm; margin: 30px auto; background: white; padding: 20px; border-radius: 8px; border: 1px solid var(--border); }
-        .recent-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
+        .recent-table { width: 100%; border-collapse: collapse; font-size: 13px; }
         .recent-table th { background: #f1f5f9; padding: 10px; text-align: left; }
         .recent-table td { padding: 10px; border-bottom: 1px solid #e2e8f0; }
-        
+
         @media print {
-            .toolbar, .recent-section, .add-btn, #toast { display: none !important; }
-            body { background: white; padding: 0; }
+            .toolbar, .recent-section, .add-btn, #toast, .scan-input { display: none !important; }
             .container { box-shadow: none; border: none; margin: 0; width: 100%; }
         }
     </style>
@@ -79,42 +78,46 @@
 <body>
 
     <div class="toolbar">
-        <button class="btn btn-back" onclick="window.location='index.html'">← Dashboard</button>
-        <div style="text-align:center;">
-            <div style="font-weight:700; font-size:18px;">Purchase Entry</div>
-            <div style="font-size:12px; color:var(--muted);" id="modeStatus">New Invoice Mode</div>
-        </div>
+        <button class="btn btn-back" onclick="window.location='index.html'">← Home</button>
+        
+        <select class="mode-select" id="docType" onchange="changeMode()">
+            <option value="Purchase">Purchase Invoice (Bill)</option>
+            <option value="GRN">GRN (Store Entry)</option>
+            <option value="Return">Debit Note (Return)</option>
+            <option value="Order">Purchase Order (PO)</option>
+        </select>
+
         <div style="display:flex; gap:10px;">
             <button class="btn btn-new" onclick="resetPage()">📄 New</button>
-            <button class="btn btn-save" onclick="savePurchase()">💾 Save Entry (Alt+S)</button>
+            <button class="btn btn-save" onclick="saveData()">💾 Save (Alt+S)</button>
         </div>
     </div>
 
     <div class="container">
         <div class="invoice-header">
             <div class="title-section">
-                <h1>Purchase Invoice</h1>
-                <p>Inward Supply Record</p>
+                <h1 id="pageTitle">Purchase Invoice</h1>
+                <p id="pageDesc">Inward Supply Record</p>
             </div>
             <div class="meta-grid">
-                <span class="meta-label">Supplier Inv No:</span>
-                <span class="meta-val"><input type="text" id="invNo" placeholder="e.g. GST/001" class="input-field"></span>
+                <span>Ref / Bill No:</span>
+                <input type="text" id="invNo" class="input-field" placeholder="Entry No">
                 
-                <span class="meta-label">Date:</span>
-                <span class="meta-val"><input type="date" id="invDate" class="input-field"></span>
+                <span>Date:</span>
+                <input type="date" id="invDate" class="input-field">
             </div>
         </div>
 
         <div class="supplier-section">
-            <div class="form-group">
-                <label>Supplier / Vendor (Credit Party)</label>
-                <select id="partySelect" class="input-field" onchange="loadPartyDetails()">
+            <div class="supp-left">
+                <label style="font-size:12px; font-weight:700; color:var(--muted);">Supplier / Vendor</label>
+                <select id="partySelect" class="input-field" style="width:100%; margin-top:5px;" onchange="loadPartyDetails()">
                     <option value="">-- Select Supplier --</option>
                 </select>
+                <input type="text" id="partyDetails" readonly style="width:100%; margin-top:5px; background:transparent; border:none; color:#64748b; font-size:12px;" placeholder="Address / GSTIN">
             </div>
-            <div class="form-group">
-                <label>Address / GSTIN</label>
-                <input type="text" id="partyDetails" readonly style="background:#f8fafc; color:#64748b; border:none;">
+            <div class="supp-right">
+                <input type="text" id="barcodeScan" class="scan-input" placeholder="🔍 Scan Barcode to Add Item..." onkeyup="handleScan(event)">
             </div>
         </div>
 
@@ -122,13 +125,16 @@
             <thead>
                 <tr>
                     <th width="5%">#</th>
-                    <th width="35%">Item Name</th>
-                    <th width="10%">Qty</th>
-                    <th width="10%">Unit</th>
-                    <th width="15%">Cost Rate</th>
-                    <th width="10%">GST %</th>
-                    <th width="15%" class="text-right">Total</th>
-                    <th></th>
+                    <th width="30%">Item Name</th>
+                    <th width="12%">Batch No</th>
+                    <th width="10%">Exp Date</th>
+                    
+                    <th width="8%">Qty</th>
+                    <th width="8%">Unit</th>
+                    <th width="10%">Rate</th>
+                    <th width="8%">Tax%</th>
+                    <th width="12%" class="text-right">Total</th>
+                    <th width="5%"></th>
                 </tr>
             </thead>
             <tbody id="itemRows"></tbody>
@@ -136,73 +142,76 @@
         <button class="add-btn" onclick="addItemRow()">+ Add Item Row</button>
 
         <div class="totals-section">
-            <div class="narration-box">
-                <label style="font-size:12px; font-weight:700; color:var(--muted);">Narration / Remarks</label>
-                <textarea id="narration" rows="3" class="input-field" placeholder="Being goods purchased against bill no..."></textarea>
+            <div class="narration-box" style="flex:2;">
+                <label style="font-size:12px; font-weight:700; color:var(--muted);">Remarks / Narration</label>
+                <textarea id="narration" rows="3" class="input-field" style="width:100%;" placeholder="Enter details..."></textarea>
             </div>
             <div class="calc-box">
-                <div class="total-row"><span>Taxable Value</span><span id="taxableAmt">0.00</span></div>
-                <div class="total-row"><span>Input CGST</span><span id="cgstAmt">0.00</span></div>
-                <div class="total-row"><span>Input SGST</span><span id="sgstAmt">0.00</span></div>
+                <div class="total-row"><span>Taxable</span><span id="taxableAmt">0.00</span></div>
+                <div class="total-row"><span>Tax (GST)</span><span id="taxAmt">0.00</span></div>
                 <div class="total-row grand-total"><span>Net Payable</span><span id="grandTotal">₹ 0.00</span></div>
             </div>
         </div>
     </div>
 
     <div class="recent-section">
-        <h3>🕒 Recent Purchases</h3>
+        <h3>🕒 Recent Entries</h3>
         <table class="recent-table">
-            <thead><tr><th>Date</th><th>Inv No</th><th>Supplier</th><th>Amount</th><th>Action</th></tr></thead>
+            <thead><tr><th>Date</th><th>Ref No</th><th>Type</th><th>Party</th><th>Amount</th><th>Action</th></tr></thead>
             <tbody id="recentList"></tbody>
         </table>
     </div>
 
-    <script src="db.js"></script>
-    <script src="auth.js"></script>
+    <script src="db.js"></script><script src="auth.js"></script>
     <script>
-        let itemsList = [];
-        let ledgersList = [];
-        let currentVoucherId = null;
+        let itemsList = [], ledgersList = [];
+        let currentId = null;
 
         window.onload = async () => {
             await DB.init();
-            
-            // Check URL for ID (Reprint/Edit Mode)
-            const urlParams = new URLSearchParams(window.location.search);
-            const id = urlParams.get('id');
-
             await Promise.all([loadParties(), loadItems()]);
             
-            if(id) {
-                await loadInvoiceForEdit(parseInt(id));
+            // Check URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const mode = urlParams.get('mode');
+            if(mode) {
+                document.getElementById('docType').value = mode;
+                changeMode();
             } else {
                 resetPage();
             }
             
-            loadRecentPurchases();
-            setupEnterNavigation();
+            loadRecent();
+            document.getElementById('invDate').valueAsDate = new Date();
         };
 
+        function changeMode() {
+            const type = document.getElementById('docType').value;
+            const titleMap = {
+                'Purchase': ['Purchase Invoice', 'Inward Supply'],
+                'GRN': ['Goods Receipt Note', 'Stock Entry Only (No Accounts)'],
+                'Return': ['Debit Note', 'Purchase Return'],
+                'Order': ['Purchase Order', 'Order Booking']
+            };
+            document.getElementById('pageTitle').innerText = titleMap[type][0];
+            document.getElementById('pageDesc').innerText = titleMap[type][1];
+            
+            // Reset invoice number on mode change
+            const prefix = type.substring(0,3).toUpperCase();
+            document.getElementById('invNo').value = `${prefix}-${Date.now().toString().slice(-4)}`;
+        }
+
         async function loadParties() {
-            ledgersList = await DB.getAll('ledgers');
-            const groups = await DB.getAll('groups');
-
-            // Flexible Search for Creditors
-            const validGroupIds = groups.filter(g => 
-                g.name.includes("Sundry Creditors") || 
-                g.name.includes("Creditor") || 
-                g.name.includes("Cash") || 
-                g.name.includes("Liabilities")
-            ).map(g => g.id);
-
+            ledgersList = await DB.getLedgers();
+            const groups = await DB.getGroups();
+            const validIds = groups.filter(g => g.name.includes("Creditor") || g.name.includes("Liabilities")).map(g=>g.id);
+            
             const sel = document.getElementById('partySelect');
             sel.innerHTML = '<option value="">-- Select Supplier --</option>';
-            ledgersList.filter(l => validGroupIds.includes(l.group_id))
+            ledgersList.filter(l => validIds.includes(l.group_id))
                        .sort((a,b)=>a.name.localeCompare(b.name))
                        .forEach(l => {
-                           let opt = document.createElement('option');
-                           opt.value = l.id; opt.text = l.name;
-                           sel.appendChild(opt);
+                           sel.innerHTML += `<option value="${l.id}">${l.name}</option>`;
                        });
         }
 
@@ -211,57 +220,63 @@
         function loadPartyDetails() {
             const pid = document.getElementById('partySelect').value;
             const p = ledgersList.find(l => l.id == pid);
-            if(p) document.getElementById('partyDetails').value = `${p.address || ''} | GST: ${p.gstin || 'N/A'}`;
-            else document.getElementById('partyDetails').value = '';
+            document.getElementById('partyDetails').value = p ? `${p.address || ''} | ${p.gstin || ''}` : '';
         }
 
-        function resetPage() {
-            currentVoucherId = null;
-            document.getElementById('modeStatus').innerText = "New Invoice Mode";
-            document.getElementById('modeStatus').style.color = "#64748b";
-            document.getElementById('invDate').valueAsDate = new Date();
-            document.getElementById('invNo').value = "";
-            document.getElementById('partySelect').value = "";
-            document.getElementById('itemRows').innerHTML = "";
-            document.getElementById('narration').value = "";
-            addItemRow();
-            calcTotals();
+        function handleScan(e) {
+            if(e.key === 'Enter') {
+                const val = e.target.value.toLowerCase();
+                const item = itemsList.find(i => (i.sku && i.sku.toLowerCase() === val) || i.name.toLowerCase().includes(val));
+                if(item) {
+                    addItemRow(item);
+                    e.target.value = '';
+                } else {
+                    alert("Item not found");
+                }
+            }
         }
 
         function addItemRow(data = null) {
             const tbody = document.getElementById('itemRows');
             const tr = document.createElement('tr');
+            // Check if item has data
+            const itemData = data && data.item_id ? itemsList.find(i=>i.id==data.item_id) : null;
+            
             tr.innerHTML = `
                 <td class="text-center">${tbody.children.length + 1}</td>
                 <td>
-                    <select class="item-select input-field" onchange="fillItem(this)">
+                    <select class="item-select" onchange="fillItem(this)" style="width:100%">
                         <option value="">Select Item</option>
-                        ${itemsList.map(i => `<option value="${i.id}" data-rate="${i.std_cost||0}" data-gst="${i.gst_rate||18}" ${data && data.item_id==i.id ? 'selected':''}>${i.name}</option>`).join('')}
+                        ${itemsList.map(i => `<option value="${i.id}" data-rate="${i.std_cost||0}" data-gst="${i.gst_rate||18}" ${itemData && itemData.id==i.id ? 'selected':''}>${i.name}</option>`).join('')}
                     </select>
                 </td>
-                <td><input type="number" class="qty input-field text-right" value="${data ? data.qty : 1}" onchange="calc(this)"></td>
-                <td><input type="text" class="unit" readonly style="text-align:center;"></td>
-                <td><input type="number" class="rate input-field text-right" value="${data ? data.rate : 0}" onchange="calc(this)"></td>
-                <td><input type="number" class="gst input-field text-right" value="18" readonly></td>
+                <td><input type="text" class="batch batch-field" placeholder="Batch" value="${data ? (data.batch_no||'') : ''}"></td>
+                <td><input type="date" class="exp batch-field" value="${data ? (data.expiry_date||'') : ''}"></td>
+                <td><input type="number" class="qty text-right" value="${data ? data.qty : 1}" onchange="calc(this)"></td>
+                <td><input type="text" class="unit text-center" readonly value="${itemData ? (itemData.unit||'') : ''}"></td>
+                <td><input type="number" class="rate text-right" value="${data ? data.rate : 0}" onchange="calc(this)"></td>
+                <td><input type="number" class="gst text-right" value="${itemData ? itemData.gst_rate : 18}" readonly></td>
                 <td class="text-right amt" style="font-weight:bold;">0.00</td>
-                <td><button onclick="this.closest('tr').remove(); calcTotals()" style="color:red; background:none; border:none; cursor:pointer;">×</button></td>
+                <td><button onclick="this.closest('tr').remove(); calcTotals()" style="color:red;background:none;border:none;">×</button></td>
             `;
             tbody.appendChild(tr);
-            const sel = tr.querySelector('select');
-            if(data) {
-                const opt = sel.options[sel.selectedIndex];
-                tr.querySelector('.gst').value = opt.dataset.gst || 18;
+            if(!data) {
+                const sel = tr.querySelector('select');
+                // fillItem(sel); // Optional: auto fill first item
             } else {
-                fillItem(sel);
+                calc(tr.querySelector('select'));
             }
-            calc(sel);
         }
 
         function fillItem(sel) {
             const opt = sel.options[sel.selectedIndex];
             const tr = sel.closest('tr');
-            tr.querySelector('.rate').value = opt.dataset.rate || 0; // Load Cost Price
+            tr.querySelector('.rate').value = opt.dataset.rate || 0;
             tr.querySelector('.gst').value = opt.dataset.gst || 18;
+            
+            // Get Unit
+            const item = itemsList.find(i => i.id == sel.value);
+            tr.querySelector('.unit').value = item ? item.unit : '';
             calc(sel);
         }
 
@@ -272,12 +287,12 @@
             const gst = parseFloat(tr.querySelector('.gst').value) || 0;
 
             const taxable = qty * rate;
-            const taxAmt = taxable * (gst / 100);
-            const total = taxable + taxAmt;
+            const tax = taxable * (gst/100);
+            const total = taxable + tax;
 
             tr.querySelector('.amt').innerText = total.toFixed(2);
             tr.dataset.taxable = taxable;
-            tr.dataset.tax = taxAmt;
+            tr.dataset.tax = tax;
             calcTotals();
         }
 
@@ -288,131 +303,99 @@
                 tax += parseFloat(tr.dataset.tax || 0);
             });
             document.getElementById('taxableAmt').innerText = taxable.toFixed(2);
-            document.getElementById('cgstAmt').innerText = (tax/2).toFixed(2);
-            document.getElementById('sgstAmt').innerText = (tax/2).toFixed(2);
+            document.getElementById('taxAmt').innerText = tax.toFixed(2);
             document.getElementById('grandTotal').innerText = "₹ " + Math.round(taxable + tax).toFixed(2);
         }
 
-        async function savePurchase() {
+        async function saveData() {
+            const type = document.getElementById('docType').value;
             const pid = document.getElementById('partySelect').value;
-            const invNo = document.getElementById('invNo').value.trim();
-            
             if(!pid) return alert("Select Supplier");
-            if(!invNo) return alert("Enter Supplier Bill No");
 
-            let entries = [], taxable = 0, tax = 0, total = 0;
-            
-            // 1. Prepare Inventory Entries
+            let entries = [];
             const rows = document.querySelectorAll('#itemRows tr');
             for(let tr of rows) {
-                const iid = tr.querySelector('select').value;
+                const iid = tr.querySelector('.item-select').value;
                 if(iid) {
-                    const q = parseFloat(tr.querySelector('.qty').value);
-                    const r = parseFloat(tr.querySelector('.rate').value);
-                    if(q>0) {
-                        entries.push({ item_id: parseInt(iid), qty: q, rate: r });
-                        taxable += parseFloat(tr.dataset.taxable);
-                        tax += parseFloat(tr.dataset.tax);
-                    }
+                    entries.push({
+                        item_id: parseInt(iid),
+                        qty: parseFloat(tr.querySelector('.qty').value),
+                        rate: parseFloat(tr.querySelector('.rate').value),
+                        batch_no: tr.querySelector('.batch').value,
+                        expiry_date: tr.querySelector('.exp').value
+                    });
                 }
             }
-            if(entries.length === 0) return alert("Add items");
-            total = Math.round(taxable + tax);
+            if(entries.length===0) return alert("No items");
 
-            const vData = {
-                id: currentVoucherId,
-                voucher_no: invNo, // Use Supplier Bill No
+            const amt = parseFloat(document.getElementById('grandTotal').innerText.replace('₹ ',''));
+            
+            const masterData = {
+                voucher_no: document.getElementById('invNo').value,
                 date: document.getElementById('invDate').value,
                 party_id: parseInt(pid),
-                amount: total,
-                type: 'Purchase',
+                type: type, // Purchase / GRN / Return
+                amount: amt,
                 narration: document.getElementById('narration').value
             };
 
-            // 2. Accounting Entries (Corrected)
-            const acct = [
-                { ledger_id: parseInt(pid), debit: 0, credit: total }, // Party Cr
-                { ledger_id: ledgersList.find(l=>l.name==='Local Purchase')?.id, debit: taxable, credit: 0 }, // Purchase Dr
-                { ledger_id: ledgersList.find(l=>l.name==='Input CGST')?.id, debit: tax/2, credit: 0 }, // Tax Dr (Asset)
-                { ledger_id: ledgersList.find(l=>l.name==='Input SGST')?.id, debit: tax/2, credit: 0 }
-            ].filter(x => x.ledger_id);
-
             try {
-                // 3. MASTER STROKE: Update Item Cost Price
-                const tx = DB.db.transaction('items', 'readwrite');
-                const store = tx.objectStore('items');
-                
-                // Update cost for each item bought
-                for(let ent of entries) {
-                    const req = store.get(ent.item_id);
-                    req.onsuccess = () => {
-                        const item = req.result;
-                        if(item) {
-                            item.std_cost = ent.rate; // Update Cost Price
-                            store.put(item);
-                        }
-                    };
+                if(type === 'GRN') {
+                    // Save to GRN Tables
+                    await DB.createGRN({
+                        grn_no: masterData.voucher_no,
+                        date: masterData.date,
+                        vendor_id: masterData.party_id,
+                        amount: masterData.amount
+                    }, entries); // items passed separately
+                    alert("GRN Created! Stock Updated.");
+                } 
+                else {
+                    // Save as Financial Voucher
+                    // Accounting Logic
+                    let acct = [];
+                    // Only do accounting for Purchase & Return
+                    if(type === 'Purchase' || type === 'Return') {
+                        const taxable = parseFloat(document.getElementById('taxableAmt').innerText);
+                        acct.push({ ledger_id: parseInt(pid), debit: 0, credit: amt }); // Party
+                        acct.push({ ledger_id: 10, debit: taxable, credit: 0 }); // Purchase A/c (Dummy ID)
+                        // Add Tax Ledgers...
+                    }
+                    
+                    await DB.saveVoucher(masterData, entries, acct);
+                    alert("Entry Saved Successfully!");
                 }
-
-                // 4. Save Voucher
-                await DB.saveVoucher(vData, entries, acct);
-                
-                alert("Purchase Saved! Stock & Costs Updated.");
                 resetPage();
-                loadRecentPurchases();
-            } catch(e) { alert("Error: "+e); }
+                loadRecent();
+            } catch(e) { alert("Error: " + e); }
         }
 
-        async function loadInvoiceForEdit(id) {
-            const vouchers = await DB.getAll('vouchers');
-            const v = vouchers.find(x => x.id === id);
-            if(!v) return;
-
-            currentVoucherId = id;
-            document.getElementById('invNo').value = v.voucher_no;
-            document.getElementById('invDate').value = v.date;
-            document.getElementById('partySelect').value = v.party_id;
-            document.getElementById('narration').value = v.narration || '';
-            loadPartyDetails();
-
-            const entries = await DB.getAll('entries');
-            const vEntries = entries.filter(e => e.voucher_id === id);
-            
-            document.getElementById('itemRows').innerHTML = '';
-            vEntries.forEach(e => addItemRow(e));
+        function resetPage() {
+            document.getElementById('invNo').value = "";
+            document.getElementById('partySelect').value = "";
+            document.getElementById('itemRows').innerHTML = "";
+            addItemRow();
             calcTotals();
-
-            document.getElementById('modeStatus').innerText = "Editing Mode";
-            document.getElementById('modeStatus').style.color = "orange";
+            changeMode(); // Reset No
         }
 
-        async function loadRecentPurchases() {
+        async function loadRecent() {
+            const all = await DB.getAll('vouchers');
+            // Also fetch GRNs
+            const grns = await DB.getAll('grn_master');
+            
             const tbody = document.getElementById('recentList');
             tbody.innerHTML = '';
-            const all = await DB.getAll('vouchers');
-            all.filter(v => v.type === 'Purchase').sort((a,b)=>b.id-a.id).slice(0, 10).forEach(v => {
-                const pName = ledgersList.find(l => l.id == v.party_id)?.name || 'Unknown';
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${v.date}</td>
-                    <td><b>${v.voucher_no}</b></td>
-                    <td>${pName}</td>
-                    <td>₹${v.amount}</td>
-                    <td><button onclick="window.location.href='?id=${v.id}'" style="cursor:pointer; padding:2px 8px;">Edit/View</button></td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
+            
+            // Mix and sort
+            const mixed = [
+                ...all.map(x=>({...x, source:'Voucher'})), 
+                ...grns.map(x=>({...x, voucher_no: x.grn_no, type:'GRN', source:'GRN'}))
+            ].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 10);
 
-        function setupEnterNavigation() {
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    if(e.target.tagName === 'BUTTON' || e.target.tagName === 'TEXTAREA') return;
-                    e.preventDefault();
-                    const inputs = Array.from(document.querySelectorAll('.input-field, select, input:not([type=hidden])'));
-                    const index = inputs.indexOf(e.target);
-                    if (index > -1 && index < inputs.length - 1) inputs[index + 1].focus();
-                }
+            mixed.forEach(v => {
+                const pName = ledgersList.find(l => l.id == (v.party_id || v.vendor_id))?.name || '-';
+                tbody.innerHTML += `<tr><td>${v.date}</td><td>${v.voucher_no}</td><td>${v.type}</td><td>${pName}</td><td>${v.amount}</td><td>View</td></tr>`;
             });
         }
     </script>

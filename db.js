@@ -1,17 +1,18 @@
 /* FILENAME: db.js
-   PURPOSE: Core Database Engine (Multi-User, Roles & Audit Trail)
-   VERSION: 20.0
-   AUTHOR: Money Wise Pro Team
+   PURPOSE: Money Wise Pro v2.0 - The ERP Engine
+   FEATURES: Multi-User, GRN/Finance Split, ITR, Batch Inventory, Audit Log
+   VERSION: 21.0 (Major Upgrade)
 */
 
 class MoneyWiseDB {
     constructor() {
         this.dbName = "MoneyWise_Pro_DB";
-        this.dbVersion = 20; // Version upgraded for User Management system
+        this.dbVersion = 21; // Version Bumped for Schema Changes
         this.db = null;
+        this.currentUser = JSON.parse(sessionStorage.getItem('user_session')) || { role: 'guest' };
     }
 
-    // --- INITIALIZATION ---
+    // --- 1. INITIALIZATION & MIGRATION ---
     async init() {
         return new Promise((resolve, reject) => {
             const request = indexedDB.open(this.dbName, this.dbVersion);
@@ -20,497 +21,324 @@ class MoneyWiseDB {
                 const db = event.target.result;
                 const tx = event.target.transaction;
 
-                // 1. GROUPS TABLE
-                if (!db.objectStoreNames.contains("groups")) {
-                    const s = db.createObjectStore("groups", { keyPath: "id", autoIncrement: true });
-                    s.createIndex("name", "name", { unique: true });
-                    this._seedGroups(s);
-                }
-
-                // 2. STATES TABLE
-                if (!db.objectStoreNames.contains("states")) {
-                    const s = db.createObjectStore("states", { keyPath: "code" });
-                    this._seedIndianStates(s);
-                }
-
-                // 3. LEDGERS TABLE
+                // --- EXISTING STORES (Maintenance) ---
+                if (!db.objectStoreNames.contains("groups")) this._seedGroups(db.createObjectStore("groups", { keyPath: "id", autoIncrement: true }));
                 if (!db.objectStoreNames.contains("ledgers")) {
                     const s = db.createObjectStore("ledgers", { keyPath: "id", autoIncrement: true });
                     s.createIndex("name", "name", { unique: true });
                     s.createIndex("group_id", "group_id");
                 }
-
-                // 4. UNITS TABLE
-                if (!db.objectStoreNames.contains("units")) {
-                    const s = db.createObjectStore("units", { keyPath: "id", autoIncrement: true });
-                    this._seedDefaultUnits(s);
-                }
-
-                // 5. ITEMS TABLE
                 if (!db.objectStoreNames.contains("items")) {
                     const s = db.createObjectStore("items", { keyPath: "id", autoIncrement: true });
                     s.createIndex("name", "name", { unique: true });
-                }
-
-                // 6. VOUCHERS TABLE
-                let vStore;
-                if (!db.objectStoreNames.contains("vouchers")) {
-                    vStore = db.createObjectStore("vouchers", { keyPath: "id", autoIncrement: true });
+                    // v21 Update: Add Barcode Index
+                    s.createIndex("sku", "sku", { unique: false }); 
                 } else {
-                    vStore = tx.objectStore("vouchers");
-                }
-                // Ensure indexes exist (safe check)
-                if (!vStore.indexNames.contains("voucher_no")) vStore.createIndex("voucher_no", "voucher_no", { unique: true });
-                if (!vStore.indexNames.contains("date")) vStore.createIndex("date", "date");
-                if (!vStore.indexNames.contains("type")) vStore.createIndex("type", "type");
-
-                // 7. INVENTORY ENTRIES TABLE
-                if (!db.objectStoreNames.contains("entries")) {
-                    const s = db.createObjectStore("entries", { keyPath: "id", autoIncrement: true });
-                    s.createIndex("voucher_id", "voucher_id");
+                    // Upgrade existing Item Store
+                    const store = tx.objectStore("items");
+                    if(!store.indexNames.contains("sku")) store.createIndex("sku", "sku", { unique: false });
                 }
 
-                // 8. ACCOUNTING ENTRIES TABLE
-                if (!db.objectStoreNames.contains("acct_entries")) {
-                    const s = db.createObjectStore("acct_entries", { keyPath: "id", autoIncrement: true });
-                    s.createIndex("voucher_id", "voucher_id");
+                if (!db.objectStoreNames.contains("vouchers")) {
+                    const s = db.createObjectStore("vouchers", { keyPath: "id", autoIncrement: true });
+                    s.createIndex("voucher_no", "voucher_no", { unique: true });
+                    s.createIndex("date", "date");
+                    s.createIndex("type", "type");
                 }
+                
+                if (!db.objectStoreNames.contains("entries")) db.createObjectStore("entries", { keyPath: "id", autoIncrement: true }).createIndex("voucher_id", "voucher_id");
+                if (!db.objectStoreNames.contains("acct_entries")) db.createObjectStore("acct_entries", { keyPath: "id", autoIncrement: true }).createIndex("voucher_id", "voucher_id");
+                if (!db.objectStoreNames.contains("settings")) db.createObjectStore("settings", { keyPath: "id" });
+                if (!db.objectStoreNames.contains("logs")) db.createObjectStore("logs", { keyPath: "id", autoIncrement: true }).createIndex("date", "timestamp");
 
-                // 9. SETTINGS TABLE
-                if (!db.objectStoreNames.contains("settings")) {
-                    db.createObjectStore("settings", { keyPath: "id" });
-                }
+                // --- NEW STORES FOR v2.0 (The 70+ Features Support) ---
 
-                // 10. LOGS TABLE (For Audit Trail)
-                if (!db.objectStoreNames.contains("logs")) {
-                    const s = db.createObjectStore("logs", { keyPath: "id", autoIncrement: true });
-                    s.createIndex("date", "timestamp");
-                }
-
-                // 11. USERS TABLE (New for Login System)
+                // A. USERS & ROLES (Security)
                 if (!db.objectStoreNames.contains("users")) {
                     const s = db.createObjectStore("users", { keyPath: "username" });
-                    
-                    // Create Default Super Admin
-                    const adminUser = { 
-                        username: "admin", 
-                        password: "123", // In production, this should be hashed
-                        role: "admin", 
-                        name: "Super Admin",
-                        created_at: new Date()
-                    };
-                    s.add(adminUser);
+                    s.add({ 
+                        username: "admin", password: "123", name: "Super Admin", role: "admin", 
+                        permissions: ['all'], created_at: new Date() 
+                    });
+                }
+
+                // B. GRN - PURCHASE DEPT (Store Room)
+                if (!db.objectStoreNames.contains("grn_master")) {
+                    const s = db.createObjectStore("grn_master", { keyPath: "id", autoIncrement: true });
+                    s.createIndex("grn_no", "grn_no", { unique: true });
+                    s.createIndex("vendor_id", "vendor_id");
+                    s.createIndex("status", "status"); // Pending/Billed
+                }
+                if (!db.objectStoreNames.contains("grn_items")) {
+                    const s = db.createObjectStore("grn_items", { keyPath: "id", autoIncrement: true });
+                    s.createIndex("grn_id", "grn_id");
+                }
+
+                // C. BATCHES & EXPIRY (Inventory Pro)
+                if (!db.objectStoreNames.contains("batches")) {
+                    const s = db.createObjectStore("batches", { keyPath: "id", autoIncrement: true });
+                    s.createIndex("item_id", "item_id");
+                    s.createIndex("batch_no", "batch_no");
+                    s.createIndex("expiry", "expiry_date");
+                }
+
+                // D. ITR & COMPLIANCE (Taxation)
+                if (!db.objectStoreNames.contains("itr_data")) {
+                    db.createObjectStore("itr_data", { keyPath: "fy_year" }); // e.g. "2025-26"
+                }
+                
+                // E. METADATA (Sequences & Config)
+                if (!db.objectStoreNames.contains("metadata")) {
+                    db.createObjectStore("metadata", { keyPath: "key" }); 
+                    // Stores last invoice numbers: {key: 'last_inv_sales', val: 105}
                 }
             };
 
             request.onsuccess = (event) => {
                 this.db = event.target.result;
-                console.log("Database v20.0 Initialized Successfully");
+                console.log("MoneyWise Pro DB v21.0 (ERP Edition) Ready");
                 this._ensureSystemLedgers().then(() => resolve(this.db));
             };
 
-            request.onerror = (event) => {
-                console.error("Database Error:", event.target.error);
-                reject(event.target.error);
-            };
+            request.onerror = (e) => reject(e.target.error);
         });
     }
 
-    // --- USER MANAGEMENT FUNCTIONS (NEW) ---
+    // --- 2. ADVANCED USER & SECURITY ---
     
-    async loginUser(username, password) {
-        return new Promise((resolve, reject) => {
-            const tx = this.db.transaction("users", "readonly");
-            const store = tx.objectStore("users");
-            const req = store.get(username);
-            
-            req.onsuccess = () => {
-                const user = req.result;
-                if (user && user.password === password) {
-                    this.logAction("Auth", "Login", `User Logged In: ${username}`);
-                    resolve(user);
-                } else {
-                    reject("Invalid Username or PIN");
-                }
-            };
-            req.onerror = () => reject("Database Error");
-        });
-    }
-
-    async createUser(userData) {
-        return new Promise((resolve, reject) => {
-            const tx = this.db.transaction("users", "readwrite");
-            const store = tx.objectStore("users");
-            const req = store.add(userData);
-            
-            req.onsuccess = () => {
-                this.logAction("UserMgmt", "Create", `New User Created: ${userData.username} (${userData.role})`);
-                resolve(true);
-            };
-            req.onerror = () => reject("Username already exists");
-        });
-    }
-
-    async deleteUser(username) {
-        if(username === 'admin') return Promise.reject("Cannot delete Super Admin");
-        
-        return new Promise((resolve, reject) => {
-            const tx = this.db.transaction("users", "readwrite");
-            const store = tx.objectStore("users");
-            const req = store.delete(username);
-            
-            req.onsuccess = () => {
-                this.logAction("UserMgmt", "Delete", `User Deleted: ${username}`);
-                resolve(true);
-            };
-            req.onerror = () => reject("Delete Failed");
-        });
-    }
-
-    async getUsers() {
-        return this.getAll("users");
-    }
-
-    // --- AUDIT LOGGING SYSTEM ---
-    
-    async logAction(module, action, description) {
-        try {
-            // Check who is currently logged in (from Session)
-            const currentUser = sessionStorage.getItem('currentUser') || 'System';
-            
-            const tx = this.db.transaction("logs", "readwrite");
-            const store = tx.objectStore("logs");
-            store.add({
-                timestamp: new Date(),
-                module: module,
-                action: action,
-                description: description,
-                user: currentUser
-            });
-        } catch(e) { 
-            console.error("Logging Failed:", e); 
+    async login(username, password) {
+        const user = await this.getOne("users", username);
+        if (user && user.password === password) {
+            this.currentUser = user;
+            sessionStorage.setItem('user_session', JSON.stringify(user));
+            this.audit("Auth", "Login", `User ${username} logged in`);
+            return user;
         }
+        throw new Error("Invalid Credentials");
     }
 
-    async getLogs() {
-        return this.getAll('logs');
+    can(permission) {
+        if(this.currentUser.role === 'admin') return true;
+        return this.currentUser.permissions?.includes(permission);
     }
 
-    // --- DATA SEEDING (DEFAULT DATA) ---
-
-    _seedGroups(store) {
-        const groups = [
-            { name: "Capital Account", nature: "Liability" },
-            { name: "Current Liabilities", nature: "Liability" },
-            { name: "Sundry Creditors", nature: "Liability", parent: "Current Liabilities" },
-            { name: "Duties & Taxes", nature: "Liability", parent: "Current Liabilities" },
-            { name: "Current Assets", nature: "Asset" },
-            { name: "Sundry Debtors", nature: "Asset", parent: "Current Assets" },
-            { name: "Cash-in-Hand", nature: "Asset", parent: "Current Assets" },
-            { name: "Stock-in-Hand", nature: "Asset", parent: "Current Assets" },
-            { name: "Sales Accounts", nature: "Income" },
-            { name: "Purchase Accounts", nature: "Expense" },
-            { name: "Indirect Expenses", nature: "Expense" },
-            { name: "Bank Accounts", nature: "Asset", parent: "Current Assets" }
-        ];
-        groups.forEach(g => store.add(g));
+    checkBackDate(dateStr) {
+        if(this.currentUser.role === 'admin') return true;
+        const today = new Date().toISOString().slice(0, 10);
+        if (dateStr < today) throw new Error("⚠️ Security Alert: Back-dated entry not allowed for your role.");
+        return true;
     }
 
-    _seedIndianStates(store) {
-        const states = [
-            {code:"08", name:"Rajasthan"}, {code:"07", name:"Delhi"}, {code:"06", name:"Haryana"},
-            {code:"09", name:"Uttar Pradesh"}, {code:"27", name:"Maharashtra"}, {code:"24", name:"Gujarat"},
-            {code:"10", name:"Bihar"}, {code:"23", name:"Madhya Pradesh"}, {code:"03", name:"Punjab"},
-            {code:"33", name:"Tamil Nadu"}, {code:"29", name:"Karnataka"}, {code:"19", name:"West Bengal"}
-        ];
-        states.forEach(s => store.put(s));
-    }
+    // --- 3. PURCHASE DEPT (GRN) LOGIC ---
 
-    _seedDefaultUnits(store) {
-        const units = [
-            {name:"Pcs"}, {name:"Kg"}, {name:"Box"}, {name:"Nos"}, {name:"Mtr"}, {name:"Ltr"}
-        ];
-        units.forEach(u => store.add(u));
-    }
+    async createGRN(data, items) {
+        return new Promise((resolve, reject) => {
+            const tx = this.db.transaction(["grn_master", "grn_items", "batches", "items", "logs"], "readwrite");
+            
+            // 1. Save Master
+            const masterStore = tx.objectStore("grn_master");
+            data.status = "PENDING_BILL"; // Finance hasn't booked it yet
+            masterStore.add(data).onsuccess = (e) => {
+                const grnId = e.target.result;
+                
+                // 2. Save Items & Batches
+                const itemStore = tx.objectStore("grn_items");
+                const batchStore = tx.objectStore("batches");
+                const mainItemStore = tx.objectStore("items");
 
-    async _ensureSystemLedgers() {
-        const required = [
-            { name: "Cash-in-Hand", group: "Cash-in-Hand", opening_balance: 0 },
-            { name: "Local Sales", group: "Sales Accounts" },
-            { name: "Inter-State Sales", group: "Sales Accounts" },
-            { name: "Local Purchase", group: "Purchase Accounts" },
-            { name: "Inter-State Purchase", group: "Purchase Accounts" },
-            { name: "Output CGST", group: "Duties & Taxes" },
-            { name: "Output SGST", group: "Duties & Taxes" },
-            { name: "Output IGST", group: "Duties & Taxes" },
-            { name: "Input CGST", group: "Duties & Taxes" },
-            { name: "Input SGST", group: "Duties & Taxes" },
-            { name: "Input IGST", group: "Duties & Taxes" }
-        ];
+                items.forEach(itm => {
+                    itm.grn_id = grnId;
+                    itemStore.add(itm);
 
-        for (const r of required) {
-            const groupId = await this.getGroupId(r.group);
-            if (!groupId) continue;
-            const exists = await this.getLedgerId(r.name);
-            if (!exists) {
-                await this.createLedger({ 
-                    name: r.name, 
-                    group_id: groupId, 
-                    opening_balance: r.opening_balance || 0 
+                    // Add to Batch if exists
+                    if(itm.batch_no) {
+                        batchStore.add({
+                            item_id: itm.item_id,
+                            batch_no: itm.batch_no,
+                            expiry_date: itm.expiry_date,
+                            qty: itm.qty,
+                            mfg_date: itm.mfg_date,
+                            grn_ref: grnId
+                        });
+                    }
+
+                    // Update Main Stock (Physical Stock Increase)
+                    mainItemStore.get(itm.item_id).onsuccess = (ev) => {
+                        const prod = ev.target.result;
+                        if(prod) {
+                            prod.current_stock = (prod.current_stock || 0) + parseFloat(itm.qty);
+                            mainItemStore.put(prod);
+                        }
+                    };
                 });
-            }
-        }
-    }
 
-    // --- HELPER METHODS ---
-
-    async getGroupId(name) {
-        return new Promise((resolve) => {
-            const tx = this.db.transaction("groups", "readonly");
-            const req = tx.objectStore("groups").index("name").get(name);
-            req.onsuccess = () => resolve(req.result?.id || null);
-        });
-    }
-
-    async getLedgerId(name) {
-        return new Promise((resolve) => {
-            const tx = this.db.transaction("ledgers", "readonly");
-            const req = tx.objectStore("ledgers").index("name").get(name);
-            req.onsuccess = () => resolve(req.result?.id || null);
-        });
-    }
-
-    // --- GENERIC GETTERS ---
-
-    async getAll(storeName) {
-        return new Promise(resolve => {
-            const tx = this.db.transaction(storeName, "readonly");
-            const req = tx.objectStore(storeName).getAll();
-            req.onsuccess = (e) => resolve(e.target.result);
-        });
-    }
-
-    async getLedgers() { return this.getAll('ledgers'); }
-    async getItems() { return this.getAll('items'); }
-    async getGroups() { return this.getAll('groups'); }
-    async getStates() { return this.getAll('states'); }
-    async getUnits() { return this.getAll("units"); }
-
-    // --- SETTINGS CRUD ---
-
-    async saveSettings(data) {
-        return new Promise((resolve) => {
-            const tx = this.db.transaction("settings", "readwrite");
-            data.id = "company_profile"; 
-            tx.objectStore("settings").put(data);
-            
-            // Log this action
-            this.logAction("Settings", "Update", "Company Profile Updated");
-            
-            tx.oncomplete = () => resolve(true);
-        });
-    }
-
-    async getSettings() {
-        return new Promise((resolve) => {
-            const tx = this.db.transaction("settings", "readonly");
-            const req = tx.objectStore("settings").get("company_profile");
-            req.onsuccess = () => resolve(req.result || null);
-        });
-    }
-
-    // --- CORE CRUD OPERATIONS (WITH LOGGING) ---
-
-    async createLedger(data) {
-        return new Promise((resolve, reject) => {
-            const tx = this.db.transaction("ledgers", "readwrite");
-            const store = tx.objectStore("ledgers");
-            const req = data.id ? store.put(data) : store.add(data);
-            
-            req.onsuccess = () => {
-                this.logAction("Ledger", data.id ? "Edit" : "Create", `Ledger: ${data.name}`);
-                resolve({ id: req.result });
+                this.audit("Store", "GRN", `GRN Generated #${data.grn_no}`, tx);
             };
-            req.onerror = () => reject("Error: Ledger Save Failed");
-        });
-    }
 
-    async deleteLedger(id) {
-        return new Promise((resolve) => {
-            const tx = this.db.transaction("ledgers", "readwrite");
-            tx.objectStore("ledgers").delete(id);
-            
-            this.logAction("Ledger", "Delete", `Deleted Ledger ID: ${id}`);
-            
-            tx.oncomplete = () => resolve("deleted");
-        });
-    }
-
-    async createItem(data) {
-        return new Promise((resolve) => {
-            const tx = this.db.transaction("items", "readwrite");
-            const store = tx.objectStore("items");
-            
-            if (data.id) {
-                // Update existing
-                store.get(data.id).onsuccess = (e) => {
-                    const old = e.target.result;
-                    data.current_stock = old?.current_stock || 0;
-                    store.put(data);
-                    this.logAction("Inventory", "Edit", `Item Updated: ${data.name}`);
-                    resolve({ id: data.id });
-                };
-            } else {
-                // Create new
-                data.current_stock = parseFloat(data.op_qty) || 0;
-                store.add(data).onsuccess = (e) => {
-                    this.logAction("Inventory", "Create", `Item Created: ${data.name}`);
-                    resolve({ id: e.target.result });
-                }
-            }
-        });
-    }
-
-    async deleteItem(id) {
-        return new Promise((resolve) => {
-            const tx = this.db.transaction("items", "readwrite");
-            tx.objectStore("items").delete(id);
-            
-            this.logAction("Inventory", "Delete", `Deleted Item ID: ${id}`);
-            
             tx.oncomplete = () => resolve(true);
+            tx.onerror = () => reject("GRN Failed");
         });
     }
 
-    // --- TRANSACTION HANDLING (VOUCHERS) ---
-
-    async deleteVoucher(id) {
-        return new Promise((resolve, reject) => {
-             const tx = this.db.transaction(['vouchers', 'acct_entries', 'entries'], 'readwrite');
-             
-             // 1. Delete main voucher record
-             tx.objectStore('vouchers').delete(id);
-             
-             // 2. Cleanup Account Entries
-             const acctStore = tx.objectStore('acct_entries');
-             const idx = acctStore.index('voucher_id');
-             idx.getAllKeys(id).onsuccess = (e) => {
-                 e.target.result.forEach(key => acctStore.delete(key));
-             };
-
-             // 3. Cleanup Inventory Entries 
-             // (Note: For a fully strict accounting system, stock should be reversed here. 
-             // Currently, we are just removing the record for V1 consistency)
-             const invStore = tx.objectStore('entries');
-             const idx2 = invStore.index('voucher_id');
-             idx2.getAllKeys(id).onsuccess = (e) => {
-                 e.target.result.forEach(key => invStore.delete(key));
-             };
-
-             this.logAction("Voucher", "Delete", `Deleted Voucher ID: ${id}`);
-
-             tx.oncomplete = () => resolve(true);
-             tx.onerror = (e) => reject(e);
-        });
-    }
+    // --- 4. FINANCE DEPT (BILLING) LOGIC ---
 
     async saveVoucher(vData, invEntries, acctEntries) {
+        // Enforce Security
+        this.checkBackDate(vData.date);
+
         return new Promise((resolve, reject) => {
-            // Open transaction across all related stores
-            const tx = this.db.transaction(["vouchers", "entries", "acct_entries", "items", "ledgers", "logs"], "readwrite");
+            const tx = this.db.transaction(["vouchers", "entries", "acct_entries", "items", "logs", "grn_master"], "readwrite");
             
+            // Duplicate Check
             const vStore = tx.objectStore("vouchers");
-            const checkReq = vStore.index("voucher_no").get(vData.voucher_no);
+            const dupCheck = vStore.index("voucher_no").get(vData.voucher_no);
             
-            checkReq.onsuccess = () => {
-                // Duplicate Check
-                if(checkReq.result && checkReq.result.id !== vData.id) {
-                    return reject("Duplicate Voucher No");
-                }
-                
+            dupCheck.onsuccess = () => {
+                if(dupCheck.result && dupCheck.result.id !== vData.id) return reject("Duplicate Voucher No!");
+
                 // Save Voucher
-                const vReq = vData.id ? vStore.put(vData) : vStore.add(vData);
+                const req = vData.id ? vStore.put(vData) : vStore.add(vData);
                 
-                vReq.onsuccess = (e) => {
+                req.onsuccess = (e) => {
                     const vid = e.target.result;
                     
-                    // Log the action
-                    const actionType = vData.id ? "Edit" : "Create";
-                    const logStore = tx.objectStore("logs");
-                    logStore.add({
-                        timestamp: new Date(),
-                        module: "Voucher",
-                        action: actionType,
-                        description: `${vData.type} #${vData.voucher_no} (₹${vData.amount})`,
-                        user: sessionStorage.getItem('currentUser') || 'System'
-                    });
+                    // If Linked to GRN, Close GRN
+                    if(vData.grn_id) {
+                        const grnStore = tx.objectStore("grn_master");
+                        grnStore.get(vData.grn_id).onsuccess = (ev) => {
+                            const g = ev.target.result;
+                            if(g) { g.status = "BILLED"; grnStore.put(g); }
+                        }
+                    }
 
-                    // Save Inventory Entries
+                    // Save Inventory (Only update value/stock if NOT GRN linked)
+                    // If Sales -> Reduce Stock. If Purchase(Direct) -> Increase Stock.
                     const eStore = tx.objectStore("entries");
                     const iStore = tx.objectStore("items");
-                    
+
                     invEntries.forEach(ent => {
                         ent.voucher_id = vid;
                         eStore.add(ent);
                         
-                        // Update Stock Logic
-                        iStore.get(ent.item_id).onsuccess = (ev) => {
-                            const item = ev.target.result;
-                            if(item) {
-                                const change = ent.qty * (vData.type === 'Sales' ? -1 : 1);
-                                item.current_stock = (item.current_stock || 0) + change;
-                                
-                                // Update Cost Price on Purchase
-                                if(vData.type === 'Purchase') {
-                                    item.std_cost = ent.rate;
+                        // Stock Logic
+                        if(vData.type === 'Sales') {
+                            iStore.get(ent.item_id).onsuccess = (ev) => {
+                                const i = ev.target.result;
+                                if(i) {
+                                    i.current_stock -= ent.qty;
+                                    iStore.put(i);
                                 }
-                                iStore.put(item);
                             }
-                        };
+                        } else if (vData.type === 'Purchase' && !vData.grn_id) {
+                            // Direct Purchase (No GRN route)
+                            iStore.get(ent.item_id).onsuccess = (ev) => {
+                                const i = ev.target.result;
+                                if(i) {
+                                    i.current_stock += ent.qty;
+                                    i.std_cost = ent.rate; // Update Cost
+                                    iStore.put(i);
+                                }
+                            }
+                        }
                     });
 
-                    // Save Account Entries
-                    const aeStore = tx.objectStore("acct_entries");
-                    acctEntries.forEach(ae => {
-                        ae.voucher_id = vid;
-                        aeStore.add(ae);
-                    });
+                    // Save Accounts
+                    const aStore = tx.objectStore("acct_entries");
+                    acctEntries.forEach(ae => { ae.voucher_id = vid; aStore.add(ae); });
+
+                    this.audit("Finance", vData.id ? "Edit Bill" : "New Bill", `${vData.type} #${vData.voucher_no}`, tx);
                 };
             };
-
             tx.oncomplete = () => resolve(true);
             tx.onerror = (e) => reject(e.target.error);
         });
     }
 
-    // --- BACKUP & EXPORT ---
+    // --- 5. ITR & TAXATION ---
 
-    async exportBackup() {
-        try {
-            const data = {};
-            const stores = [
-                "groups", "states", "ledgers", "units", 
-                "items", "vouchers", "entries", "acct_entries", 
-                "settings", "logs", "users" // Included new stores
-            ];
-            
-            for (const s of stores) {
-                data[s] = await this.getAll(s);
-            }
-            
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-            const a = document.createElement("a");
-            a.href = URL.createObjectURL(blob);
-            a.download = `MoneyWise_Backup_${new Date().toISOString().slice(0,10)}.json`;
-            a.click();
-            
-            this.logAction("System", "Backup", "Full System Backup Downloaded");
-        } catch(e) { 
-            console.error(e);
-            alert("Backup Failed"); 
+    async saveITR(fy, data) {
+        return new Promise((resolve) => {
+            const tx = this.db.transaction("itr_data", "readwrite");
+            data.fy_year = fy;
+            data.updated_at = new Date();
+            tx.objectStore("itr_data").put(data);
+            this.audit("Compliance", "ITR Update", `ITR Data updated for FY ${fy}`);
+            tx.oncomplete = () => resolve(true);
+        });
+    }
+
+    // --- 6. CORE UTILITIES ---
+
+    async audit(module, action, desc, existingTx = null) {
+        const entry = {
+            timestamp: new Date(),
+            user: this.currentUser.username || 'system',
+            module, action, description: desc
+        };
+        if(existingTx) {
+            existingTx.objectStore("logs").add(entry);
+        } else {
+            const tx = this.db.transaction("logs", "readwrite");
+            tx.objectStore("logs").add(entry);
         }
+    }
+
+    async getOne(store, key) {
+        return new Promise(r => {
+            const req = this.db.transaction(store, "readonly").objectStore(store).get(key);
+            req.onsuccess = () => r(req.result);
+        });
+    }
+
+    async getAll(store) {
+        return new Promise(r => {
+            const req = this.db.transaction(store, "readonly").objectStore(store).getAll();
+            req.onsuccess = () => r(req.result);
+        });
+    }
+
+    // Wrappers for ease
+    getLedgers() { return this.getAll('ledgers'); }
+    getItems() { return this.getAll('items'); }
+    getGroups() { return this.getAll('groups'); }
+    getSettings() { return this.getOne('settings', 'company_profile'); }
+
+    // --- SEEDING (Initialization) ---
+    _seedGroups(store) {
+        const grps = [
+            {name:"Capital Account", nature:"Liability"}, {name:"Current Assets", nature:"Asset"},
+            {name:"Bank Accounts", nature:"Asset", parent:"Current Assets"}, {name:"Cash-in-Hand", nature:"Asset", parent:"Current Assets"},
+            {name:"Sundry Debtors", nature:"Asset", parent:"Current Assets"}, {name:"Sundry Creditors", nature:"Liability"},
+            {name:"Sales Accounts", nature:"Income"}, {name:"Purchase Accounts", nature:"Expense"},
+            {name:"Direct Expenses", nature:"Expense"}, {name:"Indirect Expenses", nature:"Expense"},
+            {name:"Duties & Taxes", nature:"Liability"}
+        ];
+        grps.forEach(g => store.add(g));
+    }
+
+    async _ensureSystemLedgers() {
+        // Creates default ledgers if they don't exist
+        const required = ["Cash-in-Hand", "Local Sales", "Local Purchase", "Input CGST", "Input SGST", "Output CGST", "Output SGST"];
+        const ledgers = await this.getAll("ledgers");
+        const groups = await this.getAll("groups");
+        
+        const tx = this.db.transaction("ledgers", "readwrite");
+        const store = tx.objectStore("ledgers");
+
+        required.forEach(name => {
+            if(!ledgers.find(l => l.name === name)) {
+                let grpName = "";
+                if(name.includes("Sales")) grpName = "Sales Accounts";
+                else if(name.includes("Purchase")) grpName = "Purchase Accounts";
+                else if(name.includes("GST")) grpName = "Duties & Taxes";
+                else grpName = "Cash-in-Hand";
+
+                const grp = groups.find(g => g.name === grpName);
+                if(grp) store.add({ name: name, group_id: grp.id, opening_balance: 0 });
+            }
+        });
     }
 }
 
-// Initialize Global DB Instance
+// GLOBAL INSTANCE
 const DB = new MoneyWiseDB();

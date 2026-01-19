@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taxation & Compliance - Money Wise Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sidebar-bg: #0f172a; --bg: #f8fafc; --text: #1e293b; --border: #cbd5e1;
+            --accent: #ca8a04; --green: #16a34a; --blue: #2563eb;
+        }
+        * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
+        body { display: flex; height: 100vh; background: var(--bg); color: var(--text); overflow: hidden; }
+
+        /* SIDEBAR */
+        .sidebar { width: 260px; background: var(--sidebar-bg); padding: 20px; display: flex; flex-direction: column; flex-shrink: 0; }
+        .nav-link { padding: 12px 15px; margin-bottom: 5px; border-radius: 8px; color: #94a3b8; text-decoration: none; font-weight: 500; display: block; font-size: 14px; }
+        .nav-link:hover, .nav-link.active { background: #1e293b; color: #f8fafc; }
+
+        /* MAIN CONTENT */
+        .main { flex: 1; padding: 25px; overflow-y: auto; display: flex; flex-direction: column; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        
+        /* TABS */
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+        .tab-btn { padding: 8px 16px; border: none; background: none; font-weight: 600; color: #64748b; cursor: pointer; border-radius: 6px; }
+        .tab-btn.active { background: #fff; color: var(--accent); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* ITR CALCULATOR CARD */
+        .itr-container { display: flex; gap: 20px; }
+        .itr-form { flex: 1; background: white; padding: 25px; border-radius: 12px; border: 1px solid var(--border); }
+        .itr-result { width: 300px; background: #fffbeb; border: 1px solid #fcd34d; padding: 20px; border-radius: 12px; height: fit-content; }
+
+        .form-section { margin-bottom: 20px; border-bottom: 1px dashed var(--border); padding-bottom: 15px; }
+        .section-head { font-size: 14px; font-weight: 700; color: var(--accent); margin-bottom: 10px; text-transform: uppercase; }
+        
+        .form-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 13px; }
+        .form-row input { text-align: right; padding: 6px; border: 1px solid var(--border); border-radius: 4px; width: 120px; }
+        
+        /* TDS TABLE */
+        table { width: 100%; border-collapse: collapse; background: white; font-size: 13px; margin-top: 10px; }
+        th { background: #f1f5f9; padding: 10px; text-align: left; }
+        td { padding: 10px; border-bottom: 1px solid #eee; }
+
+        .btn { padding: 10px 20px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; color: white; margin-top: 10px; width: 100%; }
+        .btn-calc { background: var(--blue); }
+        .btn-json { background: var(--green); }
+        
+        .badge { padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; background: #eee; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div style="font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 40px;">🚀 MoneyWise Pro</div>
+        <a href="index.html" class="nav-link">📊 Dashboard</a>
+        <a href="reports.html" class="nav-link">📈 Reports</a>
+        <a href="gst_filing.html" class="nav-link">🏛️ GST Filing</a>
+        <a href="sales_invoice.html" class="nav-link">🧾 Sales Invoice</a>
+        <a href="purchase_invoice.html" class="nav-link">🚚 Purchase Entry</a>
+        <a href="vouchers.html" class="nav-link">💸 Vouchers (JV)</a>
+        <a href="item_master.html" class="nav-link">📦 Inventory</a>
+        <a href="moneywise.html" class="nav-link">👥 Parties</a>
+        <a href="coa.html" class="nav-link">🗂️ Accounts</a>
+        <a href="settings.html" class="nav-link">⚙️ Settings</a>
+    </div>
+
+    <div class="main">
+        <div class="header">
+            <h2>🏛️ Taxation Hub</h2>
+            <select id="fySelect" style="padding:8px; border-radius:6px; border:1px solid #ccc;">
+                <option value="2025-2026">FY 2025-26 (AY 26-27)</option>
+                <option value="2024-2025">FY 2024-25 (AY 25-26)</option>
+            </select>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="showTab('itr')">📝 ITR Computation</button>
+            <button class="tab-btn" onclick="showTab('tds')">✂️ TDS Manager</button>
+        </div>
+
+        <div id="itr" class="tab-content active">
+            <div class="itr-container">
+                <div class="itr-form">
+                    
+                    <div class="form-section">
+                        <div class="section-head">Income Sources</div>
+                        <div class="form-row">
+                            <label>Income from Business (Auto P&L)</label>
+                            <input type="number" id="incBiz" readonly style="background:#f1f5f9; font-weight:bold;">
+                        </div>
+                        <div class="form-row">
+                            <label>Income from Salary</label>
+                            <input type="number" id="incSal" value="0" onchange="calcTax()">
+                        </div>
+                        <div class="form-row">
+                            <label>Income from House Property</label>
+                            <input type="number" id="incHouse" value="0" onchange="calcTax()">
+                        </div>
+                        <div class="form-row">
+                            <label>Other Sources (Interest etc.)</label>
+                            <input type="number" id="incOther" value="0" onchange="calcTax()">
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <div class="section-head">Deductions (Chapter VI-A)</div>
+                        <div class="form-row">
+                            <label>80C (LIC, PPF, Tuition) - Max 1.5L</label>
+                            <input type="number" id="ded80c" value="0" onchange="calcTax()">
+                        </div>
+                        <div class="form-row">
+                            <label>80D (Health Insurance)</label>
+                            <input type="number" id="ded80d" value="0" onchange="calcTax()">
+                        </div>
+                        <div class="form-row">
+                            <label>Other Deductions</label>
+                            <input type="number" id="dedOther" value="0" onchange="calcTax()">
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <div class="section-head">Taxes Paid</div>
+                        <div class="form-row">
+                            <label>TDS / TCS Paid</label>
+                            <input type="number" id="taxPaid" value="0" onchange="calcTax()">
+                        </div>
+                        <div class="form-row">
+                            <label>Advance Tax Paid</label>
+                            <input type="number" id="advTax" value="0" onchange="calcTax()">
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="itr-result">
+                    <h3 style="margin-bottom:15px; color:#854d0e;">Tax Liability</h3>
+                    <div class="form-row"><span>Gross Income</span><span id="resGross" style="font-weight:bold">0</span></div>
+                    <div class="form-row"><span>Total Deductions</span><span id="resDed">0</span></div>
+                    <div class="form-row" style="border-top:1px solid #eab308; padding-top:5px;"><span>Net Taxable Income</span><span id="resNet" style="font-weight:bold">0</span></div>
+                    
+                    <div style="margin-top:20px;">
+                        <div class="form-row"><span>Tax (New Regime)</span><span id="taxNew">0</span></div>
+                        <div class="form-row"><span>Tax (Old Regime)</span><span id="taxOld">0</span></div>
+                    </div>
+
+                    <div class="form-row" style="margin-top:15px; font-size:16px; font-weight:800; color:#b91c1c;">
+                        <span>Net Payable:</span>
+                        <span id="finalPayable">₹ 0</span>
+                    </div>
+                    <div style="font-size:10px; color:#666; margin-top:5px; text-align:right;">(Recommended Regime Auto-Selected)</div>
+
+                    <button class="btn btn-json" onclick="downloadJSON()">📥 Download ITR JSON</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="tds" class="tab-content">
+            <div style="background:white; padding:20px; border-radius:12px; border:1px solid var(--border);">
+                <div style="display:flex; gap:10px; margin-bottom:15px;">
+                    <select id="tdsSection" style="padding:8px;">
+                        <option value="194C">194C - Contractors (1%/2%)</option>
+                        <option value="194J">194J - Professional (10%)</option>
+                        <option value="194I">194I - Rent (10%)</option>
+                        <option value="194H">194H - Commission (5%)</option>
+                    </select>
+                    <input type="text" id="tdsParty" placeholder="Party Name" style="padding:8px;">
+                    <input type="number" id="tdsAmt" placeholder="Amount Paid" style="padding:8px;">
+                    <input type="number" id="tdsTax" placeholder="TDS Deducted" style="padding:8px;">
+                    <button onclick="addTDS()" style="padding:8px 15px; background:var(--blue); color:white; border:none; border-radius:4px; cursor:pointer;">+ Record TDS</button>
+                </div>
+
+                <h3>TDS Deduction Register</h3>
+                <table>
+                    <thead><tr><th>Date</th><th>Section</th><th>Party</th><th>Amount Paid</th><th>TDS Deducted</th><th>Status</th></tr></thead>
+                    <tbody id="tdsList"></tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="db.js"></script><script src="auth.js"></script>
+    <script>
+        window.onload = async () => {
+            await DB.init();
+            fetchBusinessIncome();
+            renderTDS();
+        };
+
+        function showTab(id) {
+            document.querySelectorAll('.tab-content').forEach(d => d.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // --- ITR LOGIC ---
+        
+        async function fetchBusinessIncome() {
+            // Simplified P&L Logic to fetch Net Profit
+            const ledgers = await DB.getLedgers();
+            const groups = await DB.getGroups();
+            const acctEntries = await DB.getAll('acct_entries');
+            
+            let income=0, expense=0, closingStock=0; 
+            const items = await DB.getItems();
+            items.forEach(i => closingStock += (i.current_stock * i.std_cost));
+
+            const balances = {};
+            acctEntries.forEach(e => balances[e.ledger_id] = (balances[e.ledger_id]||0) + (e.debit-e.credit));
+
+            ledgers.forEach(l => {
+                const g = groups.find(x => x.id == l.group_id);
+                const net = balances[l.id] || 0;
+                if(g.nature === 'Income') income += Math.abs(net);
+                else if(g.nature === 'Expense') expense += net;
+            });
+
+            const netProfit = (income + closingStock) - expense;
+            document.getElementById('incBiz').value = Math.max(0, netProfit).toFixed(2);
+            calcTax();
+        }
+
+        function calcTax() {
+            // Get Inputs
+            const biz = parseFloat(document.getElementById('incBiz').value) || 0;
+            const sal = parseFloat(document.getElementById('incSal').value) || 0;
+            const house = parseFloat(document.getElementById('incHouse').value) || 0;
+            const other = parseFloat(document.getElementById('incOther').value) || 0;
+            
+            const ded80c = Math.min(150000, parseFloat(document.getElementById('ded80c').value) || 0);
+            const ded80d = parseFloat(document.getElementById('ded80d').value) || 0;
+            const dedOth = parseFloat(document.getElementById('dedOther').value) || 0;
+            const taxesPaid = parseFloat(document.getElementById('taxPaid').value) || 0 + parseFloat(document.getElementById('advTax').value) || 0;
+
+            const gross = biz + sal + house + other;
+            const totalDed = ded80c + ded80d + dedOth;
+            
+            // Calculate Taxable Income
+            const taxableOld = Math.max(0, gross - totalDed);
+            const taxableNew = Math.max(0, gross); // New regime has limited deductions (std dev for sal only, ignored for simplicity)
+
+            // Tax Slabs (FY 25-26 Assumption)
+            const calcTaxSlab = (income, regime) => {
+                let tax = 0;
+                if (regime === 'New') {
+                    if (income > 300000) tax += (Math.min(income, 700000) - 300000) * 0.05;
+                    if (income > 700000) tax += (Math.min(income, 1000000) - 700000) * 0.10;
+                    if (income > 1000000) tax += (Math.min(income, 1200000) - 1000000) * 0.15;
+                    if (income > 1200000) tax += (Math.min(income, 1500000) - 1200000) * 0.20;
+                    if (income > 1500000) tax += (income - 1500000) * 0.30;
+                    // Rebate u/s 87A for income up to 7L
+                    if (income <= 700000) tax = 0;
+                } else {
+                    if (income > 250000) tax += (Math.min(income, 500000) - 250000) * 0.05;
+                    if (income > 500000) tax += (Math.min(income, 1000000) - 500000) * 0.20;
+                    if (income > 1000000) tax += (income - 1000000) * 0.30;
+                    if (income <= 500000) tax = 0;
+                }
+                return tax + (tax * 0.04); // Cess
+            };
+
+            const tNew = calcTaxSlab(taxableNew, 'New');
+            const tOld = calcTaxSlab(taxableOld, 'Old');
+            
+            // Update UI
+            document.getElementById('resGross').innerText = gross.toLocaleString();
+            document.getElementById('resDed').innerText = totalDed.toLocaleString();
+            document.getElementById('resNet').innerText = taxableOld.toLocaleString(); // Showing Old Regime Base
+            
+            document.getElementById('taxNew').innerText = tNew.toFixed(0);
+            document.getElementById('taxOld').innerText = tOld.toFixed(0);
+
+            const finalTax = Math.min(tNew, tOld);
+            const payable = finalTax - taxesPaid;
+            
+            const payEl = document.getElementById('finalPayable');
+            if(payable > 0) {
+                payEl.innerText = `₹ ${payable.toFixed(0)}`;
+                payEl.style.color = "#b91c1c";
+            } else {
+                payEl.innerText = `Refund: ₹ ${Math.abs(payable).toFixed(0)}`;
+                payEl.style.color = "#16a34a";
+            }
+        }
+
+        function downloadJSON() {
+            const data = {
+                "assessmentYear": "2026-27",
+                "personalInfo": { "pan": "ABCDE1234F", "status": "Individual" },
+                "incomeSources": {
+                    "business": document.getElementById('incBiz').value,
+                    "salary": document.getElementById('incSal').value,
+                    "house": document.getElementById('incHouse').value
+                },
+                "deductions": {
+                    "80c": document.getElementById('ded80c').value,
+                    "80d": document.getElementById('ded80d').value
+                },
+                "taxComputation": {
+                    "payable": document.getElementById('finalPayable').innerText
+                }
+            };
+            const blob = new Blob([JSON.stringify(data, null, 2)], {type: "application/json"});
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = "ITR_Data.json";
+            a.click();
+        }
+
+        // --- TDS LOGIC ---
+        // Storing TDS in localStorage for simplicity (or create new DB store)
+        let tdsData = JSON.parse(localStorage.getItem('tds_records')) || [];
+
+        function addTDS() {
+            const sec = document.getElementById('tdsSection').value;
+            const party = document.getElementById('tdsParty').value;
+            const amt = document.getElementById('tdsAmt').value;
+            const tax = document.getElementById('tdsTax').value;
+
+            if(!party || !amt) return alert("Fill details");
+
+            tdsData.push({
+                date: new Date().toISOString().slice(0,10),
+                section: sec, party, amt, tax, status: "Pending Payment"
+            });
+            localStorage.setItem('tds_records', JSON.stringify(tdsData));
+            renderTDS();
+            
+            // Clear
+            document.getElementById('tdsParty').value = '';
+            document.getElementById('tdsAmt').value = '';
+            document.getElementById('tdsTax').value = '';
+        }
+
+        function renderTDS() {
+            const tb = document.getElementById('tdsList');
+            tb.innerHTML = '';
+            tdsData.forEach((t, i) => {
+                tb.innerHTML += `<tr>
+                    <td>${t.date}</td>
+                    <td><span class="badge">${t.section}</span></td>
+                    <td>${t.party}</td>
+                    <td>${t.amt}</td>
+                    <td>${t.tax}</td>
+                    <td style="color:${t.status==='Paid'?'green':'orange'}">${t.status}</td>
+                </tr>`;
+            });
+        }
+    </script>
+</body>
+</html>

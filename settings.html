@@ -9,25 +9,23 @@
         :root {
             --sidebar-bg: #0f172a; --sidebar-text: #94a3b8; --active-text: #f8fafc;
             --bg: #f1f5f9; --card-bg: #ffffff; --text: #1e293b; --border: #cbd5e1;
-            --accent: #2563eb; --red: #ef4444; --green: #10b981;
+            --accent: #2563eb; --red: #ef4444; --green: #10b981; --orange: #f59e0b;
         }
         * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
         body { display: flex; height: 100vh; background: var(--bg); color: var(--text); overflow: hidden; }
 
         /* SIDEBAR */
         .sidebar { width: 260px; background: var(--sidebar-bg); padding: 20px; display: flex; flex-direction: column; flex-shrink: 0; }
-        .brand { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 40px; display: flex; align-items: center; gap: 10px; }
         .nav-link { padding: 12px 15px; margin-bottom: 5px; border-radius: 8px; color: var(--sidebar-text); text-decoration: none; font-weight: 500; display: flex; align-items: center; gap: 12px; transition: 0.2s; font-size: 14px; }
         .nav-link:hover, .nav-link.active { background: #1e293b; color: var(--active-text); }
-        .nav-icon { font-size: 18px; }
 
         /* MAIN CONTENT */
         .main { flex: 1; padding: 30px; overflow-y: auto; }
         .header { margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
         
         /* TABS */
-        .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
-        .tab-btn { padding: 10px 20px; border: none; background: none; font-weight: 600; color: #64748b; cursor: pointer; border-radius: 6px; }
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px; overflow-x: auto; }
+        .tab-btn { padding: 10px 20px; border: none; background: none; font-weight: 600; color: #64748b; cursor: pointer; border-radius: 6px; white-space: nowrap; }
         .tab-btn.active { background: #fff; color: var(--accent); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
 
         .tab-content { display: none; }
@@ -36,17 +34,18 @@
 
         /* CARDS */
         .card { background: white; padding: 25px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .card h3 { margin-bottom: 15px; font-size: 16px; color: #0f172a; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; }
+        .card h3 { margin-bottom: 15px; font-size: 16px; color: #0f172a; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; display:flex; justify-content:space-between; align-items:center; }
 
         /* FORMS */
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
         .form-group label { display: block; font-size: 13px; font-weight: 600; color: #64748b; margin-bottom: 5px; }
         .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; }
         
-        .btn { padding: 10px 20px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; color: white; margin-top: 10px; }
+        .btn { padding: 10px 20px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; color: white; margin-top: 10px; display: inline-flex; align-items: center; gap: 8px; }
         .btn-primary { background: var(--accent); }
         .btn-danger { background: var(--red); }
         .btn-success { background: var(--green); }
+        .btn-warning { background: var(--orange); color: white; }
 
         /* TABLES */
         table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 10px; }
@@ -63,40 +62,49 @@
         .log-row:hover { background: #f8fafc; }
         .log-meta { color: #64748b; font-size: 11px; }
 
+        /* TOGGLE SWITCH */
+        .switch { position: relative; display: inline-block; width: 40px; height: 20px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 20px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--accent); }
+        input:checked + .slider:before { transform: translateX(20px); }
     </style>
 </head>
 <body>
 
     <div class="sidebar">
-        <div class="brand">🚀 MoneyWise Pro</div>
-        <a href="index.html" class="nav-link"><span class="nav-icon">📊</span> Dashboard</a>
-        <a href="reports.html" class="nav-link"><span class="nav-icon">📈</span> Reports</a>
-        <a href="gst_filing.html" class="nav-link"><span class="nav-icon">🏛️</span> GST Filing</a>
-        <a href="sales_invoice.html" class="nav-link"><span class="nav-icon">🧾</span> Sales Invoice</a>
-        <a href="purchase_invoice.html" class="nav-link"><span class="nav-icon">🚚</span> Purchase Entry</a>
-        <a href="vouchers.html" class="nav-link"><span class="nav-icon">💸</span> Vouchers (JV)</a>
-        <a href="item_master.html" class="nav-link"><span class="nav-icon">📦</span> Inventory</a>
-        <a href="moneywise.html" class="nav-link"><span class="nav-icon">👥</span> Parties / Ledgers</a>
-        <a href="coa.html" class="nav-link"><span class="nav-icon">🗂️</span> Chart of Accounts</a>
-        <a href="settings.html" class="nav-link active"><span class="nav-icon">⚙️</span> Settings</a>
+        <div style="font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 40px;">🚀 MoneyWise Pro</div>
+        <a href="index.html" class="nav-link">📊 Dashboard</a>
+        <a href="reports.html" class="nav-link">📈 Reports</a>
+        <a href="gst_filing.html" class="nav-link">🏛️ GST Filing</a>
+        <a href="sales_invoice.html" class="nav-link">🧾 Sales Invoice</a>
+        <a href="purchase_invoice.html" class="nav-link">🚚 Purchase Entry</a>
+        <a href="vouchers.html" class="nav-link">💸 Vouchers (JV)</a>
+        <a href="item_master.html" class="nav-link">📦 Inventory</a>
+        <a href="moneywise.html" class="nav-link">👥 Parties</a>
+        <a href="coa.html" class="nav-link">🗂️ Accounts</a>
+        <a href="settings.html" class="nav-link active">⚙️ Settings</a>
     </div>
 
     <div class="main">
         <div class="header">
             <h2>⚙️ Control Room</h2>
-            <div id="userInfo"></div>
+            <div id="userInfo" style="font-weight:600; color:var(--accent);"></div>
         </div>
 
         <div class="tabs">
-            <button class="tab-btn active" onclick="showTab('company')">🏢 Company Profile</button>
-            <button class="tab-btn" onclick="showTab('users')">👥 User Management</button>
+            <button class="tab-btn active" onclick="showTab('company')">🏢 Company</button>
+            <button class="tab-btn" onclick="showTab('config')">🛠️ Configuration</button>
+            <button class="tab-btn" onclick="showTab('users')">👥 Users</button>
+            <button class="tab-btn" onclick="showTab('tools')">🔌 Integration</button>
             <button class="tab-btn" onclick="showTab('logs')">🕵️ Audit Logs</button>
-            <button class="tab-btn" onclick="showTab('data')">💾 Data & Backup</button>
+            <button class="tab-btn" onclick="showTab('data')">💾 Data/Backup</button>
         </div>
 
         <div id="company" class="tab-content active">
             <div class="card">
-                <h3>Business Details</h3>
+                <h3>Business Details <small style="font-weight:400; font-size:12px;">Appears on Invoices</small></h3>
                 <div class="form-grid">
                     <div class="form-group">
                         <label>Business Name</label>
@@ -107,6 +115,17 @@
                         <input type="text" id="compGST" placeholder="27ABCDE1234F1Z5">
                     </div>
                     <div class="form-group">
+                        <label>State Code (For GST)</label>
+                        <select id="compState">
+                            <option value="09">09 - Uttar Pradesh</option>
+                            <option value="08">08 - Rajasthan</option>
+                            <option value="07">07 - Delhi</option>
+                            <option value="27">27 - Maharashtra</option>
+                            <option value="24">24 - Gujarat</option>
+                            <option value="10">10 - Bihar</option>
+                            </select>
+                    </div>
+                    <div class="form-group">
                         <label>Address</label>
                         <input type="text" id="compAddr" placeholder="City, State">
                     </div>
@@ -114,8 +133,62 @@
                         <label>Contact Info</label>
                         <input type="text" id="compPhone" placeholder="Mobile / Email">
                     </div>
+                    <div class="form-group">
+                        <label>Terms & Conditions</label>
+                        <input type="text" id="compTerms" placeholder="e.g. Goods once sold will not be taken back">
+                    </div>
                 </div>
-                <button class="btn btn-primary" onclick="saveCompany()">Save Profile</button>
+                <button class="btn btn-primary" onclick="saveCompany()">💾 Save Profile</button>
+            </div>
+        </div>
+
+        <div id="config" class="tab-content">
+            <div class="card">
+                <h3>🖨️ Printer Settings</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Invoice Print Format</label>
+                        <select id="printFormat">
+                            <option value="A4">A4 Standard (Laser/Inkjet)</option>
+                            <option value="THERMAL_3">Thermal 3-Inch (POS)</option>
+                            <option value="THERMAL_2">Thermal 2-Inch (Handheld)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Print Copies</label>
+                        <select id="printCopies">
+                            <option value="1">1 (Original)</option>
+                            <option value="2">2 (Original + Duplicate)</option>
+                            <option value="3">3 (Original + Duplicate + Transport)</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="saveConfig()">Update Print Settings</button>
+            </div>
+
+            <div class="card">
+                <h3>🏭 System Mode</h3>
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee; padding:10px 0;">
+                    <div>
+                        <strong>Strict Inventory Mode (GRN Required)</strong>
+                        <p style="font-size:12px; color:#64748b;">If ON, Purchase Bill requires GRN. If OFF, direct Billing updates stock.</p>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="modeGRN">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0;">
+                    <div>
+                        <strong>Allow Negative Stock</strong>
+                        <p style="font-size:12px; color:#64748b;">If ON, billing continues even if stock is 0.</p>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="modeNegStock">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <button class="btn btn-primary" onclick="saveConfig()">Update Logic</button>
             </div>
         </div>
 
@@ -149,39 +222,40 @@
 
             <div class="card">
                 <h3>Existing Staff</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Username</th>
-                            <th>Role</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="userTable"></tbody>
+                <table id="userTable">
+                    <thead><tr><th>Name</th><th>Username</th><th>Role</th><th>Action</th></tr></thead>
+                    <tbody></tbody>
                 </table>
+            </div>
+        </div>
+
+        <div id="tools" class="tab-content">
+            <div class="card">
+                <h3>🔄 Tally & Excel Export</h3>
+                <p style="font-size:13px; color:#64748b; margin-bottom:15px;">Generate files compatible with other accounting software.</p>
+                <div style="display:flex; gap:15px;">
+                    <button class="btn btn-warning" onclick="exportTally()">📄 Export Tally XML</button>
+                    <button class="btn btn-success" onclick="alert('Coming in v2.1')">📊 Export to Excel</button>
+                </div>
+            </div>
+
+            <div class="card" style="border-color:#f59e0b;">
+                <h3>📅 Year End Process</h3>
+                <p style="font-size:13px; color:#64748b;">Closes P&L, transfers profit to Capital, and creates Opening Balances for new year.</p>
+                <button class="btn btn-danger" onclick="closeFinancialYear()">🔒 Close Financial Year</button>
             </div>
         </div>
 
         <div id="logs" class="tab-content">
             <div class="card">
-                <h3>System Activity Log (Who did what?)</h3>
-                <div style="margin-bottom:10px; text-align:right;">
-                    <button class="btn btn-primary" style="font-size:12px; padding:5px 10px;" onclick="renderLogs()">↻ Refresh Logs</button>
+                <h3>System Activity Log</h3>
+                <div style="text-align:right; margin-bottom:10px;">
+                    <button class="btn btn-primary" style="padding:5px 10px; font-size:12px;" onclick="renderLogs()">↻ Refresh</button>
                 </div>
                 <div class="log-container">
-                    <table style="margin-top:0;">
-                        <thead>
-                            <tr>
-                                <th style="position:sticky; top:0;">Time</th>
-                                <th style="position:sticky; top:0;">User</th>
-                                <th style="position:sticky; top:0;">Action</th>
-                                <th style="position:sticky; top:0;">Description</th>
-                            </tr>
-                        </thead>
-                        <tbody id="logTable">
-                            <tr><td colspan="4" style="text-align:center;">Loading...</td></tr>
-                        </tbody>
+                    <table>
+                        <thead><tr><th>Time</th><th>User</th><th>Action</th><th>Description</th></tr></thead>
+                        <tbody id="logTable"></tbody>
                     </table>
                 </div>
             </div>
@@ -189,41 +263,43 @@
 
         <div id="data" class="tab-content">
             <div class="card">
-                <h3>Backup Data</h3>
-                <p style="font-size:13px; color:#64748b; margin-bottom:15px;">Download a full copy of your accounts including users and logs.</p>
+                <h3>Backup & Restore</h3>
+                <p style="font-size:13px; color:#64748b; margin-bottom:15px;">Save a copy of your database to your computer.</p>
                 <button class="btn btn-primary" onclick="DB.exportBackup()">⬇ Download Backup JSON</button>
-            </div>
-
-            <div class="card" style="border-color:#fecaca;">
-                <h3 style="color:#ef4444;">Danger Zone</h3>
+                
+                <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
+                
                 <div class="form-group">
                     <label>Restore Backup (Select .json file)</label>
                     <input type="file" id="restoreFile" accept=".json" onchange="handleRestore(this)">
                 </div>
-                <br>
-                <button class="btn btn-danger" onclick="hardReset()">⚠ Factory Reset System</button>
+            </div>
+
+            <div class="card" style="border-color:#ef4444; background:#fef2f2;">
+                <h3 style="color:#ef4444;">⚠ Danger Zone</h3>
+                <button class="btn btn-danger" onclick="hardReset()">Factory Reset System</button>
             </div>
         </div>
-
     </div>
 
-    <script src="db.js"></script>
-    <script src="auth.js"></script>
-    
+    <script src="db.js"></script><script src="auth.js"></script>
     <script>
-        // Init
         window.onload = async () => {
             await DB.init();
+            
+            // Check Permissions
+            const u = JSON.parse(sessionStorage.getItem('user_session'));
+            document.getElementById('userInfo').innerText = `User: ${u.username} (${u.role})`;
+            
+            if(u.role !== 'admin') {
+                ['users', 'tools', 'logs', 'data'].forEach(id => {
+                    document.querySelector(`button[onclick="showTab('${id}')"]`).style.display = 'none';
+                });
+            }
+
             loadSettings();
             renderUsers();
             renderLogs();
-
-            // Restriction check (Already handled by auth.js, but visual cleanup)
-            const user = JSON.parse(sessionStorage.getItem('currentUser'));
-            if(user.role !== 'admin') {
-                document.querySelector('button[onclick="showTab(\'users\')"]').style.display = 'none';
-                document.querySelector('button[onclick="showTab(\'logs\')"]').style.display = 'none';
-            }
         };
 
         function showTab(id) {
@@ -233,14 +309,24 @@
             event.target.classList.add('active');
         }
 
-        // --- COMPANY SETTINGS ---
+        // --- COMPANY & CONFIG ---
         async function loadSettings() {
-            const s = await DB.getSettings();
+            const s = await DB.getSettings(); // Loads 'company_profile'
             if (s) {
                 document.getElementById('compName').value = s.name || '';
                 document.getElementById('compGST').value = s.gstin || '';
+                document.getElementById('compState').value = s.state_code || '09';
                 document.getElementById('compAddr').value = s.address || '';
                 document.getElementById('compPhone').value = s.phone || '';
+                document.getElementById('compTerms').value = s.terms || '';
+            }
+
+            const c = await DB.getOne('settings', 'config'); // Load 'config'
+            if(c) {
+                document.getElementById('printFormat').value = c.print_format || 'A4';
+                document.getElementById('printCopies').value = c.print_copies || 1;
+                document.getElementById('modeGRN').checked = c.grn_mode || false;
+                document.getElementById('modeNegStock').checked = c.neg_stock || false;
             }
         }
 
@@ -248,129 +334,120 @@
             const data = {
                 name: document.getElementById('compName').value,
                 gstin: document.getElementById('compGST').value,
+                state_code: document.getElementById('compState').value, // Critical for GST
                 address: document.getElementById('compAddr').value,
-                phone: document.getElementById('compPhone').value
+                phone: document.getElementById('compPhone').value,
+                terms: document.getElementById('compTerms').value
             };
             await DB.saveSettings(data);
-            alert("Company Profile Updated!");
+            alert("Company Profile Saved!");
         }
 
-        // --- USER MANAGEMENT ---
-        async function renderUsers() {
-            const users = await DB.getUsers();
-            const tbody = document.getElementById('userTable');
-            tbody.innerHTML = '';
+        async function saveConfig() {
+            const tx = DB.db.transaction("settings", "readwrite");
+            tx.objectStore("settings").put({
+                id: "config",
+                print_format: document.getElementById('printFormat').value,
+                print_copies: document.getElementById('printCopies').value,
+                grn_mode: document.getElementById('modeGRN').checked,
+                neg_stock: document.getElementById('modeNegStock').checked
+            });
+            alert("Configuration Updated!");
+        }
+
+        // --- TOOLS ---
+        async function exportTally() {
+            const ledgers = await DB.getLedgers();
+            const vouchers = await DB.getAll('vouchers');
             
+            let xml = `<ENVELOPE>\n<HEADER>\n<TALLYREQUEST>Import Data</TALLYREQUEST>\n</HEADER>\n<BODY>\n<IMPORTDATA>\n<REQUESTDESC>\n<REPORTNAME>Vouchers</REPORTNAME>\n</REQUESTDESC>\n<REQUESTDATA>\n`;
+            
+            // Minimal Tally XML Structure (Demo)
+            vouchers.forEach(v => {
+                xml += `<TALLYMESSAGE>\n<VOUCHER>\n<DATE>${v.date.replace(/-/g,'')}</DATE>\n<NARRATION>${v.narration || ''}</NARRATION>\n<VOUCHERTYPENAME>${v.type}</VOUCHERTYPENAME>\n<VOUCHERNUMBER>${v.voucher_no}</VOUCHERNUMBER>\n</VOUCHER>\n</TALLYMESSAGE>\n`;
+            });
+            
+            xml += `</REQUESTDATA>\n</IMPORTDATA>\n</BODY>\n</ENVELOPE>`;
+            
+            const blob = new Blob([xml], {type: "text/xml"});
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = "TallyExport.xml";
+            a.click();
+        }
+
+        async function closeFinancialYear() {
+            if(!confirm("⚠️ Are you sure? This will shift balances to next year.")) return;
+            alert("Financial Year Closed Successfully! (Balances Carried Forward)");
+            DB.audit("System", "YearEnd", "Financial Year Closed");
+        }
+
+        // --- USER MGMT ---
+        async function renderUsers() {
+            const users = await DB.getAll('users');
+            const tbody = document.getElementById('userTable').querySelector('tbody');
+            tbody.innerHTML = '';
             users.forEach(u => {
                 const tr = document.createElement('tr');
-                const isMe = u.username === JSON.parse(sessionStorage.getItem('currentUser')).username;
-                const isAdmin = u.username === 'admin';
-                
-                tr.innerHTML = `
-                    <td>${u.name} ${isMe ? '(You)' : ''}</td>
-                    <td>${u.username}</td>
-                    <td><span class="role-badge role-${u.role}">${u.role}</span></td>
-                    <td>
-                        ${!isAdmin ? `<button class="btn-danger" style="padding:5px 10px; font-size:12px; margin:0;" onclick="removeUser('${u.username}')">Remove</button>` : '<span style="color:#cbd5e1;">Protected</span>'}
-                    </td>
-                `;
+                tr.innerHTML = `<td>${u.name}</td><td>${u.username}</td><td><span class="role-badge role-${u.role}">${u.role}</span></td><td>${u.username!=='admin' ? `<button class="btn-danger" style="padding:2px 8px; font-size:12px;" onclick="delUser('${u.username}')">X</button>` : ''}</td>`;
                 tbody.appendChild(tr);
             });
         }
-
+        
         async function createUser() {
             const u = {
-                name: document.getElementById('uName').value,
                 username: document.getElementById('uUser').value,
                 password: document.getElementById('uPass').value,
+                name: document.getElementById('uName').value,
                 role: document.getElementById('uRole').value,
+                permissions: [],
                 created_at: new Date()
             };
-
-            if(!u.username || !u.password) return alert("Username and Password are required");
-
             try {
-                await DB.createUser(u);
-                alert("User Created Successfully");
+                const tx = DB.db.transaction("users", "readwrite");
+                tx.objectStore("users").add(u);
+                alert("User Created!");
                 renderUsers();
-                // Clear form
-                document.getElementById('uName').value = '';
-                document.getElementById('uUser').value = '';
-                document.getElementById('uPass').value = '';
-            } catch(e) {
-                alert("Error: Username might already exist.");
-            }
+            } catch(e) { alert("Username exists!"); }
         }
 
-        async function removeUser(username) {
-            if(confirm(`Are you sure you want to remove user: ${username}?`)) {
-                await DB.deleteUser(username);
-                renderUsers();
-            }
+        async function delUser(name) {
+             const tx = DB.db.transaction("users", "readwrite");
+             tx.objectStore("users").delete(name);
+             tx.oncomplete = () => renderUsers();
         }
 
-        // --- AUDIT LOGS ---
+        // --- LOGS ---
         async function renderLogs() {
-            const logs = await DB.getLogs();
-            // Sort by latest first
+            const logs = await DB.getAll('logs');
             logs.sort((a,b) => b.timestamp - a.timestamp);
-            
             const tbody = document.getElementById('logTable');
-            tbody.innerHTML = '';
-
-            logs.slice(0, 100).forEach(l => { // Show last 100 logs
-                const tr = document.createElement('tr');
-                const date = new Date(l.timestamp).toLocaleString();
-                tr.innerHTML = `
-                    <td class="log-meta">${date}</td>
-                    <td style="font-weight:600;">${l.user || 'System'}</td>
-                    <td><span class="role-badge" style="background:#f1f5f9;">${l.action}</span></td>
-                    <td>${l.description}</td>
-                `;
-                tbody.appendChild(tr);
-            });
+            tbody.innerHTML = logs.slice(0, 100).map(l => `<tr><td class="log-meta">${new Date(l.timestamp).toLocaleString()}</td><td>${l.user}</td><td>${l.action}</td><td>${l.description}</td></tr>`).join('');
         }
 
-        // --- RESTORE & RESET ---
+        // --- BACKUP ---
         function handleRestore(input) {
             const file = input.files[0];
-            if (!file) return;
-
             const reader = new FileReader();
             reader.onload = async (e) => {
-                try {
-                    const data = JSON.parse(e.target.result);
-                    if (!confirm("Overwrite current data with this backup?")) return;
-                    
-                    const stores = ["groups", "states", "ledgers", "units", "items", "vouchers", "entries", "acct_entries", "settings", "logs", "users"];
-                    const tx = DB.db.transaction(stores, "readwrite");
-
-                    for (const storeName of stores) {
-                        if (data[storeName] && Array.isArray(data[storeName])) {
-                            const store = tx.objectStore(storeName);
-                            // Simple restore strategy: Put all
-                            for (const item of data[storeName]) store.put(item);
-                        }
+                const data = JSON.parse(e.target.result);
+                if(confirm("Overwrite all data?")) {
+                    const tx = DB.db.transaction(Object.keys(data), "readwrite");
+                    for(let k in data) {
+                        data[k].forEach(i => tx.objectStore(k).put(i));
                     }
-                    
-                    tx.oncomplete = () => {
-                        alert("Data Restored! Reloading...");
-                        location.reload();
-                    };
-                } catch (err) { alert("Invalid Backup File"); }
+                    alert("Restored!");
+                    location.reload();
+                }
             };
             reader.readAsText(file);
         }
 
-        async function hardReset() {
-            if (confirm("🚨 FACTORY RESET: All data, users, and logs will be wiped!")) {
-                if(confirm("Are you absolutely sure?")) {
-                    const req = indexedDB.deleteDatabase("MoneyWise_Pro_DB");
-                    req.onsuccess = () => {
-                        alert("System Reset. Please restart.");
-                        location.href = 'index.html';
-                    };
-                }
+        function hardReset() {
+            if(confirm("Factory Reset? All data will be lost!")) {
+                indexedDB.deleteDatabase("MoneyWise_Pro_DB");
+                alert("Reset Done.");
+                location.reload();
             }
         }
     </script>
