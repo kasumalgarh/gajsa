@@ -13,15 +13,15 @@
         * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
         body { background: var(--bg); padding: 20px; color: var(--primary); }
 
-        /* --- SCREEN MODE (Form View) --- */
+        /* --- SCREEN MODE --- */
         .toolbar {
             max-width: 210mm; margin: 0 auto 20px; display: flex; justify-content: space-between; align-items: center;
         }
         .btn { padding: 10px 20px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; color: white; display: flex; align-items: center; gap: 8px; }
         .btn-save { background: #10b981; } .btn-save:hover { background: #059669; }
-        .btn-close { background: #ef4444; } .btn-back { background: #64748b; }
+        .btn-new { background: #f59e0b; } .btn-back { background: #64748b; }
 
-        /* --- INVOICE PAGE (A4 Paper Look) --- */
+        /* --- INVOICE PAGE (A4) --- */
         .invoice-box {
             background: white; width: 210mm; min-height: 297mm; margin: 0 auto;
             padding: 15mm; box-shadow: 0 5px 15px rgba(0,0,0,0.1);
@@ -29,64 +29,54 @@
             display: flex; flex-direction: column;
         }
 
-        /* HEADER */
+        /* HEADER & ADDRESS */
         .header { display: flex; justify-content: space-between; border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-bottom: 20px; }
         .company-info h1 { font-size: 24px; text-transform: uppercase; margin-bottom: 5px; color: var(--accent); }
-        .company-info p { font-size: 12px; line-height: 1.4; color: #475569; }
-        .invoice-title { text-align: right; }
-        .invoice-title h2 { font-size: 20px; text-transform: uppercase; color: #94a3b8; }
+        .company-info p { font-size: 12px; color: #475569; }
+        .invoice-title h2 { font-size: 20px; text-transform: uppercase; color: #94a3b8; text-align: right; }
         .meta-grid { display: grid; grid-template-columns: auto auto; gap: 8px 15px; margin-top: 10px; text-align: right; font-size: 13px; }
-        .meta-label { font-weight: 600; color: #64748b; }
-        .meta-val input { text-align: right; font-weight: 700; width: 120px; }
+        .meta-val input { text-align: right; font-weight: 700; width: 120px; border:none; outline:none; }
 
-        /* ADDRESS SECTION */
         .address-section { display: flex; gap: 20px; margin-bottom: 20px; font-size: 13px; }
         .addr-box { flex: 1; border: 1px solid var(--border); padding: 10px; border-radius: 4px; }
-        .addr-title { font-weight: 700; background: #f8fafc; padding: 5px; border-bottom: 1px solid var(--border); margin: -10px -10px 10px -10px; border-radius: 4px 4px 0 0; }
         .addr-input { width: 100%; border: none; resize: none; font-family: inherit; font-size: 13px; outline: none; }
 
-        /* ITEM TABLE */
+        /* TABLE */
         .item-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 20px; }
         .item-table th { background: #1e293b; color: white; padding: 8px; text-align: left; }
         .item-table td { border-bottom: 1px solid var(--border); padding: 8px; vertical-align: middle; }
         .item-table input, .item-table select { width: 100%; border: none; outline: none; background: transparent; font-size: 12px; }
-        .item-table input:focus { background: #f1f5f9; }
         .text-right { text-align: right; }
-        .text-center { text-align: center; }
         .font-bold { font-weight: 700; }
 
         /* FOOTER */
         .footer-section { display: flex; gap: 20px; margin-top: auto; border-top: 2px solid var(--primary); padding-top: 10px; }
         .footer-left { flex: 2; font-size: 12px; display: flex; flex-direction: column; gap: 15px; }
         .footer-right { flex: 1; font-size: 13px; }
-        
         .bank-details { background: #f8fafc; padding: 10px; border-radius: 4px; border: 1px solid var(--border); }
-        .amount-words { font-style: italic; font-weight: 600; margin-bottom: 10px; }
-        
         .total-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #f1f5f9; }
         .grand-total { font-size: 16px; font-weight: 800; border-top: 2px solid var(--primary); padding-top: 10px; margin-top: 5px; }
 
         .auth-sign { margin-top: 40px; text-align: right; font-size: 12px; }
         .sign-line { display: inline-block; width: 150px; border-top: 1px solid black; margin-top: 40px; }
 
-        /* INPUT STYLES FOR PRINT */
-        input[type="date"]::-webkit-calendar-picker-indicator { display: none; }
-        
-        /* UTILS */
-        .add-btn { width: 100%; padding: 8px; background: #f1f5f9; border: 1px dashed #94a3b8; color: #64748b; cursor: pointer; font-size: 12px; margin-bottom: 10px; }
-        .add-btn:hover { background: #e2e8f0; }
-        .del-row { color: #ef4444; cursor: pointer; font-weight: bold; font-size: 14px; }
+        /* RECENT LIST (HISTORY) */
+        .recent-section { max-width: 210mm; margin: 30px auto; background: white; padding: 20px; border-radius: 8px; }
+        .recent-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+        .recent-table th { background: #f1f5f9; padding: 10px; text-align: left; }
+        .recent-table td { padding: 10px; border-bottom: 1px solid #e2e8f0; }
+        .btn-print { background: #3b82f6; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
 
-        /* --- PRINT MEDIA QUERY (THE MAGIC) --- */
+        /* UTILS */
+        .add-btn { width: 100%; padding: 8px; background: #f1f5f9; border: 1px dashed #94a3b8; cursor: pointer; font-size: 12px; }
+        .del-row { color: #ef4444; cursor: pointer; font-weight: bold; }
+
         @media print {
             body { background: white; padding: 0; }
-            .toolbar, .add-btn, .del-row, .no-print { display: none !important; }
+            .toolbar, .recent-section, .add-btn, .del-row, .no-print { display: none !important; }
             .invoice-box { box-shadow: none; border: none; margin: 0; width: 100%; height: auto; }
-            input, select, textarea { border: none !important; background: transparent !important; appearance: none; -webkit-appearance: none; }
-            /* Hide placeholder in print */
+            input, select, textarea { appearance: none; -webkit-appearance: none; }
             ::placeholder { color: transparent; }
-            /* Expand Textareas */
-            textarea { resize: none; overflow: hidden; min-height: 50px; }
         }
     </style>
 </head>
@@ -94,45 +84,46 @@
 
     <div class="toolbar">
         <button class="btn btn-back" onclick="window.location='index.html'">← Dashboard</button>
-        <div style="font-weight:700; font-size:18px;">New Sale Entry</div>
-        <button class="btn btn-save" onclick="saveInvoice()">💾 Save & Print (Alt+S)</button>
+        <div style="text-align:center;">
+            <div style="font-weight:700; font-size:18px;">Sales Entry</div>
+            <div style="font-size:12px; color:#64748b;" id="modeStatus">New Invoice Mode</div>
+        </div>
+        <div style="display:flex; gap:10px;">
+            <button class="btn btn-new" onclick="resetPage()">📄 New</button>
+            <button class="btn btn-save" onclick="saveInvoice()">💾 Save Entry (Alt+S)</button>
+        </div>
     </div>
 
     <div class="invoice-box" id="printArea">
-        
         <div class="header">
             <div class="company-info">
-                <h1 id="cmpName">YOUR COMPANY NAME</h1>
-                <p id="cmpAddr">Address Line 1, City, State - Zip</p>
-                <p>GSTIN: <span id="cmpGST">Not Set</span> | Contact: <span id="cmpPhone">Not Set</span></p>
+                <h1 id="cmpName">COMPANY NAME</h1>
+                <p id="cmpAddr">Address...</p>
+                <p>GSTIN: <span id="cmpGST">-</span> | Contact: <span id="cmpPhone">-</span></p>
             </div>
             <div class="invoice-title">
                 <h2>Tax Invoice</h2>
                 <div class="meta-grid">
                     <span class="meta-label">Invoice No:</span>
                     <span class="meta-val"><input type="text" id="invNo" readonly></span>
-                    
                     <span class="meta-label">Date:</span>
                     <span class="meta-val"><input type="date" id="invDate"></span>
-                    
-                    <span class="meta-label">State Code:</span>
-                    <span class="meta-val"><input type="text" value="08 (RJ)" style="width:50px"></span>
                 </div>
             </div>
         </div>
 
         <div class="address-section">
             <div class="addr-box">
-                <div class="addr-title">Billed To (Party Details)</div>
-                <select id="partySelect" onchange="loadPartyDetails()" style="font-weight:700; margin-bottom:5px; width:100%;">
+                <div style="font-weight:700; background:#f8fafc; padding:5px; margin:-10px -10px 10px -10px;">Billed To</div>
+                <select id="partySelect" onchange="loadPartyDetails()" style="width:100%; font-weight:700; margin-bottom:5px;">
                     <option value="">-- Select Party --</option>
                 </select>
-                <textarea id="billAddr" class="addr-input" rows="3" placeholder="Billing Address..."></textarea>
-                <input id="partyGst" class="addr-input" placeholder="Party GSTIN" style="margin-top:5px; font-weight:600;">
+                <textarea id="billAddr" class="addr-input" rows="3" placeholder="Address..."></textarea>
+                <input id="partyGst" class="addr-input" placeholder="GSTIN" style="margin-top:5px; font-weight:600;">
             </div>
             <div class="addr-box">
-                <div class="addr-title">Shipped To <small style="font-weight:normal; float:right;"><input type="checkbox" onchange="copyAddr(this)"> Same</small></div>
-                <textarea id="shipAddr" class="addr-input" rows="4" placeholder="Shipping Address (if different)..."></textarea>
+                <div style="font-weight:700; background:#f8fafc; padding:5px; margin:-10px -10px 10px -10px;">Shipped To</div>
+                <textarea id="shipAddr" class="addr-input" rows="4" placeholder="Shipping Address..."></textarea>
             </div>
         </div>
 
@@ -140,121 +131,89 @@
             <thead>
                 <tr>
                     <th width="5%">#</th>
-                    <th width="35%">Item Description</th>
-                    <th width="10%">HSN/SAC</th>
+                    <th width="35%">Item</th>
+                    <th width="10%">HSN</th>
                     <th width="8%" class="text-right">Qty</th>
                     <th width="8%" class="text-right">Rate</th>
-                    <th width="8%" class="text-right">Disc %</th>
-                    <th width="8%" class="text-right">GST %</th>
+                    <th width="8%" class="text-right">Disc%</th>
+                    <th width="8%" class="text-right">GST%</th>
                     <th width="15%" class="text-right">Total</th>
                     <th width="3%" class="no-print"></th>
                 </tr>
             </thead>
             <tbody id="itemRows"></tbody>
         </table>
-        
-        <button class="add-btn" onclick="addItemRow()">+ Add Line Item</button>
+        <button class="add-btn" onclick="addItemRow()">+ Add Item</button>
 
         <div class="footer-section">
             <div class="footer-left">
-                <div>
-                    <div class="meta-label">Amount in Words:</div>
-                    <div class="amount-words" id="amtWords">Zero Only</div>
-                </div>
-                
+                <div>Amount: <i id="amtWords">Zero Only</i></div>
                 <div class="bank-details">
-                    <div class="meta-label" style="border-bottom:1px solid #e2e8f0; margin-bottom:5px;">Bank Details</div>
-                    <div>Bank Name: <b id="bankName">HDFC Bank</b></div>
-                    <div>A/c No: <b id="acNo">XXXXXXXXXX</b></div>
-                    <div>IFSC Code: <b id="ifsc">HDFC0001234</b></div>
+                    <div><b>Bank Details:</b></div>
+                    <div>Bank: <span id="bankName">HDFC</span> | A/c: <span id="acNo">XXXX</span> | IFSC: <span id="ifsc">HDFC0001</span></div>
                 </div>
-
-                <div style="font-size:11px; color:#64748b;">
-                    <b>Terms & Conditions:</b><br>
-                    1. Goods once sold will not be taken back.<br>
-                    2. Interest @18% p.a. will be charged if not paid within due date.<br>
-                    3. Subject to local jurisdiction only.
-                </div>
+                <div style="font-size:11px; margin-top:5px;">Terms: Goods once sold will not be taken back. Interest @18% if delayed.</div>
             </div>
-
             <div class="footer-right">
-                <div class="total-row">
-                    <span>Taxable Value</span>
-                    <span id="taxableVal">0.00</span>
-                </div>
-                <div class="total-row">
-                    <span>CGST Amount</span>
-                    <span id="cgstVal">0.00</span>
-                </div>
-                <div class="total-row">
-                    <span>SGST Amount</span>
-                    <span id="sgstVal">0.00</span>
-                </div>
-                <div class="total-row">
-                    <span>IGST Amount</span>
-                    <span id="igstVal">0.00</span>
-                </div>
-                <div class="total-row">
-                    <span>Round Off</span>
-                    <span id="roundVal">0.00</span>
-                </div>
-                <div class="total-row grand-total">
-                    <span>Grand Total</span>
-                    <span id="grandVal">₹ 0.00</span>
-                </div>
-
+                <div class="total-row"><span>Taxable</span><span id="taxableVal">0.00</span></div>
+                <div class="total-row"><span>Tax (GST)</span><span id="taxVal">0.00</span></div>
+                <div class="total-row grand-total"><span>Grand Total</span><span id="grandVal">₹ 0.00</span></div>
                 <div class="auth-sign">
-                    <p>For, <b id="signComp">Company Name</b></p>
-                    <span class="sign-line"></span>
-                    <p>Authorized Signatory</p>
+                    <p>For, <b id="signComp">Company</b></p>
+                    <span class="sign-line"></span><br>Auth. Signatory
                 </div>
             </div>
         </div>
+    </div>
+
+    <div class="recent-section">
+        <h3>🕒 Recent Sales History</h3>
+        <table class="recent-table">
+            <thead><tr><th>Inv No</th><th>Date</th><th>Party</th><th>Amount</th><th>Action</th></tr></thead>
+            <tbody id="recentList"></tbody>
+        </table>
     </div>
 
     <script src="db.js"></script>
     <script src="auth.js"></script>
     <script>
         let itemsList = [];
-        let ledgersList = []; // Stores full ledger objects for lookup
-        
+        let ledgersList = [];
+
         window.onload = async () => {
             await DB.init();
             
-            // 1. Load Company Settings
+            // 1. Settings
             const set = await DB.getSettings();
             if(set) {
-                document.getElementById('cmpName').innerText = set.name || "YOUR COMPANY";
+                document.getElementById('cmpName').innerText = set.name || "COMPANY";
                 document.getElementById('signComp').innerText = set.name || "Company";
-                document.getElementById('cmpAddr').innerText = set.address || "Address";
+                document.getElementById('cmpAddr').innerText = set.address || "";
                 document.getElementById('cmpGST').innerText = set.gstin || "-";
                 document.getElementById('cmpPhone').innerText = set.phone || "-";
             }
 
-            // 2. Load Parties & Items
+            // 2. Load Data
             await loadParties();
             itemsList = await DB.getItems();
             
-            // 3. Init Invoice
-            document.getElementById('invDate').valueAsDate = new Date();
-            generateInvNo();
-            addItemRow();
+            // 3. Init
+            resetPage();
+            loadRecentInvoices();
         };
 
         async function loadParties() {
             const ledgers = await DB.getAll('ledgers');
             const groups = await DB.getAll('groups');
-            ledgersList = ledgers; // Save globally for auto-fill
-
-            // Filter Debtors & Cash
+            ledgersList = ledgers; 
+            
             const debtorId = groups.find(g=>g.name==='Sundry Debtors')?.id;
             const cashId = groups.find(g=>g.name==='Cash-in-Hand')?.id;
             
             const sel = document.getElementById('partySelect');
             sel.innerHTML = '<option value="">-- Select Party --</option>';
-
             ledgers.filter(l => l.group_id === debtorId || l.group_id === cashId)
-                   .sort((a,b) => a.name.localeCompare(b.name))
+                   .sort((a,b)=>a.name.localeCompare(b.name))
                    .forEach(l => {
                        const opt = document.createElement('option');
                        opt.value = l.id;
@@ -264,38 +223,35 @@
         }
 
         function loadPartyDetails() {
-            const partyId = document.getElementById('partySelect').value;
-            
-            // Reset fields
-            document.getElementById('billAddr').value = "";
-            document.getElementById('partyGst').value = "";
-
-            if(!partyId) return;
-
-            // Find party in memory
-            const party = ledgersList.find(l => l.id == partyId);
-            
+            const pid = document.getElementById('partySelect').value;
+            const party = ledgersList.find(l => l.id == pid);
             if(party) {
-                // Auto-fill Address & GST
-                let fullAddr = party.address || "";
-                if(party.phone) fullAddr += `\n(Contact: ${party.phone})`;
-                
-                document.getElementById('billAddr').value = fullAddr;
+                document.getElementById('billAddr').value = party.address || "";
                 document.getElementById('partyGst').value = party.gstin || "";
+            } else {
+                document.getElementById('billAddr').value = "";
+                document.getElementById('partyGst').value = "";
             }
         }
 
-        function copyAddr(chk) {
-            if(chk.checked) document.getElementById('shipAddr').value = document.getElementById('billAddr').value;
-            else document.getElementById('shipAddr').value = "";
-        }
-
-        function generateInvNo() {
+        function resetPage() {
+            document.getElementById('modeStatus').innerText = "New Invoice Mode";
+            document.getElementById('modeStatus').style.color = "#64748b";
+            document.getElementById('invDate').valueAsDate = new Date();
+            
             const rnd = Math.floor(Math.random() * 9000) + 1000;
             document.getElementById('invNo').value = `INV-${new Date().getFullYear()}-${rnd}`;
+            
+            document.getElementById('partySelect').value = "";
+            document.getElementById('billAddr').value = "";
+            document.getElementById('partyGst').value = "";
+            document.getElementById('itemRows').innerHTML = "";
+            
+            addItemRow();
+            total();
         }
 
-        function addItemRow() {
+        function addItemRow(data = null) {
             const tbody = document.getElementById('itemRows');
             const tr = document.createElement('tr');
             tr.innerHTML = `
@@ -303,25 +259,35 @@
                 <td>
                     <select onchange="fillItem(this)" style="font-weight:600;">
                         <option value="">Select Item</option>
-                        ${itemsList.map(i => `<option value="${i.id}" data-rate="${i.std_price||0}" data-gst="${i.gst_rate||18}" data-hsn="8544">${i.name}</option>`).join('')}
+                        ${itemsList.map(i => `<option value="${i.id}" data-rate="${i.std_price||0}" data-gst="${i.gst_rate||18}" ${data && data.item_id==i.id ? 'selected':''}>${i.name}</option>`).join('')}
                     </select>
                 </td>
-                <td><input class="text-center" value="8544" placeholder="HSN"></td>
-                <td><input type="number" class="qty text-right" value="1" onchange="calc(this)"></td>
-                <td><input type="number" class="rate text-right" value="0" onchange="calc(this)"></td>
+                <td><input class="text-center" value="8544"></td>
+                <td><input type="number" class="qty text-right" value="${data ? data.qty : 1}" onchange="calc(this)"></td>
+                <td><input type="number" class="rate text-right" value="${data ? data.rate : 0}" onchange="calc(this)"></td>
                 <td><input type="number" class="disc text-right" value="0" onchange="calc(this)"></td>
                 <td><input type="number" class="gst text-right" value="18" onchange="calc(this)"></td>
                 <td class="text-right font-bold amt">0.00</td>
                 <td class="no-print text-center"><span class="del-row" onclick="this.closest('tr').remove(); total();">×</span></td>
             `;
             tbody.appendChild(tr);
+            // Trigger calculation for the new row
+            const sel = tr.querySelector('select');
+            if(data) {
+                // Manually set values if loading old data
+                const opt = sel.options[sel.selectedIndex];
+                tr.querySelector('.gst').value = opt.dataset.gst || 18;
+            } else {
+                fillItem(sel); // Fill default if new
+            }
+            calc(sel);
         }
 
         function fillItem(sel) {
             const opt = sel.options[sel.selectedIndex];
             const tr = sel.closest('tr');
-            tr.querySelector('.rate').value = opt.dataset.rate;
-            tr.querySelector('.gst').value = opt.dataset.gst;
+            tr.querySelector('.rate').value = opt.dataset.rate || 0;
+            tr.querySelector('.gst').value = opt.dataset.gst || 18;
             calc(sel);
         }
 
@@ -350,98 +316,116 @@
                 taxVal += parseFloat(tr.dataset.taxable || 0);
                 taxAmt += parseFloat(tr.dataset.tax || 0);
             });
-
-            const grand = taxVal + taxAmt;
-            const round = Math.round(grand) - grand;
-
-            document.getElementById('taxableVal').innerText = taxVal.toFixed(2);
+            const grand = Math.round(taxVal + taxAmt);
             
-            // Assume Intra-State for now (CGST+SGST)
-            // Logic: In future we can compare Party State vs Company State
-            document.getElementById('cgstVal').innerText = (taxAmt/2).toFixed(2);
-            document.getElementById('sgstVal').innerText = (taxAmt/2).toFixed(2);
-            document.getElementById('igstVal').innerText = "0.00";
-
-            document.getElementById('roundVal').innerText = round.toFixed(2);
-            document.getElementById('grandVal').innerText = "₹ " + Math.round(grand).toFixed(2);
-
-            document.getElementById('amtWords').innerText = numToWords(Math.round(grand)) + " Only";
+            document.getElementById('taxableVal').innerText = taxVal.toFixed(2);
+            document.getElementById('taxVal').innerText = taxAmt.toFixed(2);
+            document.getElementById('grandVal').innerText = "₹ " + grand.toFixed(2);
+            document.getElementById('amtWords').innerText = numToWords(grand) + " Only";
         }
 
         async function saveInvoice() {
-            const partyId = document.getElementById('partySelect').value;
-            if(!partyId) return alert("Please select a Party (Customer)");
-            
-            // Prepare Data for DB
-            let totalAmt = 0;
-            let taxableTotal = 0;
-            let taxTotal = 0;
-            let invEntries = [];
-            
+            const pid = document.getElementById('partySelect').value;
+            if(!pid) return alert("Select Party");
+
+            let entries = [], totalAmt = 0;
+            let taxable = 0, tax = 0;
+
             document.querySelectorAll('#itemRows tr').forEach(tr => {
-                const itemId = tr.querySelector('select').value;
-                if(itemId) {
-                    const qty = parseFloat(tr.querySelector('.qty').value);
-                    const rate = parseFloat(tr.querySelector('.rate').value);
-                    if(qty>0) {
-                        invEntries.push({ item_id: parseInt(itemId), qty, rate });
-                        totalAmt += (parseFloat(tr.querySelector('.amt').innerText));
-                        taxableTotal += parseFloat(tr.dataset.taxable || 0);
-                        taxTotal += parseFloat(tr.dataset.tax || 0);
+                const iid = tr.querySelector('select').value;
+                if(iid) {
+                    const q = parseFloat(tr.querySelector('.qty').value);
+                    const r = parseFloat(tr.querySelector('.rate').value);
+                    if(q > 0) {
+                        entries.push({ item_id: parseInt(iid), qty: q, rate: r });
+                        totalAmt += parseFloat(tr.querySelector('.amt').innerText);
+                        taxable += parseFloat(tr.dataset.taxable);
+                        tax += parseFloat(tr.dataset.tax);
                     }
                 }
             });
 
-            if(invEntries.length === 0) return alert("Add at least one item");
+            if(entries.length === 0) return alert("Add Items");
 
-            // Voucher Header
             const vData = {
                 voucher_no: document.getElementById('invNo').value,
                 date: document.getElementById('invDate').value,
-                party_id: parseInt(partyId),
+                party_id: parseInt(pid),
                 amount: Math.round(totalAmt),
                 type: 'Sales',
-                narration: "Sales Invoice Generated"
+                narration: "Sales Invoice"
             };
 
-            // FULL ACCOUNTING ENTRIES (Double Entry System)
-            const acctEntries = [];
-
-            // 1. DEBIT: Party (Debtor) - Full Amount
-            acctEntries.push({
-                ledger_id: parseInt(partyId),
-                debit: Math.round(totalAmt),
-                credit: 0
-            });
-
-            // 2. CREDIT: Sales Account - Taxable Amount
-            // Look for 'Local Sales' ledger id
-            const salesLedger = ledgersList.find(l => l.name === 'Local Sales');
-            if(salesLedger) {
-                acctEntries.push({
-                    ledger_id: salesLedger.id,
-                    debit: 0,
-                    credit: taxableTotal
-                });
-            }
-
-            // 3. CREDIT: Output Tax (Liability)
-            // Look for CGST/SGST ledgers
-            const cgstLedger = ledgersList.find(l => l.name === 'Output CGST');
-            const sgstLedger = ledgersList.find(l => l.name === 'Output SGST');
-
-            if(cgstLedger) acctEntries.push({ ledger_id: cgstLedger.id, debit: 0, credit: taxTotal/2 });
-            if(sgstLedger) acctEntries.push({ ledger_id: sgstLedger.id, debit: 0, credit: taxTotal/2 });
+            // Double Entry
+            const acct = [
+                { ledger_id: parseInt(pid), debit: Math.round(totalAmt), credit: 0 },
+                { ledger_id: ledgersList.find(l=>l.name==='Local Sales')?.id, debit: 0, credit: taxable },
+                { ledger_id: ledgersList.find(l=>l.name==='Output CGST')?.id, debit: 0, credit: tax/2 },
+                { ledger_id: ledgersList.find(l=>l.name==='Output SGST')?.id, debit: 0, credit: tax/2 }
+            ].filter(x => x.ledger_id); // Remove undefined
 
             try {
-                await DB.saveVoucher(vData, invEntries, acctEntries);
-                alert("Saved! Printing...");
-                window.print();
-                setTimeout(() => location.reload(), 1000);
-            } catch(e) { alert("Error: " + e); }
+                await DB.saveVoucher(vData, entries, acct);
+                // NO AUTO PRINT - Just Refresh List
+                loadRecentInvoices();
+                resetPage();
+                // Optional: Show simple notification
+                const btn = document.querySelector('.btn-save');
+                const orig = btn.innerText;
+                btn.innerText = "Saved! ✅";
+                setTimeout(() => btn.innerText = orig, 1500);
+            } catch(e) { alert(e); }
         }
 
-        // --- UTILS ---
+        async function loadRecentInvoices() {
+            const vouchers = await DB.getAll('vouchers');
+            const sales = vouchers.filter(v => v.type === 'Sales').sort((a,b) => b.id - a.id).slice(0, 10);
+            
+            const tbody = document.getElementById('recentList');
+            tbody.innerHTML = '';
+            
+            sales.forEach(v => {
+                const pName = ledgersList.find(l => l.id == v.party_id)?.name || 'Unknown';
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${v.voucher_no}</td>
+                    <td>${v.date}</td>
+                    <td>${pName}</td>
+                    <td>₹${v.amount}</td>
+                    <td><button class="btn-print" onclick="reprint(${v.id})">🖨️ Print</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function reprint(id) {
+            // 1. Fetch Voucher
+            const vouchers = await DB.getAll('vouchers');
+            const v = vouchers.find(x => x.id === id);
+            
+            // 2. Fetch Entries
+            const entries = await DB.getAll('entries');
+            const vEntries = entries.filter(e => e.voucher_id === id);
+            
+            // 3. Populate Form (Read Only Mode essentially)
+            document.getElementById('invNo').value = v.voucher_no;
+            document.getElementById('invDate').value = v.date;
+            document.getElementById('partySelect').value = v.party_id;
+            loadPartyDetails();
+            
+            // 4. Fill Items
+            const tbody = document.getElementById('itemRows');
+            tbody.innerHTML = '';
+            vEntries.forEach(ent => addItemRow(ent));
+            
+            // 5. Update Status
+            document.getElementById('modeStatus').innerText = "Reprint Mode (Editing will update old bill)";
+            document.getElementById('modeStatus').style.color = "orange";
+            
+            // 6. Print
+            setTimeout(() => window.print(), 500);
+        }
+
         function numToWords(n) {
             const a = ['','One ','Two ','Three ','Four ', 'Five ','Six ','Seven ','Eight ','Nine ','Ten ','Eleven ','Twelve ','Thirteen ','Fourteen ','Fifteen ','Sixteen ','Seventeen ','Eighteen ','Nineteen '];
             const b = ['', '', 'Twenty','Thirty','Forty','Fifty', 'Sixty','Seventy','Eighty','Ninety'];
