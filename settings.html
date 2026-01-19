@@ -3,50 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Money Wise Pro - Settings</title>
+    <title>Money Wise Pro - Control Room</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --sidebar-bg: #0f172a; --sidebar-text: #94a3b8; --active-text: #f8fafc;
-            --bg: #f8fafc; --card-bg: #ffffff; --text: #1e293b; --border: #e2e8f0;
-            --accent: #6366f1; --red: #ef4444; --green: #10b981;
+            --bg: #f1f5f9; --card-bg: #ffffff; --text: #1e293b; --border: #cbd5e1;
+            --accent: #2563eb; --red: #ef4444; --green: #10b981;
         }
         * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
         body { display: flex; height: 100vh; background: var(--bg); color: var(--text); overflow: hidden; }
 
+        /* SIDEBAR */
         .sidebar { width: 260px; background: var(--sidebar-bg); padding: 20px; display: flex; flex-direction: column; flex-shrink: 0; }
         .brand { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 40px; display: flex; align-items: center; gap: 10px; }
         .nav-link { padding: 12px 15px; margin-bottom: 5px; border-radius: 8px; color: var(--sidebar-text); text-decoration: none; font-weight: 500; display: flex; align-items: center; gap: 12px; transition: 0.2s; font-size: 14px; }
         .nav-link:hover, .nav-link.active { background: #1e293b; color: var(--active-text); }
         .nav-icon { font-size: 18px; }
 
-        .main { flex: 1; padding: 40px; overflow-y: auto; }
-        .container { max-width: 800px; margin: 0 auto; }
+        /* MAIN CONTENT */
+        .main { flex: 1; padding: 30px; overflow-y: auto; }
+        .header { margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
         
-        .header { margin-bottom: 30px; }
-        .title { font-size: 24px; font-weight: 800; margin-bottom: 5px; }
-        .subtitle { color: #64748b; font-size: 14px; }
+        /* TABS */
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+        .tab-btn { padding: 10px 20px; border: none; background: none; font-weight: 600; color: #64748b; cursor: pointer; border-radius: 6px; }
+        .tab-btn.active { background: #fff; color: var(--accent); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
 
-        .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: 1px solid var(--border); margin-bottom: 20px; }
-        .card-title { font-size: 18px; font-weight: 700; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
-        
-        .btn { padding: 12px 24px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; }
-        .btn-primary { background: var(--accent); color: white; }
-        .btn-primary:hover { background: #4f46e5; }
-        .btn-danger { background: #fee2e2; color: var(--red); }
-        .btn-danger:hover { background: #fecaca; }
-        .btn-outline { border: 1px solid var(--border); background: white; color: var(--text); }
-        
-        input[type="file"] { display: none; }
-        .file-label { display: inline-block; padding: 12px 24px; border: 1px dashed var(--accent); color: var(--accent); border-radius: 8px; cursor: pointer; font-weight: 500; }
-        .file-label:hover { background: #f5f3ff; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        #restoreStatus { margin-top: 10px; font-size: 13px; color: #64748b; }
+        /* CARDS */
+        .card { background: white; padding: 25px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .card h3 { margin-bottom: 15px; font-size: 16px; color: #0f172a; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; }
+
+        /* FORMS */
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
+        .form-group label { display: block; font-size: 13px; font-weight: 600; color: #64748b; margin-bottom: 5px; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; }
+        
+        .btn { padding: 10px 20px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; color: white; margin-top: 10px; }
+        .btn-primary { background: var(--accent); }
+        .btn-danger { background: var(--red); }
+        .btn-success { background: var(--green); }
+
+        /* TABLES */
+        table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 10px; }
+        th { text-align: left; padding: 10px; background: #f8fafc; border-bottom: 2px solid var(--border); color: #475569; }
+        td { padding: 10px; border-bottom: 1px solid var(--border); color: #334155; }
+        .role-badge { padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+        .role-admin { background: #fee2e2; color: #991b1b; }
+        .role-manager { background: #dbeafe; color: #1e40af; }
+        .role-operator { background: #dcfce7; color: #166534; }
+
+        /* LOG VIEWER */
+        .log-container { max-height: 400px; overflow-y: auto; border: 1px solid var(--border); border-radius: 6px; }
+        .log-row { padding: 10px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; font-size: 13px; }
+        .log-row:hover { background: #f8fafc; }
+        .log-meta { color: #64748b; font-size: 11px; }
+
     </style>
 </head>
 <body>
 
-   <div class="sidebar">
+    <div class="sidebar">
         <div class="brand">🚀 MoneyWise Pro</div>
         <a href="index.html" class="nav-link"><span class="nav-icon">📊</span> Dashboard</a>
         <a href="reports.html" class="nav-link"><span class="nav-icon">📈</span> Reports</a>
@@ -61,42 +82,257 @@
     </div>
 
     <div class="main">
-        <div class="container">
-            <div class="header">
-                <div class="title">Data Management</div>
-                <div class="subtitle">Backup, Restore and Reset your application data</div>
-            </div>
+        <div class="header">
+            <h2>⚙️ Control Room</h2>
+            <div id="userInfo"></div>
+        </div>
 
+        <div class="tabs">
+            <button class="tab-btn active" onclick="showTab('company')">🏢 Company Profile</button>
+            <button class="tab-btn" onclick="showTab('users')">👥 User Management</button>
+            <button class="tab-btn" onclick="showTab('logs')">🕵️ Audit Logs</button>
+            <button class="tab-btn" onclick="showTab('data')">💾 Data & Backup</button>
+        </div>
+
+        <div id="company" class="tab-content active">
             <div class="card">
-                <div class="card-title">📥 Backup Data</div>
-                <p style="color:#64748b; margin-bottom:20px; font-size:14px;">Download a complete copy of your data (Parties, Items, Invoices). Keep this safe.</p>
-                <button class="btn btn-primary" onclick="DB.exportBackup()">Download Backup JSON</button>
-            </div>
-
-            <div class="card">
-                <div class="card-title">📤 Restore Data</div>
-                <p style="color:#64748b; margin-bottom:20px; font-size:14px;">Restore data from a previously downloaded Backup file. <strong>Warning: Current data will be replaced.</strong></p>
-                
-                <label class="file-label">
-                    Choose Backup File
-                    <input type="file" id="backupFile" accept=".json" onchange="handleFileUpload(this)">
-                </label>
-                <div id="restoreStatus"></div>
-            </div>
-
-            <div class="card" style="border-color: #fecaca; background: #fffafa;">
-                <div class="card-title" style="color:var(--red)">🗑️ Hard Reset</div>
-                <p style="color:#ef4444; margin-bottom:20px; font-size:14px;">This will wipe out EVERYTHING. All invoices, parties, and items will be deleted permanently.</p>
-                <button class="btn btn-danger" onclick="hardReset()">Delete All Data</button>
+                <h3>Business Details</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Business Name</label>
+                        <input type="text" id="compName" placeholder="e.g. Laxmi Traders">
+                    </div>
+                    <div class="form-group">
+                        <label>GSTIN</label>
+                        <input type="text" id="compGST" placeholder="27ABCDE1234F1Z5">
+                    </div>
+                    <div class="form-group">
+                        <label>Address</label>
+                        <input type="text" id="compAddr" placeholder="City, State">
+                    </div>
+                    <div class="form-group">
+                        <label>Contact Info</label>
+                        <input type="text" id="compPhone" placeholder="Mobile / Email">
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="saveCompany()">Save Profile</button>
             </div>
         </div>
+
+        <div id="users" class="tab-content">
+            <div class="card">
+                <h3>Add New User</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" id="uName" placeholder="e.g. Ramesh Kumar">
+                    </div>
+                    <div class="form-group">
+                        <label>Username (Login ID)</label>
+                        <input type="text" id="uUser" placeholder="e.g. ramesh">
+                    </div>
+                    <div class="form-group">
+                        <label>Password (PIN)</label>
+                        <input type="text" id="uPass" placeholder="e.g. 1234">
+                    </div>
+                    <div class="form-group">
+                        <label>Role</label>
+                        <select id="uRole">
+                            <option value="operator">Operator (Billing Only)</option>
+                            <option value="manager">Manager (No Delete)</option>
+                            <option value="admin">Admin (Full Access)</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn btn-success" onclick="createUser()">+ Create User</button>
+            </div>
+
+            <div class="card">
+                <h3>Existing Staff</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Username</th>
+                            <th>Role</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userTable"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="logs" class="tab-content">
+            <div class="card">
+                <h3>System Activity Log (Who did what?)</h3>
+                <div style="margin-bottom:10px; text-align:right;">
+                    <button class="btn btn-primary" style="font-size:12px; padding:5px 10px;" onclick="renderLogs()">↻ Refresh Logs</button>
+                </div>
+                <div class="log-container">
+                    <table style="margin-top:0;">
+                        <thead>
+                            <tr>
+                                <th style="position:sticky; top:0;">Time</th>
+                                <th style="position:sticky; top:0;">User</th>
+                                <th style="position:sticky; top:0;">Action</th>
+                                <th style="position:sticky; top:0;">Description</th>
+                            </tr>
+                        </thead>
+                        <tbody id="logTable">
+                            <tr><td colspan="4" style="text-align:center;">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="data" class="tab-content">
+            <div class="card">
+                <h3>Backup Data</h3>
+                <p style="font-size:13px; color:#64748b; margin-bottom:15px;">Download a full copy of your accounts including users and logs.</p>
+                <button class="btn btn-primary" onclick="DB.exportBackup()">⬇ Download Backup JSON</button>
+            </div>
+
+            <div class="card" style="border-color:#fecaca;">
+                <h3 style="color:#ef4444;">Danger Zone</h3>
+                <div class="form-group">
+                    <label>Restore Backup (Select .json file)</label>
+                    <input type="file" id="restoreFile" accept=".json" onchange="handleRestore(this)">
+                </div>
+                <br>
+                <button class="btn btn-danger" onclick="hardReset()">⚠ Factory Reset System</button>
+            </div>
+        </div>
+
     </div>
 
-    <script src="db.js"></script><script src="auth.js"></script>
+    <script src="db.js"></script>
+    <script src="auth.js"></script>
+    
     <script>
-        window.onload = async () => { await DB.init(); };
+        // Init
+        window.onload = async () => {
+            await DB.init();
+            loadSettings();
+            renderUsers();
+            renderLogs();
 
-        function handleFileUpload(input) {
+            // Restriction check (Already handled by auth.js, but visual cleanup)
+            const user = JSON.parse(sessionStorage.getItem('currentUser'));
+            if(user.role !== 'admin') {
+                document.querySelector('button[onclick="showTab(\'users\')"]').style.display = 'none';
+                document.querySelector('button[onclick="showTab(\'logs\')"]').style.display = 'none';
+            }
+        };
+
+        function showTab(id) {
+            document.querySelectorAll('.tab-content').forEach(d => d.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // --- COMPANY SETTINGS ---
+        async function loadSettings() {
+            const s = await DB.getSettings();
+            if (s) {
+                document.getElementById('compName').value = s.name || '';
+                document.getElementById('compGST').value = s.gstin || '';
+                document.getElementById('compAddr').value = s.address || '';
+                document.getElementById('compPhone').value = s.phone || '';
+            }
+        }
+
+        async function saveCompany() {
+            const data = {
+                name: document.getElementById('compName').value,
+                gstin: document.getElementById('compGST').value,
+                address: document.getElementById('compAddr').value,
+                phone: document.getElementById('compPhone').value
+            };
+            await DB.saveSettings(data);
+            alert("Company Profile Updated!");
+        }
+
+        // --- USER MANAGEMENT ---
+        async function renderUsers() {
+            const users = await DB.getUsers();
+            const tbody = document.getElementById('userTable');
+            tbody.innerHTML = '';
+            
+            users.forEach(u => {
+                const tr = document.createElement('tr');
+                const isMe = u.username === JSON.parse(sessionStorage.getItem('currentUser')).username;
+                const isAdmin = u.username === 'admin';
+                
+                tr.innerHTML = `
+                    <td>${u.name} ${isMe ? '(You)' : ''}</td>
+                    <td>${u.username}</td>
+                    <td><span class="role-badge role-${u.role}">${u.role}</span></td>
+                    <td>
+                        ${!isAdmin ? `<button class="btn-danger" style="padding:5px 10px; font-size:12px; margin:0;" onclick="removeUser('${u.username}')">Remove</button>` : '<span style="color:#cbd5e1;">Protected</span>'}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function createUser() {
+            const u = {
+                name: document.getElementById('uName').value,
+                username: document.getElementById('uUser').value,
+                password: document.getElementById('uPass').value,
+                role: document.getElementById('uRole').value,
+                created_at: new Date()
+            };
+
+            if(!u.username || !u.password) return alert("Username and Password are required");
+
+            try {
+                await DB.createUser(u);
+                alert("User Created Successfully");
+                renderUsers();
+                // Clear form
+                document.getElementById('uName').value = '';
+                document.getElementById('uUser').value = '';
+                document.getElementById('uPass').value = '';
+            } catch(e) {
+                alert("Error: Username might already exist.");
+            }
+        }
+
+        async function removeUser(username) {
+            if(confirm(`Are you sure you want to remove user: ${username}?`)) {
+                await DB.deleteUser(username);
+                renderUsers();
+            }
+        }
+
+        // --- AUDIT LOGS ---
+        async function renderLogs() {
+            const logs = await DB.getLogs();
+            // Sort by latest first
+            logs.sort((a,b) => b.timestamp - a.timestamp);
+            
+            const tbody = document.getElementById('logTable');
+            tbody.innerHTML = '';
+
+            logs.slice(0, 100).forEach(l => { // Show last 100 logs
+                const tr = document.createElement('tr');
+                const date = new Date(l.timestamp).toLocaleString();
+                tr.innerHTML = `
+                    <td class="log-meta">${date}</td>
+                    <td style="font-weight:600;">${l.user || 'System'}</td>
+                    <td><span class="role-badge" style="background:#f1f5f9;">${l.action}</span></td>
+                    <td>${l.description}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // --- RESTORE & RESET ---
+        function handleRestore(input) {
             const file = input.files[0];
             if (!file) return;
 
@@ -104,54 +340,37 @@
             reader.onload = async (e) => {
                 try {
                     const data = JSON.parse(e.target.result);
-                    if (!confirm(`Restore data from file "${file.name}"? Current data will be merged/overwritten.`)) {
-                        input.value = ''; // clear
-                        return;
+                    if (!confirm("Overwrite current data with this backup?")) return;
+                    
+                    const stores = ["groups", "states", "ledgers", "units", "items", "vouchers", "entries", "acct_entries", "settings", "logs", "users"];
+                    const tx = DB.db.transaction(stores, "readwrite");
+
+                    for (const storeName of stores) {
+                        if (data[storeName] && Array.isArray(data[storeName])) {
+                            const store = tx.objectStore(storeName);
+                            // Simple restore strategy: Put all
+                            for (const item of data[storeName]) store.put(item);
+                        }
                     }
                     
-                    document.getElementById('restoreStatus').innerText = "Restoring... please wait.";
-                    await restoreData(data);
-                    document.getElementById('restoreStatus').innerText = "✅ Restore Complete!";
-                    alert("Data Restored Successfully!");
-                    location.reload();
-                } catch (err) {
-                    alert("Invalid Backup File!");
-                    console.error(err);
-                }
+                    tx.oncomplete = () => {
+                        alert("Data Restored! Reloading...");
+                        location.reload();
+                    };
+                } catch (err) { alert("Invalid Backup File"); }
             };
             reader.readAsText(file);
         }
 
-        async function restoreData(data) {
-            const stores = ["groups", "states", "ledgers", "units", "items", "vouchers", "entries", "acct_entries"];
-            const tx = DB.db.transaction(stores, "readwrite");
-
-            for (const storeName of stores) {
-                if (data[storeName] && Array.isArray(data[storeName])) {
-                    const store = tx.objectStore(storeName);
-                    // Optional: Clear existing data before restore?
-                    // await store.clear(); 
-                    
-                    for (const item of data[storeName]) {
-                        store.put(item);
-                    }
-                }
-            }
-            
-            return new Promise((resolve, reject) => {
-                tx.oncomplete = () => resolve();
-                tx.onerror = () => reject(tx.error);
-            });
-        }
-
         async function hardReset() {
-            if (confirm("ARE YOU SURE? All data will be lost forever!") && confirm("Really? This cannot be undone!")) {
-                const req = indexedDB.deleteDatabase("MoneyWise_Pro_DB");
-                req.onsuccess = () => {
-                    alert("System Reset Complete. Reloading...");
-                    location.reload();
-                };
-                req.onerror = () => alert("Reset Failed");
+            if (confirm("🚨 FACTORY RESET: All data, users, and logs will be wiped!")) {
+                if(confirm("Are you absolutely sure?")) {
+                    const req = indexedDB.deleteDatabase("MoneyWise_Pro_DB");
+                    req.onsuccess = () => {
+                        alert("System Reset. Please restart.");
+                        location.href = 'index.html';
+                    };
+                }
             }
         }
     </script>
