@@ -26,12 +26,25 @@
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
         .page-title { font-size: 24px; font-weight: 800; color: #0f172a; letter-spacing: -0.5px; }
         .date-badge { font-size: 13px; color: var(--muted); font-weight: 500; margin-top: 4px; }
-       
+        
         .refresh-btn { background: #fff; border: 1px solid #cbd5e1; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; color: #475569; display: flex; align-items: center; gap: 8px; transition: 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
         .refresh-btn:hover:not(:disabled) { background: #f8fafc; border-color: var(--accent); color: var(--accent); }
         .refresh-btn:disabled { opacity: 0.6; cursor: not-allowed; }
         .spin { animation: spin 1s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* SEARCH SECTION (NEW ADDITION) */
+        .search-container { margin-bottom: 30px; background: white; padding: 20px; border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .search-box { display: flex; gap: 10px; }
+        .search-input { flex: 1; padding: 12px; border: 2px solid var(--border); border-radius: 8px; outline: none; font-size: 14px; transition: 0.2s; }
+        .search-input:focus { border-color: var(--accent); }
+        .search-btn { padding: 0 25px; background: var(--accent); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; }
+        
+        .result-table { width: 100%; border-collapse: collapse; margin-top: 15px; display: none; }
+        .result-table th { text-align: left; padding: 10px; background: #f8fafc; color: var(--muted); font-size: 12px; }
+        .result-table td { padding: 10px; border-bottom: 1px solid var(--border); font-size: 13px; }
+        .btn-open { padding: 4px 10px; background: #e0e7ff; color: var(--accent); border-radius: 4px; border: none; font-weight: 600; cursor: pointer; font-size: 11px; }
+
         /* METRICS GRID */
         .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 30px; }
         .card { background: var(--card-bg); padding: 24px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: 1px solid var(--border); display: flex; flex-direction: column; transition: transform 0.2s; }
@@ -39,7 +52,7 @@
         .card-head { font-size: 12px; font-weight: 600; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; display: flex; justify-content: space-between; }
         .card-val { font-size: 26px; font-weight: 700; color: #0f172a; margin-bottom: 4px; letter-spacing: -0.5px; }
         .card-sub { font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 6px; color: var(--muted); }
-       
+        
         .trend-badge { padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
         .bg-green { background: #dcfce7; color: #166534; }
         .bg-red { background: #fee2e2; color: #991b1b; }
@@ -57,7 +70,7 @@
         .txn-meta { font-size: 11px; color: #94a3b8; margin-top: 2px; }
         .amt-pos { color: var(--green); font-weight: 700; }
         .amt-neg { color: var(--red); font-weight: 700; }
-       
+        
         /* ALERTS */
         .alert-item { display: flex; align-items: center; justify-content: space-between; padding: 12px; background: #fff1f2; border-radius: 8px; margin-bottom: 8px; border-left: 4px solid var(--red); cursor: pointer; transition: 0.2s; }
         .alert-item:hover { background: #ffe4e6; }
@@ -101,6 +114,20 @@
                 <span id="spinIcon">🔄</span> <span id="refreshText">Refresh Data</span>
             </button>
         </div>
+
+        <div class="search-container">
+            <h4 style="margin:0 0 15px 0;">🔍 Universal Voucher Search</h4>
+            <div class="search-box">
+                <input type="text" class="search-input" id="univSearch" placeholder="Type Invoice No (e.g. INV-2026), Date, or Amount..." onkeyup="if(event.key==='Enter') searchVouchers()">
+                <button class="search-btn" onclick="searchVouchers()">Find</button>
+            </div>
+            <table class="result-table" id="searchTable">
+                <thead><tr><th>Date</th><th>Type</th><th>Voucher #</th><th>Amount</th><th>Action</th></tr></thead>
+                <tbody id="searchBody"></tbody>
+            </table>
+            <div id="noResult" style="display:none; padding:10px; text-align:center; color:#64748b;">No vouchers found.</div>
+        </div>
+
         <div class="metrics-grid">
             <div class="card">
                 <div class="card-head">
@@ -143,6 +170,7 @@
                 <div class="card-sub" id="gstStatus">...</div>
             </div>
         </div>
+
         <div class="split-view">
             <div class="panel">
                 <div class="panel-head">
@@ -170,6 +198,7 @@
                 </div>
             </div>
         </div>
+
         <div class="split-view">
             <div class="panel" style="height:400px;">
                 <div class="panel-head">
@@ -201,11 +230,61 @@
     <script src="db.js"></script><script src="auth.js"></script>
     <script>
         document.getElementById('todayDate').innerText = new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        let globalVouchers = []; // Store vouchers for search
 
         window.onload = async () => {
             try { await DB.init(); runAnalytics(); }
             catch(e) { console.error(e); }
         };
+
+        // --- SEARCH FUNCTION ---
+        function searchVouchers() {
+            const query = document.getElementById('univSearch').value.toLowerCase().trim();
+            const table = document.getElementById('searchTable');
+            const tbody = document.getElementById('searchBody');
+            const noRes = document.getElementById('noResult');
+
+            if (!query) {
+                table.style.display = 'none';
+                noRes.style.display = 'none';
+                return;
+            }
+
+            const results = globalVouchers.filter(v => 
+                v.voucher_no.toLowerCase().includes(query) || 
+                v.date.includes(query) || 
+                v.amount.toString().includes(query)
+            );
+
+            tbody.innerHTML = '';
+            
+            if (results.length > 0) {
+                table.style.display = 'table';
+                noRes.style.display = 'none';
+                
+                results.sort((a,b) => b.id - a.id).forEach(v => {
+                    const tr = document.createElement('tr');
+                    // Route to correct page based on type
+                    let targetPage = 'vouchers.html';
+                    if(v.type === 'Sales') targetPage = 'sales_invoice.html';
+                    if(v.type === 'Purchase') targetPage = 'purchase_invoice.html';
+
+                    tr.innerHTML = `
+                        <td>${v.date}</td>
+                        <td><span style="padding:2px 6px; border-radius:4px; background:#f3f4f6; font-size:11px; font-weight:700;">${v.type}</span></td>
+                        <td style="font-weight:600;">${v.voucher_no}</td>
+                        <td>₹${v.amount}</td>
+                        <td>
+                            <button class="btn-open" onclick="window.location.href='${targetPage}?id=${v.id}'">📂 Open</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } else {
+                table.style.display = 'none';
+                noRes.style.display = 'block';
+            }
+        }
 
         async function refreshDashboard() {
             const btn = document.getElementById('refreshBtn');
@@ -233,6 +312,9 @@
                 getAll(tx.objectStore('acct_entries')),
                 getAll(tx.objectStore('groups'))
             ]);
+
+            // Save for search
+            globalVouchers = vouchers;
 
             // Data Prep
             const ledgerMap = {}; ledgers.forEach(l => ledgerMap[l.id] = l);
