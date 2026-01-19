@@ -15,12 +15,22 @@
         }
         * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
         body { display: flex; height: 100vh; background: var(--bg); color: var(--text); overflow: hidden; }
+
+        /* --- LOGIN OVERLAY (NEW ADDITION) --- */
+        #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0f172a; z-index: 9999; display: flex; align-items: center; justify-content: center; color: white; }
+        .login-box { text-align: center; width: 320px; background: rgba(255,255,255,0.1); padding: 40px; border-radius: 16px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
+        .login-box h2 { margin-top: 10px; font-weight: 800; }
+        .login-box input { width: 100%; padding: 12px; border-radius: 8px; border: none; margin-top: 20px; font-size: 16px; text-align: center; outline: none; }
+        .login-box button { width: 100%; padding: 12px; margin-top: 15px; background: var(--accent); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .login-box button:hover { background: #4f46e5; }
+
         /* SIDEBAR */
         .sidebar { width: 260px; background: var(--sidebar-bg); padding: 20px; display: flex; flex-direction: column; flex-shrink: 0; }
         .brand { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 40px; display: flex; align-items: center; gap: 10px; }
         .nav-link { padding: 12px 15px; margin-bottom: 5px; border-radius: 8px; color: var(--sidebar-text); text-decoration: none; font-weight: 500; display: flex; align-items: center; gap: 12px; transition: 0.2s; font-size: 14px; }
         .nav-link:hover, .nav-link.active { background: #1e293b; color: var(--active-text); }
         .nav-icon { font-size: 18px; }
+        
         /* MAIN CONTENT */
         .main { flex: 1; overflow-y: auto; padding: 30px; }
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
@@ -33,7 +43,7 @@
         .spin { animation: spin 1s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
-        /* SEARCH SECTION (NEW ADDITION) */
+        /* SEARCH SECTION */
         .search-container { margin-bottom: 30px; background: white; padding: 20px; border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         .search-box { display: flex; gap: 10px; }
         .search-input { flex: 1; padding: 12px; border: 2px solid var(--border); border-radius: 8px; outline: none; font-size: 14px; transition: 0.2s; }
@@ -58,10 +68,12 @@
         .bg-red { background: #fee2e2; color: #991b1b; }
         .bg-orange { background: #ffedd5; color: #9a3412; }
         .bg-blue { background: #dbeafe; color: #1e40af; }
+
         /* PANELS */
         .split-view { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 30px; }
         .panel { background: #fff; border-radius: 12px; padding: 20px; border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.05); height: 100%; display: flex; flex-direction: column; position: relative; }
         .panel-head { font-weight: 700; font-size: 15px; margin-bottom: 20px; color: #0f172a; display: flex; justify-content: space-between; align-items: center; }
+        
         /* LISTS */
         .table-wrap { flex: 1; overflow-y: auto; }
         .row-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
@@ -77,33 +89,52 @@
         .alert-item.warning { background: #fff7ed; border-left-color: var(--orange); }
         .alert-text { font-size: 13px; font-weight: 600; }
         .alert-sub { font-size: 11px; color: var(--muted); }
+        
         /* EMPTY STATES */
         .empty-state { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 13px; }
         .empty-icon { font-size: 24px; margin-bottom: 10px; display: block; opacity: 0.5; }
         .no-data-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: var(--muted); font-size: 14px; text-align: center; background: rgba(255,255,255,0.9); padding: 12px 20px; border-radius: 8px; z-index: 10; }
+        
         /* FAB */
         .fab-group { position: fixed; bottom: 30px; right: 30px; display: flex; gap: 12px; z-index: 100; }
         .fab { width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); cursor: pointer; text-decoration: none; transition: all 0.2s; }
         .fab:hover { transform: translateY(-4px); box-shadow: 0 6px 16px rgba(0,0,0,0.25); }
         .f-sale { background: var(--accent); }
         .f-pur { background: var(--green); }
+        
         @media(max-width: 1024px) { .metrics-grid { grid-template-columns: repeat(2, 1fr); } .split-view { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
-   <div class="sidebar">
+
+    <div id="loginOverlay">
+        <div class="login-box">
+            <div style="font-size: 40px;">🚀</div>
+            <h2>Money Wise Pro</h2>
+            <p style="color:rgba(255,255,255,0.7); font-size:12px;">Secure Enterprise Login</p>
+            <form onsubmit="handleLogin(event)">
+                <input type="text" id="username" placeholder="Username (admin)" required>
+                <input type="password" id="password" placeholder="PIN (123)" required>
+                <button type="submit">Unlock System</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="sidebar">
         <div class="brand">🚀 MoneyWise Pro</div>
         <a href="index.html" class="nav-link active"><span class="nav-icon">📊</span> Dashboard</a>
         <a href="reports.html" class="nav-link"><span class="nav-icon">📈</span> Reports</a>
         <a href="gst_filing.html" class="nav-link"><span class="nav-icon">🏛️</span> GST Filing</a>
-        <a href="sales_invoice.html" class="nav-link"><span class="nav-icon">🧾</span> Sales Invoice</a>
+        <a href="taxation.html" class="nav-link"><span class="nav-icon">📋</span> Taxation (ITR)</a> <a href="sales_invoice.html" class="nav-link"><span class="nav-icon">🧾</span> Sales Invoice</a>
         <a href="purchase_invoice.html" class="nav-link"><span class="nav-icon">🚚</span> Purchase Entry</a>
         <a href="vouchers.html" class="nav-link"><span class="nav-icon">💸</span> Vouchers (JV)</a>
         <a href="item_master.html" class="nav-link"><span class="nav-icon">📦</span> Inventory</a>
         <a href="moneywise.html" class="nav-link"><span class="nav-icon">👥</span> Parties / Ledgers</a>
         <a href="coa.html" class="nav-link"><span class="nav-icon">🗂️</span> Chart of Accounts</a>
         <a href="settings.html" class="nav-link"><span class="nav-icon">⚙️</span> Settings</a>
-    </div>
+        
+        <a href="#" onclick="logout()" class="nav-link" style="margin-top:auto; color:#ef4444;"><span class="nav-icon">🚪</span> Logout</a> </div>
+
     <div class="main">
         <div class="header">
             <div>
@@ -227,57 +258,63 @@
         <a href="purchase_invoice.html" class="fab f-pur" title="Purchase">🚚</a>
     </div>
 
-    <script src="db.js"></script><script src="auth.js"></script>
+    <script src="db.js"></script>
     <script>
         document.getElementById('todayDate').innerText = new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-        let globalVouchers = []; // Store vouchers for search
+        let globalVouchers = []; 
 
-        window.onload = async () => {
+        // 1. AUTH LOGIC
+        if(sessionStorage.getItem('user_session')) {
+            document.getElementById('loginOverlay').style.display = 'none';
+            initDashboard();
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const u = document.getElementById('username').value;
+            const p = document.getElementById('password').value;
+            await DB.init();
+            try {
+                const user = await DB.login(u, p);
+                sessionStorage.setItem('user_session', JSON.stringify(user));
+                document.getElementById('loginOverlay').style.display = 'none';
+                initDashboard();
+            } catch(err) { alert("Invalid Credentials"); }
+        }
+
+        function logout() {
+            if(confirm("Logout?")) {
+                sessionStorage.removeItem('user_session');
+                location.reload();
+            }
+        }
+
+        async function initDashboard() {
             try { await DB.init(); runAnalytics(); }
             catch(e) { console.error(e); }
-        };
+        }
 
-        // --- SEARCH FUNCTION ---
+        // 2. SEARCH LOGIC
         function searchVouchers() {
             const query = document.getElementById('univSearch').value.toLowerCase().trim();
             const table = document.getElementById('searchTable');
             const tbody = document.getElementById('searchBody');
             const noRes = document.getElementById('noResult');
 
-            if (!query) {
-                table.style.display = 'none';
-                noRes.style.display = 'none';
-                return;
-            }
+            if (!query) { table.style.display = 'none'; noRes.style.display = 'none'; return; }
 
-            const results = globalVouchers.filter(v => 
-                v.voucher_no.toLowerCase().includes(query) || 
-                v.date.includes(query) || 
-                v.amount.toString().includes(query)
-            );
-
+            const results = globalVouchers.filter(v => v.voucher_no.toLowerCase().includes(query) || v.date.includes(query) || v.amount.toString().includes(query));
             tbody.innerHTML = '';
             
             if (results.length > 0) {
                 table.style.display = 'table';
                 noRes.style.display = 'none';
-                
                 results.sort((a,b) => b.id - a.id).forEach(v => {
                     const tr = document.createElement('tr');
-                    // Route to correct page based on type
                     let targetPage = 'vouchers.html';
                     if(v.type === 'Sales') targetPage = 'sales_invoice.html';
                     if(v.type === 'Purchase') targetPage = 'purchase_invoice.html';
-
-                    tr.innerHTML = `
-                        <td>${v.date}</td>
-                        <td><span style="padding:2px 6px; border-radius:4px; background:#f3f4f6; font-size:11px; font-weight:700;">${v.type}</span></td>
-                        <td style="font-weight:600;">${v.voucher_no}</td>
-                        <td>₹${v.amount}</td>
-                        <td>
-                            <button class="btn-open" onclick="window.location.href='${targetPage}?id=${v.id}'">📂 Open</button>
-                        </td>
-                    `;
+                    tr.innerHTML = `<td>${v.date}</td><td><span style="padding:2px 6px; border-radius:4px; background:#f3f4f6; font-size:11px; font-weight:700;">${v.type}</span></td><td style="font-weight:600;">${v.voucher_no}</td><td>₹${v.amount}</td><td><button class="btn-open" onclick="window.location.href='${targetPage}?id=${v.id}'">📂 Open</button></td>`;
                     tbody.appendChild(tr);
                 });
             } else {
@@ -286,6 +323,7 @@
             }
         }
 
+        // 3. REFRESH LOGIC
         async function refreshDashboard() {
             const btn = document.getElementById('refreshBtn');
             const spin = document.getElementById('spinIcon');
@@ -293,44 +331,30 @@
             btn.disabled = true;
             spin.classList.add('spin');
             txt.innerText = 'Refreshing...';
-
             await runAnalytics();
-
-            setTimeout(() => {
-                spin.classList.remove('spin');
-                txt.innerText = 'Refresh Data';
-                btn.disabled = false;
-            }, 800);
+            setTimeout(() => { spin.classList.remove('spin'); txt.innerText = 'Refresh Data'; btn.disabled = false; }, 800);
         }
 
+        // 4. CORE ANALYTICS
         async function runAnalytics() {
             const tx = DB.db.transaction(['vouchers', 'items', 'ledgers', 'acct_entries', 'groups'], 'readonly');
             const [vouchers, items, ledgers, entries, groups] = await Promise.all([
-                getAll(tx.objectStore('vouchers')),
-                getAll(tx.objectStore('items')),
-                getAll(tx.objectStore('ledgers')),
-                getAll(tx.objectStore('acct_entries')),
-                getAll(tx.objectStore('groups'))
+                getAll(tx.objectStore('vouchers')), getAll(tx.objectStore('items')), getAll(tx.objectStore('ledgers')), getAll(tx.objectStore('acct_entries')), getAll(tx.objectStore('groups'))
             ]);
 
-            // Save for search
             globalVouchers = vouchers;
-
-            // Data Prep
             const ledgerMap = {}; ledgers.forEach(l => ledgerMap[l.id] = l);
             const balances = {};
-            entries.forEach(e => {
-                balances[e.ledger_id] = (balances[e.ledger_id] || 0) + (e.debit || 0) - (e.credit || 0);
-            });
+            entries.forEach(e => { balances[e.ledger_id] = (balances[e.ledger_id] || 0) + (e.debit || 0) - (e.credit || 0); });
 
-            // Financial Metrics
+            // Metrics Calculation
             let totalSales = 0, totalPur = 0;
             vouchers.forEach(v => {
                 if (v.type === 'Sales') totalSales += v.amount || 0;
                 if (v.type === 'Purchase') totalPur += v.amount || 0;
             });
 
-            // Real COGS & Gross Profit
+            // Gross Profit
             let openingStockVal = items.reduce((sum, i) => sum + (parseFloat(i.op_value) || (parseFloat(i.op_qty || 0) * parseFloat(i.std_cost || 0))), 0);
             let closingStockVal = items.reduce((sum, i) => sum + ((i.current_stock || 0) * (i.std_cost || 0)), 0);
             let cogs = openingStockVal + totalPur - closingStockVal;
@@ -339,22 +363,16 @@
             pEl.innerText = fmt(profit);
             pEl.style.color = profit >= 0 ? 'var(--green)' : 'var(--red)';
 
-            // Cash
+            // Cash & Bank
             const cashGrpId = groups.find(g => g.name === "Cash-in-Hand")?.id;
             let cashTotal = 0;
-            ledgers.filter(l => l.group_id === cashGrpId).forEach(l => {
-                cashTotal += (l.opening_balance || 0) + (balances[l.id] || 0);
-            });
+            ledgers.filter(l => l.group_id === cashGrpId).forEach(l => { cashTotal += (l.opening_balance || 0) + (balances[l.id] || 0); });
             const cEl = document.getElementById('cashBal');
             cEl.innerText = fmt(cashTotal);
-            if (cashTotal < 0) {
-                cEl.style.color = 'var(--red)';
-                document.getElementById('cashStatus').innerText = "⚠️ Negative Balance!";
-            } else {
-                document.getElementById('cashStatus').innerText = "Drawer Balance";
-            }
+            if (cashTotal < 0) { cEl.style.color = 'var(--red)'; document.getElementById('cashStatus').innerText = "⚠️ Negative Balance!"; }
+            else { document.getElementById('cashStatus').innerText = "Drawer Balance"; }
 
-            // Receivables
+            // Receivables & Payables
             const debtGrpId = groups.find(g => g.name === "Sundry Debtors")?.id;
             let receivables = 0, debtCount = 0;
             ledgers.filter(l => l.group_id === debtGrpId).forEach(l => {
@@ -364,7 +382,6 @@
             document.getElementById('receivables').innerText = fmt(receivables);
             document.getElementById('debtorsCount').innerText = `${debtCount} Customers`;
 
-            // Payables
             const credGrpId = groups.find(g => g.name === "Sundry Creditors")?.id;
             let payables = 0;
             ledgers.filter(l => l.group_id === credGrpId).forEach(l => {
@@ -373,43 +390,26 @@
             });
             document.getElementById('payables').innerText = fmt(payables);
 
-            // GST Net
+            // GST
             const taxGrpId = groups.find(g => g.name === "Duties & Taxes")?.id;
             let inTax = 0, outTax = 0;
             if (taxGrpId) {
                 ledgers.filter(l => l.group_id === taxGrpId).forEach(l => {
                     let bal = (l.opening_balance || 0) + (balances[l.id] || 0);
-                    if (bal > 0) inTax += bal;
-                    else outTax += Math.abs(bal);
+                    if (bal > 0) inTax += bal; else outTax += Math.abs(bal);
                 });
             }
-            let totalTaxVol = inTax + outTax;
-            let inPct = totalTaxVol > 0 ? Math.round((inTax / totalTaxVol) * 100) : 0;
-            let outPct = totalTaxVol > 0 ? Math.round((outTax / totalTaxVol) * 100) : 0;
-            document.getElementById('inTax').innerText = `${fmt(inTax)} (${inPct}%)`;
-            document.getElementById('outTax').innerText = `${fmt(outTax)} (${outPct}%)`;
-
+            document.getElementById('inTax').innerText = fmt(inTax);
+            document.getElementById('outTax').innerText = fmt(outTax);
             let netGst = outTax - inTax;
             const gstEl = document.getElementById('gstNet');
-            const gstSt = document.getElementById('gstStatus');
-            if (netGst > 0) {
-                gstEl.innerText = fmt(netGst);
-                gstEl.style.color = 'var(--red)';
-                gstSt.innerText = "Liability (To Pay)";
-            } else {
-                gstEl.innerText = fmt(Math.abs(netGst));
-                gstEl.style.color = 'var(--green)';
-                gstSt.innerText = "Credit Available";
-            }
+            if (netGst > 0) { gstEl.innerText = fmt(netGst); gstEl.style.color = 'var(--red)'; document.getElementById('gstStatus').innerText = "Liability (To Pay)"; }
+            else { gstEl.innerText = fmt(Math.abs(netGst)); gstEl.style.color = 'var(--green)'; document.getElementById('gstStatus').innerText = "Credit Available"; }
 
             // Alerts
             let alerts = [];
             if (cashTotal < 0) alerts.push({ title: "Negative Cash", sub: "Check entries immediately", type: "critical" });
-            const lowStock = items.filter(i => (i.current_stock || 0) <= (i.reorder_level || 5));
-            lowStock.forEach(i => alerts.push({ title: "Low Stock: " + i.name, sub: `Only ${i.current_stock} left`, type: "warning" }));
-            if (totalSales > 0 && receivables > (totalSales * 0.5)) {
-                alerts.push({ title: "High Receivables", sub: "More than 50% sales on credit", type: "warning" });
-            }
+            items.filter(i => (i.current_stock || 0) <= (i.reorder_level || 5)).forEach(i => alerts.push({ title: "Low Stock: " + i.name, sub: `Only ${i.current_stock} left`, type: "warning" }));
             const alertDiv = document.getElementById('alertsList');
             if (alerts.length > 0) {
                 alertDiv.innerHTML = alerts.map(a => `
@@ -421,41 +421,25 @@
                         <span style="font-size:18px;">${a.type === 'critical' ? '🛑' : '⚠️'}</span>
                     </div>
                 `).join('');
-            } else {
-                alertDiv.innerHTML = '<div class="empty-state"><span class="empty-icon">✨</span>All systems healthy.</div>';
-            }
+            } else { alertDiv.innerHTML = '<div class="empty-state"><span class="empty-icon">✨</span>All systems healthy.</div>'; }
 
-            // Recent Transactions
-            if (vouchers.length > 0) {
-                const recent = vouchers.sort((a,b) => b.id - a.id).slice(0, 10);
+            // Recent List
+            const recent = vouchers.sort((a,b) => b.id - a.id).slice(0, 10);
+            if(recent.length > 0) {
                 document.getElementById('recentTxn').innerHTML = recent.map(v => {
                     const pName = ledgerMap[v.party_id]?.name || "Cash / Unknown";
                     const isSale = v.type === 'Sales';
-                    return `
-                        <div class="row-item">
-                            <div>
-                                <div class="party-name">${pName}</div>
-                                <div class="txn-meta">${v.voucher_no} • ${v.date}</div>
-                            </div>
-                            <div class="${isSale ? 'amt-pos' : 'amt-neg'}">
-                                ${isSale ? '+' : '-'} ${fmt(v.amount)}
-                            </div>
-                        </div>
-                    `;
+                    return `<div class="row-item"><div><div class="party-name">${pName}</div><div class="txn-meta">${v.voucher_no} • ${v.date}</div></div><div class="${isSale ? 'amt-pos' : 'amt-neg'}">${isSale ? '+' : '-'} ${fmt(v.amount)}</div></div>`;
                 }).join('');
-            } else {
-                document.getElementById('recentTxn').innerHTML = '<div class="empty-state">No transactions recorded yet.</div>';
             }
 
-            // Charts
+            // Chart Rendering
             renderCharts(vouchers, inTax, outTax);
         }
 
         function renderCharts(vouchers, inTax, outTax) {
             // Sales Chart
-            const months = [];
-            const dataMap = {};
-            const today = new Date();
+            const months = [], dataMap = {}, today = new Date();
             for (let i = 5; i >= 0; i--) {
                 const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
                 const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
@@ -469,22 +453,7 @@
                     if (dataMap[key] !== undefined) dataMap[key] += v.amount || 0;
                 }
             });
-            const chartData = [];
-            for (let i = 5; i >= 0; i--) {
-                const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
-                const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-                chartData.push(dataMap[key]);
-            }
-
-            const chartWrap = document.getElementById('salesChartWrapper');
-            const oldOv = chartWrap.querySelector('.no-data-overlay');
-            if (oldOv) oldOv.remove();
-            if (chartData.every(v => v === 0)) {
-                const overlay = document.createElement('div');
-                overlay.className = 'no-data-overlay';
-                overlay.innerHTML = '<span class="empty-icon">📉</span>No sales data in last 6 months';
-                chartWrap.appendChild(overlay);
-            }
+            const chartData = Object.values(dataMap);
 
             if (window.salesChartInstance) window.salesChartInstance.destroy();
             const ctx1 = document.getElementById('salesChart').getContext('2d');
@@ -492,76 +461,27 @@
                 type: 'line',
                 data: {
                     labels: months,
-                    datasets: [{
-                        label: 'Revenue',
-                        data: chartData,
-                        borderColor: '#6366f1',
-                        backgroundColor: (context) => {
-                            const ctx = context.chart.ctx;
-                            const gradient = ctx.createLinearGradient(0, 0, 0, 300);
-                            gradient.addColorStop(0, 'rgba(99, 102, 241, 0.3)');
-                            gradient.addColorStop(1, 'rgba(99, 102, 241, 0.0)');
-                            return gradient;
-                        },
-                        fill: true,
-                        tension: 0.4,
-                        borderWidth: 2,
-                        pointRadius: 4,
-                        pointBackgroundColor: '#fff',
-                        pointBorderColor: '#6366f1'
-                    }]
+                    datasets: [{ label: 'Revenue', data: chartData, borderColor: '#6366f1', backgroundColor: 'rgba(99, 102, 241, 0.1)', fill: true, tension: 0.4 }]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                label: (ctx) => `₹ ${ctx.parsed.y.toLocaleString('en-IN')}`
-                            }
-                        }
-                    },
-                    scales: {
-                        y: { beginAtZero: true, grid: { borderDash: [4, 4], color: '#f1f5f9' } },
-                        x: { grid: { display: false } }
-                    }
-                }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
             });
 
             // GST Chart
-            const gstContainer = document.getElementById('gstChartContainer');
-            if (inTax === 0 && outTax === 0) {
-                gstContainer.innerHTML = '<div class="empty-state" style="padding-top:80px">No Tax Data Available</div>';
-            } else {
-                if (window.gstChartInstance) window.gstChartInstance.destroy();
-                if (!document.getElementById('gstChart')) gstContainer.innerHTML = '<canvas id="gstChart"></canvas>';
-                window.gstChartInstance = new Chart(document.getElementById('gstChart'), {
+            if (window.gstChartInstance) window.gstChartInstance.destroy();
+            const gstCtx = document.getElementById('gstChart');
+            if(gstCtx && (inTax > 0 || outTax > 0)) {
+                window.gstChartInstance = new Chart(gstCtx, {
                     type: 'doughnut',
-                    data: {
-                        labels: ['Input (Asset)', 'Output (Liab)'],
-                        datasets: [{ data: [inTax, outTax], backgroundColor: ['#10b981', '#ef4444'], borderWidth: 0 }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        cutout: '75%',
-                        plugins: { legend: { display: false } }
-                    }
+                    data: { labels: ['Input', 'Output'], datasets: [{ data: [inTax, outTax], backgroundColor: ['#10b981', '#ef4444'], borderWidth: 0 }] },
+                    options: { responsive: true, maintainAspectRatio: false, cutout: '75%', plugins: { legend: { display: false } } }
                 });
+            } else {
+                document.getElementById('gstChartContainer').innerHTML = '<div class="empty-state" style="padding-top:80px">No Data</div>';
             }
         }
 
-        function getAll(store) {
-            return new Promise(resolve => {
-                const req = store.getAll();
-                req.onsuccess = () => resolve(req.result);
-            });
-        }
-
-        function fmt(num) {
-            return "₹ " + (num || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        }
+        function getAll(store) { return new Promise(resolve => { const req = store.getAll(); req.onsuccess = () => resolve(req.result); }); }
+        function fmt(num) { return "₹ " + (num || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
     </script>
 </body>
 </html>

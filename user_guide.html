@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Manual - Money Wise Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0f172a; --accent: #2563eb; --bg: #f8fafc;
+            --text: #334155; --border: #cbd5e1;
+            --green: #16a34a; --red: #dc2626; --orange: #ca8a04;
+        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; margin: 0; display: flex; }
+        
+        /* SIDEBAR */
+        .sidebar { width: 250px; background: var(--primary); color: white; height: 100vh; position: fixed; overflow-y: auto; padding: 20px; }
+        .sidebar h2 { font-size: 18px; border-bottom: 1px solid #334155; padding-bottom: 10px; margin-bottom: 20px; }
+        .sidebar a { display: block; color: #94a3b8; text-decoration: none; padding: 10px; border-radius: 6px; margin-bottom: 5px; font-size: 14px; }
+        .sidebar a:hover, .sidebar a.active { background: #1e293b; color: white; }
+
+        /* MAIN CONTENT */
+        .content { margin-left: 250px; padding: 40px; max-width: 900px; }
+        
+        h1 { color: var(--primary); font-size: 32px; margin-bottom: 10px; }
+        h2 { color: var(--accent); border-left: 5px solid var(--accent); padding-left: 15px; margin-top: 40px; background: white; padding: 10px 15px; border-radius: 0 8px 8px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        h3 { color: var(--primary); margin-top: 25px; font-size: 18px; display: flex; align-items: center; gap: 10px; }
+        
+        p { margin-bottom: 15px; font-size: 15px; }
+        
+        /* ACTION TABLES */
+        table { width: 100%; border-collapse: collapse; background: white; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-radius: 8px; overflow: hidden; }
+        th { background: #e2e8f0; text-align: left; padding: 12px; font-weight: 700; color: var(--primary); border-bottom: 2px solid var(--border); }
+        td { padding: 12px; border-bottom: 1px solid #eee; vertical-align: top; }
+        tr:last-child td { border-bottom: none; }
+        
+        /* BADGES */
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+        .b-act { background: #dbeafe; color: #1e40af; } /* Action */
+        .b-res { background: #dcfce7; color: #15803d; } /* Result */
+        .b-warn { background: #fee2e2; color: #991b1b; } /* Warning */
+
+        .note { background: #fff7ed; border-left: 4px solid var(--orange); padding: 15px; border-radius: 4px; font-size: 14px; margin: 15px 0; }
+        
+        .btn-print { position: fixed; top: 20px; right: 20px; padding: 10px 20px; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
+
+        @media print {
+            .sidebar, .btn-print { display: none; }
+            .content { margin: 0; padding: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <button class="btn-print" onclick="window.print()">🖨️ Print Guide</button>
+
+    <div class="sidebar">
+        <h2>📘 Master Guide</h2>
+        <a href="#start">🚀 शुरुआत (Start)</a>
+        <a href="#settings">⚙️ सेटिंग्स (Settings)</a>
+        <a href="#inventory">📦 माल और पार्टियां (Masters)</a>
+        <a href="#sales">🧾 बिक्री (Sales Logic)</a>
+        <a href="#purchase">🚚 खरीद (Purchase Logic)</a>
+        <a href="#accounts">💸 हिसाब (Accounts)</a>
+        <a href="#reports">📈 रिपोर्ट्स (Reports)</a>
+        <a href="#tax">🏛️ टैक्स (ITR/TDS)</a>
+    </div>
+
+    <div class="content">
+        <h1 id="start">Money Wise Pro v2.0</h1>
+        <p>संपूर्ण सॉफ्टवेयर चलाने की विधि। यहाँ बताया गया है कि <strong>क्या करने से क्या होगा।</strong></p>
+
+        <div class="note">
+            <strong>🔑 लॉगिन जानकारी:</strong><br>
+            Username: <strong>admin</strong> | Password: <strong>123</strong>
+        </div>
+
+        <h2 id="settings">1. सेटिंग्स (Settings) - सबसे पहले</h2>
+        <p>सॉफ्टवेयर को अपनी दुकान के हिसाब से ढालने के लिए।</p>
+        <table>
+            <thead><tr><th width="40%">अगर आप ये करेंगे (Action)</th><th>तो सिस्टम में ये होगा (Result)</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td><span class="badge b-act">Company Profile</span> भरेंगे</td>
+                    <td><span class="badge b-res">Bill Header</span> आपके सभी बिलों पर दुकान का नाम, GST और लोगो छप कर आएगा।</td>
+                </tr>
+                <tr>
+                    <td><span class="badge b-act">Printer Config</span> बदलेंगे</td>
+                    <td>बिल का साइज़ <strong>A4</strong> (बड़ा) या <strong>Thermal</strong> (पर्ची) में बदल जाएगा।</td>
+                </tr>
+                <tr>
+                    <td><span class="badge b-act">Backup Download</span> दबाएंगे</td>
+                    <td>एक <strong>.json फाइल</strong> डाउनलोड होगी। अगर कंप्यूटर ख़राब हो जाए, तो इससे डेटा वापस आएगा।</td>
+                </tr>
+                <tr>
+                    <td><span class="badge b-warn">Factory Reset</span> दबाएंगे</td>
+                    <td>⚠️ <strong>सब कुछ डिलीट!</strong> सारे बिल, आइटम और उधारी 0 हो जाएगी। (नया धंधा शुरू करने जैसा)।</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2 id="inventory">2. मास्टर डेटा (Inventory & Party)</h2>
+        <p>बिल काटने से पहले माल और ग्राहक का रजिस्टर बनाना।</p>
+        
+        <h3>📦 Inventory (Item Master)</h3>
+        <table>
+            <thead><tr><th>Action</th><th>Result</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td><strong>Opening Stock</strong> डालेंगे</td>
+                    <td>सॉफ्टवेयर मानेगा कि यह माल पहले से दुकान में पड़ा है। स्टॉक रिपोर्ट में जुड़ जाएगा।</td>
+                </tr>
+                <tr>
+                    <td><strong>Low Stock Alert</strong> सेट करेंगे</td>
+                    <td>जब माल इस नंबर से कम होगा, तो रिपोर्ट में <strong>लाल रंग</strong> में दिखेगा।</td>
+                </tr>
+                <tr>
+                    <td><strong>Barcode</strong> डालेंगे</td>
+                    <td>बिल बनाते समय गन से स्कैन करते ही आइटम अपने आप जुड़ जाएगा।</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>👥 Party Master (Ledger)</h3>
+        <table>
+            <thead><tr><th>Action</th><th>Result</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td><strong>Credit Limit</strong> सेट करेंगे</td>
+                    <td>अगर ग्राहक की उधारी इस लिमिट से ज्यादा हुई, तो बिल बनाते समय <span class="badge b-warn">Alert</span> आएगा।</td>
+                </tr>
+                <tr>
+                    <td><strong>GST Type</strong> (Regular/Unreg) चुनेंगे</td>
+                    <td>GSTR-1 रिपोर्ट सही बनेगी (B2B या B2C)।</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2 id="sales">3. बिक्री (Sales Invoice) - पैसा आना</h2>
+        <p>यहाँ 4 अलग-अलग मोड हैं। ध्यान से देखें कि किसका क्या असर होता है।</p>
+        <table>
+            <thead><tr><th width="30%">Mode (विकल्प)</th><th>असर (Effect on System)</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>✅ <strong>Tax Invoice</strong><br>(पक्का बिल)</td>
+                    <td>
+                        1. ग्राहक के खाते में उधारी (Debit) जुड़ जाएगी।<br>
+                        2. दुकान का स्टॉक (Inventory) कम हो जाएगा।<br>
+                        3. GST रिपोर्ट में टैक्स जुड़ जाएगा।
+                    </td>
+                </tr>
+                <tr>
+                    <td>📋 <strong>Quotation</strong><br>(कच्चा एस्टीमेट)</td>
+                    <td>
+                        1. <strong>कोई असर नहीं।</strong> न स्टॉक कम होगा, न उधारी जुड़ेगी।<br>
+                        2. यह सिर्फ रेट बताने के लिए है।
+                    </td>
+                </tr>
+                <tr>
+                    <td>🚚 <strong>Challan</strong><br>(डिलीवरी नोट)</td>
+                    <td>
+                        1. स्टॉक कम हो जाएगा (माल गया)।<br>
+                        2. लेकिन ग्राहक के खाते में पैसा <strong>नहीं</strong> जुड़ेगा (बिल बाद में बनेगा)।
+                    </td>
+                </tr>
+                <tr>
+                    <td>↩️ <strong>Sales Return</strong><br>(क्रेडिट नोट)</td>
+                    <td>
+                        1. बिका हुआ माल वापस स्टॉक में जुड़ जाएगा।<br>
+                        2. ग्राहक की उधारी कम (Credit) हो जाएगी।
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2 id="purchase">4. खरीद (Purchase Entry) - माल आना</h2>
+        <p>यहाँ "Accounts" और "Inventory" को अलग-अलग संभालने की ताकत है।</p>
+        <table>
+            <thead><tr><th width="30%">Mode (विकल्प)</th><th>असर (Effect on System)</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>✅ <strong>Purchase Bill</strong><br>(सीधी खरीद)</td>
+                    <td>
+                        1. स्टॉक बढ़ जाएगा।<br>
+                        2. सप्लायर का पैसा (Credit) खड़ा हो जाएगा।<br>
+                        3. आइटम का <strong>Cost Rate</strong> अपडेट हो जाएगा।
+                    </td>
+                </tr>
+                <tr>
+                    <td>🏭 <strong>GRN Mode</strong><br>(गोदाम एंट्री)</td>
+                    <td>
+                        1. सिर्फ <strong>स्टॉक बढ़ेगा।</strong><br>
+                        2. सप्लायर के खाते में पैसा <strong>नहीं</strong> जुड़ेगा। (यह तब यूज़ करें जब माल आया हो पर बिल नहीं)।
+                    </td>
+                </tr>
+                <tr>
+                    <td>↩️ <strong>Debit Note</strong><br>(वापसी)</td>
+                    <td>
+                        1. स्टॉक कम हो जाएगा।<br>
+                        2. सप्लायर का पैसा (Debit) कम हो जाएगा।
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2 id="accounts">5. लेखा-जोखा (Accounting Vouchers)</h2>
+        <p>उधारी चुकाना और खर्चा लिखना।</p>
+        <table>
+            <thead><tr><th>Voucher Type</th><th>कब इस्तेमाल करें?</th><th>Result</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>⬇ <strong>Receipt (F6)</strong></td>
+                    <td>जब ग्राहक पैसा दे।</td>
+                    <td>Cash/Bank बढ़ेगा, पार्टी की उधारी घटेगी।</td>
+                </tr>
+                <tr>
+                    <td>⬆ <strong>Payment (F5)</strong></td>
+                    <td>जब आप किसी को पेमेंट करें।</td>
+                    <td>Cash/Bank घटेगा, पार्टी का बैलेंस कम होगा।</td>
+                </tr>
+                <tr>
+                    <td>⇄ <strong>Contra (F4)</strong></td>
+                    <td>बैंक में जमा/निकासी।</td>
+                    <td>कैश घटेगा-बैंक बढ़ेगा (या उल्टा)। पार्टी पर कोई असर नहीं।</td>
+                </tr>
+                <tr>
+                    <td>📓 <strong>Journal (F7)</strong></td>
+                    <td>बिना कैश का हिसाब।</td>
+                    <td>जैसे: पुराना फर्नीचर उधार बेचना, या डिस्काउंट एडजस्ट करना।</td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="note">
+            <strong>Cheque Printing:</strong> Payment में बैंक सेलेक्ट करें -> <strong>Print Cheque</strong> बटन दबाएं -> चेक प्रिंटर में डालें।
+        </div>
+
+        <h2 id="reports">6. रिपोर्ट्स (X-Ray of Business)</h2>
+        <table>
+            <thead><tr><th>Report Name</th><th>क्या दिखेगा?</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td><strong>Balance Sheet</strong></td>
+                    <td>धंधे की औकात। Assets (संपत्ति) vs Liabilities (कर्जा)।</td>
+                </tr>
+                <tr>
+                    <td><strong>P & L A/c</strong></td>
+                    <td>असली मुनाफा। (Sales - Purchase - Expenses)।</td>
+                </tr>
+                <tr>
+                    <td><strong>Expiry Report</strong></td>
+                    <td><span class="badge b-warn">महत्वपूर्ण</span> कौन सा बैच एक्सपायर हो चुका है या होने वाला है।</td>
+                </tr>
+                <tr>
+                    <td><strong>Ledger</strong></td>
+                    <td>किसी एक पार्टी का पूरा कच्चा-चिट्ठा (लेन-देन)।</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2 id="tax">7. टैक्स (Taxation & Compliance)</h2>
+        <table>
+            <thead><tr><th>Feature</th><th>काम</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td><strong>ITR Calculator</strong></td>
+                    <td>ऑटोमैटिक आपके P&L से प्रॉफिट उठाएगा और बताएगा कि कितना टैक्स भरना है।</td>
+                </tr>
+                <tr>
+                    <td><strong>TDS Manager</strong></td>
+                    <td>अगर आपने किसी का TDS काटा है, तो यहाँ एंट्री करें ताकि याद रहे कि सरकार को जमा करना है।</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div style="margin-top: 50px; text-align: center; color: #94a3b8; font-size: 12px;">
+            Developed for Money Wise Pro v2.0
+        </div>
+    </div>
+
+</body>
+</html>

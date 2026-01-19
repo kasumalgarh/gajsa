@@ -1,94 +1,90 @@
 /* FILENAME: auth.js
-   PURPOSE: Security Guard & Role Management
+   PURPOSE: Security, Role Management & UI Cleanup
+   VERSION: 2.0 (Syncs with DB.js)
 */
 
-// 1. Check if User is Logged In
-const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
-
-// If no user found AND we are not on the login page, Kick them out!
-if (!currentUser && !window.location.href.includes('login.html')) {
-    window.location.href = 'login.html';
-}
-
-// 2. Role Based Access Control (Permissions)
-window.addEventListener('DOMContentLoaded', () => {
+(function() {
+    // 1. SESSION CHECK
+    const sessionRaw = sessionStorage.getItem('user_session');
     
-    // Display User Name in Sidebar (if sidebar exists)
-    const brand = document.querySelector('.brand');
-    if(brand && currentUser) {
-        brand.innerHTML = `
-            <div>
-                🚀 MoneyWise <span style="font-size:10px; display:block; opacity:0.7; font-weight:normal;">
-                👤 ${currentUser.name} (${currentUser.role.toUpperCase()})
-                </span>
-            </div>
-        `;
-        
-        // Add Logout Button to Sidebar
-        const sidebar = document.querySelector('.sidebar');
-        if(sidebar) {
-            const logoutLink = document.createElement('a');
-            logoutLink.className = 'nav-link';
-            logoutLink.style.marginTop = 'auto'; // Push to bottom
-            logoutLink.style.color = '#ef4444'; // Red color
-            logoutLink.innerHTML = '<span class="nav-icon">🚪</span> Logout';
-            logoutLink.href = "#";
-            logoutLink.onclick = logout;
-            sidebar.appendChild(logoutLink);
+    // If on index.html, let the page handle login logic (don't redirect)
+    // If on other pages AND no session, kick to index.html
+    if (!sessionRaw) {
+        if (!window.location.href.includes('index.html')) {
+            window.location.href = 'index.html';
         }
+        return; // Stop execution if no user
     }
 
-    // --- RESTRICTIONS BASED ON ROLE ---
-    
-    if (currentUser) {
-        const role = currentUser.role;
+    const user = JSON.parse(sessionRaw);
+    window.CurrentUser = user; // Make available globally
 
-        // RULE 1: 'Operator' cannot see Reports or Settings
-        if (role === 'operator') {
-            hideLink('reports.html');
-            hideLink('settings.html');
-            hideLink('gst_filing.html');
-            hideLink('coa.html'); // Chart of Accounts is sensitive
+    // 2. UI UPDATE (Sidebar & Name)
+    window.addEventListener('DOMContentLoaded', () => {
+        // A. Show User Name
+        const brand = document.querySelector('.brand');
+        if (brand) {
+            brand.innerHTML = `
+                <div style="line-height:1.2;">
+                    🚀 MoneyWise <br>
+                    <span style="font-size:11px; font-weight:400; opacity:0.8;">
+                        👤 ${user.name} (${user.role.toUpperCase()})
+                    </span>
+                </div>
+            `;
+        }
+
+        // B. Add Logout Button
+        const sidebar = document.querySelector('.sidebar');
+        if (sidebar) {
+            // Check if logout already exists to prevent duplicate
+            if (!document.getElementById('logoutBtn')) {
+                const a = document.createElement('a');
+                a.id = 'logoutBtn';
+                a.className = 'nav-link';
+                a.style.marginTop = 'auto';
+                a.style.color = '#ef4444'; // Red
+                a.style.cursor = 'pointer';
+                a.innerHTML = '<span class="nav-icon">🚪</span> Logout';
+                a.onclick = () => {
+                    if (confirm("Sign out?")) {
+                        sessionStorage.clear();
+                        window.location.href = 'index.html';
+                    }
+                };
+                sidebar.appendChild(a);
+            }
+        }
+
+        // 3. PERMISSION ENFORCEMENT (The Gatekeeper)
+        
+        // RULE: Operators cannot access sensitive pages
+        if (user.role === 'operator') {
+            const restricted = ['settings.html', 'reports.html', 'coa.html', 'taxation.html'];
             
-            // If they try to access restricted page directly via URL
-            const path = window.location.pathname;
-            if(path.includes('reports') || path.includes('settings') || path.includes('gst') || path.includes('coa')) {
-                alert("⛔ Access Denied: Operators cannot access this page.");
+            // Hide Links
+            restricted.forEach(page => {
+                const link = document.querySelector(`a[href="${page}"]`);
+                if (link) link.style.display = 'none';
+            });
+
+            // Block Direct URL Access
+            const currentPage = window.location.pathname.split('/').pop();
+            if (restricted.includes(currentPage)) {
+                alert("⛔ ACCESS DENIED: Operators cannot access this area.");
                 window.location.href = 'index.html';
             }
         }
 
-        // RULE 2: 'Manager' cannot see Settings (only Admin can)
-        if (role === 'manager') {
-            hideLink('settings.html');
-             if(window.location.pathname.includes('settings')) {
-                alert("⛔ Access Denied: Only Admin can access Settings.");
-                window.location.href = 'index.html';
-            }
-        }
-
-        // RULE 3: Hide Delete Buttons for Non-Admins
-        if (role !== 'admin') {
-            // Hide existing delete buttons
+        // RULE: Hide 'Delete' buttons for Non-Admins
+        if (user.role !== 'admin') {
             const style = document.createElement('style');
             style.innerHTML = `
-                .btn-del, .delete-btn, button[onclick*="delete"], button[onclick*="del("] { 
-                    display: none !important; 
+                .btn-del, .btn-danger, .del-row, button[onclick*="delete"], .delete-btn {
+                    display: none !important;
                 }
             `;
             document.head.appendChild(style);
         }
-    }
-});
-
-function hideLink(filename) {
-    const links = document.querySelectorAll(`a[href="${filename}"]`);
-    links.forEach(l => l.style.display = 'none');
-}
-
-function logout() {
-    if(confirm("Logout from System?")) {
-        sessionStorage.removeItem('currentUser');
-        window.location.href = 'login.html';
-    }
-}
+    });
+})();
