@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Money Wise Pro - Vouchers</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sidebar-bg: #0f172a; --sidebar-text: #94a3b8; --active-text: #f8fafc;
+            --bg: #f8fafc; --card-bg: #ffffff; --text: #1e293b; --border: #e2e8f0;
+            --accent: #f59e0b; /* Amber for Vouchers */
+            --green: #10b981; --red: #ef4444;
+        }
+        * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
+        body { display: flex; height: 100vh; background: var(--bg); color: var(--text); overflow: hidden; }
+
+        .sidebar { width: 260px; background: var(--sidebar-bg); padding: 20px; display: flex; flex-direction: column; flex-shrink: 0; }
+        .brand { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 40px; display: flex; align-items: center; gap: 10px; }
+        .nav-link { padding: 12px 15px; margin-bottom: 5px; border-radius: 8px; color: var(--sidebar-text); text-decoration: none; font-weight: 500; display: flex; align-items: center; gap: 12px; transition: 0.2s; font-size: 14px; }
+        .nav-link:hover, .nav-link.active { background: #1e293b; color: var(--active-text); }
+        .nav-icon { font-size: 18px; }
+
+        .main { flex: 1; padding: 40px; overflow-y: auto; display:flex; justify-content:center; }
+        .container { width: 100%; max-width: 600px; }
+
+        .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid var(--border); }
+        
+        .tabs { display: flex; margin-bottom: 25px; background: #f1f5f9; padding: 4px; border-radius: 8px; }
+        .tab { flex: 1; text-align: center; padding: 10px; cursor: pointer; border-radius: 6px; font-weight: 600; font-size: 14px; transition: 0.2s; }
+        .tab.active { background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .t-receipt { color: var(--green); } .t-payment { color: var(--red); } .t-contra { color: var(--text); }
+        
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-size: 13px; font-weight: 600; color: #64748b; margin-bottom: 5px; }
+        input, select, textarea { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 15px; outline: none; transition: 0.2s; }
+        input:focus, select:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1); }
+
+        .btn-submit { width: 100%; background: var(--text); color: white; padding: 14px; border: none; border-radius: 8px; font-weight: 700; font-size: 16px; cursor: pointer; margin-top: 10px; }
+        .btn-submit:hover { opacity: 0.9; }
+        
+        .receipt-mode .btn-submit { background: var(--green); }
+        .payment-mode .btn-submit { background: var(--red); }
+        .contra-mode .btn-submit { background: var(--text); }
+
+        #balanceDisplay { text-align: right; font-size: 12px; color: #64748b; margin-top: 4px; font-weight: 600; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="brand">🚀 MoneyWise Pro</div>
+        <a href="index.html" class="nav-link"><span class="nav-icon">📊</span> Dashboard</a>
+        <a href="reports.html" class="nav-link"><span class="nav-icon">📈</span> Reports</a>
+        <a href="sales_invoice.html" class="nav-link"><span class="nav-icon">🧾</span> Sales Invoice</a>
+        <a href="purchase_invoice.html" class="nav-link"><span class="nav-icon">🚚</span> Purchase Entry</a>
+        <a href="#" class="nav-link active"><span class="nav-icon">💸</span> Vouchers</a>
+        <a href="item_master.html" class="nav-link"><span class="nav-icon">📦</span> Inventory</a>
+        <a href="moneywise.html" class="nav-link"><span class="nav-icon">👥</span> Parties / Ledgers</a>
+        <a href="coa.html" class="nav-link"><span class="nav-icon">🗂️</span> Chart of Accounts</a>
+        <a href="settings.html" class="nav-link"><span class="nav-icon">⚙️</span> Settings</a>
+    </div>
+
+    <div class="main">
+        <div class="container">
+            <h2 style="margin-bottom:20px; color:#0f172a;">Accounting Vouchers</h2>
+            
+            <div class="card receipt-mode" id="mainCard">
+                <div class="tabs">
+                    <div class="tab active t-receipt" onclick="setMode('Receipt')">⬇ Receipt (In)</div>
+                    <div class="tab t-payment" onclick="setMode('Payment')">⬆ Payment (Out)</div>
+                    <div class="tab t-contra" onclick="setMode('Contra')">⇄ Contra (Bank)</div>
+                </div>
+
+                <div class="form-group">
+                    <label>Voucher No</label>
+                    <input type="text" id="vchNo" readonly style="background:#f8fafc; color:#64748b; font-weight:bold;">
+                </div>
+
+                <div class="form-group">
+                    <label>Date</label>
+                    <input type="date" id="date" required>
+                </div>
+
+                <div class="form-group">
+                    <label id="accountLabel">Cash / Bank Account (Debit)</label>
+                    <select id="cashBankSelect">
+                        <option value="">-- Select Cash/Bank --</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label id="partyLabel">Party / Account (Credit)</label>
+                    <select id="partySelect" onchange="showBalance()">
+                        <option value="">-- Select Party --</option>
+                    </select>
+                    <div id="balanceDisplay">Curr Bal: ₹0.00</div>
+                </div>
+
+                <div class="form-group">
+                    <label>Amount (₹)</label>
+                    <input type="number" id="amount" placeholder="0.00" style="font-size:18px; font-weight:bold;">
+                </div>
+
+                <div class="form-group">
+                    <label>Narration</label>
+                    <textarea id="narration" rows="2" placeholder="Enter details..."></textarea>
+                </div>
+
+                <button class="btn-submit" onclick="saveVoucher()" id="submitBtn">Save Receipt</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="db.js"></script>
+    <script>
+        let currentMode = 'Receipt';
+        let ledgers = [];
+
+        window.onload = async () => {
+            try {
+                await DB.init();
+                await loadData();
+                setMode('Receipt');
+            } catch(e) { console.error(e); }
+        };
+
+        async function loadData() {
+            ledgers = await DB.getAll('ledgers');
+            const groups = await DB.getAll('groups');
+            
+            // 1. Fill Cash/Bank Dropdown
+            const cashBankIds = groups.filter(g => g.name === 'Cash-in-Hand' || g.name === 'Bank Accounts').map(g => g.id);
+            const cbSel = document.getElementById('cashBankSelect');
+            cbSel.innerHTML = '';
+            
+            ledgers.filter(l => cashBankIds.includes(l.group_id)).forEach(l => {
+                let opt = document.createElement('option');
+                opt.value = l.id; opt.innerText = l.name;
+                cbSel.appendChild(opt);
+            });
+            // Auto select Cash
+            if(cbSel.options.length > 0) cbSel.selectedIndex = 0;
+
+            // 2. Fill Party Dropdown (All except Cash/Bank usually, but let's show all for simplicity)
+            const pSel = document.getElementById('partySelect');
+            pSel.innerHTML = '<option value="">-- Select Account --</option>';
+            ledgers.sort((a,b) => a.name.localeCompare(b.name)).forEach(l => {
+                let opt = document.createElement('option');
+                opt.value = l.id; opt.innerText = l.name;
+                opt.dataset.bal = l.opening_balance || 0; // Simplified, ideally fetch current bal
+                pSel.appendChild(opt);
+            });
+        }
+
+        function setMode(mode) {
+            currentMode = mode;
+            const card = document.getElementById('mainCard');
+            const btn = document.getElementById('submitBtn');
+            const tabs = document.querySelectorAll('.tab');
+            
+            tabs.forEach(t => t.classList.remove('active'));
+            
+            // UI Updates
+            if(mode === 'Receipt') {
+                card.className = 'card receipt-mode';
+                btn.innerText = 'Save Receipt (Received)';
+                document.getElementById('accountLabel').innerText = "Deposit To (Cash/Bank)";
+                document.getElementById('partyLabel').innerText = "Received From (Party)";
+                tabs[0].classList.add('active');
+                document.getElementById('vchNo').value = `RCP-${Date.now().toString().slice(-6)}`;
+            } else if(mode === 'Payment') {
+                card.className = 'card payment-mode';
+                btn.innerText = 'Save Payment (Paid)';
+                document.getElementById('accountLabel').innerText = "Paid From (Cash/Bank)";
+                document.getElementById('partyLabel').innerText = "Paid To (Party/Expense)";
+                tabs[1].classList.add('active');
+                document.getElementById('vchNo').value = `PMT-${Date.now().toString().slice(-6)}`;
+            } else {
+                card.className = 'card contra-mode';
+                btn.innerText = 'Save Contra Transfer';
+                document.getElementById('accountLabel').innerText = "Deposit Into (Target)";
+                document.getElementById('partyLabel').innerText = "Withdraw From (Source)";
+                tabs[2].classList.add('active');
+                document.getElementById('vchNo').value = `CNTR-${Date.now().toString().slice(-6)}`;
+            }
+            
+            document.getElementById('date').valueAsDate = new Date();
+        }
+
+        function showBalance() {
+            // In a real app, we would query acct_entries to get live balance
+            // Here just showing Op Balance placeholder or hidden
+            // document.getElementById('balanceDisplay').innerText = "Fetching...";
+        }
+
+        async function saveVoucher() {
+            const amount = parseFloat(document.getElementById('amount').value);
+            const cbId = document.getElementById('cashBankSelect').value;
+            const partyId = document.getElementById('partySelect').value;
+            
+            if(!amount || !cbId || !partyId) return alert("Please fill all details");
+            if(cbId === partyId) return alert("Source and Destination cannot be same");
+
+            const voucherData = {
+                voucher_no: document.getElementById('vchNo').value,
+                date: document.getElementById('date').value,
+                party_id: parseInt(partyId), // Linking mainly for reference
+                amount: amount,
+                type: currentMode,
+                narration: document.getElementById('narration').value
+            };
+
+            let acctEntries = [];
+
+            // Accounting Logic (Double Entry)
+            if (currentMode === 'Receipt') {
+                // Cash Dr (Increases), Party Cr (Decreases Asset/Increases Income)
+                acctEntries.push({ ledger_id: parseInt(cbId), debit: amount, credit: 0 });
+                acctEntries.push({ ledger_id: parseInt(partyId), debit: 0, credit: amount });
+            } 
+            else if (currentMode === 'Payment') {
+                // Party Dr (Receiver/Expense), Cash Cr (Giver/Asset Decrease)
+                acctEntries.push({ ledger_id: parseInt(partyId), debit: amount, credit: 0 });
+                acctEntries.push({ ledger_id: parseInt(cbId), debit: 0, credit: amount });
+            }
+            else if (currentMode === 'Contra') {
+                // Target Dr (Receiver), Source Cr (Giver)
+                acctEntries.push({ ledger_id: parseInt(cbId), debit: amount, credit: 0 }); // Target (Deposit)
+                acctEntries.push({ ledger_id: parseInt(partyId), debit: 0, credit: amount }); // Source (Withdraw)
+            }
+
+            try {
+                await DB.saveVoucher(voucherData, [], acctEntries);
+                alert("Voucher Saved Successfully!");
+                location.reload();
+            } catch(e) {
+                alert("Error: " + e);
+            }
+        }
+    </script>
+</body>
+</html>
