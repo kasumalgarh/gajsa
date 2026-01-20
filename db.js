@@ -1,7 +1,7 @@
 /* FILENAME: db.js
    PURPOSE: Arth Book (Formerly Money Wise) v22.0 - Platinum Edition
    FEATURES: Mobile Cursor, Blockchain Audit, Multi-Branch, Project Mgmt, ESG, Encryption Hooks
-   STATUS: UPDATED (Added Settings & Backup Support)
+   STATUS: FIXED (Login, Inventory Update & GRN Added)
 */
 
 class MoneyWiseDB {
@@ -118,6 +118,11 @@ class MoneyWiseDB {
 
     // --- 2. SECURITY & AUTH (Updated for Hashing Hooks) ---
     
+    // FIX: Added Alias for login.html compatibility
+    async loginUser(u, p) {
+        return this.login(u, p);
+    }
+
     async login(username, password) {
         // NOTE: Actual Hashing happens in Auth.js or Security_Utils.js before calling this
         // This function expects the stored password to match.
@@ -240,6 +245,44 @@ class MoneyWiseDB {
         });
     }
 
+    // --- 4.1 GRN FEATURE (Missing Limb Added) ---
+    async createGRN(grnData, items) {
+        return new Promise((resolve, reject) => {
+            const tx = this.db.transaction(["grn_master", "grn_items", "items", "audit_chain"], "readwrite");
+            
+            // 1. Save Master
+            grnData.created_at = new Date();
+            const mStore = tx.objectStore("grn_master");
+            const req = mStore.add(grnData);
+
+            req.onsuccess = (e) => {
+                const grnId = e.target.result;
+                const iStore = tx.objectStore("grn_items");
+                const itemStore = tx.objectStore("items");
+
+                // 2. Save Items & Update Stock
+                items.forEach(item => {
+                    item.grn_id = grnId;
+                    iStore.add(item);
+
+                    // Update Stock immediately upon GRN
+                    itemStore.get(item.item_id).onsuccess = (ev) => {
+                        const i = ev.target.result;
+                        if(i) {
+                            i.current_stock = (i.current_stock || 0) + item.qty;
+                            itemStore.put(i);
+                        }
+                    };
+                });
+                
+                this._internalAudit(tx, "Inventory", "GRN", `GRN #${grnData.grn_no} Created`);
+            };
+
+            tx.oncomplete = () => resolve("GRN Created & Stock Updated");
+            tx.onerror = (e) => reject(e.target.error);
+        });
+    }
+
     // --- 5. BLOCKCHAIN AUDIT ENGINE ---
     
     async logAudit(module, action, desc) {
@@ -322,10 +365,11 @@ class MoneyWiseDB {
             itemData.reorder_level = parseFloat(itemData.reorder_level) || 0;
             itemData.gst_rate = parseFloat(itemData.gst_rate) || 0;
 
-            const req = store.add(itemData);
+            // FIX: Changed .add() to .put() to allow updates (Upsert)
+            const req = store.put(itemData);
             req.onsuccess = (e) => {
                 // Blockchain Audit (Optional Log)
-                this.logAudit("Inventory", "Create", `Added Item: ${itemData.name}`);
+                this.logAudit("Inventory", "Create/Edit", `Item Saved: ${itemData.name}`);
                 resolve(e.target.result);
             };
             req.onerror = (e) => reject("Error creating item: " + e.target.error);
