@@ -429,6 +429,34 @@
           navigator.serviceWorker.register('sw.js').then(reg => console.log('Arth Book PWA Active')).catch(err => console.log('PWA Failed', err));
         });
       }
+      <script>
+    // SELF-HEALING SECURITY SCRIPT
+    // This runs automatically to fix old insecure passwords
+    window.addEventListener('load', async () => {
+        await DB.init();
+        if(!window.Security) return;
+
+        const users = await DB.getAll('users');
+        let needsFix = false;
+
+        const tx = DB.db.transaction('users', 'readwrite');
+        
+        for (const u of users) {
+            // Check if password is NOT hashed (Length of SHA-256 is 64 chars)
+            if (u.password && u.password.length < 60) { 
+                console.log(`🔒 Securing user: ${u.username}...`);
+                u.password = await Security.hashPassword(u.password);
+                tx.objectStore('users').put(u);
+                needsFix = true;
+            }
+        }
+
+        if(needsFix) {
+            console.log("✅ All passwords migrated to Iron Dome Security.");
+            alert("System Security Updated: Old passwords have been encrypted.");
+        }
+    });
+</script>
     </script>
 </body>
 </html>

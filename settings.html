@@ -17,15 +17,15 @@
         @keyframes fadeIn { from { opacity:0; transform:translateY(5px); } to { opacity:1; transform:translateY(0); } }
 
         /* TOGGLE SWITCH */
-        .switch { position: relative; display: inline-block; width: 50px; height: 24px; }
+        .switch { position: relative; display: inline-block; width: 50px; height: 24px; margin-left: 10px; }
         .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px; }
-        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; border-radius: 34px; transition: .4s; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 4px; bottom: 4px; background-color: white; border-radius: 50%; transition: .4s; }
         input:checked + .slider { background-color: var(--success-color); }
         input:checked + .slider:before { transform: translateX(26px); }
 
         /* USER TABLE */
-        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 15px; }
         th { text-align: left; padding: 10px; background: #f1f5f9; border-bottom: 2px solid #ddd; }
         td { padding: 10px; border-bottom: 1px solid #eee; }
     </style>
@@ -48,7 +48,7 @@
             <button class="tab-btn active" onclick="showTab('company')">🏢 Company</button>
             <button class="tab-btn" onclick="showTab('config')">🛠️ Config & Security</button>
             <button class="tab-btn" onclick="showTab('users')">👥 Users (HR)</button>
-            <button class="tab-btn" onclick="showTab('data')">💾 Data & Backup</button>
+            <button class="tab-btn" onclick="showTab('backup')">💾 Data & Backup</button>
         </div>
 
         <div id="company" class="tab-content active">
@@ -75,7 +75,7 @@
                 </div>
                 
                 <h3 style="margin-top: 20px;">🛡️ Iron Dome Security</h3>
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; padding:10px; background:#f9fafb; border-radius:8px;">
                     <div>
                         <strong>👻 Ghost Mode</strong><br>
                         <small style="color:#666;">Encrypts local data & hides financial values on dashboard.</small>
@@ -83,7 +83,7 @@
                     <label class="switch"><input type="checkbox" id="ghostSwitch" onchange="toggleGhost()"><span class="slider"></span></label>
                 </div>
                 
-                <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; background:#f9fafb; border-radius:8px;">
                     <div>
                         <strong>☁️ Hybrid Cloud Sync</strong><br>
                         <small style="color:#666;">Backup to Google Drive (Coming Soon)</small>
@@ -113,7 +113,7 @@
                 <button class="btn btn-success" onclick="createUser()">+ Add Secure User</button>
             </div>
             
-            <div class="card">
+            <div class="card" style="margin-top: 20px;">
                 <h3>Active Users</h3>
                 <table id="userTable">
                     <thead><tr><th>Name</th><th>Username</th><th>Role</th><th>Action</th></tr></thead>
@@ -122,23 +122,37 @@
             </div>
         </div>
 
-        <div id="data" class="tab-content">
+        <div id="backup" class="tab-content">
             <div class="card">
-                <h3>💾 Backup & Restore</h3>
-                <p style="color:#666; font-size:13px; margin-bottom:15px;">Download a full copy of your data. Keep this file safe (e.g., on a Pen Drive).</p>
-                
-                <button class="btn btn-primary" onclick="exportBackup()">⬇ Download Full Backup</button>
-                
-                <div style="margin-top:30px; border-top:1px solid #eee; padding-top:20px;">
-                    <label style="font-weight:600;">Restore Data (Merge)</label>
-                    <div style="display:flex; gap:10px; margin-top:5px;">
-                        <input type="file" id="restoreFile" style="border:1px solid #ccc; padding:5px;">
-                        <button class="btn btn-warning" onclick="handleRestore()">Upload & Restore</button>
+                <h3>🔄 Auto-Backup System</h3>
+                <div style="display:flex; align-items:center; margin-bottom:20px; background:#f0f9ff; padding:15px; border-radius:8px; border:1px solid #bae6fd;">
+                    <div style="flex:1;">
+                        <strong style="color:#0369a1;">Auto-Download Backup</strong><br>
+                        <small>Automatically downloads a backup file every 60 minutes.</small>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="autoBackupToggle" onchange="toggleAutoBackup()">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+                    <div style="border:1px dashed #ccc; padding:20px; text-align:center; border-radius:8px;">
+                        <h4>Manual Backup</h4>
+                        <p style="font-size:12px; color:#666;">Download current state immediately.</p>
+                        <button class="btn btn-success" onclick="exportData()">⬇ Download JSON</button>
+                    </div>
+                    
+                    <div style="border:1px dashed #ccc; padding:20px; text-align:center; border-radius:8px;">
+                        <h4>Restore Data</h4>
+                        <p style="font-size:12px; color:#666;">Select file to recover data.</p>
+                        <input type="file" id="restoreFile" onchange="restoreData(this)" style="display:none;">
+                        <button class="btn btn-warning" onclick="document.getElementById('restoreFile').click()">⬆ Upload File</button>
                     </div>
                 </div>
             </div>
             
-            <div class="card" style="border-left: 5px solid var(--danger-color);">
+            <div class="card" style="margin-top:20px; border-left:5px solid var(--danger-color);">
                 <h3 style="color:var(--danger-color);">⚠️ Danger Zone</h3>
                 <button class="btn btn-danger" onclick="hardReset()">Factory Reset (Wipe All Data)</button>
             </div>
@@ -162,6 +176,11 @@
 
             loadSettings();
             renderUsers();
+            
+            // Load Backup Pref
+            const pref = localStorage.getItem('autoBackup');
+            document.getElementById('autoBackupToggle').checked = pref === 'true';
+            if(pref === 'true') startAutoBackupTimer();
         };
 
         function showTab(id) {
@@ -211,8 +230,6 @@
 
         function toggleGhost() {
             const isOn = document.getElementById('ghostSwitch').checked;
-            // In a real app, this would blur the screen via CSS or lock data
-            // Security.encryptData hook would activate here
             if(isOn) alert("👻 Ghost Mode Enabled: Data will be encrypted on next save.");
         }
 
@@ -262,30 +279,56 @@
             }
         }
 
-        // --- 3. BACKUP & RESTORE ---
-        async function exportBackup() {
+        // --- 3. AUTO BACKUP LOGIC (UNLOCKED) ---
+        let backupInterval;
+
+        function toggleAutoBackup() {
+            const isOn = document.getElementById('autoBackupToggle').checked;
+            localStorage.setItem('autoBackup', isOn);
+            if(isOn) {
+                alert("✅ Auto-Backup Enabled! System will download backup every hour.");
+                startAutoBackupTimer();
+            } else {
+                clearInterval(backupInterval);
+            }
+        }
+
+        function startAutoBackupTimer() {
+            clearInterval(backupInterval);
+            // Backup every 1 hour (3600000 ms)
+            backupInterval = setInterval(() => {
+                console.log("⏰ Running Auto-Backup...");
+                exportData(true); // Silent mode
+            }, 3600000); 
+        }
+
+        async function exportData(silent = false) {
             const stores = ['vouchers', 'items', 'ledgers', 'acct_entries', 'groups', 'settings', 'users'];
-            const backup = {};
+            const data = {};
             
             for(let name of stores) {
-                backup[name] = await DB.getAll(name);
+                data[name] = await DB.getAll(name);
             }
             
-            // Encrypt if Ghost Mode is ON (Optional check)
-            const json = JSON.stringify(backup);
+            const json = JSON.stringify(data);
             const blob = new Blob([json], {type: "application/json"});
             const url = URL.createObjectURL(blob);
             
             const a = document.createElement('a');
             a.href = url;
             a.download = `ArthBook_Backup_${new Date().toISOString().slice(0,10)}.json`;
-            a.click();
+            
+            if(silent) {
+                // In silent mode, we can't force download without user interaction easily in all browsers,
+                // but we prepare it. Or use a hidden click.
+                a.click();
+            } else {
+                a.click();
+                alert("Backup Downloaded!");
+            }
         }
 
-        function handleRestore() {
-            const input = document.getElementById('restoreFile');
-            if(!input.files[0]) return alert("Select a file first");
-            
+        function restoreData(input) {
             const file = input.files[0];
             const reader = new FileReader();
             reader.onload = async (e) => {

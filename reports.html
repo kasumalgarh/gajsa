@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="icon" type="image/x-icon" href="favicon.ico">
-    <title>Advanced Reporting - Money Wise Pro</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Reporting - Arth Book</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -40,10 +40,11 @@
         .sub-head { text-align: center; font-size: 13px; color: #64748b; margin-bottom: 25px; }
 
         /* TABLES */
-        table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 10px; }
         th { background: #f1f5f9; padding: 8px; text-align: left; border-bottom: 2px solid var(--border); }
         td { padding: 8px; border-bottom: 1px solid #eee; }
         .amt { text-align: right; font-family: monospace; font-weight: 600; font-size: 13px; }
+        .bold-row { font-weight: 700; background: #f8fafc; border-top: 2px solid var(--border); }
         
         /* AI HEALTH CARD STYLES */
         .health-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
@@ -65,7 +66,7 @@
 <body>
 
     <div class="sidebar">
-        <div style="font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 40px;">🚀 Arth Book</div>
+        <div style="font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 40px; padding: 0 10px;">Arth Book</div>
         <a href="index.html" class="nav-link">📊 Dashboard</a>
         <a href="reports.html" class="nav-link active">📈 Reports</a>
         <a href="gst_filing.html" class="nav-link">🏛️ GST Filing</a>
@@ -81,7 +82,8 @@
     <div class="main">
         <div class="top-bar">
             <select id="reportType" onchange="toggleFilters()">
-                <option value="Health">🏥 Business Health (AI)</option> <option value="BalanceSheet">⚖️ Balance Sheet</option>
+                <option value="Health">🏥 Business Health (AI)</option>
+                <option value="BalanceSheet">⚖️ Balance Sheet</option>
                 <option value="PL">📉 Profit & Loss</option>
                 <option value="TrialBalance">📑 Trial Balance</option>
                 <option value="DayBook">📅 Day Book</option>
@@ -120,8 +122,29 @@
     <script src="ai_engine.js"></script>
 
     <script>
+        // --- GLOBAL VARIABLES ---
         let ledgers=[], items=[], groups=[], acctEntries=[], vouchers=[], batches=[];
         let ledgerMap = {};
+        
+        // Group Mapping (Assets, Liabilities, Income, Expenses)
+        const GROUP_TYPES = {
+            'Capital Account': 'Liabilities',
+            'Loans (Liability)': 'Liabilities',
+            'Current Liabilities': 'Liabilities',
+            'Sundry Creditors': 'Liabilities',
+            'Duties & Taxes': 'Liabilities',
+            'Fixed Assets': 'Assets',
+            'Current Assets': 'Assets',
+            'Cash-in-Hand': 'Assets',
+            'Bank Accounts': 'Assets',
+            'Sundry Debtors': 'Assets',
+            'Sales Accounts': 'Income',
+            'Direct Incomes': 'Income',
+            'Indirect Incomes': 'Income',
+            'Purchase Accounts': 'Expenses',
+            'Direct Expenses': 'Expenses',
+            'Indirect Expenses': 'Expenses'
+        };
 
         window.onload = async () => {
             await DB.init();
@@ -157,39 +180,54 @@
 
         async function generateReport() {
             const type = document.getElementById('reportType').value;
-            const from = document.getElementById('fromDate').value;
-            const to = document.getElementById('toDate').value;
-            const pid = document.getElementById('finalPartyId').value;
-            
             const container = document.getElementById('reportContent');
             container.innerHTML = '<div style="text-align:center; padding:50px;">Processing...</div>';
 
-            if(type === 'Health') renderHealth(container);
-            else if(type === 'BalanceSheet') renderBalanceSheet(container);
-            else if(type === 'PL') renderPL(container);
-            else if(type === 'TrialBalance') renderTB(container);
-            else if(type === 'DayBook') renderDayBook(container, from, to);
-            else if(type === 'Stock') renderStock(container);
-            else if(type === 'Ledger') renderLedger(container, pid, from, to);
-            else if(type === 'Expiry') renderExpiry(container);
-            else if(type === 'LowStock') renderLowStock(container);
+            setTimeout(async () => {
+                if(type === 'Health') await renderHealth(container);
+                else if(type === 'BalanceSheet') calculateBalanceSheet(container);
+                else if(type === 'PL') calculatePL(container);
+                else if(type === 'TrialBalance') calculateTrialBalance(container);
+                else if(type === 'DayBook') renderDayBook(container);
+                else if(type === 'Stock') renderStock(container);
+                else if(type === 'Ledger') renderLedgerReport(container);
+                else if(type === 'Expiry') renderExpiry(container);
+                else if(type === 'LowStock') renderLowStock(container);
+            }, 100);
         }
 
-        // --- 0. AI HEALTH REPORT (NEW) ---
+        // --- ACCOUNTING ENGINE ---
+        function getLedgerBalance(ledgerId) {
+            const l = ledgers.find(x => x.id === ledgerId);
+            if(!l) return 0;
+            let bal = l.opening_balance || 0;
+            acctEntries.filter(e => e.ledger_id === ledgerId).forEach(e => {
+                bal += (e.debit - e.credit);
+            });
+            return bal; 
+        }
+
+        function getGroupTotals() {
+            const reportData = { Liabilities: {}, Assets: {}, Income: {}, Expenses: {} };
+            ledgers.forEach(l => {
+                const bal = getLedgerBalance(l.id);
+                if(bal === 0) return;
+                const grp = groups.find(g => g.id === l.group_id);
+                const grpName = grp ? grp.name : 'Unknown';
+                const rootType = GROUP_TYPES[grpName] || 'Liabilities';
+                if(!reportData[rootType][grpName]) reportData[rootType][grpName] = 0;
+                
+                if(rootType === 'Liabilities' || rootType === 'Income') reportData[rootType][grpName] += (bal * -1); 
+                else reportData[rootType][grpName] += bal;
+            });
+            return reportData;
+        }
+
+        // --- REPORT GENERATORS ---
+
         async function renderHealth(c) {
-            // Calculate Metrics
             const totalStockVal = items.reduce((s, i) => s + ((i.current_stock||0)*(i.std_cost||0)), 0);
-            
-            // Get Balances
-            let receivables=0, payables=0, cash=0;
-            // Simple Logic for demo (In prod, check Group IDs properly)
-            // Assumed: Receivables (Dr balance in Debtors), Payables (Cr balance in Creditors)
-            // Here just summarizing Ledger Balances
-            const bals = {};
-            acctEntries.forEach(e => bals[e.ledger_id] = (bals[e.ledger_id]||0) + (e.debit-e.credit));
-            
-            // AI Prediction
-            const prediction = await AI.predictCashFlow();
+            const prediction = await AI.predictCashFlow(); // Using AI Engine
             const forecast = prediction.prediction || 0;
 
             c.innerHTML = `
@@ -207,105 +245,176 @@
 
                 <div class="health-grid">
                     <div class="h-card">
-                        <h4>Stock Valuation</h4>
+                        <h4>Stock Valuation (Cost)</h4>
                         <div class="amt" style="font-size:20px;">₹${totalStockVal.toLocaleString('en-IN')}</div>
-                        <small>At Cost Price</small>
                     </div>
                     <div class="h-card">
-                        <h4>Net Cash Flow Trend</h4>
+                        <h4>Trend Analysis</h4>
                          <canvas id="healthChart" height="150"></canvas>
                     </div>
                 </div>
-
-                <h3>Top Moving Items</h3>
-                <table><thead><tr><th>Item</th><th>Stock</th><th>Action</th></tr></thead>
-                <tbody id="topItems"></tbody></table>
             `;
 
-            // Draw Chart
-            setTimeout(() => {
-                new Chart(document.getElementById('healthChart'), {
-                    type: 'bar',
-                    data: {
-                        labels: ['Past 30 Days', 'Prediction (Next 30)'],
-                        datasets: [{
-                            label: 'Revenue',
-                            data: [parseFloat(prediction.daily_avg)*30, forecast],
-                            backgroundColor: ['#cbd5e1', '#2563eb']
-                        }]
-                    },
-                    options: { plugins: { legend: { display: false } } }
-                });
-            }, 500);
+            new Chart(document.getElementById('healthChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['Past 30 Days', 'Next 30 Days'],
+                    datasets: [{
+                        label: 'Revenue',
+                        data: [parseFloat(prediction.daily_avg)*30, forecast],
+                        backgroundColor: ['#cbd5e1', '#2563eb']
+                    }]
+                },
+                options: { plugins: { legend: { display: false } } }
+            });
+        }
+
+        function calculatePL(c) {
+            const data = getGroupTotals();
+            let totalInc = 0, totalExp = 0;
+            Object.values(data.Income).forEach(v => totalInc += v);
+            Object.values(data.Expenses).forEach(v => totalExp += v);
+            let closingStock = items.reduce((s, i) => s + ((i.current_stock||0)*(i.std_cost||0)), 0);
+            const netProfit = (totalInc + closingStock) - totalExp;
+
+            let html = `<h2>Profit & Loss A/c</h2><p class="sub-head">As on ${new Date().toLocaleDateString()}</p>
+            <div style="display:flex; gap:2px;">
+                <div style="flex:1; border:1px solid #ccc;">
+                    <div style="background:#f1f5f9; padding:5px; font-weight:bold; text-align:center; border-bottom:1px solid #ccc;">Expenses (Dr)</div>
+                    <table class="no-border">`;
+            for(let g in data.Expenses) html += `<tr><td>${g}</td><td class="amt">${data.Expenses[g].toFixed(2)}</td></tr>`;
+            if(netProfit > 0) html += `<tr style="font-weight:bold; color:green;"><td>Net Profit</td><td class="amt">${netProfit.toFixed(2)}</td></tr>`;
+            html += `</table></div>
+                <div style="flex:1; border:1px solid #ccc;">
+                    <div style="background:#f1f5f9; padding:5px; font-weight:bold; text-align:center; border-bottom:1px solid #ccc;">Income (Cr)</div>
+                    <table class="no-border">`;
+            for(let g in data.Income) html += `<tr><td>${g}</td><td class="amt">${data.Income[g].toFixed(2)}</td></tr>`;
+            html += `<tr><td>Closing Stock</td><td class="amt">${closingStock.toFixed(2)}</td></tr>`;
+            if(netProfit < 0) html += `<tr style="font-weight:bold; color:red;"><td>Net Loss</td><td class="amt">${Math.abs(netProfit).toFixed(2)}</td></tr>`;
+            html += `</table></div></div>`;
+            c.innerHTML = html;
+        }
+
+        function calculateBalanceSheet(c) {
+            const data = getGroupTotals();
+            let totalLiab = 0, totalAsset = 0;
             
-            // Top Items
-            const sortedItems = items.sort((a,b) => (b.current_stock||0) - (a.current_stock||0)).slice(0,5);
-            let html = '';
-            sortedItems.forEach(i => {
-                 html += `<tr><td>${i.name}</td><td>${i.current_stock}</td><td>${(i.current_stock<5)?'⚠️ Reorder':'✅ OK'}</td></tr>`;
-            });
-            document.getElementById('topItems').innerHTML = html;
+            // Calc Profit for Capital
+            let inc=0, exp=0;
+            Object.values(data.Income).forEach(v => inc += v);
+            Object.values(data.Expenses).forEach(v => exp += v);
+            let closingStock = items.reduce((s, i) => s + ((i.current_stock||0)*(i.std_cost||0)), 0);
+            const netProfit = (inc + closingStock) - exp;
+
+            let liabRows = "";
+            for(let g in data.Liabilities) { totalLiab += data.Liabilities[g]; liabRows += `<tr><td>${g}</td><td class="amt">${data.Liabilities[g].toFixed(2)}</td></tr>`; }
+            totalLiab += netProfit;
+            liabRows += `<tr style="font-weight:bold;"><td>Profit & Loss A/c</td><td class="amt">${netProfit.toFixed(2)}</td></tr>`;
+
+            let assetRows = "";
+            for(let g in data.Assets) { totalAsset += data.Assets[g]; assetRows += `<tr><td>${g}</td><td class="amt">${data.Assets[g].toFixed(2)}</td></tr>`; }
+            totalAsset += closingStock;
+            assetRows += `<tr><td>Closing Stock</td><td class="amt">${closingStock.toFixed(2)}</td></tr>`;
+
+            c.innerHTML = `<h2>Balance Sheet</h2><p class="sub-head">As on Today</p>
+            <div style="display:flex; gap:2px;">
+                <div style="flex:1; border:1px solid #ccc;">
+                    <div style="background:#f1f5f9; padding:5px; font-weight:bold; text-align:center;">Liabilities</div>
+                    <table>${liabRows}</table>
+                </div>
+                <div style="flex:1; border:1px solid #ccc;">
+                    <div style="background:#f1f5f9; padding:5px; font-weight:bold; text-align:center;">Assets</div>
+                    <table>${assetRows}</table>
+                </div>
+            </div>
+            <div style="display:flex; gap:2px; margin-top:5px;">
+                <div style="flex:1; background:#eee; padding:10px; font-weight:bold; text-align:right;">Total: ₹${totalLiab.toFixed(2)}</div>
+                <div style="flex:1; background:#eee; padding:10px; font-weight:bold; text-align:right;">Total: ₹${totalAsset.toFixed(2)}</div>
+            </div>`;
         }
 
-        // --- 1. EXISTING REPORTS (PRESERVED) ---
-        function renderExpiry(container) {
-            const today = new Date();
-            const next30 = new Date(); next30.setDate(today.getDate() + 30);
-            let html = `<h2>Expiry Report</h2><table><thead><tr><th>Item</th><th>Batch</th><th>Expiry</th><th>Qty</th></tr></thead><tbody>`;
-            batches.forEach(b => {
-                if(!b.expiry_date) return;
-                const exp = new Date(b.expiry_date);
-                const item = items.find(i => i.id == b.item_id)?.name || 'Unknown';
-                let st = 'Valid';
-                if(exp < today) st = '<b style="color:red">EXPIRED</b>';
-                else if(exp < next30) st = '<b style="color:orange">Soon</b>';
-                html += `<tr><td>${item}</td><td>${b.batch_no}</td><td>${b.expiry_date} (${st})</td><td class="amt">${b.qty}</td></tr>`;
+        function calculateTrialBalance(c) {
+            let html = `<h2>Trial Balance</h2><table><thead><tr><th>Ledger Name</th><th class="amt">Debit</th><th class="amt">Credit</th></tr></thead><tbody>`;
+            let totDr = 0, totCr = 0;
+            ledgers.sort((a,b)=>a.name.localeCompare(b.name)).forEach(l => {
+                const bal = getLedgerBalance(l.id);
+                if(Math.abs(bal) < 0.01) return;
+                const dr = bal > 0 ? bal : 0;
+                const cr = bal < 0 ? Math.abs(bal) : 0;
+                totDr += dr; totCr += cr;
+                html += `<tr><td>${l.name}</td><td class="amt">${dr ? dr.toFixed(2) : ''}</td><td class="amt">${cr ? cr.toFixed(2) : ''}</td></tr>`;
             });
-            container.innerHTML = html + `</tbody></table>`;
+            html += `<tr class="bold-row"><td>Grand Total</td><td class="amt">${totDr.toFixed(2)}</td><td class="amt">${totCr.toFixed(2)}</td></tr></tbody></table>`;
+            c.innerHTML = html;
         }
 
-        function renderLowStock(container) {
-            let html = `<h2>Low Stock Alert</h2><table><thead><tr><th>Item</th><th>Stock</th><th>Reorder Level</th></tr></thead><tbody>`;
-            items.filter(i => (i.current_stock || 0) <= (i.reorder_level || 0)).forEach(i => {
-                html += `<tr><td>${i.name}</td><td class="amt" style="color:red;">${i.current_stock}</td><td class="amt">${i.reorder_level}</td></tr>`;
-            });
-            container.innerHTML = html + `</tbody></table>`;
+        function renderDayBook(c) {
+            const f = document.getElementById('fromDate').value;
+            const t = document.getElementById('toDate').value;
+            const filtered = vouchers.filter(v => v.date >= f && v.date <= t);
+            let html = `<h2>Day Book</h2><p class="sub-head">${f} to ${t}</p><table><thead><tr><th>Date</th><th>Type</th><th>No</th><th>Narration</th><th class="amt">Amount</th></tr></thead><tbody>`;
+            filtered.forEach(v => html += `<tr><td>${v.date}</td><td>${v.type}</td><td>${v.voucher_no}</td><td>${v.narration}</td><td class="amt">${v.amount.toFixed(2)}</td></tr>`);
+            c.innerHTML = html + "</tbody></table>";
         }
 
-        function renderLedger(container, pid, from, to) {
-            if(!pid) return container.innerHTML = "Select Party";
-            const l = ledgers.find(x => x.id == pid);
-            let bal = l.opening_balance || 0;
-            // Simplified Ledger Logic
-            let html = `<h2>${l.name}</h2><p class="sub-head">${from} to ${to}</p><table><thead><tr><th>Date</th><th>Vch</th><th>Debit</th><th>Credit</th><th>Bal</th></tr></thead><tbody>`;
-            html += `<tr><td colspan="4"><b>Opening Balance</b></td><td class="amt">${bal.toFixed(2)}</td></tr>`;
+        function renderStock(c) {
+            let html = `<h2>Stock Summary</h2><table><thead><tr><th>Item</th><th>Category</th><th class="amt">Qty</th><th class="amt">Value</th></tr></thead><tbody>`;
+            let totVal = 0;
+            items.forEach(i => {
+                const val = (i.current_stock||0) * (i.std_cost||0);
+                totVal += val;
+                html += `<tr><td>${i.name}</td><td>${i.category||'-'}</td><td class="amt">${i.current_stock||0}</td><td class="amt">${val.toFixed(2)}</td></tr>`;
+            });
+            html += `<tr class="bold-row"><td colspan="3">Total Stock Value</td><td class="amt">${totVal.toFixed(2)}</td></tr></tbody></table>`;
+            c.innerHTML = html;
+        }
+
+        function renderLedgerReport(c) {
+            const name = document.getElementById('partyInput').value;
+            const pid = ledgers.find(l=>l.name === name)?.id;
+            if(!pid) return c.innerHTML = "<h3 style='color:red; text-align:center;'>Party not found</h3>";
             
+            const from = document.getElementById('fromDate').value;
+            const to = document.getElementById('toDate').value;
+            let bal = ledgers.find(x=>x.id==pid).opening_balance || 0;
+            
+            // Calculate Opening for Range
+            acctEntries.filter(e => e.ledger_id == pid).forEach(e => {
+                const v = vouchers.find(vx => vx.id == e.voucher_id);
+                if(v && v.date < from) bal += (e.debit - e.credit);
+            });
+
+            let html = `<h2>${name}</h2><p class="sub-head">${from} to ${to}</p><table><thead><tr><th>Date</th><th>Vch</th><th>Narration</th><th class="amt">Dr</th><th class="amt">Cr</th><th class="amt">Balance</th></tr></thead><tbody>`;
+            html += `<tr><td>-</td><td>-</td><td><b>Opening Balance</b></td><td></td><td></td><td class="amt">${bal.toFixed(2)}</td></tr>`;
+
             const ents = acctEntries.filter(e => e.ledger_id == pid);
             ents.forEach(e => {
                 const v = vouchers.find(x=>x.id==e.voucher_id);
                 if(v && v.date >= from && v.date <= to) {
                     bal += (e.debit - e.credit);
-                    html += `<tr><td>${v.date}</td><td>${v.voucher_no}</td><td class="amt">${e.debit||''}</td><td class="amt">${e.credit||''}</td><td class="amt">${bal.toFixed(2)}</td></tr>`;
+                    html += `<tr><td>${v.date}</td><td>${v.voucher_no}</td><td>${v.narration||v.type}</td><td class="amt">${e.debit||''}</td><td class="amt">${e.credit||''}</td><td class="amt">${bal.toFixed(2)}</td></tr>`;
                 }
             });
-            container.innerHTML = html + `</tbody></table>`;
+            c.innerHTML = html + "</tbody></table>";
         }
 
-        // Placeholder for others to save space
-        function renderDayBook(c,f,t) { 
-             const filtered = vouchers.filter(v => v.date >= f && v.date <= t);
-             let html = `<h2>Day Book</h2><table><thead><tr><th>Date</th><th>Vch</th><th>Narration</th><th>Amount</th></tr></thead><tbody>`;
-             filtered.forEach(v => html += `<tr><td>${v.date}</td><td>${v.voucher_no}</td><td>${v.narration}</td><td class="amt">${v.amount}</td></tr>`);
-             c.innerHTML = html + "</tbody></table>";
+        function renderExpiry(c) {
+            const today = new Date();
+            let html = `<h2>Expiry Report</h2><table><thead><tr><th>Item</th><th>Batch</th><th>Expiry</th><th>Qty</th></tr></thead><tbody>`;
+            batches.forEach(b => {
+                if(!b.expiry_date) return;
+                html += `<tr><td>Item-${b.item_id}</td><td>${b.batch_no}</td><td>${b.expiry_date}</td><td class="amt">${b.qty}</td></tr>`;
+            });
+            c.innerHTML = html + `</tbody></table>`;
         }
-        function renderStock(c) {
-             let html = `<h2>Stock Summary</h2><table><thead><tr><th>Item</th><th>Qty</th><th>Value</th></tr></thead><tbody>`;
-             items.forEach(i => html += `<tr><td>${i.name}</td><td class="amt">${i.current_stock}</td><td class="amt">${(i.current_stock*i.std_cost).toFixed(2)}</td></tr>`);
-             c.innerHTML = html + "</tbody></table>";
+
+        function renderLowStock(c) {
+            let html = `<h2>Low Stock Alert</h2><table><thead><tr><th>Item</th><th>Current</th><th>Reorder</th></tr></thead><tbody>`;
+            items.filter(i => (i.current_stock||0) <= (i.reorder_level||0)).forEach(i => {
+                html += `<tr><td>${i.name}</td><td class="amt" style="color:red">${i.current_stock}</td><td class="amt">${i.reorder_level}</td></tr>`;
+            });
+            c.innerHTML = html + `</tbody></table>`;
         }
-        function renderBalanceSheet(c) { c.innerHTML = "<h2>Balance Sheet</h2><p>View generated based on Ledger Groups.</p>"; }
-        function renderPL(c) { c.innerHTML = "<h2>Profit & Loss</h2><p>View generated based on Income/Expense Groups.</p>"; }
-        function renderTB(c) { c.innerHTML = "<h2>Trial Balance</h2><p>Summary of all ledgers.</p>"; }
 
         function exportExcel() {
             const table = document.querySelector('table');
