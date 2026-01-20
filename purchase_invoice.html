@@ -2,176 +2,236 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="icon" type="image/x-icon" href="favicon.ico">
-    <title>Purchase & Inventory - Money Wise Pro</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <title>Purchase & Inventory - Arth Book</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* KEEPING YOUR OLD STYLES INTACT */
         :root {
             --header-bg: #064e3b; --accent: #10b981; --bg: #f0fdf4;
-            --card-bg: #ffffff; --border: #d1fae5; --text: #064e3b;
+            --sidebar-bg: #0f172a; --text: #064e3b;
             --green: #10b981; --red: #ef4444; --muted: #64748b;
+            --border: #d1fae5;
         }
         * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
-        body { background: var(--bg); color: var(--text); padding: 20px; }
-
-        /* TOOLBAR - UPGRADED */
-        .toolbar { max-width: 210mm; margin: 0 auto 20px; display: flex; justify-content: space-between; align-items: center; }
-        .btn { padding: 10px 20px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; color: white; display: flex; align-items: center; gap: 8px; }
-        .btn-save { background: var(--header-bg); } 
-        .btn-new { background: var(--accent); } 
-        .btn-back { background: #64748b; }
         
-        .mode-select { padding: 8px; border-radius: 6px; border: 2px solid var(--accent); font-weight: 700; color: var(--header-bg); outline: none; }
-
-        /* MAIN CONTAINER */
-        .container { 
-            background: white; width: 210mm; min-height: 297mm; margin: 0 auto;
-            padding: 15mm; box-shadow: 0 5px 15px rgba(0,0,0,0.05); 
-            border: 1px solid var(--border); border-top: 5px solid var(--header-bg);
-            display: flex; flex-direction: column;
+        body { 
+            display: flex; height: 100vh; background: var(--bg); color: var(--text); overflow: hidden; 
         }
 
-        /* HEADER & META */
-        .invoice-header { display: flex; justify-content: space-between; margin-bottom: 20px; }
-        .title-section h1 { font-size: 24px; color: var(--header-bg); text-transform: uppercase; }
-        .title-section p { font-size: 13px; color: var(--muted); }
-        .meta-grid { text-align: right; display: grid; grid-template-columns: auto auto; gap: 8px 15px; font-size: 13px; }
-        .input-field { padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 13px; outline: none; }
+        /* --- SIDEBAR (Consistent App Navigation) --- */
+        .sidebar { 
+            width: 260px; background: var(--sidebar-bg); padding: 20px; display: flex; 
+            flex-direction: column; flex-shrink: 0; height: 100vh; overflow-y: auto; z-index: 100; transition: 0.3s;
+        }
+        .nav-link { 
+            padding: 12px 15px; margin-bottom: 5px; border-radius: 8px; color: #94a3b8; 
+            text-decoration: none; font-weight: 500; display: block; font-size: 14px; 
+        }
+        .nav-link:hover, .nav-link.active { background: #1e293b; color: #f8fafc; }
+
+        /* --- MAIN CONTENT --- */
+        .main-content { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; }
+
+        /* TOOLBAR */
+        .toolbar { 
+            background: white; padding: 10px; margin-bottom: 20px; border-radius: 8px; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
+        }
+        .btn { padding: 8px 16px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; color: white; display: flex; align-items: center; gap: 5px; font-size: 13px; }
+        .btn-save { background: var(--header-bg); } 
+        .btn-new { background: var(--accent); } 
         
+        .mode-select { padding: 8px; border-radius: 6px; border: 2px solid var(--accent); font-weight: 700; color: var(--header-bg); outline: none; background: white; }
+
+        /* INVOICE PAPER */
+        .container { 
+            background: white; width: 100%; max-width: 210mm; margin: 0 auto;
+            padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); 
+            border: 1px solid var(--border); border-top: 5px solid var(--header-bg);
+            display: flex; flex-direction: column; border-radius: 8px;
+        }
+
+        /* HEADER SECTIONS */
+        .invoice-header { display: flex; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
+        .title-section h1 { font-size: 22px; color: var(--header-bg); text-transform: uppercase; margin-bottom: 2px; }
+        .title-section p { font-size: 12px; color: var(--muted); }
+        
+        .meta-grid { display: grid; grid-template-columns: auto auto; gap: 8px; font-size: 13px; align-items: center; }
+        .input-field { padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 13px; width: 100%; outline: none; }
+
         /* SUPPLIER SECTION */
-        .supplier-section { background: #f0fdf4; padding: 15px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 20px; display: flex; gap: 20px; }
-        .supp-left { flex: 2; }
-        .supp-right { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; }
+        .supplier-section { 
+            background: #f0fdf4; padding: 15px; border-radius: 8px; border: 1px solid var(--border); 
+            margin-bottom: 15px; display: flex; gap: 15px; flex-wrap: wrap; 
+        }
+        .supp-left { flex: 2; min-width: 250px; }
+        .supp-right { flex: 1; min-width: 200px; display: flex; align-items: flex-end; }
         .scan-input { width: 100%; padding: 10px; border: 2px solid var(--accent); border-radius: 6px; }
 
-        /* TABLE */
-        .item-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 20px; }
-        .item-table th { background: var(--header-bg); color: white; padding: 10px; text-align: left; }
-        .item-table td { border-bottom: 1px solid var(--border); padding: 8px; vertical-align: middle; }
-        .item-table input, .item-table select { border: none; background: transparent; width: 100%; padding: 5px; outline: none; }
-        .item-table input:focus { background: #ecfdf5; }
+        /* TABLE - SCROLLABLE ON MOBILE */
+        .table-wrapper { overflow-x: auto; margin-bottom: 15px; border: 1px solid #e2e8f0; border-radius: 6px; }
+        .item-table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 600px; } /* Ensure min width for scroll */
+        .item-table th { background: var(--header-bg); color: white; padding: 8px; text-align: left; white-space: nowrap; }
+        .item-table td { border-bottom: 1px solid var(--border); padding: 6px; vertical-align: middle; }
+        .item-table input, .item-table select { border: none; background: transparent; width: 100%; padding: 5px; outline: none; font-size: 12px; }
         .text-right { text-align: right; }
-        
-        .batch-field { width: 80px !important; font-size: 11px; border-bottom: 1px dashed #ccc !important; }
+        .batch-field { width: 70px !important; border-bottom: 1px dashed #ccc !important; }
 
-        .add-btn { width: 100%; padding: 8px; background: #ecfdf5; border: 1px dashed var(--accent); color: var(--header-bg); cursor: pointer; font-size: 12px; font-weight: 600; }
+        .add-btn { width: 100%; padding: 10px; background: #ecfdf5; border: 1px dashed var(--accent); color: var(--header-bg); cursor: pointer; font-size: 13px; font-weight: 600; margin-bottom: 20px; }
 
-        /* FOOTER */
-        .totals-section { margin-top: auto; display: flex; gap: 30px; padding-top: 20px; border-top: 2px solid var(--border); }
-        .calc-box { flex: 1; font-size: 13px; }
-        .total-row { display: flex; justify-content: space-between; padding: 6px 0; }
+        /* FOOTER & TOTALS */
+        .totals-section { display: flex; gap: 20px; padding-top: 15px; border-top: 2px solid var(--border); flex-wrap: wrap; }
+        .narration-box { flex: 2; min-width: 250px; }
+        .calc-box { flex: 1; min-width: 200px; font-size: 13px; }
+        .total-row { display: flex; justify-content: space-between; padding: 5px 0; }
         .grand-total { font-size: 18px; font-weight: 800; color: var(--header-bg); border-top: 1px solid var(--border); padding-top: 10px; margin-top: 5px; }
 
-        /* RECENT SECTION */
-        .recent-section { max-width: 210mm; margin: 30px auto; background: white; padding: 20px; border-radius: 8px; border: 1px solid var(--border); }
-        .recent-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        .recent-table th { background: #f1f5f9; padding: 10px; text-align: left; }
-        .recent-table td { padding: 10px; border-bottom: 1px solid #e2e8f0; }
+        /* RECENT LIST */
+        .recent-section { margin-top: 20px; background: white; padding: 15px; border-radius: 8px; border: 1px solid var(--border); }
+        .recent-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        .recent-table th { background: #f1f5f9; padding: 8px; text-align: left; }
+        .recent-table td { padding: 8px; border-bottom: 1px solid #e2e8f0; }
+
+        /* MOBILE MENU & RESPONSIVE */
+        .menu-btn { display: none; position: absolute; top: 15px; left: 15px; font-size: 24px; cursor: pointer; background: none; border: none; z-index: 200; color: var(--header-bg); }
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 90; }
+        
+        @media (max-width: 900px) {
+            .sidebar { position: fixed; left: -100%; top: 0; height: 100%; box-shadow: 5px 0 15px rgba(0,0,0,0.3); }
+            .sidebar.active { left: 0; }
+            .menu-btn { display: block; }
+            .main-content { padding: 60px 10px 10px 10px; }
+            
+            .toolbar { flex-direction: column; align-items: stretch; }
+            .invoice-header { flex-direction: column; }
+            .meta-grid { grid-template-columns: 1fr; text-align: left; }
+            .meta-grid span { font-weight: 600; margin-top: 5px; }
+            
+            .totals-section { flex-direction: column; }
+            .recent-table th:nth-child(2), .recent-table td:nth-child(2) { display: none; } /* Hide Ref No on mobile */
+        }
 
         @media print {
-            .toolbar, .recent-section, .add-btn, #toast, .scan-input { display: none !important; }
-            .container { box-shadow: none; border: none; margin: 0; width: 100%; }
+            .sidebar, .toolbar, .add-btn, .recent-section, .menu-btn { display: none !important; }
+            .main-content { padding: 0; margin: 0; overflow: visible; }
+            .container { border: none; box-shadow: none; margin: 0; width: 100%; max-width: 100%; }
         }
     </style>
 </head>
 <body>
 
-    <div class="toolbar">
-        <button class="btn btn-back" onclick="window.location='index.html'">← Home</button>
-        
-        <select class="mode-select" id="docType" onchange="changeMode()">
-            <option value="Purchase">Purchase Invoice (Bill)</option>
-            <option value="GRN">GRN (Store Entry)</option>
-            <option value="Return">Debit Note (Return)</option>
-            <option value="Order">Purchase Order (PO)</option>
-        </select>
+    <button class="menu-btn" onclick="toggleMenu()">☰</button>
+    <div class="overlay" onclick="toggleMenu()"></div>
 
-        <div style="display:flex; gap:10px;">
-            <button class="btn btn-new" onclick="resetPage()">📄 New</button>
-            <button class="btn btn-save" onclick="saveData()">💾 Save (Alt+S)</button>
-        </div>
+    <div class="sidebar" id="mySidebar">
+        <div style="font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 40px;">🚀 Arth Book</div> 
+        <a href="index.html" class="nav-link">📊 Dashboard</a>
+        <a href="reports.html" class="nav-link">📈 Reports</a>
+        <a href="gst_filing.html" class="nav-link">🏛️ GST Filing</a>
+        <a href="sales_invoice.html" class="nav-link">🧾 Sales Invoice</a>
+        <a href="purchase_invoice.html" class="nav-link active">🚚 Purchase Entry</a>
+        <a href="vouchers.html" class="nav-link">💸 Vouchers (JV)</a>
+        <a href="item_master.html" class="nav-link">📦 Inventory</a>
+        <a href="moneywise.html" class="nav-link">👥 Parties</a>
+        <a href="coa.html" class="nav-link">🗂️ Accounts</a>
+        <a href="settings.html" class="nav-link">⚙️ Settings</a>
     </div>
 
-    <div class="container">
-        <div class="invoice-header">
-            <div class="title-section">
-                <h1 id="pageTitle">Purchase Invoice</h1>
-                <p id="pageDesc">Inward Supply Record</p>
-            </div>
-            <div class="meta-grid">
-                <span>Ref / Bill No:</span>
-                <input type="text" id="invNo" class="input-field" placeholder="Entry No">
-                
-                <span>Date:</span>
-                <input type="date" id="invDate" class="input-field">
-            </div>
-        </div>
-
-        <div class="supplier-section">
-            <div class="supp-left">
-                <label style="font-size:12px; font-weight:700; color:var(--muted);">Supplier / Vendor</label>
-                <select id="partySelect" class="input-field" style="width:100%; margin-top:5px;" onchange="loadPartyDetails()">
-                    <option value="">-- Select Supplier --</option>
-                </select>
-                <input type="text" id="partyDetails" readonly style="width:100%; margin-top:5px; background:transparent; border:none; color:#64748b; font-size:12px;" placeholder="Address / GSTIN">
-            </div>
-            <div class="supp-right">
-                <input type="text" id="barcodeScan" class="scan-input" placeholder="🔍 Scan Barcode to Add Item..." onkeyup="handleScan(event)">
+    <div class="main-content">
+        <div class="toolbar">
+            <select class="mode-select" id="docType" onchange="changeMode()">
+                <option value="Purchase">Purchase Invoice</option>
+                <option value="GRN">GRN (Stock Only)</option>
+                <option value="Return">Debit Note (Return)</option>
+                <option value="Order">Purchase Order</option>
+            </select>
+            <div style="display:flex; gap:10px; width: 100%; justify-content: flex-end;">
+                <button class="btn btn-new" onclick="resetPage()">📄 New</button>
+                <button class="btn btn-save" onclick="saveData()">💾 Save</button>
             </div>
         </div>
 
-        <table class="item-table">
-            <thead>
-                <tr>
-                    <th width="5%">#</th>
-                    <th width="30%">Item Name</th>
-                    <th width="12%">Batch No</th>
-                    <th width="10%">Exp Date</th>
-                    
-                    <th width="8%">Qty</th>
-                    <th width="8%">Unit</th>
-                    <th width="10%">Rate</th>
-                    <th width="8%">Tax%</th>
-                    <th width="12%" class="text-right">Total</th>
-                    <th width="5%"></th>
-                </tr>
-            </thead>
-            <tbody id="itemRows"></tbody>
-        </table>
-        <button class="add-btn" onclick="addItemRow()">+ Add Item Row</button>
-
-        <div class="totals-section">
-            <div class="narration-box" style="flex:2;">
-                <label style="font-size:12px; font-weight:700; color:var(--muted);">Remarks / Narration</label>
-                <textarea id="narration" rows="3" class="input-field" style="width:100%;" placeholder="Enter details..."></textarea>
+        <div class="container">
+            <div class="invoice-header">
+                <div class="title-section">
+                    <h1 id="pageTitle">Purchase Invoice</h1>
+                    <p id="pageDesc">Inward Supply Record</p>
+                </div>
+                <div class="meta-grid">
+                    <span>Ref / Bill No:</span>
+                    <input type="text" id="invNo" class="input-field" placeholder="Entry No">
+                    <span>Date:</span>
+                    <input type="date" id="invDate" class="input-field">
+                </div>
             </div>
-            <div class="calc-box">
-                <div class="total-row"><span>Taxable</span><span id="taxableAmt">0.00</span></div>
-                <div class="total-row"><span>Tax (GST)</span><span id="taxAmt">0.00</span></div>
-                <div class="total-row grand-total"><span>Net Payable</span><span id="grandTotal">₹ 0.00</span></div>
+
+            <div class="supplier-section">
+                <div class="supp-left">
+                    <label style="font-size:12px; font-weight:700; color:var(--muted);">Supplier / Vendor</label>
+                    <select id="partySelect" class="input-field" style="width:100%; margin-top:5px;" onchange="loadPartyDetails()">
+                        <option value="">-- Select Supplier --</option>
+                    </select>
+                    <input type="text" id="partyDetails" readonly style="width:100%; margin-top:5px; background:transparent; border:none; color:#64748b; font-size:12px;" placeholder="Address / GSTIN">
+                </div>
+                <div class="supp-right">
+                    <input type="text" id="barcodeScan" class="scan-input" placeholder="🔍 Scan Barcode..." onkeyup="handleScan(event)">
+                </div>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="item-table">
+                    <thead>
+                        <tr>
+                            <th width="5%">#</th>
+                            <th width="30%">Item Name</th>
+                            <th width="12%">Batch</th>
+                            <th width="12%">Exp</th>
+                            <th width="10%">Qty</th>
+                            <th width="8%">Unit</th>
+                            <th width="10%">Rate</th>
+                            <th width="8%">Tax%</th>
+                            <th width="12%" class="text-right">Total</th>
+                            <th width="5%"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="itemRows"></tbody>
+                </table>
+            </div>
+            <button class="add-btn" onclick="addItemRow()">+ Add Item Row</button>
+
+            <div class="totals-section">
+                <div class="narration-box">
+                    <label style="font-size:12px; font-weight:700; color:var(--muted);">Remarks / Narration</label>
+                    <textarea id="narration" rows="3" class="input-field" style="width:100%;" placeholder="Enter details..."></textarea>
+                </div>
+                <div class="calc-box">
+                    <div class="total-row"><span>Taxable</span><span id="taxableAmt">0.00</span></div>
+                    <div class="total-row"><span>Tax (GST)</span><span id="taxAmt">0.00</span></div>
+                    <div class="total-row grand-total"><span>Net Payable</span><span id="grandTotal">₹ 0.00</span></div>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="recent-section">
-        <h3>🕒 Recent Entries</h3>
-        <table class="recent-table">
-            <thead><tr><th>Date</th><th>Ref No</th><th>Type</th><th>Party</th><th>Amount</th><th>Action</th></tr></thead>
-            <tbody id="recentList"></tbody>
-        </table>
+        <div class="recent-section">
+            <h3 style="font-size:16px; margin-bottom:10px;">🕒 Recent Entries</h3>
+            <div style="overflow-x:auto;">
+                <table class="recent-table">
+                    <thead><tr><th>Date</th><th>Ref No</th><th>Type</th><th>Party</th><th>Amount</th><th>Action</th></tr></thead>
+                    <tbody id="recentList"></tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <script src="db.js"></script><script src="auth.js"></script>
     <script>
         let itemsList = [], ledgersList = [];
-        let currentId = null;
 
         window.onload = async () => {
             await DB.init();
             await Promise.all([loadParties(), loadItems()]);
             
-            // Check URL parameters
             const urlParams = new URLSearchParams(window.location.search);
             const mode = urlParams.get('mode');
             if(mode) {
@@ -185,6 +245,11 @@
             document.getElementById('invDate').valueAsDate = new Date();
         };
 
+        function toggleMenu() {
+            document.getElementById('mySidebar').classList.toggle('active');
+            document.querySelector('.overlay').classList.toggle('active');
+        }
+
         function changeMode() {
             const type = document.getElementById('docType').value;
             const titleMap = {
@@ -196,7 +261,6 @@
             document.getElementById('pageTitle').innerText = titleMap[type][0];
             document.getElementById('pageDesc').innerText = titleMap[type][1];
             
-            // Reset invoice number on mode change
             const prefix = type.substring(0,3).toUpperCase();
             document.getElementById('invNo').value = `${prefix}-${Date.now().toString().slice(-4)}`;
         }
@@ -239,8 +303,7 @@
         function addItemRow(data = null) {
             const tbody = document.getElementById('itemRows');
             const tr = document.createElement('tr');
-            // Check if item has data
-            const itemData = data && data.item_id ? itemsList.find(i=>i.id==data.item_id) : null;
+            const itemData = data && data.item_id ? itemsList.find(i=>i.id==data.item_id) : data;
             
             tr.innerHTML = `
                 <td class="text-center">${tbody.children.length + 1}</td>
@@ -250,21 +313,22 @@
                         ${itemsList.map(i => `<option value="${i.id}" data-rate="${i.std_cost||0}" data-gst="${i.gst_rate||18}" ${itemData && itemData.id==i.id ? 'selected':''}>${i.name}</option>`).join('')}
                     </select>
                 </td>
-                <td><input type="text" class="batch batch-field" placeholder="Batch" value="${data ? (data.batch_no||'') : ''}"></td>
-                <td><input type="date" class="exp batch-field" value="${data ? (data.expiry_date||'') : ''}"></td>
-                <td><input type="number" class="qty text-right" value="${data ? data.qty : 1}" onchange="calc(this)"></td>
+                <td><input type="text" class="batch batch-field" placeholder="Batch" value="${data && data.batch_no ? data.batch_no : ''}"></td>
+                <td><input type="date" class="exp batch-field" value="${data && data.expiry_date ? data.expiry_date : ''}"></td>
+                <td><input type="number" class="qty text-right" value="${data && data.qty ? data.qty : 1}" onchange="calc(this)"></td>
                 <td><input type="text" class="unit text-center" readonly value="${itemData ? (itemData.unit||'') : ''}"></td>
-                <td><input type="number" class="rate text-right" value="${data ? data.rate : 0}" onchange="calc(this)"></td>
+                <td><input type="number" class="rate text-right" value="${data && data.rate ? data.rate : 0}" onchange="calc(this)"></td>
                 <td><input type="number" class="gst text-right" value="${itemData ? itemData.gst_rate : 18}" readonly></td>
                 <td class="text-right amt" style="font-weight:bold;">0.00</td>
                 <td><button onclick="this.closest('tr').remove(); calcTotals()" style="color:red;background:none;border:none;">×</button></td>
             `;
             tbody.appendChild(tr);
-            if(!data) {
-                const sel = tr.querySelector('select');
-                // fillItem(sel); // Optional: auto fill first item
-            } else {
-                calc(tr.querySelector('select'));
+            
+            const sel = tr.querySelector('.item-select');
+            if(itemData) {
+                // Pre-fill if item exists
+                tr.querySelector('.rate').value = data && data.rate ? data.rate : (itemData.std_cost || 0);
+                calc(sel);
             }
         }
 
@@ -274,7 +338,6 @@
             tr.querySelector('.rate').value = opt.dataset.rate || 0;
             tr.querySelector('.gst').value = opt.dataset.gst || 18;
             
-            // Get Unit
             const item = itemsList.find(i => i.id == sel.value);
             tr.querySelector('.unit').value = item ? item.unit : '';
             calc(sel);
@@ -307,6 +370,7 @@
             document.getElementById('grandTotal').innerText = "₹ " + Math.round(taxable + tax).toFixed(2);
         }
 
+        // --- FIXED SAVE DATA (Dynamic Ledger ID) ---
         async function saveData() {
             const type = document.getElementById('docType').value;
             const pid = document.getElementById('partySelect').value;
@@ -334,32 +398,36 @@
                 voucher_no: document.getElementById('invNo').value,
                 date: document.getElementById('invDate').value,
                 party_id: parseInt(pid),
-                type: type, // Purchase / GRN / Return
+                type: type,
                 amount: amt,
                 narration: document.getElementById('narration').value
             };
 
             try {
                 if(type === 'GRN') {
-                    // Save to GRN Tables
                     await DB.createGRN({
                         grn_no: masterData.voucher_no,
                         date: masterData.date,
                         vendor_id: masterData.party_id,
                         amount: masterData.amount
-                    }, entries); // items passed separately
+                    }, entries);
                     alert("GRN Created! Stock Updated.");
                 } 
                 else {
-                    // Save as Financial Voucher
-                    // Accounting Logic
                     let acct = [];
-                    // Only do accounting for Purchase & Return
                     if(type === 'Purchase' || type === 'Return') {
                         const taxable = parseFloat(document.getElementById('taxableAmt').innerText);
-                        acct.push({ ledger_id: parseInt(pid), debit: 0, credit: amt }); // Party
-                        acct.push({ ledger_id: 10, debit: taxable, credit: 0 }); // Purchase A/c (Dummy ID)
-                        // Add Tax Ledgers...
+                        
+                        // 1. Party Account
+                        acct.push({ ledger_id: parseInt(pid), debit: 0, credit: amt }); 
+
+                        // 2. Dynamic Purchase Account Search (FIXED)
+                        const purLedger = ledgersList.find(l => l.name === "Local Purchase") || ledgersList.find(l => l.name.includes("Purchase Accounts"));
+                        const purId = purLedger ? purLedger.id : 0;
+                        if(purId === 0) return alert("System Error: 'Local Purchase' Ledger not found!");
+
+                        // Purchase Account (Debit)
+                        acct.push({ ledger_id: purId, debit: taxable, credit: 0 }); 
                     }
                     
                     await DB.saveVoucher(masterData, entries, acct);
@@ -376,18 +444,16 @@
             document.getElementById('itemRows').innerHTML = "";
             addItemRow();
             calcTotals();
-            changeMode(); // Reset No
+            changeMode(); 
         }
 
         async function loadRecent() {
             const all = await DB.getAll('vouchers');
-            // Also fetch GRNs
             const grns = await DB.getAll('grn_master');
             
             const tbody = document.getElementById('recentList');
             tbody.innerHTML = '';
             
-            // Mix and sort
             const mixed = [
                 ...all.map(x=>({...x, source:'Voucher'})), 
                 ...grns.map(x=>({...x, voucher_no: x.grn_no, type:'GRN', source:'GRN'}))
@@ -395,7 +461,7 @@
 
             mixed.forEach(v => {
                 const pName = ledgersList.find(l => l.id == (v.party_id || v.vendor_id))?.name || '-';
-                tbody.innerHTML += `<tr><td>${v.date}</td><td>${v.voucher_no}</td><td>${v.type}</td><td>${pName}</td><td>${v.amount}</td><td>View</td></tr>`;
+                tbody.innerHTML += `<tr><td>${v.date}</td><td>${v.voucher_no}</td><td>${v.type}</td><td>${pName}</td><td>${v.amount}</td><td><button style='border:none;background:none;color:blue;'>View</button></td></tr>`;
             });
         }
     </script>

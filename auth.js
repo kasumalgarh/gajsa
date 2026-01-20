@@ -26,7 +26,7 @@
         if (brand) {
             brand.innerHTML = `
                 <div style="line-height:1.2;">
-                    🚀 MoneyWise <br>
+                    🚀 ArthBook <br>
                     <span style="font-size:11px; font-weight:400; opacity:0.8;">
                         👤 ${user.name} (${user.role.toUpperCase()})
                     </span>

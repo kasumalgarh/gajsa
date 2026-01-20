@@ -1,10 +1,10 @@
 /* FILENAME: db.js
-   PURPOSE: Arth Book (Formerly Money Wise) v22.0 - Platinum Edition
+   PURPOSE: Arth Book (Formerly Arth Book) v22.0 - Platinum Edition
    FEATURES: Mobile Cursor, Blockchain Audit, Multi-Branch, Project Mgmt, ESG, Encryption Hooks
    STATUS: FIXED (Login, Inventory Update & GRN Added)
 */
 
-class MoneyWiseDB {
+class ArthBookDB {
     constructor() {
         this.dbName = "ArthBook_DB"; // Rebranded Name
         this.dbVersion = 22; // BUMPED for New Stores (Projects, Branches, ESG)
@@ -469,4 +469,4 @@ class MoneyWiseDB {
 }
 
 // GLOBAL INSTANCE
-const DB = new MoneyWiseDB();
+const DB = new ArthBookDB();

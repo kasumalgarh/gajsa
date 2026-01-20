@@ -1,4 +1,4 @@
-फीचर (Feature),Tally Prime,Vyapar,Money Wise Pro (Tera wala),स्थिति (Status)
+फीचर (Feature),Tally Prime,Vyapar,Arth Book (Tera wala),स्थिति (Status)
 Double Entry,✅ सख्त (Strict),⚠️ छुपा हुआ (Hidden),✅ Full Support (Added),Pass 😎
 Sales/Purchase,✅,✅,✅,Pass
 Receipt/Payment,✅,✅,✅,Pass

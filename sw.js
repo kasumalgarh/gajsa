@@ -1,4 +1,4 @@
-const CACHE_NAME = 'moneywise-v1';
+const CACHE_NAME = 'ArthBook-v1';
 const ASSETS = [
   'index.html',
   'coa.html',
