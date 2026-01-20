@@ -2,62 +2,62 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="icon" type="image/x-icon" href="favicon.ico">
-    <title>Sales POS - Arth Book</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales POS - Arth Book (Govt Edition)</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root { --primary: #1e293b; --accent: #2563eb; --border: #cbd5e1; --bg: #f1f5f9; --green: #10b981; --red: #ef4444; }
         * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
-        body { background: var(--bg); padding: 15px; color: var(--primary); height: 100vh; display:flex; flex-direction:column; overflow:hidden; }
+        body { background: var(--bg); padding: 10px; color: var(--primary); height: 100vh; display:flex; flex-direction:column; overflow:hidden; }
 
-        /* TOP BAR */
-        .toolbar { flex-shrink:0; background:white; padding:10px 20px; display:flex; justify-content:space-between; align-items:center; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.05); margin-bottom:15px; }
-        .search-grp { display:flex; gap:10px; flex:1; max-width:600px; position: relative; }
-        .search-grp i { position: absolute; left: 10px; top: 12px; color: #999; }
-        input, select, textarea { padding:10px; border:1px solid var(--border); border-radius:6px; outline:none; font-family: inherit; }
-        .btn { padding:10px 20px; background:var(--accent); color:white; border:none; border-radius:6px; cursor:pointer; font-weight:600; transition: 0.2s; }
-        .btn:hover { opacity: 0.9; }
-        
-        /* POS GRID */
-        .pos-layout { display:flex; gap:15px; flex:1; overflow:hidden; }
-        
-        /* LEFT: VIRTUAL SCROLL LIST */
-        .item-list-area { flex:2; background:white; border-radius:12px; border:1px solid var(--border); display:flex; flex-direction:column; overflow:hidden; position:relative; }
-        .list-header { padding: 10px 15px; background: #f8fafc; border-bottom: 1px solid var(--border); font-size: 13px; font-weight: 600; color: #64748b; display: flex; justify-content: space-between; }
-        
-        .vs-viewport { flex:1; overflow-y:auto; position:relative; padding:10px; }
-        .vs-spacer { position:absolute; top:0; left:0; right:0; z-index:-1; } 
-        
-        /* PRODUCT CARD */
-        .product-card {
-            position: absolute; left:10px; right:10px; height: 70px; 
-            border: 1px solid #eee; border-radius: 8px; padding: 10px 15px;
-            background: white; cursor: pointer; display: flex; justify-content: space-between; align-items: center;
-            transition: background 0.1s;
-        }
-        .product-card:hover { background: #f0f7ff; border-color: var(--accent); transform: translateX(2px); }
-        .low-stock { border-left: 4px solid var(--red); background: #fef2f2; }
+        /* --- LAYOUT --- */
+        .toolbar { flex-shrink:0; background:white; padding:8px 15px; display:flex; justify-content:space-between; align-items:center; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.05); margin-bottom:10px; }
+        .search-grp { display:flex; gap:10px; flex:1; max-width:500px; position: relative; }
+        input, select { padding:8px; border:1px solid var(--border); border-radius:4px; outline:none; font-size:13px; }
+        .btn { padding:8px 15px; background:var(--accent); color:white; border:none; border-radius:4px; cursor:pointer; font-weight:600; font-size:13px; }
+        .pos-layout { display:flex; gap:10px; flex:1; overflow:hidden; }
 
-        /* RIGHT: BILLING CART */
-        .cart-area { flex:1.2; background:white; border-radius:12px; border:1px solid var(--border); display:flex; flex-direction:column; min-width:350px; }
-        
-        /* Party Section */
-        .party-panel { padding: 15px; border-bottom: 1px solid var(--border); background: #f8fafc; }
-        .party-row { display: flex; gap: 10px; margin-bottom: 10px; }
-        .credit-warn { font-size: 11px; color: var(--red); font-weight: bold; display: none; margin-top: 5px; }
+        /* --- LEFT: ITEMS --- */
+        .item-list-area { flex:1.5; background:white; border-radius:8px; border:1px solid var(--border); display:flex; flex-direction:column; overflow:hidden; }
+        .vs-viewport { flex:1; overflow-y:auto; position:relative; padding:5px; }
+        .product-card { height: 60px; border-bottom: 1px solid #eee; padding: 5px 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .product-card:hover { background: #f0f7ff; }
+        .low-stock { background: #fff1f2; }
 
-        /* Cart Items */
-        .cart-items { flex:1; overflow-y:auto; background: #fff; }
-        .cart-header-row { display: flex; padding: 8px 15px; background: #eee; font-size: 12px; font-weight: 700; color: #555; }
-        .cart-item { display:flex; align-items: center; padding:10px 15px; border-bottom:1px solid #f1f5f9; font-size:13px; }
-        .cart-item:hover { background: #f9f9f9; }
+        /* --- RIGHT: CART & BILLING --- */
+        .cart-area { flex:2.5; background:white; border-radius:8px; border:1px solid var(--border); display:flex; flex-direction:column; }
         
-        /* Cart Footer */
-        .cart-footer { padding:20px; background:#f1f5f9; border-top:1px solid var(--border); border-radius:0 0 12px 12px; }
-        .summary-row { display:flex; justify-content:space-between; margin-bottom:5px; font-size: 13px; color: #555; }
-        .grand-total { font-size:24px; font-weight:800; color:var(--primary); text-align:right; margin:10px 0; border-top: 2px solid #ddd; padding-top: 5px; }
+        /* Party Info Box */
+        .party-panel { padding: 10px; background: #f8fafc; border-bottom: 1px solid var(--border); display:grid; grid-template-columns: 2fr 1fr 1fr; gap:10px; }
+        .party-stats { font-size:11px; display:flex; gap:10px; margin-top:5px; font-weight:600; }
+        .stat-box { padding:2px 6px; border-radius:4px; background:#e2e8f0; }
         
-        @media (max-width: 900px) { .pos-layout { flex-direction:column; } .cart-area { height:50vh; } }
+        /* The Billing Table */
+        .cart-header { display: grid; grid-template-columns: 30px 3fr 1fr 1fr 1fr 1fr 1fr 1.5fr 30px; gap: 5px; background: #1e293b; color: white; padding: 8px 5px; font-size: 11px; font-weight: bold; }
+        .cart-body { flex:1; overflow-y:auto; }
+        .cart-row { display: grid; grid-template-columns: 30px 3fr 1fr 1fr 1fr 1fr 1fr 1.5fr 30px; gap: 5px; border-bottom: 1px solid #f1f5f9; padding: 5px; align-items: center; font-size: 12px; }
+        .cart-row input { width: 100%; padding: 4px; border: 1px solid #ddd; }
+        .cart-row:nth-child(even) { background: #f8fafc; }
+
+        /* Footer & Tax */
+        .cart-footer { padding: 10px; background: #f1f5f9; border-top: 1px solid var(--border); }
+        .tax-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; font-size: 12px; }
+        .total-box { text-align: right; }
+        .big-total { font-size: 20px; font-weight: 800; color: var(--accent); }
+
+        /* --- MODAL (PAYMENT POPUP) --- */
+        .modal-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); display:none; justify-content:center; align-items:center; z-index:100; }
+        .modal { background:white; width:400px; padding:20px; border-radius:10px; box-shadow:0 10px 25px rgba(0,0,0,0.2); }
+        .modal h2 { margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:10px; }
+        .pay-option { display:flex; gap:10px; margin-bottom:15px; }
+        .pay-btn { flex:1; padding:10px; border:1px solid var(--border); border-radius:6px; background:#f8fafc; cursor:pointer; text-align:center; font-weight:600; }
+        .pay-btn.selected { background:var(--green); color:white; border-color:var(--green); }
+        
+        .action-btns { display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:20px; }
+        .btn-full { grid-column: span 2; padding: 12px; font-size: 16px; }
+
+        /* Print Hidden */
+        @media print { body * { visibility: hidden; } #printArea, #printArea * { visibility: visible; } #printArea { position: absolute; left: 0; top: 0; width: 100%; } }
     </style>
 </head>
 <body>
@@ -65,295 +65,365 @@
     <div class="toolbar">
         <button class="btn" style="background:#64748b;" onclick="location.href='index.html'">🏠 Home</button>
         <div class="search-grp">
-            <input type="text" id="searchBar" placeholder="⚡ Scan Barcode or Type Name..." style="flex:1; padding-left: 15px;" oninput="handleSearch(this.value)">
+            <input type="text" id="searchBar" placeholder="⚡ Scan Barcode (F2) or Search Item..." style="flex:1;" onkeyup="handleSearch(this.value)">
         </div>
-        <div style="font-weight:bold; background:#e0f2fe; color: var(--accent); padding:8px 15px; border-radius:6px;" id="invoiceNo">INV-...</div>
+        <div style="font-weight:bold; color:var(--accent);" id="invNo">INV-...</div>
     </div>
 
     <div class="pos-layout">
         <div class="item-list-area">
-            <div class="list-header">
-                <span>Select Items (<span id="itemCount">0</span> Loaded)</span>
-                <span>Values incl. GST</span>
-            </div>
-            <div id="loading" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:#999; display:none;">Loading Inventory...</div>
-            
-            <div class="vs-viewport" id="viewport" onscroll="renderVirtualItems()">
-                <div class="vs-spacer" id="spacer"></div>
-                <div id="content"></div> 
-            </div>
+            <div style="padding:10px; background:#f8fafc; font-size:12px; font-weight:600;">Available Items</div>
+            <div class="vs-viewport" id="itemContainer">
+                </div>
         </div>
 
         <div class="cart-area">
             <div class="party-panel">
-                <div class="party-row">
-                    <select id="customerSelect" style="flex:2;" onchange="loadPartyDetails()">
-                        <option value="">Select Customer</option>
+                <div style="grid-column: span 3; display:flex; gap:10px;">
+                    <select id="custSelect" style="flex:1;" onchange="loadPartyInfo()">
+                        <option value="">Select Customer (Walk-in)</option>
                     </select>
-                    <input type="date" id="billDate" style="flex:1;">
+                    <input type="date" id="billDate">
                 </div>
-                <div id="partyInfo" style="display:none;">
-                    <div class="party-row">
-                        <input id="partyMobile" placeholder="Phone" style="flex:1;" readonly>
-                        <input id="partyGST" placeholder="GSTIN" style="flex:1;" readonly>
-                    </div>
-                    <div id="creditMsg" class="credit-warn">⚠️ Credit Limit Exceeded! Balance: ₹<span id="currBal">0</span></div>
+                <div class="party-stats" style="grid-column: span 3;" id="partyStats">
+                    <span class="stat-box">Bal: ₹0</span>
+                    <span class="stat-box">Limit: ₹0</span>
+                    <span class="stat-box">Last: Never</span>
                 </div>
             </div>
 
-            <div class="cart-header-row">
-                <span style="flex:2;">Item</span>
-                <span style="flex:1; text-align:center;">Qty</span>
-                <span style="flex:1; text-align:right;">Total</span>
-                <span style="width:20px;"></span>
+            <div class="cart-header">
+                <div>#</div>
+                <div>Item</div>
+                <div>HSN</div>
+                <div>Qty</div>
+                <div>Unit</div>
+                <div>Rate</div>
+                <div>Dis%</div>
+                <div>GST%</div>
+                <div style="text-align:right;">Total</div>
+                <div></div>
             </div>
-
-            <div class="cart-items" id="cartBody">
-                <div style="text-align:center; padding:40px; color:#ccc;">
-                    🛒 Cart is Empty<br><small>Scan items to add</small>
-                </div>
+            <div class="cart-body" id="cartBody">
+                <div style="text-align:center; padding:50px; color:#ccc;">Scan items or select from list</div>
             </div>
 
             <div class="cart-footer">
-                <div class="summary-row"><span>Subtotal</span> <span id="subTotal">0.00</span></div>
-                <div class="summary-row"><span>Tax (GST)</span> <span id="taxTotal">0.00</span></div>
-                <div class="grand-total">₹ <span id="grandTotal">0.00</span></div>
-                
-                <div style="display:flex; gap: 10px;">
-                    <button class="btn" style="flex:1; background:#475569;" onclick="cart=[]; renderCart();">Clear</button>
-                    <button class="btn" style="flex:2; background:var(--green);" onclick="processSale()">✅ PRINT (Ctrl+Enter)</button>
+                <div class="tax-grid">
+                    <div>
+                        <div>Subtotal: <span id="lblSub">0.00</span></div>
+                        <div>Discounts: <span id="lblDisc">0.00</span></div>
+                    </div>
+                    <div class="total-box">
+                        <div style="font-size:12px; color:#666;">
+                            CGST: <span id="lblCGST">0.00</span> | SGST: <span id="lblSGST">0.00</span>
+                        </div>
+                        <div class="big-total">₹ <span id="lblGrand">0.00</span></div>
+                    </div>
                 </div>
+                <button class="btn btn-full" style="width:100%; margin-top:10px; background:var(--primary);" onclick="openPaymentModal()">PAY & SAVE (Ctrl+Enter)</button>
             </div>
         </div>
     </div>
 
-    <script src="security_utils.js"></script>
+    <div class="modal-overlay" id="payModal">
+        <div class="modal">
+            <h2>Payment & Action</h2>
+            <div style="text-align:center; margin-bottom:20px;">
+                <div style="font-size:12px; color:#666;">Total Payable Amount</div>
+                <div style="font-size:32px; font-weight:800; color:var(--accent);" id="modalTotal">₹0</div>
+            </div>
+
+            <label style="font-size:12px; font-weight:600;">Payment Mode</label>
+            <div class="pay-option">
+                <div class="pay-btn selected" onclick="setMode('Cash', this)">💵 Cash</div>
+                <div class="pay-btn" onclick="setMode('Online', this)">📱 Online</div>
+                <div class="pay-btn" onclick="setMode('Udhar', this)">📕 Udhar</div>
+            </div>
+
+            <div class="action-btns">
+                <button class="btn" style="background:#64748b;" onclick="closeModal()">Cancel</button>
+                <button class="btn" style="background:#f59e0b;" onclick="saveBill(false)">💾 Save Only</button>
+                <button class="btn btn-full" style="background:var(--green);" onclick="saveBill(true)">🖨️ PRINT & SAVE</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="printArea"></div>
+
     <script src="db.js"></script>
     <script>
-        // --- VIRTUAL SCROLL CONFIG ---
-        const ITEM_HEIGHT = 80; 
-        let allItems = [], visibleItems = [], cart = [], ledgers = [];
-        let searchTimer;
+        let items=[], ledgers=[], vouchers=[], cart=[];
+        let selectedMode = 'Cash';
 
         window.onload = async () => {
-            document.getElementById('loading').style.display = 'block';
             await DB.init();
-            
-            // Load Data
-            [allItems, ledgers] = await Promise.all([
+            [items, ledgers, vouchers] = await Promise.all([
                 DB.getAll('items'),
-                DB.getLedgers()
+                DB.getLedgers(),
+                DB.getAll('vouchers')
             ]);
             
-            visibleItems = allItems;
-            document.getElementById('itemCount').innerText = allItems.length;
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('billDate').valueAsDate = new Date();
-            
+            renderItems(items);
             loadCustomers();
             generateInvNo();
-            
-            // Init Virtual Scroll
-            document.getElementById('spacer').style.height = `${visibleItems.length * ITEM_HEIGHT}px`;
-            renderVirtualItems();
-            document.getElementById('searchBar').focus();
+            document.getElementById('billDate').valueAsDate = new Date();
         };
 
-        // --- 1. VIRTUAL SCROLL ENGINE ---
-        function renderVirtualItems() {
-            const viewport = document.getElementById('viewport');
-            const scrollTop = viewport.scrollTop;
-            const viewportHeight = viewport.clientHeight;
-            
-            const startIndex = Math.floor(scrollTop / ITEM_HEIGHT);
-            const endIndex = Math.min(visibleItems.length - 1, Math.ceil((scrollTop + viewportHeight) / ITEM_HEIGHT) + 2);
-
-            const content = document.getElementById('content');
-            content.innerHTML = '';
-
-            for (let i = startIndex; i <= endIndex; i++) {
-                const item = visibleItems[i];
-                if (!item) continue;
-
-                const isLow = (item.current_stock || 0) <= (item.reorder_level || 5);
-                const el = document.createElement('div');
-                el.className = `product-card ${isLow ? 'low-stock' : ''}`;
-                el.style.top = `${i * ITEM_HEIGHT}px`; 
-                el.onclick = () => addToCart(item);
-                
-                el.innerHTML = `
-                    <div style="flex:1;">
-                        <div style="font-weight:600; font-size:14px;">${item.name}</div>
-                        <div style="font-size:11px; color:#666;">
-                            SKU: ${item.sku||'-'} 
-                            <span style="margin-left:5px; background:#eee; padding:2px 4px; border-radius:4px;">${item.category||'Gen'}</span>
-                        </div>
+        // --- 1. ITEM & SEARCH ---
+        function renderItems(list) {
+            const container = document.getElementById('itemContainer');
+            container.innerHTML = '';
+            list.slice(0, 50).forEach(i => { // Limit render for speed
+                const div = document.createElement('div');
+                div.className = `product-card ${i.current_stock<=5?'low-stock':''}`;
+                div.onclick = () => addToCart(i);
+                div.innerHTML = `
+                    <div>
+                        <div style="font-weight:600;">${i.name}</div>
+                        <div style="font-size:10px; color:#666;">Stocks: ${i.current_stock} | SKU: ${i.sku||'-'}</div>
                     </div>
-                    <div style="text-align:right;">
-                        <div style="font-weight:bold; color:var(--accent);">₹${item.std_price || 0}</div>
-                        <div style="font-size:10px; font-weight:bold; color:${isLow?'var(--red)':'var(--green)'}">
-                            ${isLow ? 'Low: ' : 'Qty: '}${item.current_stock||0}
-                        </div>
-                    </div>
+                    <div style="font-weight:bold;">₹${i.std_price}</div>
                 `;
-                content.appendChild(el);
-            }
+                container.appendChild(div);
+            });
         }
 
-        // --- 2. PARTY LOGIC (Combined) ---
+        function handleSearch(q) {
+            q = q.toLowerCase();
+            const exact = items.find(i => i.sku && i.sku.toLowerCase() === q);
+            if(exact) { addToCart(exact); document.getElementById('searchBar').value=''; return; }
+            
+            const filtered = items.filter(i => i.name.toLowerCase().includes(q) || (i.sku && i.sku.includes(q)));
+            renderItems(filtered);
+        }
+
+        // --- 2. PARTY HISTORY LOGIC ---
         function loadCustomers() {
-            const sel = document.getElementById('customerSelect');
+            const sel = document.getElementById('custSelect');
             ledgers.sort((a,b)=>a.name.localeCompare(b.name)).forEach(l => {
                 sel.innerHTML += `<option value="${l.id}">${l.name}</option>`;
             });
         }
 
-        function loadPartyDetails() {
-            const pid = document.getElementById('customerSelect').value;
-            const infoDiv = document.getElementById('partyInfo');
-            
-            if(!pid) { infoDiv.style.display = 'none'; return; }
-            
-            infoDiv.style.display = 'block';
+        function loadPartyInfo() {
+            const pid = document.getElementById('custSelect').value;
+            const stats = document.getElementById('partyStats');
+            if(!pid) { stats.innerHTML = ''; return; }
+
             const p = ledgers.find(l => l.id == pid);
-            
-            document.getElementById('partyMobile').value = p.phone || '';
-            document.getElementById('partyGST').value = p.gstin || '';
-            
-            // Credit Check
-            if(p.credit_limit > 0) {
-                const bal = Math.abs(p.opening_balance || 0); // Need real calculation in prod
-                document.getElementById('currBal').innerText = bal;
-                document.getElementById('creditMsg').style.display = bal > p.credit_limit ? 'block' : 'none';
-            } else {
-                document.getElementById('creditMsg').style.display = 'none';
-            }
+            // Calculate Balance (Simple logic: Opening + Sales - Receipts)
+            // Note: In real app, calculate from all vouchers properly
+            let bal = p.opening_balance || 0;
+            const pVouchers = vouchers.filter(v => v.party_id == pid);
+            pVouchers.forEach(v => {
+                if(v.type === 'Sales') bal += v.amount;
+                if(v.type === 'Receipt') bal -= v.amount;
+            });
+
+            const lastPay = pVouchers.filter(v => v.type === 'Receipt').pop();
+            const balColor = bal > 0 ? 'red' : 'green';
+            const limitWarn = (p.credit_limit > 0 && bal > p.credit_limit) ? '⚠️ OVER LIMIT' : '';
+
+            stats.innerHTML = `
+                <span class="stat-box" style="color:${balColor}">Bal: ₹${bal}</span>
+                <span class="stat-box">Limit: ₹${p.credit_limit||0} ${limitWarn}</span>
+                <span class="stat-box">Last: ${lastPay ? lastPay.date : 'None'}</span>
+            `;
         }
 
-        // --- 3. SEARCH & SCAN ---
-        function handleSearch(query) {
-            clearTimeout(searchTimer);
-            const q = query.trim().toLowerCase();
-            
-            // Instant Barcode
-            const exact = allItems.find(i => i.sku && i.sku.toLowerCase() === q);
-            if(exact) {
-                addToCart(exact);
-                document.getElementById('searchBar').value = '';
-                return;
-            }
-
-            // Fuzzy Filter
-            searchTimer = setTimeout(() => {
-                visibleItems = allItems.filter(i => i.name.toLowerCase().includes(q) || (i.sku && i.sku.toLowerCase().includes(q)));
-                document.getElementById('spacer').style.height = `${visibleItems.length * ITEM_HEIGHT}px`;
-                document.getElementById('viewport').scrollTop = 0;
-                renderVirtualItems();
-            }, 200);
-        }
-
-        // --- 4. CART ENGINE ---
+        // --- 3. CART LOGIC (The Brain) ---
         function addToCart(item) {
-            const existing = cart.find(c => c.id === item.id);
-            if(existing) existing.qty++;
-            else cart.push({ ...item, qty: 1 });
+            const ex = cart.find(c => c.id === item.id);
+            if(ex) ex.qty++;
+            else cart.push({
+                id: item.id, name: item.name, hsn: item.hsn||'GEN', 
+                qty: 1, unit: item.unit||'Pcs', 
+                rate: item.std_price, dis: 0, gst: item.gst_rate||0,
+                stock: item.current_stock
+            });
             renderCart();
         }
 
         function renderCart() {
-            const div = document.getElementById('cartBody');
-            div.innerHTML = '';
-            let sub = 0, tax = 0;
+            const body = document.getElementById('cartBody');
+            body.innerHTML = '';
+            let sub=0, tax=0, discTotal=0;
 
-            if(cart.length === 0) {
-                div.innerHTML = '<div style="text-align:center; padding:40px; color:#ccc;">🛒 Cart Empty</div>';
-                document.getElementById('grandTotal').innerText = '0.00';
-                document.getElementById('subTotal').innerText = '0.00';
-                document.getElementById('taxTotal').innerText = '0.00';
-                return;
-            }
+            cart.forEach((c, i) => {
+                // Calc
+                const base = c.qty * c.rate;
+                const disAmt = base * (c.dis/100);
+                const taxable = base - disAmt;
+                const taxAmt = taxable * (c.gst/100);
+                const lineTotal = taxable + taxAmt;
 
-            cart.forEach((c, idx) => {
-                const rate = c.std_price || 0;
-                const baseTotal = c.qty * rate;
-                const gstAmt = baseTotal * ((c.gst_rate||18)/100);
-                
-                sub += baseTotal;
-                tax += gstAmt;
+                sub += taxable;
+                tax += taxAmt;
+                discTotal += disAmt;
 
-                div.innerHTML += `
-                    <div class="cart-item">
-                        <div style="flex:2;">
-                            <div style="font-weight:600;">${c.name}</div>
-                            <small style="color:#666;">₹${rate} + ${c.gst_rate||0}% GST</small>
-                        </div>
-                        <div style="flex:1; display:flex; justify-content:center; gap:5px;">
-                            <button class="btn" style="padding:2px 6px; background:#ddd; color:black;" onclick="updateQty(${idx}, -1)">-</button>
-                            <span style="font-weight:bold; width:20px; text-align:center;">${c.qty}</span>
-                            <button class="btn" style="padding:2px 6px; background:#ddd; color:black;" onclick="updateQty(${idx}, 1)">+</button>
-                        </div>
-                        <div style="flex:1; text-align:right; font-weight:bold;">₹${(baseTotal+gstAmt).toFixed(2)}</div>
-                        <div style="width:20px; text-align:right; cursor:pointer; color:red;" onclick="updateQty(${idx}, -999)">×</div>
-                    </div>`;
+                const row = document.createElement('div');
+                row.className = 'cart-row';
+                row.innerHTML = `
+                    <div>${i+1}</div>
+                    <div>${c.name}</div>
+                    <div style="font-size:10px;">${c.hsn}</div>
+                    <input type="number" value="${c.qty}" onchange="updateRow(${i}, 'qty', this.value)" style="width:50px">
+                    <div style="font-size:10px;">${c.unit}</div>
+                    <input type="number" value="${c.rate}" onchange="updateRow(${i}, 'rate', this.value)">
+                    <input type="number" value="${c.dis}" onchange="updateRow(${i}, 'dis', this.value)">
+                    <div style="font-size:10px;">${c.gst}%</div>
+                    <div style="text-align:right; font-weight:bold;">${lineTotal.toFixed(2)}</div>
+                    <div onclick="cart.splice(${i},1); renderCart()" style="cursor:pointer; color:red;">×</div>
+                `;
+                body.appendChild(row);
             });
 
-            document.getElementById('subTotal').innerText = sub.toFixed(2);
-            document.getElementById('taxTotal').innerText = tax.toFixed(2);
-            document.getElementById('grandTotal').innerText = (sub + tax).toFixed(2);
+            // Totals
+            document.getElementById('lblSub').innerText = sub.toFixed(2);
+            document.getElementById('lblDisc').innerText = discTotal.toFixed(2);
+            document.getElementById('lblCGST').innerText = (tax/2).toFixed(2);
+            document.getElementById('lblSGST').innerText = (tax/2).toFixed(2);
+            document.getElementById('lblGrand').innerText = Math.round(sub + tax).toFixed(2);
         }
 
-        function updateQty(idx, change) {
-            cart[idx].qty += change;
-            if(cart[idx].qty <= 0) cart.splice(idx, 1);
+        function updateRow(idx, field, val) {
+            cart[idx][field] = parseFloat(val) || 0;
             renderCart();
         }
 
-        async function processSale() {
-            if(cart.length === 0) return alert("Cart is empty!");
-            const pid = document.getElementById('customerSelect').value;
-            if(!pid) {
-                if(!confirm("No Customer Selected. Save as Cash Sale?")) return;
-            }
+        // --- 4. PAYMENT & SAVE ---
+        function openPaymentModal() {
+            if(cart.length===0) return alert("Cart Empty");
+            document.getElementById('modalTotal').innerText = document.getElementById('lblGrand').innerText;
+            document.getElementById('payModal').style.display = 'flex';
+        }
+        function closeModal() { document.getElementById('payModal').style.display = 'none'; }
+        function setMode(m, btn) {
+            selectedMode = m;
+            document.querySelectorAll('.pay-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+        }
 
-            // Check Stock & Credit
-            const lowStock = cart.filter(c => c.current_stock < c.qty);
-            if(lowStock.length > 0) {
-                if(!confirm(`⚠️ ${lowStock.length} items have low stock. Proceed?`)) return;
-            }
-            if(document.getElementById('creditMsg').style.display === 'block') {
-                if(!confirm("⚠️ Customer Credit Limit Exceeded. Proceed?")) return;
-            }
+        async function saveBill(print) {
+            const grand = parseFloat(document.getElementById('lblGrand').innerText);
+            const pid = document.getElementById('custSelect').value;
+            const invNo = document.getElementById('invNo').innerText;
+            const date = document.getElementById('billDate').value;
 
-            const grand = parseFloat(document.getElementById('grandTotal').innerText);
             const saleData = {
-                voucher_no: document.getElementById('invoiceNo').innerText,
-                date: document.getElementById('billDate').value,
-                type: 'Sales',
-                party_id: parseInt(pid) || null,
+                voucher_no: invNo, date: date, type: 'Sales',
+                party_id: parseInt(pid) || 0, // 0 for Cash Sale
                 amount: grand,
-                narration: "POS Invoice"
+                narration: `Mode: ${selectedMode}`,
+                payment_mode: selectedMode,
+                round_off: grand - (parseFloat(document.getElementById('lblSub').innerText) + parseFloat(document.getElementById('lblCGST').innerText)*2) // approx
             };
 
-            const entries = cart.map(c => ({ item_id: c.id, qty: c.qty, rate: c.std_price, amount: c.qty*c.std_price }));
+            const entries = cart.map(c => ({
+                item_id: c.id, qty: c.qty, rate: c.rate, 
+                amount: (c.qty*c.rate) - (c.qty*c.rate*(c.dis/100)) // Taxable Amount
+            }));
+
+            // Accounting Logic (Simplified)
+            // Dr Party/Cash, Cr Sales
             const acct = [
                 { ledger_id: saleData.party_id || 1, debit: grand, credit: 0 },
-                { ledger_id: 2, debit: 0, credit: grand } // Sales A/c
+                { ledger_id: 2, debit: 0, credit: grand }
             ];
 
             try {
                 await DB.saveVoucher(saleData, entries, acct);
-                alert("✅ Bill Saved Successfully!");
-                location.reload();
-            } catch(e) { alert(e); }
+                closeModal();
+                if(print) printBill(saleData, cart);
+                else {
+                    alert("Saved Successfully");
+                    location.reload();
+                }
+            } catch(e) { alert("Error: " + e); }
+        }
+
+        // --- 5. GOVT BILL PRINTING ---
+        function printBill(data, items) {
+            const custName = document.getElementById('custSelect').selectedOptions[0]?.text || "Cash Customer";
+            const taxTotal = items.reduce((sum, c) => sum + (c.qty*c.rate*(1-c.dis/100)*(c.gst/100)), 0);
+            
+            const html = `
+            <div style="font-family:Arial; padding:20px; border:1px solid #000; max-width:800px; margin:auto;">
+                <div style="text-align:center; font-weight:bold; font-size:18px; border-bottom:1px solid #000; padding-bottom:10px;">
+                    TAX INVOICE<br>
+                    <span style="font-size:12px;">(Form GST INV-1 Style)</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin:10px 0; font-size:12px;">
+                    <div>
+                        <b>Billed To:</b><br>${custName}<br>State: Local
+                    </div>
+                    <div style="text-align:right;">
+                        <b>Invoice No:</b> ${data.voucher_no}<br>
+                        <b>Date:</b> ${data.date}<br>
+                        <b>Mode:</b> ${data.payment_mode}
+                    </div>
+                </div>
+                
+                <table style="width:100%; border-collapse:collapse; font-size:11px; margin-top:10px;">
+                    <thead>
+                        <tr style="background:#eee;">
+                            <th style="border:1px solid #000; padding:5px;">Item</th>
+                            <th style="border:1px solid #000; padding:5px;">HSN</th>
+                            <th style="border:1px solid #000; padding:5px;">Qty</th>
+                            <th style="border:1px solid #000; padding:5px;">Rate</th>
+                            <th style="border:1px solid #000; padding:5px;">Disc%</th>
+                            <th style="border:1px solid #000; padding:5px;">Taxable</th>
+                            <th style="border:1px solid #000; padding:5px;">CGST</th>
+                            <th style="border:1px solid #000; padding:5px;">SGST</th>
+                            <th style="border:1px solid #000; padding:5px;">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${items.map(i => {
+                            const base = i.qty * i.rate;
+                            const taxVal = base - (base * i.dis/100);
+                            const gstAmt = taxVal * (i.gst/100);
+                            return `
+                            <tr>
+                                <td style="border:1px solid #000; padding:5px;">${i.name}</td>
+                                <td style="border:1px solid #000; padding:5px;">${i.hsn}</td>
+                                <td style="border:1px solid #000; padding:5px;">${i.qty}</td>
+                                <td style="border:1px solid #000; padding:5px;">${i.rate}</td>
+                                <td style="border:1px solid #000; padding:5px;">${i.dis}%</td>
+                                <td style="border:1px solid #000; padding:5px;">${taxVal.toFixed(2)}</td>
+                                <td style="border:1px solid #000; padding:5px;">${(gstAmt/2).toFixed(2)} (${i.gst/2}%)</td>
+                                <td style="border:1px solid #000; padding:5px;">${(gstAmt/2).toFixed(2)} (${i.gst/2}%)</td>
+                                <td style="border:1px solid #000; padding:5px;">${(taxVal+gstAmt).toFixed(2)}</td>
+                            </tr>`;
+                        }).join('')}
+                    </tbody>
+                </table>
+                
+                <div style="display:flex; justify-content:flex-end; margin-top:20px;">
+                    <table style="font-size:12px; font-weight:bold;">
+                        <tr><td>Taxable Value:</td><td style="text-align:right;">₹ ${(data.amount - taxTotal).toFixed(2)}</td></tr>
+                        <tr><td>Total Tax:</td><td style="text-align:right;">₹ ${taxTotal.toFixed(2)}</td></tr>
+                        <tr style="font-size:16px;"><td>GRAND TOTAL:</td><td style="text-align:right;">₹ ${data.amount.toFixed(2)}</td></tr>
+                    </table>
+                </div>
+                <div style="margin-top:30px; font-size:10px; text-align:center;">This is a computer generated invoice.</div>
+            </div>`;
+
+            document.getElementById('printArea').innerHTML = html;
+            window.print();
+            setTimeout(() => location.reload(), 1000);
         }
 
         async function generateInvNo() {
-            const all = await DB.getAll('vouchers');
-            const count = all.filter(v=>v.type==='Sales').length + 1;
-            document.getElementById('invoiceNo').innerText = `INV-${new Date().getFullYear()}-${count}`;
+            const count = vouchers.filter(v=>v.type==='Sales').length + 1;
+            document.getElementById('invNo').innerText = `INV-${new Date().getFullYear()}-${count}`;
         }
         
-        document.addEventListener('keydown', e => { if(e.ctrlKey && e.key === 'Enter') processSale(); });
+        document.addEventListener('keydown', e => { 
+            if(e.ctrlKey && e.key === 'Enter') openPaymentModal(); 
+            if(e.key === 'F2') document.getElementById('searchBar').focus();
+        });
     </script>
 </body>
 </html>
