@@ -2,30 +2,59 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="icon" type="image/x-icon" href="favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
     <title>Accounting Desk - Money Wise Pro</title>
     
-    <link rel="stylesheet" href="style.css"> 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
-        /* YOUR ORIGINAL STYLES (PRESERVED) */
-        :root { --bg: #f3f4f6; --text: #1e293b; --border: #e5e7eb; --green: #10b981; --red: #ef4444; --blue: #3b82f6; --purple: #8b5cf6; }
+        :root { --bg: #f3f4f6; --text: #1e293b; --border: #e5e7eb; --green: #10b981; --red: #ef4444; --blue: #3b82f6; --purple: #8b5cf6; --sidebar-bg: #0f172a; }
         * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
-        body { display: flex; height: 100vh; background: var(--bg); color: var(--text); overflow: hidden; }
+        
+        /* --- LAYOUT FIX (Sidebar Issue Solved) --- */
+        body { 
+            display: flex;       
+            height: 100vh;       
+            background: var(--bg); 
+            color: var(--text); 
+            overflow: hidden;    
+        }
 
-        /* SIDEBAR OVERRIDES */
-        .sidebar { width: 260px; background: #0f172a; padding: 20px; display: flex; flex-direction: column; flex-shrink: 0; }
-        .nav-link { padding: 12px 15px; margin-bottom: 5px; border-radius: 8px; color: #94a3b8; text-decoration: none; font-weight: 500; display: block; font-size: 14px; }
+        /* SIDEBAR (Desktop Default) */
+        .sidebar { 
+            width: 260px; 
+            background: var(--sidebar-bg); 
+            padding: 20px; 
+            display: flex; 
+            flex-direction: column; 
+            flex-shrink: 0;      
+            height: 100vh;       
+            overflow-y: auto;    
+            z-index: 100;
+            transition: 0.3s;    /* Animation for mobile slide */
+        }
+        
+        .nav-link { padding: 12px 15px; margin-bottom: 5px; border-radius: 8px; color: #94a3b8; text-decoration: none; font-weight: 500; display: block; font-size: 14px; transition: 0.2s; }
         .nav-link:hover, .nav-link.active { background: #1e293b; color: #f8fafc; }
 
-        /* LAYOUT */
-        .main { flex: 1; padding: 20px; overflow-y: auto; display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+        /* MAIN CONTENT */
+        .main { 
+            flex: 1;             
+            padding: 20px; 
+            overflow-y: auto;    
+            height: 100vh;       
+            display: flex;       
+            flex-direction: column;
+            gap: 20px; 
+        }
+
+        /* CARDS & UI */
         .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid var(--border); height: fit-content; }
         
         /* TABS */
-        .tabs { display: flex; margin-bottom: 20px; background: #f1f5f9; padding: 4px; border-radius: 8px; }
-        .tab { flex: 1; text-align: center; padding: 10px; cursor: pointer; border-radius: 6px; font-weight: 600; font-size: 13px; transition: 0.2s; }
+        .tabs { display: flex; margin-bottom: 20px; background: #f1f5f9; padding: 4px; border-radius: 8px; overflow-x: auto; }
+        .tab { flex: 1; text-align: center; padding: 10px; cursor: pointer; border-radius: 6px; font-weight: 600; font-size: 13px; transition: 0.2s; white-space: nowrap; }
         .tab.active { background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
         .t-rcp.active { border-bottom: 3px solid var(--green); color: var(--green); }
         .t-pmt.active { border-bottom: 3px solid var(--red); color: var(--red); }
@@ -42,12 +71,7 @@
         .bal-display { position: absolute; right: 0; top: 0; font-size: 11px; font-weight: 700; }
         .bal-dr { color: var(--green); } .bal-cr { color: var(--red); }
 
-        /* NEW: VOICE BTN STYLE */
-        .voice-btn {
-            position: absolute; right: 10px; top: 32px;
-            background: none; border: none; cursor: pointer; color: var(--blue); font-size: 16px;
-        }
-        .voice-btn:hover { color: var(--purple); transform: scale(1.1); }
+        .voice-btn { position: absolute; right: 10px; top: 32px; background: none; border: none; cursor: pointer; color: var(--blue); font-size: 16px; }
 
         /* ADVANCED & JOURNAL */
         .advanced-box { background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px dashed var(--border); margin-bottom: 15px; display: none; }
@@ -64,12 +88,30 @@
         
         .txn-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
         .tag { padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; }
+
+        /* --- MOBILE & RESPONSIVE CSS --- */
+        .menu-btn { display: none; position: absolute; top: 15px; left: 15px; font-size: 24px; cursor: pointer; background: none; border: none; z-index: 50; }
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 90; }
+        .overlay.active { display: block; }
+
+        @media (max-width: 900px) {
+            .sidebar { position: fixed; left: -100%; top: 0; height: 100%; width: 250px; box-shadow: 5px 0 15px rgba(0,0,0,0.3); }
+            .sidebar.active { left: 0; }
+            .menu-btn { display: block; }
+            .main { padding: 60px 15px 15px 15px; } /* Space for menu button */
+            .form-row { flex-direction: column; gap: 10px; }
+            .btn-group { flex-direction: column; }
+        }
     </style>
 </head>
 <body>
 
-    <div class="sidebar">
-        <div style="font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 40px;">🚀 Arth Book</div> <a href="index.html" class="nav-link">📊 Dashboard</a>
+    <button class="menu-btn" onclick="toggleMenu()">☰</button>
+    <div class="overlay" onclick="toggleMenu()"></div>
+
+    <div class="sidebar" id="mySidebar">
+        <div style="font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 40px;">🚀 Arth Book</div> 
+        <a href="index.html" class="nav-link">📊 Dashboard</a>
         <a href="reports.html" class="nav-link">📈 Reports</a>
         <a href="gst_filing.html" class="nav-link">🏛️ GST Filing</a>
         <a href="sales_invoice.html" class="nav-link">🧾 Sales Invoice</a>
@@ -170,7 +212,7 @@
     <script>
         let currentMode = 'Receipt';
         let ledgers = [], groups = [];
-        let recognition; // For Voice
+        let recognition; 
 
         window.onload = async () => {
             await DB.init();
@@ -185,46 +227,42 @@
                 if(e.key === 'F6') { e.preventDefault(); setMode('Receipt'); }
                 if(e.key === 'F7') { e.preventDefault(); setMode('Journal'); }
                 if(e.key === 'F4') { e.preventDefault(); setMode('Contra'); }
-                // Save Shortcut
                 if(e.key === 'Enter' && e.ctrlKey) { saveVoucher(false); }
             });
 
-            // 1. VOICE SETUP (New)
+            // Voice
             if ('webkitSpeechRecognition' in window) {
                 recognition = new webkitSpeechRecognition();
                 recognition.continuous = false;
                 recognition.lang = 'en-IN';
                 recognition.onresult = (event) => {
-                    const text = event.results[0][0].transcript;
-                    const narr = document.getElementById('narration');
-                    narr.value = (narr.value + " " + text).trim();
+                    document.getElementById('narration').value += (" " + event.results[0][0].transcript).trim();
                 };
             }
         };
 
-        // 2. BARCODE LISTENER (New - Silent Mode)
-        // Detects fast typing (scanner) and puts it in active field
+        function toggleMenu() {
+            document.getElementById('mySidebar').classList.toggle('active');
+            document.querySelector('.overlay').classList.toggle('active');
+        }
+
+        // BARCODE LISTENER
         let scanBuffer = "";
         let scanTimer;
         document.addEventListener('keydown', (e) => {
-            // If scanning numbers/text rapidly
             if (e.key.length === 1) {
                 scanBuffer += e.key;
                 clearTimeout(scanTimer);
                 scanTimer = setTimeout(() => {
-                    // If buffer is long (likely a barcode) and no specific field focused
                     if(scanBuffer.length > 5 && document.activeElement.tagName === 'BODY') {
-                        // If Check No field is visible, put it there
                         if(document.getElementById('bankOptions').style.display === 'block') {
                             document.getElementById('chqNo').value = scanBuffer;
                         } else {
-                            // Else put in narration
                             document.getElementById('narration').value = `Ref: ${scanBuffer}`;
                         }
-                        scanBuffer = "";
                     }
                     scanBuffer = "";
-                }, 50); // 50ms gap means scanned
+                }, 50);
             }
         });
 
@@ -234,8 +272,6 @@
                 recognition.start();
             } else { alert("Voice features need Chrome browser"); }
         }
-
-        /* --- YOUR ORIGINAL LOGIC (PRESERVED) --- */
 
         function getLedgersByType(type) {
             const isBank = l => { const g = groups.find(x=>x.id==l.group_id)?.name||''; return g.includes('Bank') || g.includes('Cash'); };
@@ -263,7 +299,6 @@
             const jrn = document.getElementById('journalInputs');
             
             document.getElementById('date').valueAsDate = new Date();
-            // Using DB logic for Voucher No
             const allV = await DB.getAll('vouchers');
             const count = allV.filter(v => v.type === mode).length + 1;
             document.getElementById('vchNo').value = `${mode.substring(0,3).toUpperCase()}-${String(count).padStart(4,'0')}`;
@@ -288,7 +323,7 @@
                     populateSelect('ac1Select', getLedgersByType('CashBank'));
                     document.getElementById('lblParty').innerText = "Paid To (Debit)";
                     populateSelect('ac2Select', getLedgersByType('Others'));
-                } else { // Contra
+                } else { 
                     btn.style.background = 'var(--blue)'; btn.innerText = 'Save Contra';
                     document.getElementById('lblAccount').innerText = "Deposit To (Debit)";
                     populateSelect('ac1Select', getLedgersByType('CashBank'));
@@ -302,12 +337,7 @@
             const id = parseInt(sel.value);
             const l = ledgers.find(x => x.id === id);
             const g = groups.find(x => x.id === l?.group_id)?.name || '';
-            
-            if(g.includes("Bank")) {
-                document.getElementById('bankOptions').style.display = 'block';
-            } else {
-                document.getElementById('bankOptions').style.display = 'none';
-            }
+            document.getElementById('bankOptions').style.display = g.includes("Bank") ? 'block' : 'none';
         }
 
         function addJournalRow(type='Dr') {
@@ -315,7 +345,6 @@
             div.className = 'journal-row';
             let opts = '<option value="">Select</option>';
             ledgers.forEach(l => opts += `<option value="${l.id}">${l.name}</option>`);
-            
             div.innerHTML = `
                 <div class="j-type"><select class="j-t" onchange="calcJ()"><option value="Dr" ${type=='Dr'?'selected':''}>Dr</option><option value="Cr" ${type=='Cr'?'selected':''}>Cr</option></select></div>
                 <div class="j-ac"><select class="j-l">${opts}</select></div>
@@ -368,10 +397,8 @@
                 const amt = parseFloat(document.getElementById('amount').value);
                 const ac1 = parseInt(document.getElementById('ac1Select').value);
                 const ac2 = parseInt(document.getElementById('ac2Select').value);
-                
                 if(!amt || !ac1 || !ac2) return alert("Fill all fields");
-                vData.amount = amt;
-                vData.party_id = ac2;
+                vData.amount = amt; vData.party_id = ac2;
 
                 if(currentMode === 'Receipt') {
                     entries.push({ ledger_id: ac1, debit: amt, credit: 0 });
@@ -386,7 +413,6 @@
             }
 
             try {
-                // Using new DB saveVoucher logic (Compatible)
                 await DB.saveVoucher(vData, [], entries);
                 if(print) window.print();
                 alert("Saved Successfully!");
@@ -410,7 +436,6 @@
             const all = await DB.getAll('vouchers');
             const list = document.getElementById('recentList');
             list.innerHTML = '';
-            // Filter only Acc Vouchers (Exclude Sales/Purchase if needed, but showing all is fine)
             all.sort((a,b)=>b.id-a.id).slice(0,5).forEach(v => {
                 list.innerHTML += `<div class="txn-item"><div><span class="tag" style="background:#eee;">${v.type}</span> <b>${v.voucher_no}</b></div><b>₹${v.amount||0}</b></div>`;
             });
@@ -421,7 +446,6 @@
             const amt = document.getElementById('amount').value;
             const date = document.getElementById('chqDate').value;
             if(!amt || !date) return alert("Fill Amount & Cheque Date");
-            
             const w = window.open('', '', 'width=800,height=400');
             w.document.write(`<div style="padding:50px; font-family:monospace; transform: rotate(0deg);">
                 <div style="position:absolute; top:20px; right:50px;">${date.split('-').reverse().join('')}</div>

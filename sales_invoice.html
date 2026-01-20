@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sales POS - Arth Book (Market Ready)</title>
+    <title>Sales POS - Arth Book (v2.0)</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root { --primary: #1e293b; --accent: #2563eb; --border: #cbd5e1; --bg: #f1f5f9; --green: #10b981; --red: #ef4444; }
@@ -44,14 +44,13 @@
 
         /* --- MODAL --- */
         .modal-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); display:none; justify-content:center; align-items:center; z-index:100; }
-        .modal { background:white; width:400px; padding:20px; border-radius:10px; box-shadow:0 10px 25px rgba(0,0,0,0.2); }
+        .modal { background:white; width:450px; padding:20px; border-radius:10px; box-shadow:0 10px 25px rgba(0,0,0,0.2); }
         .pay-option { display:flex; gap:10px; margin:15px 0; }
         .pay-btn { flex:1; padding:10px; border:1px solid var(--border); border-radius:6px; background:#f8fafc; cursor:pointer; text-align:center; font-weight:600; }
         .pay-btn.selected { background:var(--green); color:white; border-color:var(--green); }
-        .action-btns { display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:20px; }
-        .btn-full { grid-column: span 2; padding: 12px; font-size: 16px; }
-
-        /* PRINT CSS - EXACT GOVT FORMAT */
+        .action-btns { display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; margin-top:20px; } /* Changed to 3 columns */
+        
+        /* PRINT CSS */
         @media print { 
             body * { visibility: hidden; } 
             #printArea, #printArea * { visibility: visible; } 
@@ -66,6 +65,9 @@
 
     <div class="toolbar">
         <button class="btn" style="background:#64748b;" onclick="location.href='index.html'">🏠 Home</button>
+        <button class="btn" style="background:#f59e0b; margin-left:10px;" onclick="holdBill()">⏸️ Hold</button>
+        <button class="btn" style="background:#0ea5e9; margin-left:5px;" onclick="recallBill()">▶️ Recall</button>
+        
         <div class="search-grp">
             <input type="text" id="searchBar" placeholder="⚡ Scan Barcode (F2) or Search..." style="flex:1;" onkeyup="handleSearch(this.value)">
         </div>
@@ -80,12 +82,14 @@
 
         <div class="cart-area">
             <div class="party-panel">
-                <div style="grid-column: span 3; display:flex; gap:10px;">
+                <div style="grid-column: span 2; display:flex; gap:5px;">
                     <select id="custSelect" style="flex:1;" onchange="loadPartyInfo()">
                         <option value="">Select Customer (Walk-in)</option>
                     </select>
-                    <input type="date" id="billDate">
+                    <button class="btn" style="padding:5px 10px; background:#64748b;" onclick="quickAddCust()">+</button>
                 </div>
+                <input type="date" id="billDate">
+                
                 <div class="party-stats" style="grid-column: span 3;" id="partyStats">
                     <span class="stat-box">Bal: ₹0</span>
                     <span class="stat-box">Limit: ₹0</span>
@@ -110,6 +114,12 @@
             </div>
 
             <div class="cart-footer">
+                <input type="text" id="billNote" placeholder="📝 Add Note / Remarks (e.g. Warranty 1 Yr)" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px; margin-bottom:10px;">
+                
+                <div style="display:flex; gap:10px; margin-bottom:10px; border-bottom:1px solid #ddd; padding-bottom:10px;">
+                    <input type="number" id="extraShip" placeholder="Shipping Charge" style="flex:1" onchange="renderCart()">
+                    <input type="number" id="extraPack" placeholder="Packing Charge" style="flex:1" onchange="renderCart()">
+                </div>
                 <div class="tax-grid">
                     <div>
                         <div>Subtotal: <span id="lblSub">0.00</span></div>
@@ -143,10 +153,11 @@
             </div>
 
             <div class="action-btns">
-                <button class="btn" style="background:#64748b;" onclick="closeModal()">Cancel</button>
-                <button class="btn" style="background:#f59e0b;" onclick="saveBill(false)">💾 Save Only</button>
-                <button class="btn btn-full" style="background:var(--green);" onclick="saveBill(true)">🖨️ PRINT & SAVE</button>
+                <button class="btn" style="background:#f59e0b;" onclick="saveBill('save')">💾 Save</button>
+                <button class="btn" style="background:#25d366; color:white;" onclick="saveBill('whatsapp')">📱 Share</button>
+                <button class="btn" style="background:var(--green); color:white;" onclick="saveBill('print')">🖨️ Print</button>
             </div>
+            <button class="btn" style="width:100%; margin-top:10px; background:#64748b;" onclick="closeModal()">Cancel</button>
         </div>
     </div>
 
@@ -244,10 +255,15 @@
                 body.appendChild(row);
             });
 
+            // Extra Charges
+            const ship = parseFloat(document.getElementById('extraShip').value) || 0;
+            const pack = parseFloat(document.getElementById('extraPack').value) || 0;
+            const grandTotal = Math.round(sub + tax + ship + pack);
+
             document.getElementById('lblSub').innerText = sub.toFixed(2);
             document.getElementById('lblDisc').innerText = discTotal.toFixed(2);
             document.getElementById('lblTax').innerText = tax.toFixed(2);
-            document.getElementById('lblGrand').innerText = Math.round(sub + tax).toFixed(2);
+            document.getElementById('lblGrand').innerText = grandTotal.toFixed(2);
         }
 
         function updateRow(idx, field, val) {
@@ -268,16 +284,18 @@
             btn.classList.add('selected');
         }
 
-        async function saveBill(print) {
+        async function saveBill(action) {
             const grand = parseFloat(document.getElementById('lblGrand').innerText);
             const pid = document.getElementById('custSelect').value;
             const invNo = document.getElementById('invNo').innerText;
+            // FEATURE: CAPTURE REMARKS
+            const remarks = document.getElementById('billNote').value || "POS Sale";
             
             const saleData = {
                 voucher_no: invNo, date: document.getElementById('billDate').value,
                 type: 'Sales', party_id: parseInt(pid) || 0,
                 amount: grand, payment_mode: selectedMode,
-                narration: "POS Sale"
+                narration: remarks // Saving remarks here
             };
 
             const entries = cart.map(c => ({
@@ -288,98 +306,85 @@
             try {
                 await DB.saveVoucher(saleData, entries, acct);
                 closeModal();
-                if(print) printBill(saleData, cart, pid);
-                else { alert("Saved!"); location.reload(); }
+                
+                if(action === 'print') {
+                    printBill(saleData, cart, pid);
+                } else if(action === 'whatsapp') {
+                    shareOnWhatsApp(saleData, cart, pid);
+                    alert("Shared on WhatsApp!");
+                    setTimeout(() => location.reload(), 1000); // Reload after share
+                } else {
+                    alert("Saved Successfully!");
+                    location.reload();
+                }
             } catch(e) { alert("Error: " + e); }
         }
 
-        // --- THE GOVT APPROVED PRINT FUNCTION ---
+        // --- FEATURE: WHATSAPP SHARE ---
+        function shareOnWhatsApp(data, items, pid) {
+            const party = ledgers.find(l => l.id == pid);
+            const phone = party ? party.phone : "";
+            if(!phone) { alert("Customer phone number missing!"); return; }
+
+            let msg = `*INVOICE: ${data.voucher_no}*\n`;
+            msg += `Date: ${data.date}\n`;
+            msg += `To: ${party.name}\n`;
+            msg += `------------------------------\n`;
+            items.forEach(i => {
+                msg += `${i.name} x ${i.qty} = ₹${(i.qty*i.rate).toFixed(0)}\n`;
+            });
+            msg += `------------------------------\n`;
+            msg += `*Total Amount: ₹${data.amount}*\n`;
+            msg += `Note: ${data.narration}\n\n`;
+            msg += `Thank you for shopping with us!`;
+
+            const url = `https://wa.me/91${phone}?text=${encodeURIComponent(msg)}`;
+            window.open(url, '_blank');
+        }
+
+        // --- PRINT FUNCTION ---
         function printBill(data, items, pid) {
-            // 1. Fetch Company & Party Data
             const party = ledgers.find(l => l.id == pid) || { name: "Cash Customer", address: "Counter Sale", gstin: "N/A", state_code: settings.state_code };
             const company = settings || { company_name: "MY STORE", address: "Setup Settings!", gstin: "", state_code: "00" };
-
-            // 2. IGST Logic (Inter-state Check)
             const isIGST = (company.state_code && party.state_code) && (company.state_code !== party.state_code);
-            const taxLabel1 = isIGST ? "IGST Rate" : "CGST Rate";
-            const taxLabel2 = isIGST ? "IGST Amt" : "SGST Rate";
-            
-            // 3. Totals
             const totalTax = items.reduce((sum, c) => sum + (c.qty*c.rate*(1-c.dis/100)*(c.gst/100)), 0);
             const taxable = data.amount - totalTax;
+            const ship = parseFloat(document.getElementById('extraShip').value) || 0;
+            const pack = parseFloat(document.getElementById('extraPack').value) || 0;
 
-            // 4. Generate HTML
             const html = `
             <div style="border:1px solid #000; padding:10px; max-width:800px; margin:auto; font-family:Arial;">
                 <div style="text-align:center; font-weight:bold; font-size:18px; border-bottom:1px solid #000; padding-bottom:5px;">TAX INVOICE</div>
-                
                 <div style="display:flex; justify-content:space-between; margin-top:10px; font-size:12px;">
                     <div style="width:48%">
-                        <b>Details of Receiver (Billed to):</b><br>
-                        Name: <b>${party.name}</b><br>
-                        Addr: ${party.address || ''}<br>
-                        GSTIN: ${party.gstin || 'Unregistered'}<br>
-                        State Code: ${party.state_code || ''}
+                        <b>Billed To:</b><br>${party.name}<br>${party.address || ''}<br>GSTIN: ${party.gstin || 'N/A'}
                     </div>
                     <div style="width:48%; text-align:right;">
-                        <b>${company.company_name}</b><br>
-                        ${company.address}<br>
-                        GSTIN: ${company.gstin}<br>
-                        <b>Invoice No: ${data.voucher_no}</b><br>
-                        Date: ${data.date}
+                        <b>${company.company_name}</b><br>${company.address}<br>GSTIN: ${company.gstin}<br>
+                        <b>Inv No: ${data.voucher_no}</b><br>Date: ${data.date}
                     </div>
                 </div>
-
                 <table class="print-table" style="margin-top:15px; width:100%;">
-                    <thead>
-                        <tr style="background:#eee;">
-                            <th>S.No</th><th>Description</th><th>HSN</th><th>Qty</th><th>Rate</th><th>Disc</th><th>Taxable</th>
-                            <th>${isIGST ? 'IGST' : 'CGST'}</th>
-                            ${!isIGST ? '<th>SGST</th>' : ''}
-                            <th>Total</th>
-                        </tr>
-                    </thead>
+                    <thead><tr style="background:#eee;"><th>#</th><th>Item</th><th>Qty</th><th>Rate</th><th>Dis</th><th>Taxable</th><th>${isIGST?'IGST':'Tax'}</th><th>Total</th></tr></thead>
                     <tbody>
                         ${items.map((i, idx) => {
-                            const base = i.qty * i.rate;
-                            const val = base - (base * i.dis/100);
-                            const gstAmt = val * (i.gst/100);
-                            const final = val + gstAmt;
-                            return `
-                            <tr>
-                                <td>${idx+1}</td>
-                                <td>${i.name}</td>
-                                <td>${i.hsn}</td>
-                                <td>${i.qty} ${i.unit}</td>
-                                <td>${i.rate}</td>
-                                <td>${i.dis}%</td>
-                                <td>${val.toFixed(2)}</td>
-                                <td>${isIGST ? gstAmt.toFixed(2) : (gstAmt/2).toFixed(2)}</td>
-                                ${!isIGST ? `<td>${(gstAmt/2).toFixed(2)}</td>` : ''}
-                                <td>${final.toFixed(2)}</td>
-                            </tr>`;
+                            const base = i.qty*i.rate;
+                            const val = base-(base*i.dis/100);
+                            const gst = val*(i.gst/100);
+                            return `<tr><td>${idx+1}</td><td>${i.name}</td><td>${i.qty}</td><td>${i.rate}</td><td>${i.dis}%</td><td>${val.toFixed(2)}</td><td>${gst.toFixed(2)}</td><td>${(val+gst).toFixed(2)}</td></tr>`;
                         }).join('')}
                     </tbody>
                 </table>
-
-                <div style="display:flex; justify-content:flex-end; margin-top:10px;">
-                    <table style="border:1px solid #000; font-size:12px; font-weight:bold;">
-                        <tr><td style="padding:5px;">Taxable Value:</td><td style="padding:5px; text-align:right;">₹ ${taxable.toFixed(2)}</td></tr>
-                        <tr><td style="padding:5px;">Total Tax:</td><td style="padding:5px; text-align:right;">₹ ${totalTax.toFixed(2)}</td></tr>
-                        <tr style="background:#eee; font-size:14px;"><td style="padding:5px;">GRAND TOTAL:</td><td style="padding:5px; text-align:right;">₹ ${data.amount.toFixed(2)}</td></tr>
-                    </table>
+                <div style="text-align:right; margin-top:10px; font-weight:bold; font-size:14px;">
+                    ${ship>0?`Shipping: ₹${ship}<br>`:''}
+                    ${pack>0?`Packing: ₹${pack}<br>`:''}
+                    GRAND TOTAL: ₹${data.amount}
                 </div>
-
                 <div style="margin-top:20px; font-size:10px;">
-                    <b>Terms & Conditions:</b><br>
-                    1. Goods once sold will not be taken back.<br>
-                    2. Subject to ${(company.address || 'Local').split(',')[0]} Jurisdiction.
-                </div>
-                <div style="text-align:right; margin-top:40px; font-size:12px;">
-                    <b>For ${company.company_name}</b><br><br><br>Auth. Signatory
+                    <b>Remarks:</b> ${data.narration}<br>
+                    <b>Terms:</b> Goods once sold will not be taken back.
                 </div>
             </div>`;
-
             document.getElementById('printArea').innerHTML = html;
             window.print();
             setTimeout(() => location.reload(), 1000);
@@ -388,9 +393,8 @@
         // --- UTILS ---
         function loadCustomers() {
             const sel = document.getElementById('custSelect');
-            ledgers.sort((a,b)=>a.name.localeCompare(b.name)).forEach(l => {
-                sel.innerHTML += `<option value="${l.id}">${l.name}</option>`;
-            });
+            sel.innerHTML = '<option value="">Select Customer (Walk-in)</option>';
+            ledgers.sort((a,b)=>a.name.localeCompare(b.name)).forEach(l => { sel.innerHTML += `<option value="${l.id}">${l.name}</option>`; });
         }
         function loadPartyInfo() {
             const pid = document.getElementById('custSelect').value;
@@ -401,27 +405,31 @@
             const col = bal>0 ? 'red':'green';
             document.getElementById('partyStats').innerHTML = `<span class="stat-box" style="color:${col}">Bal: ₹${bal}</span>`;
         }
-       async function generateInvNo() {
-            // सारे वाउचर मंगवाओ
-            const allVouchers = await DB.getAll('vouchers');
-            
-            // सिर्फ Sales वाले वाउचर गिनो
-            const salesCount = allVouchers.filter(v => v.type === 'Sales').length;
-            
-            // गिनती में +1 जोड़ो, लेकिन साथ में रैंडम नंबर भी जोड़ो ताकि डुप्लीकेट न हो
-            // (Note: जब सॉफ्टवेयर फाइनल हो जाएगा तब रैंडम हटा देंगे)
-            const nextNo = salesCount + 1;
-            
-            // अब चेक करो कि क्या यह नंबर पहले से मौजूद है?
+        async function generateInvNo() {
+            const salesVouchers = vouchers.filter(v => v.type === 'Sales');
+            let nextNo = salesVouchers.length + 1;
             let newInv = `INV-${new Date().getFullYear()}-${nextNo}`;
-            let exists = allVouchers.find(v => v.voucher_no === newInv);
-            
-            // अगर मौजूद है, तो अगला नंबर ट्राई करो
-            if(exists) {
-                 newInv = `INV-${new Date().getFullYear()}-${nextNo + 1}`;
-            }
-
+            while(salesVouchers.find(v => v.voucher_no === newInv)) { nextNo++; newInv = `INV-${new Date().getFullYear()}-${nextNo}`; }
             document.getElementById('invNo').innerText = newInv;
+        }
+
+        // --- FEATURES ---
+        function holdBill() {
+            if(cart.length === 0) return alert("Nothing to hold!");
+            localStorage.setItem('heldBill', JSON.stringify({ cart, cust: document.getElementById('custSelect').value }));
+            cart=[]; renderCart(); alert("Bill Held!");
+        }
+        function recallBill() {
+            const data = JSON.parse(localStorage.getItem('heldBill'));
+            if(!data) return alert("No held bill!");
+            cart = data.cart; document.getElementById('custSelect').value = data.cust;
+            renderCart(); localStorage.removeItem('heldBill');
+        }
+        async function quickAddCust() {
+            const name = prompt("Name:"); if(!name) return;
+            const mobile = prompt("Mobile:") || "";
+            await DB.addLedger({name:name, phone:mobile, group:"Sundry Debtors", opening_balance:0, gstin:"", address:"Local"});
+            ledgers = await DB.getLedgers(); loadCustomers();
         }
         document.addEventListener('keydown', e => { if(e.ctrlKey && e.key==='Enter') openPaymentModal(); if(e.key==='F2') document.getElementById('searchBar').focus(); });
     </script>
