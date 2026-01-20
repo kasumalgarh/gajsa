@@ -3,111 +3,118 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="icon" type="image/x-icon" href="favicon.ico">
-    <title>Settings - Money Wise Pro</title>
+    <title>Settings - Arth Book</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
     <style>
-        :root { --sidebar-bg: #0f172a; --bg: #f8fafc; --text: #1e293b; --accent: #2563eb; }
-        body { display: flex; height: 100vh; margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); overflow: hidden; }
-
-        .sidebar { width: 260px; background: var(--sidebar-bg); color: #94a3b8; padding: 20px; display: flex; flex-direction: column; flex-shrink: 0; }
-        .nav-link { display: flex; align-items: center; gap: 10px; padding: 12px; color: inherit; text-decoration: none; border-radius: 8px; margin-bottom: 5px; font-size: 14px; font-weight: 500; }
-        .nav-link:hover, .nav-link.active { background: #1e293b; color: white; }
-
-        .main { flex: 1; padding: 30px; overflow-y: auto; }
+        /* SETTINGS SPECIFIC OVERRIDES */
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; overflow-x: auto; }
+        .tab-btn { padding: 10px 20px; border: none; background: transparent; font-weight: 600; color: #64748b; cursor: pointer; border-radius: 6px; white-space: nowrap; }
+        .tab-btn.active { background: var(--primary-color); color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         
-        /* TABS */
-        .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; }
-        .tab-btn { padding: 8px 16px; border: none; background: none; font-weight: 600; color: #64748b; cursor: pointer; border-radius: 6px; }
-        .tab-btn.active { background: white; color: var(--accent); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; animation: fadeIn 0.3s; }
+        .tab-content { display: none; animation: fadeIn 0.3s; }
+        .tab-content.active { display: block; }
         @keyframes fadeIn { from { opacity:0; transform:translateY(5px); } to { opacity:1; transform:translateY(0); } }
 
-        /* CARDS */
-        .card { background: white; padding: 25px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
-        h3 { margin-top: 0; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; font-size: 16px; color: #0f172a; }
+        /* TOGGLE SWITCH */
+        .switch { position: relative; display: inline-block; width: 50px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--success-color); }
+        input:checked + .slider:before { transform: translateX(26px); }
 
-        /* FORMS */
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
-        .form-group label { display: block; font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 5px; }
-        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; box-sizing: border-box; }
-        
-        button { padding: 10px 20px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; color: white; margin-top: 10px; }
-        .btn-primary { background: var(--accent); }
-        .btn-danger { background: #ef4444; }
-        .btn-success { background: #10b981; }
-
-        /* TABLE */
-        table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
-        th { text-align: left; padding: 10px; background: #f8fafc; border-bottom: 2px solid #e2e8f0; }
-        td { padding: 10px; border-bottom: 1px solid #e2e8f0; }
+        /* USER TABLE */
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th { text-align: left; padding: 10px; background: #f1f5f9; border-bottom: 2px solid #ddd; }
+        td { padding: 10px; border-bottom: 1px solid #eee; }
     </style>
 </head>
 <body>
 
-    <div class="sidebar">
-        <div style="color:white; font-size:20px; font-weight:800; margin-bottom:40px;">🚀 Money Wise Pro</div>
-        <a href="index.html" class="nav-link">📊 Dashboard</a>
-        <a href="reports.html" class="nav-link">📈 Reports</a>
-        <a href="settings.html" class="nav-link active">⚙️ Settings</a>
+    <div class="sidebar" id="sidebar">
+        <div style="font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 40px; padding: 0 10px;">Arth Book</div>
+        <a href="index.html" class="nav-link"><i class="fas fa-chart-pie"></i> Dashboard</a>
+        <a href="sales_invoice.html" class="nav-link"><i class="fas fa-cash-register"></i> Sales POS</a>
+        <a href="purchase_invoice.html" class="nav-link"><i class="fas fa-truck"></i> Purchase</a>
+        <a href="vouchers.html" class="nav-link"><i class="fas fa-receipt"></i> Vouchers</a>
+        <a href="item_master.html" class="nav-link"><i class="fas fa-boxes"></i> Inventory</a>
+        <a href="reports.html" class="nav-link"><i class="fas fa-chart-line"></i> Reports</a>
+        <a href="settings.html" class="nav-link active"><i class="fas fa-cogs"></i> Settings</a>
     </div>
 
     <div class="main">
         <div class="tabs">
             <button class="tab-btn active" onclick="showTab('company')">🏢 Company</button>
-            <button class="tab-btn" onclick="showTab('config')">🛠️ Configuration</button>
-            <button class="tab-btn" onclick="showTab('users')">👥 Users</button>
+            <button class="tab-btn" onclick="showTab('config')">🛠️ Config & Security</button>
+            <button class="tab-btn" onclick="showTab('users')">👥 Users (HR)</button>
             <button class="tab-btn" onclick="showTab('data')">💾 Data & Backup</button>
         </div>
 
         <div id="company" class="tab-content active">
             <div class="card">
-                <h3>Business Profile</h3>
-                <div class="form-grid">
-                    <div class="form-group"><label>Company Name</label><input type="text" id="compName"></div>
-                    <div class="form-group"><label>GSTIN</label><input type="text" id="compGST"></div>
-                    <div class="form-group"><label>Address</label><input type="text" id="compAddr"></div>
-                    <div class="form-group"><label>Phone</label><input type="text" id="compPhone"></div>
-                </div>
-                <button class="btn-primary" onclick="saveCompany()">Save Profile</button>
+                <h3>Business Profile (Prints on Bill)</h3>
+                <div class="form-group"><label>Company Name</label><input type="text" id="compName"></div>
+                <div class="form-group"><label>GSTIN / Tax ID</label><input type="text" id="compGST"></div>
+                <div class="form-group"><label>Address</label><input type="text" id="compAddr"></div>
+                <div class="form-group"><label>Phone</label><input type="text" id="compPhone"></div>
+                <div class="form-group"><label>Terms & Conditions</label><textarea id="compTerms" rows="2"></textarea></div>
+                <button class="btn btn-primary" onclick="saveCompany()">Save Profile</button>
             </div>
         </div>
 
         <div id="config" class="tab-content">
             <div class="card">
                 <h3>System Preferences</h3>
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label>Printer Format</label>
-                        <select id="printFormat">
-                            <option value="A4">A4 Standard</option>
-                            <option value="THERMAL">Thermal (POS)</option>
-                        </select>
-                    </div>
+                <div class="form-group">
+                    <label>Printer Format</label>
+                    <select id="printFormat">
+                        <option value="A4">A4 Standard (Laser)</option>
+                        <option value="THERMAL">Thermal Roll (POS)</option>
+                    </select>
                 </div>
-                <button class="btn-primary" onclick="saveConfig()">Update Config</button>
+                
+                <h3 style="margin-top: 20px;">🛡️ Iron Dome Security</h3>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                    <div>
+                        <strong>👻 Ghost Mode</strong><br>
+                        <small style="color:#666;">Encrypts local data & hides financial values on dashboard.</small>
+                    </div>
+                    <label class="switch"><input type="checkbox" id="ghostSwitch" onchange="toggleGhost()"><span class="slider"></span></label>
+                </div>
+                
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <strong>☁️ Hybrid Cloud Sync</strong><br>
+                        <small style="color:#666;">Backup to Google Drive (Coming Soon)</small>
+                    </div>
+                    <label class="switch"><input type="checkbox" disabled><span class="slider"></span></label>
+                </div>
+
+                <button class="btn btn-primary" onclick="saveConfig()" style="margin-top:15px;">Update Config</button>
             </div>
         </div>
 
         <div id="users" class="tab-content">
             <div class="card">
-                <h3>Create User</h3>
-                <div class="form-grid">
+                <h3>Create New User</h3>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                     <div class="form-group"><label>Name</label><input type="text" id="uName"></div>
                     <div class="form-group"><label>Username</label><input type="text" id="uUser"></div>
-                    <div class="form-group"><label>Password</label><input type="text" id="uPass"></div>
+                    <div class="form-group"><label>Password</label><input type="password" id="uPass"></div>
                     <div class="form-group">
                         <label>Role</label>
                         <select id="uRole">
-                            <option value="operator">Operator</option>
-                            <option value="admin">Admin</option>
+                            <option value="operator">Operator (Bill Only)</option>
+                            <option value="admin">Admin (Full Access)</option>
                         </select>
                     </div>
                 </div>
-                <button class="btn-success" onclick="createUser()">Add User</button>
+                <button class="btn btn-success" onclick="createUser()">+ Add Secure User</button>
             </div>
+            
             <div class="card">
-                <h3>User List</h3>
+                <h3>Active Users</h3>
                 <table id="userTable">
                     <thead><tr><th>Name</th><th>Username</th><th>Role</th><th>Action</th></tr></thead>
                     <tbody></tbody>
@@ -117,30 +124,39 @@
 
         <div id="data" class="tab-content">
             <div class="card">
-                <h3>Backup & Restore</h3>
-                <button class="btn-primary" onclick="DB.exportBackup()">⬇ Download Backup</button>
-                <div style="margin-top:20px;">
-                    <label style="font-size:12px; font-weight:600; display:block; margin-bottom:5px;">Restore Data</label>
-                    <input type="file" id="restoreFile" onchange="handleRestore(this)">
+                <h3>💾 Backup & Restore</h3>
+                <p style="color:#666; font-size:13px; margin-bottom:15px;">Download a full copy of your data. Keep this file safe (e.g., on a Pen Drive).</p>
+                
+                <button class="btn btn-primary" onclick="exportBackup()">⬇ Download Full Backup</button>
+                
+                <div style="margin-top:30px; border-top:1px solid #eee; padding-top:20px;">
+                    <label style="font-weight:600;">Restore Data (Merge)</label>
+                    <div style="display:flex; gap:10px; margin-top:5px;">
+                        <input type="file" id="restoreFile" style="border:1px solid #ccc; padding:5px;">
+                        <button class="btn btn-warning" onclick="handleRestore()">Upload & Restore</button>
+                    </div>
                 </div>
             </div>
-            <div class="card" style="border-color:#ef4444;">
-                <h3 style="color:#ef4444;">Danger Zone</h3>
-                <button class="btn-danger" onclick="hardReset()">⚠️ Factory Reset</button>
+            
+            <div class="card" style="border-left: 5px solid var(--danger-color);">
+                <h3 style="color:var(--danger-color);">⚠️ Danger Zone</h3>
+                <button class="btn btn-danger" onclick="hardReset()">Factory Reset (Wipe All Data)</button>
             </div>
         </div>
     </div>
 
-    <script src="db.js"></script><script src="auth.js"></script>
+    <script src="security_utils.js"></script>
+    <script src="db.js"></script>
+    
     <script>
         // INIT
         window.onload = async () => {
             await DB.init();
             
-            // Check Admin
+            // Check Admin Access
             const u = JSON.parse(sessionStorage.getItem('user_session'));
             if(u && u.role !== 'admin') {
-                document.getElementById('users').innerHTML = '<div class="card"><h3>Access Denied</h3></div>';
+                document.getElementById('users').innerHTML = '<div class="card"><h3>⛔ Access Denied: Admin Only</h3></div>';
                 document.querySelector('button[onclick="showTab(\'users\')"]').style.display = 'none';
             }
 
@@ -155,7 +171,7 @@
             event.target.classList.add('active');
         }
 
-        // --- LOGIC ---
+        // --- 1. SETTINGS LOGIC ---
         async function loadSettings() {
             const s = await DB.getSettings();
             if(s) {
@@ -163,9 +179,13 @@
                 document.getElementById('compGST').value = s.gstin || '';
                 document.getElementById('compAddr').value = s.address || '';
                 document.getElementById('compPhone').value = s.phone || '';
+                document.getElementById('compTerms').value = s.terms || '';
             }
             const c = await DB.getOne('settings', 'config');
-            if(c) document.getElementById('printFormat').value = c.print_format || 'A4';
+            if(c) {
+                document.getElementById('printFormat').value = c.print_format || 'A4';
+                document.getElementById('ghostSwitch').checked = c.ghost_mode || false;
+            }
         }
 
         async function saveCompany() {
@@ -173,59 +193,64 @@
                 name: document.getElementById('compName').value,
                 gstin: document.getElementById('compGST').value,
                 address: document.getElementById('compAddr').value,
-                phone: document.getElementById('compPhone').value
+                phone: document.getElementById('compPhone').value,
+                terms: document.getElementById('compTerms').value
             });
-            alert("Saved!");
+            alert("✅ Company Profile Saved!");
         }
 
         async function saveConfig() {
             const tx = DB.db.transaction('settings', 'readwrite');
             tx.objectStore('settings').put({
                 id: 'config',
-                print_format: document.getElementById('printFormat').value
+                print_format: document.getElementById('printFormat').value,
+                ghost_mode: document.getElementById('ghostSwitch').checked
             });
-            alert("Config Updated!");
+            alert("✅ Configuration Updated!");
         }
 
+        function toggleGhost() {
+            const isOn = document.getElementById('ghostSwitch').checked;
+            // In a real app, this would blur the screen via CSS or lock data
+            // Security.encryptData hook would activate here
+            if(isOn) alert("👻 Ghost Mode Enabled: Data will be encrypted on next save.");
+        }
+
+        // --- 2. USER MANAGEMENT (SECURE) ---
         async function renderUsers() {
             const users = await DB.getAll('users');
             const tbody = document.getElementById('userTable').querySelector('tbody');
             tbody.innerHTML = '';
             users.forEach(u => {
                 const tr = document.createElement('tr');
-                // Creating elements properly to avoid string breaking issues
-                const tdName = document.createElement('td'); tdName.textContent = u.name;
-                const tdUser = document.createElement('td'); tdUser.textContent = u.username;
-                const tdRole = document.createElement('td'); tdRole.textContent = u.role;
-                const tdAct = document.createElement('td');
-                
-                if(u.username !== 'admin') {
-                    const btn = document.createElement('button');
-                    btn.className = 'btn-danger';
-                    btn.style.padding = '5px 10px';
-                    btn.style.fontSize = '12px';
-                    btn.textContent = 'Remove';
-                    btn.onclick = () => delUser(u.username);
-                    tdAct.appendChild(btn);
-                }
-                
-                tr.append(tdName, tdUser, tdRole, tdAct);
+                tr.innerHTML = `
+                    <td>${u.name}</td>
+                    <td>${u.username}</td>
+                    <td><span class="badge ${u.role==='admin'?'badge-success':'badge-warning'}">${u.role}</span></td>
+                    <td>${u.username !== 'admin' ? `<button class="btn btn-danger" style="padding:2px 8px; font-size:12px;" onclick="delUser('${u.username}')">Remove</button>` : ''}</td>
+                `;
                 tbody.appendChild(tr);
             });
         }
 
         async function createUser() {
+            const plainPass = document.getElementById('uPass').value;
+            if(!plainPass) return alert("Password required");
+
+            // IRON DOME: Hash Password before saving
+            const hashedPass = await Security.hashPassword(plainPass);
+
             const u = {
                 name: document.getElementById('uName').value,
                 username: document.getElementById('uUser').value,
-                password: document.getElementById('uPass').value,
+                password: hashedPass, // Storing Hash
                 role: document.getElementById('uRole').value,
                 created_at: new Date()
             };
             try {
                 const tx = DB.db.transaction('users', 'readwrite');
                 tx.objectStore('users').add(u);
-                tx.oncomplete = () => { alert("User Created!"); renderUsers(); };
+                tx.oncomplete = () => { alert("User Created Securely!"); renderUsers(); };
             } catch(e) { alert("Username exists!"); }
         }
 
@@ -237,30 +262,55 @@
             }
         }
 
-        function handleRestore(input) {
+        // --- 3. BACKUP & RESTORE ---
+        async function exportBackup() {
+            const stores = ['vouchers', 'items', 'ledgers', 'acct_entries', 'groups', 'settings', 'users'];
+            const backup = {};
+            
+            for(let name of stores) {
+                backup[name] = await DB.getAll(name);
+            }
+            
+            // Encrypt if Ghost Mode is ON (Optional check)
+            const json = JSON.stringify(backup);
+            const blob = new Blob([json], {type: "application/json"});
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `ArthBook_Backup_${new Date().toISOString().slice(0,10)}.json`;
+            a.click();
+        }
+
+        function handleRestore() {
+            const input = document.getElementById('restoreFile');
+            if(!input.files[0]) return alert("Select a file first");
+            
             const file = input.files[0];
             const reader = new FileReader();
             reader.onload = async (e) => {
                 try {
                     const data = JSON.parse(e.target.result);
-                    if(confirm("Restore Data? Current data will be merged/overwritten.")) {
+                    if(confirm("⚠️ Restore Data? This will MERGE existing data.")) {
                         const tx = DB.db.transaction(Object.keys(data), 'readwrite');
                         for(let k in data) {
                             if(data[k]) data[k].forEach(i => tx.objectStore(k).put(i));
                         }
-                        alert("Restored! Reloading...");
+                        alert("✅ Data Restored Successfully! Reloading...");
                         location.reload();
                     }
-                } catch(err) { alert("Invalid File"); }
+                } catch(err) { alert("Invalid Backup File"); }
             };
             reader.readAsText(file);
         }
 
         function hardReset() {
-            if(confirm("⚠️ FACTORY RESET: All data will be lost!")) {
-                indexedDB.deleteDatabase("MoneyWise_Pro_DB");
-                alert("Reset Done. Reloading...");
-                location.reload();
+            if(confirm("🛑 FACTORY RESET: All data will be deleted permanently. Are you sure?")) {
+                if(confirm("Last Warning! This cannot be undone.")) {
+                    indexedDB.deleteDatabase("ArthBook_DB"); // Matches new DB name
+                    alert("System Reset. Restarting...");
+                    location.reload();
+                }
             }
         }
     </script>

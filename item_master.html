@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="icon" type="image/x-icon" href="favicon.ico">
     <title>Money Wise Pro - Item Master</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
+
     <style>
         :root {
             --sidebar-bg: #0f172a; --active-text: #f8fafc;
@@ -61,14 +63,19 @@
         .btn-save { background: var(--accent); color: white; }
         .btn-new { background: #e2e8f0; color: var(--text); }
         .btn-del { background: #fee2e2; color: var(--red); float: right; }
+        .btn-gen { background: var(--primary); color: white; font-size: 11px; padding: 5px 10px; border-radius: 4px; cursor: pointer; border: none; }
 
         #toast { position: fixed; top: 20px; right: 20px; background: var(--accent); color: white; padding: 12px 24px; border-radius: 6px; display: none; font-weight: 600; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        
+        /* BARCODE PREVIEW */
+        .barcode-area { grid-column: span 3; display: none; text-align: center; background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px dashed #ccc; margin-top: 10px; }
+        canvas { max-width: 100%; height: 60px; }
     </style>
 </head>
 <body>
 
     <div class="sidebar">
-        <div style="font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 40px;">🚀 MoneyWise Pro</div>
+        <div style="font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 40px;">🚀 Arth Book</div>
         <a href="index.html" class="nav-link"><span class="nav-icon">📊</span> Dashboard</a>
         <a href="reports.html" class="nav-link"><span class="nav-icon">📈</span> Reports</a>
         <a href="gst_filing.html" class="nav-link"><span class="nav-icon">🏛️</span> GST Filing</a>
@@ -100,7 +107,7 @@
 
         <div class="form-panel">
             <div class="form-header">
-                <span>Product Details</span>
+                <span>Product Master</span>
                 <button class="btn btn-new" onclick="resetForm()">+ New Product</button>
             </div>
             <input type="hidden" id="itemId">
@@ -111,8 +118,16 @@
                     <input type="text" id="name" placeholder="Product Name" required>
                 </div>
                 <div class="field">
-                    <label>SKU / Code</label>
-                    <input type="text" id="sku" placeholder="e.g. 1001">
+                    <label style="display:flex; justify-content:space-between;">
+                        SKU / Barcode
+                        <button class="btn-gen" onclick="generateSKU()">⚡ Auto</button>
+                    </label>
+                    <input type="text" id="sku" placeholder="Scan or Click Auto" onchange="previewBarcode(this.value)">
+                </div>
+
+                <div id="barcodePreview" class="barcode-area">
+                    <canvas id="barcodeCanvas"></canvas>
+                    <div><button class="btn-gen" onclick="printBarcode()">🖨️ Print Label</button></div>
                 </div>
 
                 <div class="field">
@@ -125,6 +140,7 @@
                     <select id="unit">
                         <option value="Pcs">Pcs</option><option value="Kg">Kg</option>
                         <option value="Box">Box</option><option value="Mtr">Mtr</option>
+                        <option value="Ltr">Ltr</option>
                     </select>
                 </div>
                 <div class="field">
@@ -141,27 +157,35 @@
                     <input type="text" id="hsn" placeholder="e.g. 8544">
                 </div>
                 <div class="field">
-                    <label>Std Cost (Buy Rate)</label>
+                    <label>Std Cost (Buy)</label>
                     <input type="number" id="stdCost" step="0.01" value="0">
                 </div>
                 <div class="field">
-                    <label>Std Price (Sell Rate)</label>
+                    <label>Std Price (Sell)</label>
                     <input type="number" id="stdPrice" step="0.01" value="0">
                 </div>
 
                 <div class="field full-width" style="background:#f0f9ff; padding:15px; border-radius:8px; border:1px solid #bae6fd; margin-top:10px;">
-                    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:15px;">
+                    <h4 style="margin-bottom:10px; color:#0284c7;">Opening Stock & Tracking</h4>
+                    <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:15px;">
                         <div>
-                            <label style="color:#0284c7;">Opening Qty</label>
-                            <input type="number" id="opQty" value="0">
+                            <label>Opening Qty</label>
+                            <input type="number" id="opQty" value="0" onchange="toggleBatchFields()">
                         </div>
                         <div>
-                            <label style="color:#0284c7;">Reorder Level</label>
+                            <label>Reorder Level</label>
                             <input type="number" id="reorder" value="5">
                         </div>
                         <div>
-                            <label style="color:#0284c7;">Current Stock</label>
-                            <input type="text" id="currentStock" readonly style="background:#fff; font-weight:bold; color:var(--green);">
+                            <label>Track Expiry?</label>
+                            <select id="trackExpiry" onchange="toggleBatchFields()">
+                                <option value="No">No</option>
+                                <option value="Yes">Yes</option>
+                            </select>
+                        </div>
+                        <div id="batchField" style="display:none;">
+                            <label>Expiry Date</label>
+                            <input type="date" id="expiryDate">
                         </div>
                     </div>
                 </div>
@@ -192,6 +216,48 @@
             cats.forEach(c => { let op = document.createElement('option'); op.value = c; dl.appendChild(op); });
         };
 
+        function toggleBatchFields() {
+            const qty = parseFloat(document.getElementById('opQty').value) || 0;
+            const track = document.getElementById('trackExpiry').value === 'Yes';
+            
+            if(track && qty > 0) {
+                document.getElementById('batchField').style.display = 'block';
+            } else {
+                document.getElementById('batchField').style.display = 'none';
+            }
+        }
+
+        function generateSKU() {
+            const rnd = Math.floor(10000000 + Math.random() * 90000000); // 8 digit EAN-8 style
+            document.getElementById('sku').value = rnd;
+            previewBarcode(rnd);
+        }
+
+        function previewBarcode(val) {
+            if(!val) {
+                document.getElementById('barcodePreview').style.display = 'none';
+                return;
+            }
+            document.getElementById('barcodePreview').style.display = 'block';
+            try {
+                JsBarcode("#barcodeCanvas", val, {
+                    format: "CODE128",
+                    lineColor: "#000",
+                    width: 2,
+                    height: 40,
+                    displayValue: true
+                });
+            } catch(e) { console.log("Barcode Error", e); }
+        }
+
+        function printBarcode() {
+            const canvas = document.getElementById('barcodeCanvas');
+            const url = canvas.toDataURL();
+            const w = window.open('','','width=400,height=300');
+            w.document.write(`<img src="${url}" style="margin:20px;">`);
+            w.print();
+        }
+
         function filterList(mode) {
             filterMode = mode;
             document.querySelectorAll('.ftab').forEach(t => t.classList.remove('active'));
@@ -221,12 +287,14 @@
                 count++;
 
                 const isLow = stock <= (i.reorder_level || 5);
+                const isExp = i.track_expiry === 'Yes' ? '⏳' : '';
+                
                 const el = document.createElement('div');
                 el.className = `list-item ${isLow ? 'low-stock-alert' : ''}`;
                 el.onclick = () => loadItem(i);
                 el.innerHTML = `
                     <div class="item-info">
-                        <strong>${i.name}</strong>
+                        <strong>${i.name} ${isExp}</strong>
                         <span>${i.sku || '-'} • ${i.category || 'General'}</span>
                     </div>
                     <div>
@@ -253,7 +321,13 @@
             document.getElementById('stdPrice').value = i.std_price || 0;
             document.getElementById('opQty').value = i.op_qty || 0;
             document.getElementById('reorder').value = i.reorder_level || 5;
-            document.getElementById('currentStock').value = i.current_stock || 0;
+            document.getElementById('trackExpiry').value = i.track_expiry || 'No';
+            
+            // Set Expiry if exists
+            if(i.expiry_date) document.getElementById('expiryDate').value = i.expiry_date;
+            
+            toggleBatchFields();
+            if(i.sku) previewBarcode(i.sku);
             
             document.getElementById('delBtn').style.display = 'block';
         }
@@ -266,6 +340,10 @@
             document.getElementById('stdPrice').value = 0;
             document.getElementById('opQty').value = 0;
             document.getElementById('reorder').value = 5;
+            document.getElementById('trackExpiry').value = 'No';
+            document.getElementById('barcodePreview').style.display = 'none';
+            toggleBatchFields();
+            
             document.getElementById('delBtn').style.display = 'none';
             document.getElementById('name').focus();
         }
@@ -273,6 +351,11 @@
         async function saveItem() {
             const name = document.getElementById('name').value;
             if(!name) return alert("Name is required");
+            
+            // Auto Generate SKU if empty
+            if(!document.getElementById('sku').value) {
+                generateSKU();
+            }
 
             const data = {
                 name: name,
@@ -284,14 +367,20 @@
                 std_cost: parseFloat(document.getElementById('stdCost').value)||0,
                 std_price: parseFloat(document.getElementById('stdPrice').value)||0,
                 op_qty: parseFloat(document.getElementById('opQty').value)||0,
-                reorder_level: parseFloat(document.getElementById('reorder').value)||5
+                reorder_level: parseFloat(document.getElementById('reorder').value)||5,
+                track_expiry: document.getElementById('trackExpiry').value,
+                expiry_date: document.getElementById('expiryDate').value || null
             };
+            
+            // Update current stock based on Op Qty if New
+            // Note: In real app, changing Op Qty later is tricky, but for simplicity:
+            data.current_stock = data.op_qty; // Reset to Op Qty (User should use Purchase for adding more)
 
             const id = document.getElementById('itemId').value;
             if(id) data.id = parseInt(id);
 
             try {
-                await DB.createItem(data);
+                await DB.createItem(data); // db.js handles create/update
                 showToast();
                 resetForm();
                 renderList();

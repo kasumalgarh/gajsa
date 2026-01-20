@@ -2,270 +2,181 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="icon" type="image/x-icon" href="favicon.ico">
-    <title>Money Wise Pro - Executive Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arth Book - Executive Dashboard</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="style.css"> 
+    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        :root {
-            --sidebar-bg: #0f172a; --sidebar-text: #94a3b8; --active-text: #f8fafc;
-            --bg: #f8fafc; --card-bg: #ffffff;
-            --accent: #6366f1; --green: #10b981; --red: #ef4444; --orange: #f59e0b;
-            --text: #1e293b; --border: #e2e8f0; --muted: #64748b;
-        }
-        * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
-        body { display: flex; height: 100vh; background: var(--bg); color: var(--text); overflow: hidden; }
-
-        /* --- LOGIN OVERLAY (NEW ADDITION) --- */
-        #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0f172a; z-index: 9999; display: flex; align-items: center; justify-content: center; color: white; }
-        .login-box { text-align: center; width: 320px; background: rgba(255,255,255,0.1); padding: 40px; border-radius: 16px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
-        .login-box h2 { margin-top: 10px; font-weight: 800; }
-        .login-box input { width: 100%; padding: 12px; border-radius: 8px; border: none; margin-top: 20px; font-size: 16px; text-align: center; outline: none; }
-        .login-box button { width: 100%; padding: 12px; margin-top: 15px; background: var(--accent); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        .login-box button:hover { background: #4f46e5; }
-
-        /* SIDEBAR */
-        .sidebar { width: 260px; background: var(--sidebar-bg); padding: 20px; display: flex; flex-direction: column; flex-shrink: 0; }
-        .brand { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 40px; display: flex; align-items: center; gap: 10px; }
-        .nav-link { padding: 12px 15px; margin-bottom: 5px; border-radius: 8px; color: var(--sidebar-text); text-decoration: none; font-weight: 500; display: flex; align-items: center; gap: 12px; transition: 0.2s; font-size: 14px; }
-        .nav-link:hover, .nav-link.active { background: #1e293b; color: var(--active-text); }
-        .nav-icon { font-size: 18px; }
-        
-        /* MAIN CONTENT */
-        .main { flex: 1; overflow-y: auto; padding: 30px; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-        .page-title { font-size: 24px; font-weight: 800; color: #0f172a; letter-spacing: -0.5px; }
-        .date-badge { font-size: 13px; color: var(--muted); font-weight: 500; margin-top: 4px; }
-        
-        .refresh-btn { background: #fff; border: 1px solid #cbd5e1; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; color: #475569; display: flex; align-items: center; gap: 8px; transition: 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
-        .refresh-btn:hover:not(:disabled) { background: #f8fafc; border-color: var(--accent); color: var(--accent); }
-        .refresh-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-        .spin { animation: spin 1s linear infinite; }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-
-        /* SEARCH SECTION */
-        .search-container { margin-bottom: 30px; background: white; padding: 20px; border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .search-box { display: flex; gap: 10px; }
-        .search-input { flex: 1; padding: 12px; border: 2px solid var(--border); border-radius: 8px; outline: none; font-size: 14px; transition: 0.2s; }
-        .search-input:focus { border-color: var(--accent); }
-        .search-btn { padding: 0 25px; background: var(--accent); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; }
-        
-        .result-table { width: 100%; border-collapse: collapse; margin-top: 15px; display: none; }
-        .result-table th { text-align: left; padding: 10px; background: #f8fafc; color: var(--muted); font-size: 12px; }
-        .result-table td { padding: 10px; border-bottom: 1px solid var(--border); font-size: 13px; }
-        .btn-open { padding: 4px 10px; background: #e0e7ff; color: var(--accent); border-radius: 4px; border: none; font-weight: 600; cursor: pointer; font-size: 11px; }
-
-        /* METRICS GRID */
-        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 30px; }
-        .card { background: var(--card-bg); padding: 24px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: 1px solid var(--border); display: flex; flex-direction: column; transition: transform 0.2s; }
-        .card:hover { transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
-        .card-head { font-size: 12px; font-weight: 600; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; display: flex; justify-content: space-between; }
-        .card-val { font-size: 26px; font-weight: 700; color: #0f172a; margin-bottom: 4px; letter-spacing: -0.5px; }
-        .card-sub { font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 6px; color: var(--muted); }
-        
-        .trend-badge { padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
-        .bg-green { background: #dcfce7; color: #166534; }
-        .bg-red { background: #fee2e2; color: #991b1b; }
-        .bg-orange { background: #ffedd5; color: #9a3412; }
-        .bg-blue { background: #dbeafe; color: #1e40af; }
-
-        /* PANELS */
-        .split-view { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 30px; }
-        .panel { background: #fff; border-radius: 12px; padding: 20px; border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.05); height: 100%; display: flex; flex-direction: column; position: relative; }
-        .panel-head { font-weight: 700; font-size: 15px; margin-bottom: 20px; color: #0f172a; display: flex; justify-content: space-between; align-items: center; }
-        
-        /* LISTS */
-        .table-wrap { flex: 1; overflow-y: auto; }
-        .row-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
-        .row-item:last-child { border-bottom: none; }
-        .party-name { font-weight: 600; color: #334155; }
-        .txn-meta { font-size: 11px; color: #94a3b8; margin-top: 2px; }
-        .amt-pos { color: var(--green); font-weight: 700; }
-        .amt-neg { color: var(--red); font-weight: 700; }
-        
-        /* ALERTS */
-        .alert-item { display: flex; align-items: center; justify-content: space-between; padding: 12px; background: #fff1f2; border-radius: 8px; margin-bottom: 8px; border-left: 4px solid var(--red); cursor: pointer; transition: 0.2s; }
-        .alert-item:hover { background: #ffe4e6; }
-        .alert-item.warning { background: #fff7ed; border-left-color: var(--orange); }
-        .alert-text { font-size: 13px; font-weight: 600; }
-        .alert-sub { font-size: 11px; color: var(--muted); }
-        
-        /* EMPTY STATES */
-        .empty-state { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 13px; }
-        .empty-icon { font-size: 24px; margin-bottom: 10px; display: block; opacity: 0.5; }
-        .no-data-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: var(--muted); font-size: 14px; text-align: center; background: rgba(255,255,255,0.9); padding: 12px 20px; border-radius: 8px; z-index: 10; }
-        
-        /* FAB */
-        .fab-group { position: fixed; bottom: 30px; right: 30px; display: flex; gap: 12px; z-index: 100; }
-        .fab { width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); cursor: pointer; text-decoration: none; transition: all 0.2s; }
-        .fab:hover { transform: translateY(-4px); box-shadow: 0 6px 16px rgba(0,0,0,0.25); }
-        .f-sale { background: var(--accent); }
-        .f-pur { background: var(--green); }
-        
-        @media(max-width: 1024px) { .metrics-grid { grid-template-columns: repeat(2, 1fr); } .split-view { grid-template-columns: 1fr; } }
-    </style>
+    <link rel="manifest" href="manifest.json">
 </head>
 <body>
 
-    <div id="loginOverlay">
-        <div class="login-box">
-            <div style="font-size: 40px;">🚀</div>
-            <h2>Money Wise Pro</h2>
-            <p style="color:rgba(255,255,255,0.7); font-size:12px;">Secure Enterprise Login</p>
+    <div id="loginOverlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #002171; z-index: 9999; display: flex; align-items: center; justify-content: center; color: white;">
+        <div class="card" style="width: 350px; text-align: center; border-top: 5px solid var(--accent-color);">
+            <div style="font-size: 50px; margin-bottom: 10px;">🛡️</div>
+            <h2 style="color: var(--primary-color);">Arth Book</h2>
+            <p style="color: #666; font-size: 12px; margin-bottom: 20px;">Secure Business Operating System</p>
             <form onsubmit="handleLogin(event)">
-                <input type="text" id="username" placeholder="Username (admin)" required>
-                <input type="password" id="password" placeholder="PIN (123)" required>
-                <button type="submit">Unlock System</button>
+                <div class="form-group">
+                    <input type="text" id="username" placeholder="Username (admin)" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="password" placeholder="Password" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Unlock Device</button>
             </form>
+            <div style="margin-top: 15px; font-size: 10px; color: #999;">
+                Device ID: <span id="displayMachineID">Checking...</span>
+            </div>
         </div>
     </div>
 
-    <div class="sidebar">
-        <div class="brand">🚀 MoneyWise Pro</div>
-        <a href="index.html" class="nav-link active"><span class="nav-icon">📊</span> Dashboard</a>
-        <a href="reports.html" class="nav-link"><span class="nav-icon">📈</span> Reports</a>
-        <a href="gst_filing.html" class="nav-link"><span class="nav-icon">🏛️</span> GST Filing</a>
-        <a href="taxation.html" class="nav-link"><span class="nav-icon">📋</span> Taxation (ITR)</a> <a href="sales_invoice.html" class="nav-link"><span class="nav-icon">🧾</span> Sales Invoice</a>
-        <a href="purchase_invoice.html" class="nav-link"><span class="nav-icon">🚚</span> Purchase Entry</a>
-        <a href="vouchers.html" class="nav-link"><span class="nav-icon">💸</span> Vouchers (JV)</a>
-        <a href="item_master.html" class="nav-link"><span class="nav-icon">📦</span> Inventory</a>
-        <a href="moneywise.html" class="nav-link"><span class="nav-icon">👥</span> Parties / Ledgers</a>
-        <a href="coa.html" class="nav-link"><span class="nav-icon">🗂️</span> Chart of Accounts</a>
-        <a href="settings.html" class="nav-link"><span class="nav-icon">⚙️</span> Settings</a>
-        
-        <a href="#" onclick="logout()" class="nav-link" style="margin-top:auto; color:#ef4444;"><span class="nav-icon">🚪</span> Logout</a> </div>
+    <header>
+        <div class="brand-logo">
+            <span class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></span>
+            <span><i class="fas fa-book"></i> Arth Book</span>
+        </div>
+        <div class="user-menu">
+            <span id="todayDate" style="font-size: 0.8rem; margin-right: 10px;">...</span>
+            <button class="btn btn-warning" onclick="logout()" style="padding: 5px 10px; font-size: 0.8rem;">
+                <i class="fas fa-power-off"></i>
+            </button>
+        </div>
+    </header>
 
-    <div class="main">
-        <div class="header">
-            <div>
-                <div class="page-title">Executive Overview</div>
-                <div class="date-badge" id="todayDate">...</div>
-            </div>
-            <button class="refresh-btn" id="refreshBtn" onclick="refreshDashboard()">
-                <span id="spinIcon">🔄</span> <span id="refreshText">Refresh Data</span>
+    <div class="sidebar" id="sidebar">
+        <ul class="nav-links">
+            <li><a href="index.html" class="active"><i class="fas fa-chart-pie"></i> Dashboard</a></li>
+            <li><a href="sales_invoice.html"><i class="fas fa-file-invoice"></i> Sales Invoice</a></li>
+            <li><a href="purchase_invoice.html"><i class="fas fa-truck"></i> Purchase Entry</a></li>
+            <li><a href="vouchers.html"><i class="fas fa-receipt"></i> Vouchers (JV)</a></li>
+            <li><a href="item_master.html"><i class="fas fa-boxes"></i> Inventory & Stock</a></li>
+            <li><a href="moneywise.html"><i class="fas fa-users"></i> Parties (Ledgers)</a></li>
+            <li><a href="reports.html"><i class="fas fa-chart-line"></i> Smart Reports</a></li>
+            <hr style="margin: 10px 0; border: 0; border-top: 1px solid #ddd;">
+            <li><a href="gst_filing.html"><i class="fas fa-university"></i> GST Filing</a></li>
+            <li><a href="taxation.html"><i class="fas fa-calculator"></i> Global Tax / ITR</a></li>
+            <li><a href="settings.html"><i class="fas fa-cogs"></i> Settings</a></li>
+        </ul>
+    </div>
+
+    <main>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 style="color: var(--primary-color);">Executive Overview</h2>
+            <button class="btn btn-primary" id="refreshBtn" onclick="refreshDashboard()">
+                <i class="fas fa-sync-alt" id="spinIcon"></i> Refresh
             </button>
         </div>
 
-        <div class="search-container">
-            <h4 style="margin:0 0 15px 0;">🔍 Universal Voucher Search</h4>
-            <div class="search-box">
-                <input type="text" class="search-input" id="univSearch" placeholder="Type Invoice No (e.g. INV-2026), Date, or Amount..." onkeyup="if(event.key==='Enter') searchVouchers()">
-                <button class="search-btn" onclick="searchVouchers()">Find</button>
+        <div class="card" style="margin-bottom: 20px; padding: 15px;">
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="univSearch" placeholder="🔍 Search Bill No, Party Name, or Amount..." onkeyup="if(event.key==='Enter') searchVouchers()">
+                <button class="btn btn-primary" onclick="searchVouchers()">Find</button>
             </div>
-            <table class="result-table" id="searchTable">
-                <thead><tr><th>Date</th><th>Type</th><th>Voucher #</th><th>Amount</th><th>Action</th></tr></thead>
-                <tbody id="searchBody"></tbody>
-            </table>
-            <div id="noResult" style="display:none; padding:10px; text-align:center; color:#64748b;">No vouchers found.</div>
+            <div class="table-container" id="searchTable" style="display: none; margin-top: 15px;">
+                <table>
+                    <thead><tr><th>Date</th><th>Type</th><th>Voucher #</th><th>Amount</th><th>Action</th></tr></thead>
+                    <tbody id="searchBody"></tbody>
+                </table>
+            </div>
+            <div id="noResult" style="display:none; padding:10px; text-align:center; color:#666;">No records found.</div>
         </div>
 
-        <div class="metrics-grid">
-            <div class="card">
-                <div class="card-head">
-                    <span>Gross Profit</span>
-                    <span class="trend-badge bg-green">Performance</span>
-                </div>
-                <div class="card-val" id="grossProfit">₹ 0</div>
-                <div class="card-sub">Sales - COGS</div>
+        <div class="dashboard-grid">
+            <div class="card green-edge">
+                <h3>Gross Profit</h3>
+                <div class="value" id="grossProfit">₹ 0</div>
+                <div style="font-size: 0.8rem; color: #666;">Sales - Cost of Goods</div>
             </div>
-            <div class="card">
-                <div class="card-head">
-                    <span>Cash In Hand</span>
-                    <span class="trend-badge bg-blue">Liquid</span>
-                </div>
-                <div class="card-val" id="cashBal">₹ 0</div>
-                <div class="card-sub" id="cashStatus">Drawer Balance</div>
+            
+            <div class="card gold-edge">
+                <h3>Cash In Hand</h3>
+                <div class="value" id="cashBal">₹ 0</div>
+                <div style="font-size: 0.8rem; color: #666;" id="cashStatus">Drawer Balance</div>
             </div>
-            <div class="card">
-                <div class="card-head">
-                    <span>Receivables</span>
-                    <span class="trend-badge bg-orange">Asset</span>
-                </div>
-                <div class="card-val" id="receivables">₹ 0</div>
-                <div class="card-sub" id="debtorsCount">0 Pending</div>
+
+            <div class="card blue-edge">
+                <h3>Receivables (Lena)</h3>
+                <div class="value" id="receivables">₹ 0</div>
+                <div style="font-size: 0.8rem; color: #666;" id="debtorsCount">0 Customers Pending</div>
             </div>
-            <div class="card">
-                <div class="card-head">
-                    <span>Payables</span>
-                    <span class="trend-badge bg-red">Liability</span>
-                </div>
-                <div class="card-val" id="payables">₹ 0</div>
-                <div class="card-sub">Due to Suppliers</div>
-            </div>
-            <div class="card">
-                <div class="card-head">
-                    <span>Net GST</span>
-                    <span class="trend-badge bg-blue">Tax</span>
-                </div>
-                <div class="card-val" id="gstNet">₹ 0</div>
-                <div class="card-sub" id="gstStatus">...</div>
+
+            <div class="card red-edge">
+                <h3>Payables (Dena)</h3>
+                <div class="value" id="payables">₹ 0</div>
+                <div style="font-size: 0.8rem; color: #666;">Due to Suppliers</div>
             </div>
         </div>
 
-        <div class="split-view">
-            <div class="panel">
-                <div class="panel-head">
-                    <span>Sales Performance</span>
-                    <span style="font-size:12px; font-weight:500; color:var(--muted);">Last 6 Months</span>
-                </div>
-                <div style="position: relative; height: 300px; width:100%" id="salesChartWrapper">
+        <div class="dashboard-grid" style="grid-template-columns: 2fr 1fr;">
+            <div class="card">
+                <h3>Sales Trends (6 Months)</h3>
+                <div style="position: relative; height: 250px;">
                     <canvas id="salesChart"></canvas>
                 </div>
             </div>
-            <div class="panel">
-                <div class="panel-head">GST Composition</div>
-                <div id="gstChartContainer" style="position: relative; height: 200px; display:flex; justify-content:center;">
+            <div class="card">
+                <h3>Tax Liability (GST)</h3>
+                <div style="position: relative; height: 200px;">
                     <canvas id="gstChart"></canvas>
                 </div>
-                <div id="gstLegend" style="margin-top:20px; font-size:13px;">
-                    <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #f1f5f9;">
-                        <span style="color:var(--muted)">Input Credit (Asset):</span>
-                        <span style="font-weight:700; color:var(--green);" id="inTax">₹ 0</span>
+                <div style="margin-top: 10px; font-size: 0.9rem;">
+                    <div style="display:flex; justify-content:space-between; color: var(--success-color);">
+                        <span>Input (Credit):</span> <span id="inTax" style="font-weight:bold;">₹ 0</span>
                     </div>
-                    <div style="display:flex; justify-content:space-between; padding:8px 0;">
-                        <span style="color:var(--muted)">Output Liability (Pay):</span>
-                        <span style="font-weight:700; color:var(--red);" id="outTax">₹ 0</span>
+                    <div style="display:flex; justify-content:space-between; color: var(--danger-color); margin-top: 5px;">
+                        <span>Output (Pay):</span> <span id="outTax" style="font-weight:bold;">₹ 0</span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="split-view">
-            <div class="panel" style="height:400px;">
-                <div class="panel-head">
-                    <span>Recent Transactions</span>
-                    <a href="sales_invoice.html" style="font-size:12px; color:var(--accent); text-decoration:none;">+ New Invoice</a>
-                </div>
-                <div class="table-wrap" id="recentTxn">
-                    <div class="empty-state" style="padding:20px;">Loading...</div>
+        <div class="dashboard-grid" style="grid-template-columns: 1fr 1fr;">
+            <div class="card">
+                <h3>Recent Transactions</h3>
+                <div id="recentTxn" style="margin-top: 10px;">
+                    <div class="text-center" style="color: #999;">Loading...</div>
                 </div>
             </div>
-            <div class="panel" style="height:400px;">
-                <div class="panel-head">
-                    <span>⚠️ Action Needed</span>
-                </div>
-                <div class="table-wrap" id="alertsList">
-                    <div class="empty-state" style="padding:20px;">
-                        <span class="empty-icon">✨</span>
-                        All systems operational.
-                    </div>
+
+            <div class="card">
+                <h3>⚠️ Action Needed</h3>
+                <div id="alertsList" style="margin-top: 10px;">
+                    <div class="text-center" style="color: #999;">All systems healthy.</div>
                 </div>
             </div>
         </div>
-    </div>
-    <div class="fab-group">
-        <a href="sales_invoice.html" class="fab f-sale" title="New Sale">＋</a>
-        <a href="purchase_invoice.html" class="fab f-pur" title="Purchase">🚚</a>
-    </div>
+    </main>
 
-    <script src="db.js"></script>
+    <a href="sales_invoice.html" class="fab-add" title="New Sale">
+        <i class="fas fa-plus"></i>
+    </a>
+
+    <script src="security_utils.js"></script> <script src="db.js"></script> 
+    <script src="ai_engine.js"></script>
+    <script src="tally_bridge.js"></script>
     <script>
-        document.getElementById('todayDate').innerText = new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-        let globalVouchers = []; 
+        // --- UI LOGIC ---
+        document.getElementById('todayDate').innerText = new Date().toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' });
 
-        // 1. AUTH LOGIC
+        function toggleSidebar() {
+            document.querySelector('.sidebar').classList.toggle('active');
+        }
+
+        // --- AUTH & SECURITY LOGIC ---
+        
+        // Show Device ID on Login Screen
+        window.onload = async () => {
+            if(window.Security) {
+                const devID = await Security.getMachineID();
+                document.getElementById('displayMachineID').innerText = devID;
+            }
+        };
+
         if(sessionStorage.getItem('user_session')) {
             document.getElementById('loginOverlay').style.display = 'none';
             initDashboard();
@@ -275,73 +186,58 @@
             e.preventDefault();
             const u = document.getElementById('username').value;
             const p = document.getElementById('password').value;
+            
+            // 1. Initialize DB
             await DB.init();
+            
             try {
-                const user = await DB.login(u, p);
-                sessionStorage.setItem('user_session', JSON.stringify(user));
+                // 2. Hash Password (If using Security Utils)
+                // Note: For now, if your DB has "123", we use plain. 
+                // FUTURE: Change this line to: const hashedP = await Security.hashPassword(p);
+                // For this transition phase, we will try both (Legacy Support)
+                
+                try {
+                    await DB.login(u, p); // Try Plain
+                } catch (err) {
+                    // Try Hashed (Future Proofing)
+                    // const hashedP = await Security.hashPassword(p);
+                    // await DB.login(u, hashedP);
+                    throw err; // Throw if plain fails for now
+                }
+
                 document.getElementById('loginOverlay').style.display = 'none';
                 initDashboard();
-            } catch(err) { alert("Invalid Credentials"); }
+            } catch(err) { 
+                alert("Invalid Credentials or Device Mismatch!"); 
+            }
         }
 
         function logout() {
-            if(confirm("Logout?")) {
+            if(confirm("Secure Logout?")) {
                 sessionStorage.removeItem('user_session');
                 location.reload();
             }
         }
+
+        // --- DASHBOARD DATA LOGIC (PRESERVED FROM OLD CODE) ---
+        let globalVouchers = []; 
 
         async function initDashboard() {
             try { await DB.init(); runAnalytics(); }
             catch(e) { console.error(e); }
         }
 
-        // 2. SEARCH LOGIC
-        function searchVouchers() {
-            const query = document.getElementById('univSearch').value.toLowerCase().trim();
-            const table = document.getElementById('searchTable');
-            const tbody = document.getElementById('searchBody');
-            const noRes = document.getElementById('noResult');
-
-            if (!query) { table.style.display = 'none'; noRes.style.display = 'none'; return; }
-
-            const results = globalVouchers.filter(v => v.voucher_no.toLowerCase().includes(query) || v.date.includes(query) || v.amount.toString().includes(query));
-            tbody.innerHTML = '';
-            
-            if (results.length > 0) {
-                table.style.display = 'table';
-                noRes.style.display = 'none';
-                results.sort((a,b) => b.id - a.id).forEach(v => {
-                    const tr = document.createElement('tr');
-                    let targetPage = 'vouchers.html';
-                    if(v.type === 'Sales') targetPage = 'sales_invoice.html';
-                    if(v.type === 'Purchase') targetPage = 'purchase_invoice.html';
-                    tr.innerHTML = `<td>${v.date}</td><td><span style="padding:2px 6px; border-radius:4px; background:#f3f4f6; font-size:11px; font-weight:700;">${v.type}</span></td><td style="font-weight:600;">${v.voucher_no}</td><td>₹${v.amount}</td><td><button class="btn-open" onclick="window.location.href='${targetPage}?id=${v.id}'">📂 Open</button></td>`;
-                    tbody.appendChild(tr);
-                });
-            } else {
-                table.style.display = 'none';
-                noRes.style.display = 'block';
-            }
-        }
-
-        // 3. REFRESH LOGIC
-        async function refreshDashboard() {
-            const btn = document.getElementById('refreshBtn');
-            const spin = document.getElementById('spinIcon');
-            const txt = document.getElementById('refreshText');
-            btn.disabled = true;
-            spin.classList.add('spin');
-            txt.innerText = 'Refreshing...';
-            await runAnalytics();
-            setTimeout(() => { spin.classList.remove('spin'); txt.innerText = 'Refresh Data'; btn.disabled = false; }, 800);
-        }
-
-        // 4. CORE ANALYTICS
         async function runAnalytics() {
+            // Using DB transactions to fetch data
             const tx = DB.db.transaction(['vouchers', 'items', 'ledgers', 'acct_entries', 'groups'], 'readonly');
+            
+            // Optimisation: In future use DB.getPaginated for lists, but getAll is fine for totals for now.
             const [vouchers, items, ledgers, entries, groups] = await Promise.all([
-                getAll(tx.objectStore('vouchers')), getAll(tx.objectStore('items')), getAll(tx.objectStore('ledgers')), getAll(tx.objectStore('acct_entries')), getAll(tx.objectStore('groups'))
+                getAll(tx.objectStore('vouchers')), 
+                getAll(tx.objectStore('items')), 
+                getAll(tx.objectStore('ledgers')), 
+                getAll(tx.objectStore('acct_entries')), 
+                getAll(tx.objectStore('groups'))
             ]);
 
             globalVouchers = vouchers;
@@ -356,14 +252,15 @@
                 if (v.type === 'Purchase') totalPur += v.amount || 0;
             });
 
-            // Gross Profit
+            // Gross Profit Logic
             let openingStockVal = items.reduce((sum, i) => sum + (parseFloat(i.op_value) || (parseFloat(i.op_qty || 0) * parseFloat(i.std_cost || 0))), 0);
             let closingStockVal = items.reduce((sum, i) => sum + ((i.current_stock || 0) * (i.std_cost || 0)), 0);
             let cogs = openingStockVal + totalPur - closingStockVal;
             let profit = totalSales - cogs;
+            
             const pEl = document.getElementById('grossProfit');
             pEl.innerText = fmt(profit);
-            pEl.style.color = profit >= 0 ? 'var(--green)' : 'var(--red)';
+            pEl.style.color = profit >= 0 ? 'var(--success-color)' : 'var(--danger-color)';
 
             // Cash & Bank
             const cashGrpId = groups.find(g => g.name === "Cash-in-Hand")?.id;
@@ -371,7 +268,7 @@
             ledgers.filter(l => l.group_id === cashGrpId).forEach(l => { cashTotal += (l.opening_balance || 0) + (balances[l.id] || 0); });
             const cEl = document.getElementById('cashBal');
             cEl.innerText = fmt(cashTotal);
-            if (cashTotal < 0) { cEl.style.color = 'var(--red)'; document.getElementById('cashStatus').innerText = "⚠️ Negative Balance!"; }
+            if (cashTotal < 0) { cEl.style.color = 'var(--danger-color)'; document.getElementById('cashStatus').innerText = "⚠️ Negative Balance!"; }
             else { document.getElementById('cashStatus').innerText = "Drawer Balance"; }
 
             // Receivables & Payables
@@ -382,7 +279,7 @@
                 if (bal > 0) { receivables += bal; debtCount++; }
             });
             document.getElementById('receivables').innerText = fmt(receivables);
-            document.getElementById('debtorsCount').innerText = `${debtCount} Customers`;
+            document.getElementById('debtorsCount').innerText = `${debtCount} Pending`;
 
             const credGrpId = groups.find(g => g.name === "Sundry Creditors")?.id;
             let payables = 0;
@@ -392,7 +289,7 @@
             });
             document.getElementById('payables').innerText = fmt(payables);
 
-            // GST
+            // GST Calculations
             const taxGrpId = groups.find(g => g.name === "Duties & Taxes")?.id;
             let inTax = 0, outTax = 0;
             if (taxGrpId) {
@@ -403,98 +300,135 @@
             }
             document.getElementById('inTax').innerText = fmt(inTax);
             document.getElementById('outTax').innerText = fmt(outTax);
-            let netGst = outTax - inTax;
-            const gstEl = document.getElementById('gstNet');
-            if (netGst > 0) { gstEl.innerText = fmt(netGst); gstEl.style.color = 'var(--red)'; document.getElementById('gstStatus').innerText = "Liability (To Pay)"; }
-            else { gstEl.innerText = fmt(Math.abs(netGst)); gstEl.style.color = 'var(--green)'; document.getElementById('gstStatus').innerText = "Credit Available"; }
 
             // Alerts
             let alerts = [];
             if (cashTotal < 0) alerts.push({ title: "Negative Cash", sub: "Check entries immediately", type: "critical" });
             items.filter(i => (i.current_stock || 0) <= (i.reorder_level || 5)).forEach(i => alerts.push({ title: "Low Stock: " + i.name, sub: `Only ${i.current_stock} left`, type: "warning" }));
+            
             const alertDiv = document.getElementById('alertsList');
             if (alerts.length > 0) {
                 alertDiv.innerHTML = alerts.map(a => `
-                    <div class="alert-item ${a.type === 'warning' ? 'warning' : ''}" onclick="${a.title.includes('Stock') ? 'location.href=\'item_master.html\'' : ''}">
+                    <div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #eee; cursor:pointer;" onclick="${a.title.includes('Stock') ? 'location.href=\'item_master.html\'' : ''}">
                         <div>
-                            <div class="alert-text" style="color:${a.type === 'critical' ? '#9f1239' : '#9a3412'}">${a.title}</div>
-                            <div class="alert-sub">${a.sub}</div>
+                            <div style="font-weight:600; color:${a.type === 'critical' ? 'red' : 'orange'}">${a.title}</div>
+                            <div style="font-size:0.8rem; color:#666;">${a.sub}</div>
                         </div>
-                        <span style="font-size:18px;">${a.type === 'critical' ? '🛑' : '⚠️'}</span>
+                        <span>${a.type === 'critical' ? '🛑' : '⚠️'}</span>
                     </div>
                 `).join('');
-            } else { alertDiv.innerHTML = '<div class="empty-state"><span class="empty-icon">✨</span>All systems healthy.</div>'; }
+            } else { alertDiv.innerHTML = '<div class="text-center" style="color:#999; padding:10px;">✨ All systems healthy.</div>'; }
 
-            // Recent List
-            const recent = vouchers.sort((a,b) => b.id - a.id).slice(0, 10);
+            // Recent Transactions List
+            const recent = vouchers.sort((a,b) => b.id - a.id).slice(0, 8);
             if(recent.length > 0) {
                 document.getElementById('recentTxn').innerHTML = recent.map(v => {
                     const pName = ledgerMap[v.party_id]?.name || "Cash / Unknown";
                     const isSale = v.type === 'Sales';
-                    return `<div class="row-item"><div><div class="party-name">${pName}</div><div class="txn-meta">${v.voucher_no} • ${v.date}</div></div><div class="${isSale ? 'amt-pos' : 'amt-neg'}">${isSale ? '+' : '-'} ${fmt(v.amount)}</div></div>`;
+                    return `
+                        <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #f0f0f0;">
+                            <div>
+                                <div style="font-weight:600; color:#333;">${pName}</div>
+                                <div style="font-size:0.8rem; color:#999;">${v.voucher_no} • ${v.date}</div>
+                            </div>
+                            <div style="font-weight:bold; color:${isSale ? 'var(--success-color)' : 'var(--danger-color)'}">
+                                ${isSale ? '+' : '-'} ${fmt(v.amount)}
+                            </div>
+                        </div>`;
                 }).join('');
             }
 
-            // Chart Rendering
             renderCharts(vouchers, inTax, outTax);
         }
 
-        function renderCharts(vouchers, inTax, outTax) {
-            // Sales Chart
-            const months = [], dataMap = {}, today = new Date();
-            for (let i = 5; i >= 0; i--) {
-                const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
-                const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-                months.push(d.toLocaleString('default', { month: 'short', year: '2-digit' }));
-                dataMap[key] = 0;
-            }
-            vouchers.forEach(v => {
-                if (v.type === 'Sales') {
-                    const vDate = new Date(v.date);
-                    const key = `${vDate.getFullYear()}-${String(vDate.getMonth() + 1).padStart(2, '0')}`;
-                    if (dataMap[key] !== undefined) dataMap[key] += v.amount || 0;
-                }
-            });
-            const chartData = Object.values(dataMap);
+        // --- SEARCH LOGIC (PRESERVED) ---
+        function searchVouchers() {
+            const query = document.getElementById('univSearch').value.toLowerCase().trim();
+            const table = document.getElementById('searchTable');
+            const tbody = document.getElementById('searchBody');
+            const noRes = document.getElementById('noResult');
 
-            if (window.salesChartInstance) window.salesChartInstance.destroy();
-            const ctx1 = document.getElementById('salesChart').getContext('2d');
-            window.salesChartInstance = new Chart(ctx1, {
-                type: 'line',
-                data: {
-                    labels: months,
-                    datasets: [{ label: 'Revenue', data: chartData, borderColor: '#6366f1', backgroundColor: 'rgba(99, 102, 241, 0.1)', fill: true, tension: 0.4 }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-            });
+            if (!query) { table.style.display = 'none'; noRes.style.display = 'none'; return; }
 
-            // GST Chart
-            if (window.gstChartInstance) window.gstChartInstance.destroy();
-            const gstCtx = document.getElementById('gstChart');
-            if(gstCtx && (inTax > 0 || outTax > 0)) {
-                window.gstChartInstance = new Chart(gstCtx, {
-                    type: 'doughnut',
-                    data: { labels: ['Input', 'Output'], datasets: [{ data: [inTax, outTax], backgroundColor: ['#10b981', '#ef4444'], borderWidth: 0 }] },
-                    options: { responsive: true, maintainAspectRatio: false, cutout: '75%', plugins: { legend: { display: false } } }
+            const results = globalVouchers.filter(v => v.voucher_no.toLowerCase().includes(query) || v.date.includes(query) || v.amount.toString().includes(query));
+            tbody.innerHTML = '';
+            
+            if (results.length > 0) {
+                table.style.display = 'block'; // Using block because table-container handles overflow
+                noRes.style.display = 'none';
+                results.sort((a,b) => b.id - a.id).forEach(v => {
+                    const tr = document.createElement('tr');
+                    let targetPage = v.type === 'Sales' ? 'sales_invoice.html' : (v.type === 'Purchase' ? 'purchase_invoice.html' : 'vouchers.html');
+                    tr.innerHTML = `<td>${v.date}</td><td><span class="badge ${v.type==='Sales'?'badge-success':'badge-pending'}">${v.type}</span></td><td>${v.voucher_no}</td><td>₹${v.amount}</td><td><button class="btn btn-primary" style="padding:2px 8px; font-size:0.8rem;" onclick="window.location.href='${targetPage}?id=${v.id}'">Open</button></td>`;
+                    tbody.appendChild(tr);
                 });
             } else {
-                document.getElementById('gstChartContainer').innerHTML = '<div class="empty-state" style="padding-top:80px">No Data</div>';
+                table.style.display = 'none';
+                noRes.style.display = 'block';
             }
+        }
+
+        // --- HELPERS ---
+        async function refreshDashboard() {
+            const btn = document.getElementById('refreshBtn');
+            const spin = document.getElementById('spinIcon');
+            btn.disabled = true;
+            spin.classList.add('fa-spin');
+            await runAnalytics();
+            setTimeout(() => { spin.classList.remove('fa-spin'); btn.disabled = false; }, 500);
+        }
+
+        function renderCharts(vouchers, inTax, outTax) {
+             // Sales Chart Logic
+             const months = [], dataMap = {}, today = new Date();
+             for (let i = 5; i >= 0; i--) {
+                 const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
+                 const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                 months.push(d.toLocaleString('default', { month: 'short' }));
+                 dataMap[key] = 0;
+             }
+             vouchers.forEach(v => {
+                 if (v.type === 'Sales') {
+                     const vDate = new Date(v.date);
+                     const key = `${vDate.getFullYear()}-${String(vDate.getMonth() + 1).padStart(2, '0')}`;
+                     if (dataMap[key] !== undefined) dataMap[key] += v.amount || 0;
+                 }
+             });
+             const chartData = Object.values(dataMap);
+ 
+             if (window.salesChartInstance) window.salesChartInstance.destroy();
+             const ctx1 = document.getElementById('salesChart').getContext('2d');
+             window.salesChartInstance = new Chart(ctx1, {
+                 type: 'line',
+                 data: {
+                     labels: months,
+                     datasets: [{ label: 'Revenue', data: chartData, borderColor: '#0d47a1', backgroundColor: 'rgba(13, 71, 161, 0.1)', fill: true, tension: 0.4 }]
+                 },
+                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+             });
+ 
+             // GST Chart Logic
+             if (window.gstChartInstance) window.gstChartInstance.destroy();
+             const gstCtx = document.getElementById('gstChart');
+             if(gstCtx && (inTax > 0 || outTax > 0)) {
+                 window.gstChartInstance = new Chart(gstCtx, {
+                     type: 'doughnut',
+                     data: { labels: ['Input Credit', 'Output Liability'], datasets: [{ data: [inTax, outTax], backgroundColor: ['#388e3c', '#d32f2f'], borderWidth: 0 }] },
+                     options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { display: false } } }
+                 });
+             }
         }
 
         function getAll(store) { return new Promise(resolve => { const req = store.getAll(); req.onsuccess = () => resolve(req.result); }); }
         function fmt(num) { return "₹ " + (num || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
     </script>
+    
     <script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js')
-        .then(reg => console.log('PWA Ready!'))
-        .catch(err => console.log('PWA Failed', err));
-    });
-  }
-</script>
-
-<link rel="manifest" href="manifest.json">
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('sw.js').then(reg => console.log('Arth Book PWA Active')).catch(err => console.log('PWA Failed', err));
+        });
+      }
+    </script>
 </body>
 </html>

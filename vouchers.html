@@ -4,20 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="icon" type="image/x-icon" href="favicon.ico">
     <title>Accounting Desk - Money Wise Pro</title>
+    
+    <link rel="stylesheet" href="style.css"> 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
     <style>
+        /* YOUR ORIGINAL STYLES (PRESERVED) */
         :root { --bg: #f3f4f6; --text: #1e293b; --border: #e5e7eb; --green: #10b981; --red: #ef4444; --blue: #3b82f6; --purple: #8b5cf6; }
         * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
         body { display: flex; height: 100vh; background: var(--bg); color: var(--text); overflow: hidden; }
 
-        /* SIDEBAR */
+        /* SIDEBAR OVERRIDES */
         .sidebar { width: 260px; background: #0f172a; padding: 20px; display: flex; flex-direction: column; flex-shrink: 0; }
         .nav-link { padding: 12px 15px; margin-bottom: 5px; border-radius: 8px; color: #94a3b8; text-decoration: none; font-weight: 500; display: block; font-size: 14px; }
         .nav-link:hover, .nav-link.active { background: #1e293b; color: #f8fafc; }
 
-        /* MAIN LAYOUT */
+        /* LAYOUT */
         .main { flex: 1; padding: 20px; overflow-y: auto; display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
-        
         .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid var(--border); height: fit-content; }
         
         /* TABS */
@@ -29,7 +32,7 @@
         .t-cnt.active { border-bottom: 3px solid var(--blue); color: var(--blue); }
         .t-jrn.active { border-bottom: 3px solid var(--purple); color: var(--purple); }
 
-        /* FORMS */
+        /* INPUTS */
         .form-row { display: flex; gap: 15px; margin-bottom: 15px; }
         .form-group { flex: 1; position: relative; margin-bottom: 15px; }
         label { display: block; font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 5px; }
@@ -39,12 +42,16 @@
         .bal-display { position: absolute; right: 0; top: 0; font-size: 11px; font-weight: 700; }
         .bal-dr { color: var(--green); } .bal-cr { color: var(--red); }
 
-        /* ADVANCED OPTIONS */
+        /* NEW: VOICE BTN STYLE */
+        .voice-btn {
+            position: absolute; right: 10px; top: 32px;
+            background: none; border: none; cursor: pointer; color: var(--blue); font-size: 16px;
+        }
+        .voice-btn:hover { color: var(--purple); transform: scale(1.1); }
+
+        /* ADVANCED & JOURNAL */
         .advanced-box { background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px dashed var(--border); margin-bottom: 15px; display: none; }
         .checkbox-group { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; cursor: pointer; margin-bottom: 10px; }
-        .checkbox-group input { width: auto; }
-
-        /* JOURNAL GRID */
         .journal-grid { display: none; margin-bottom: 15px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
         .journal-row { display: flex; border-bottom: 1px solid var(--border); background: #fff; }
         .j-type { width: 70px; } .j-ac { flex: 1; } .j-amt { width: 100px; } .j-act { width: 30px; text-align: center; cursor: pointer; color: red; padding-top: 8px; }
@@ -55,7 +62,6 @@
         .btn-save { flex: 2; padding: 12px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; color: white; transition: 0.2s; background: var(--green); }
         .btn-print { flex: 1; background: #64748b; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; }
         
-        /* RECENT LIST */
         .txn-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
         .tag { padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; }
     </style>
@@ -63,8 +69,7 @@
 <body>
 
     <div class="sidebar">
-        <div style="font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 40px;">🚀 MoneyWise Pro</div>
-        <a href="index.html" class="nav-link">📊 Dashboard</a>
+        <div style="font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 40px;">🚀 Arth Book</div> <a href="index.html" class="nav-link">📊 Dashboard</a>
         <a href="reports.html" class="nav-link">📈 Reports</a>
         <a href="gst_filing.html" class="nav-link">🏛️ GST Filing</a>
         <a href="sales_invoice.html" class="nav-link">🧾 Sales Invoice</a>
@@ -111,7 +116,7 @@
                         <button onclick="printCheque()" style="padding:2px 8px; font-size:11px; cursor:pointer;">🖨️ Print Cheque</button>
                     </div>
                     <div class="form-row" style="margin-bottom:0;">
-                        <div class="form-group" style="margin-bottom:0;"><label>Cheque No</label><input type="text" id="chqNo"></div>
+                        <div class="form-group" style="margin-bottom:0;"><label>Cheque No <small>(Scan enabled)</small></label><input type="text" id="chqNo"></div>
                         <div class="form-group" style="margin-bottom:0;"><label>Cheque Date</label><input type="date" id="chqDate"></div>
                     </div>
                 </div>
@@ -140,6 +145,7 @@
             <div class="form-group">
                 <label>Narration</label>
                 <textarea id="narration" rows="2" placeholder="Being amount paid..."></textarea>
+                <button type="button" class="voice-btn" onclick="startVoice()" title="Speak Narration">🎤</button>
             </div>
 
             <div class="btn-group">
@@ -157,10 +163,14 @@
         </div>
     </div>
 
-    <script src="db.js"></script><script src="auth.js"></script>
+    <script src="security_utils.js"></script>
+    <script src="db.js"></script>
+    <script src="ai_engine.js"></script>
+    
     <script>
         let currentMode = 'Receipt';
         let ledgers = [], groups = [];
+        let recognition; // For Voice
 
         window.onload = async () => {
             await DB.init();
@@ -175,8 +185,57 @@
                 if(e.key === 'F6') { e.preventDefault(); setMode('Receipt'); }
                 if(e.key === 'F7') { e.preventDefault(); setMode('Journal'); }
                 if(e.key === 'F4') { e.preventDefault(); setMode('Contra'); }
+                // Save Shortcut
+                if(e.key === 'Enter' && e.ctrlKey) { saveVoucher(false); }
             });
+
+            // 1. VOICE SETUP (New)
+            if ('webkitSpeechRecognition' in window) {
+                recognition = new webkitSpeechRecognition();
+                recognition.continuous = false;
+                recognition.lang = 'en-IN';
+                recognition.onresult = (event) => {
+                    const text = event.results[0][0].transcript;
+                    const narr = document.getElementById('narration');
+                    narr.value = (narr.value + " " + text).trim();
+                };
+            }
         };
+
+        // 2. BARCODE LISTENER (New - Silent Mode)
+        // Detects fast typing (scanner) and puts it in active field
+        let scanBuffer = "";
+        let scanTimer;
+        document.addEventListener('keydown', (e) => {
+            // If scanning numbers/text rapidly
+            if (e.key.length === 1) {
+                scanBuffer += e.key;
+                clearTimeout(scanTimer);
+                scanTimer = setTimeout(() => {
+                    // If buffer is long (likely a barcode) and no specific field focused
+                    if(scanBuffer.length > 5 && document.activeElement.tagName === 'BODY') {
+                        // If Check No field is visible, put it there
+                        if(document.getElementById('bankOptions').style.display === 'block') {
+                            document.getElementById('chqNo').value = scanBuffer;
+                        } else {
+                            // Else put in narration
+                            document.getElementById('narration').value = `Ref: ${scanBuffer}`;
+                        }
+                        scanBuffer = "";
+                    }
+                    scanBuffer = "";
+                }, 50); // 50ms gap means scanned
+            }
+        });
+
+        function startVoice() {
+            if(recognition) {
+                document.getElementById('narration').placeholder = "Listening... Speak now";
+                recognition.start();
+            } else { alert("Voice features need Chrome browser"); }
+        }
+
+        /* --- YOUR ORIGINAL LOGIC (PRESERVED) --- */
 
         function getLedgersByType(type) {
             const isBank = l => { const g = groups.find(x=>x.id==l.group_id)?.name||''; return g.includes('Bank') || g.includes('Cash'); };
@@ -203,9 +262,10 @@
             const std = document.getElementById('standardInputs');
             const jrn = document.getElementById('journalInputs');
             
-            // Generate Voucher No
             document.getElementById('date').valueAsDate = new Date();
-            const count = (await DB.getAll('vouchers')).filter(v => v.type === mode).length + 1;
+            // Using DB logic for Voucher No
+            const allV = await DB.getAll('vouchers');
+            const count = allV.filter(v => v.type === mode).length + 1;
             document.getElementById('vchNo').value = `${mode.substring(0,3).toUpperCase()}-${String(count).padStart(4,'0')}`;
 
             if(mode === 'Journal') {
@@ -326,9 +386,10 @@
             }
 
             try {
+                // Using new DB saveVoucher logic (Compatible)
                 await DB.saveVoucher(vData, [], entries);
                 if(print) window.print();
-                alert("Saved!");
+                alert("Saved Successfully!");
                 location.reload();
             } catch(e) { alert("Error: " + e); }
         }
@@ -349,8 +410,9 @@
             const all = await DB.getAll('vouchers');
             const list = document.getElementById('recentList');
             list.innerHTML = '';
+            // Filter only Acc Vouchers (Exclude Sales/Purchase if needed, but showing all is fine)
             all.sort((a,b)=>b.id-a.id).slice(0,5).forEach(v => {
-                list.innerHTML += `<div class="txn-item"><div><span class="tag" style="background:#eee;">${v.type}</span> <b>${v.voucher_no}</b></div><b>₹${v.amount}</b></div>`;
+                list.innerHTML += `<div class="txn-item"><div><span class="tag" style="background:#eee;">${v.type}</span> <b>${v.voucher_no}</b></div><b>₹${v.amount||0}</b></div>`;
             });
         }
 
@@ -360,7 +422,6 @@
             const date = document.getElementById('chqDate').value;
             if(!amt || !date) return alert("Fill Amount & Cheque Date");
             
-            // Simple Cheque Print Layout
             const w = window.open('', '', 'width=800,height=400');
             w.document.write(`<div style="padding:50px; font-family:monospace; transform: rotate(0deg);">
                 <div style="position:absolute; top:20px; right:50px;">${date.split('-').reverse().join('')}</div>
