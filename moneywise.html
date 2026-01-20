@@ -101,7 +101,7 @@
                 </div>
                 <div class="field">
                     <label>Under Group *</label>
-                    <select id="groupSelect"><option>Loading...</option></select>
+                    <select id="groupSelect"><option value="">-- Select Group --</option></select>
                 </div>
                 <div class="field">
                     <label>Contact Person / Phone</label>
@@ -120,11 +120,11 @@
                 </div>
                 <div class="field">
                     <label>GSTIN</label>
-                    <input type="text" id="lGST" placeholder="27ABCDE1234F1Z5" maxlength="15">
+                    <input type="text" id="lGST" placeholder="NA" maxlength="15">
                 </div>
                 <div class="field">
                     <label>State</label>
-                    <select id="lState"><option>Select State</option></select>
+                    <select id="lState"><option value="">-- Select State --</option></select>
                 </div>
                 <div class="field">
                     <label>Address</label>
@@ -166,17 +166,40 @@
 
     <script src="db.js"></script><script src="auth.js"></script>
     <script>
-        let groups=[], states=[], ledgers=[];
+        // 1. HARDCODED STATES (No DB needed)
+        const INDIAN_STATES = [
+            { code: "35", name: "Andaman & Nicobar Islands" }, { code: "37", name: "Andhra Pradesh" },
+            { code: "12", name: "Arunachal Pradesh" }, { code: "18", name: "Assam" },
+            { code: "10", name: "Bihar" }, { code: "04", name: "Chandigarh" },
+            { code: "22", name: "Chhattisgarh" }, { code: "26", name: "Dadra & Nagar Haveli" },
+            { code: "07", name: "Delhi" }, { code: "30", name: "Goa" },
+            { code: "24", name: "Gujarat" }, { code: "06", name: "Haryana" },
+            { code: "02", name: "Himachal Pradesh" }, { code: "01", name: "Jammu & Kashmir" },
+            { code: "20", name: "Jharkhand" }, { code: "29", name: "Karnataka" },
+            { code: "32", name: "Kerala" }, { code: "31", name: "Lakshadweep" },
+            { code: "23", name: "Madhya Pradesh" }, { code: "27", name: "Maharashtra" },
+            { code: "14", name: "Manipur" }, { code: "17", name: "Meghalaya" },
+            { code: "15", name: "Mizoram" }, { code: "13", name: "Nagaland" },
+            { code: "21", name: "Odisha" }, { code: "34", name: "Puducherry" },
+            { code: "03", name: "Punjab" }, { code: "08", name: "Rajasthan" },
+            { code: "11", name: "Sikkim" }, { code: "33", name: "Tamil Nadu" },
+            { code: "36", name: "Telangana" }, { code: "16", name: "Tripura" },
+            { code: "09", name: "Uttar Pradesh" }, { code: "05", name: "Uttarakhand" },
+            { code: "19", name: "West Bengal" }
+        ];
+
+        let groups=[], ledgers=[];
 
         window.onload = async () => {
             await DB.init();
-            groups = await DB.getGroups();
-            states = await DB.getStates();
-            ledgers = await DB.getLedgers();
+            
+            // 2. FETCH DATA (Using Generic getAll if helper missing)
+            groups = await DB.getAll('groups');
+            ledgers = await DB.getAll('ledgers');
 
             populateDropdowns();
             renderList();
-            document.getElementById('opDate').valueAsDate = new Date(); // Default today
+            document.getElementById('opDate').valueAsDate = new Date();
         };
 
         function populateDropdowns() {
@@ -189,10 +212,10 @@
                 gSel.appendChild(op);
             });
 
-            // States
+            // States (From Local Array)
             const sSel = document.getElementById('lState');
             sSel.innerHTML = '<option value="">-- Select State --</option>';
-            states.forEach(s => {
+            INDIAN_STATES.forEach(s => {
                 let op = document.createElement('option');
                 op.value = s.code; op.text = s.name;
                 sSel.appendChild(op);
@@ -200,7 +223,6 @@
         }
 
         function toggleGSTField() {
-            // Optional UX enhancement
             const type = document.getElementById('lRegType').value;
             const gstInput = document.getElementById('lGST');
             if(type === 'Unregistered' || type === 'Consumer') {
@@ -216,6 +238,11 @@
             
             const filtered = ledgers.filter(l => l.name.toLowerCase().includes(q.toLowerCase()));
             
+            if(filtered.length === 0) {
+                list.innerHTML = '<div style="padding:20px; text-align:center; color:#ccc;">No Parties Found</div>';
+                return;
+            }
+
             filtered.sort((a,b)=>a.name.localeCompare(b.name)).forEach(l => {
                 const grp = groups.find(g => g.id == l.group_id)?.name || '-';
                 let balHtml = '<span style="color:#cbd5e1">-</span>';
@@ -270,6 +297,7 @@
             document.getElementById('lName').focus();
         }
 
+        // 3. ROBUST SAVE LOGIC (Direct Transaction)
         async function saveLedger() {
             const name = document.getElementById('lName').value;
             const grp = document.getElementById('groupSelect').value;
@@ -293,27 +321,43 @@
             };
 
             const id = document.getElementById('ledgerId').value;
-            if(id) data.id = parseInt(id);
+            
+            // Direct IndexedDB Transaction
+            const tx = DB.db.transaction('ledgers', 'readwrite');
+            const store = tx.objectStore('ledgers');
+            
+            if(id) {
+                data.id = parseInt(id);
+                store.put(data);
+            } else {
+                store.add(data);
+            }
 
-            try {
-                await DB.createLedger(data);
+            tx.oncomplete = async () => {
                 showToast();
-                ledgers = await DB.getLedgers(); // refresh local
+                ledgers = await DB.getAll('ledgers'); // Refresh
                 renderList(document.getElementById('searchInput').value);
                 resetForm();
-            } catch(e) { alert("Error saving party"); console.error(e); }
+            };
+            
+            tx.onerror = (e) => alert("Error saving: " + e.target.error);
         }
 
+        // 4. ROBUST DELETE LOGIC
         async function deleteLedger() {
             const id = document.getElementById('ledgerId').value;
             if(!id) return;
             if(confirm("Delete this party?")) {
-                try {
-                    await DB.deleteLedger(parseInt(id));
-                    ledgers = await DB.getLedgers();
+                const tx = DB.db.transaction('ledgers', 'readwrite');
+                tx.objectStore('ledgers').delete(parseInt(id));
+                
+                tx.oncomplete = async () => {
+                    ledgers = await DB.getAll('ledgers');
                     renderList();
                     resetForm();
-                } catch(e) { alert("Cannot delete: " + e); }
+                };
+                
+                tx.onerror = (e) => alert("Cannot delete: " + e.target.error);
             }
         }
 

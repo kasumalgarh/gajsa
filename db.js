@@ -1,7 +1,7 @@
 /* FILENAME: db.js
    PURPOSE: Arth Book (Formerly Money Wise) v22.0 - Platinum Edition
    FEATURES: Mobile Cursor, Blockchain Audit, Multi-Branch, Project Mgmt, ESG, Encryption Hooks
-   STATUS: MASTER FILE (Do not edit again)
+   STATUS: UPDATED (Added Settings & Backup Support)
 */
 
 class MoneyWiseDB {
@@ -275,6 +275,101 @@ class MoneyWiseDB {
             });
         };
     }
+
+    // --- 5.1 NEW METHODS FOR SETTINGS.HTML (Added) ---
+
+    async getSettings() {
+        return await this.getOne('settings', 'company_profile') || {};
+    }
+
+    async saveSettings(data) {
+        data.id = 'company_profile'; // Force single ID
+        return new Promise((resolve, reject) => {
+            const tx = this.db.transaction('settings', 'readwrite');
+            const req = tx.objectStore('settings').put(data);
+            req.onsuccess = () => resolve("Settings Saved");
+            req.onerror = () => reject("Save Failed");
+        });
+    }
+
+    async exportBackup() {
+        const stores = ['vouchers', 'items', 'ledgers', 'acct_entries', 'settings', 'users', 'logs', 'grn_master', 'batches', 'projects', 'branches', 'esg_data', 'audit_chain'];
+        const backup = {};
+        for(let s of stores) {
+            // Check if store exists to avoid errors on older versions
+            if(this.db.objectStoreNames.contains(s)) {
+                backup[s] = await this.getAll(s);
+            }
+        }
+        const blob = new Blob([JSON.stringify(backup)], {type: "application/json"});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `ArthBook_Backup_${new Date().toISOString().slice(0,10)}.json`;
+        a.click();
+    }
+    // --- 5.2 ITEM MASTER FUNCTIONS (Inventory Fix) ---
+
+    async createItem(itemData) {
+        return new Promise((resolve, reject) => {
+            const tx = this.db.transaction('items', 'readwrite');
+            const store = tx.objectStore('items');
+            
+            // नंबर को सही फॉर्मेट में बदलना (Number Fixing)
+            itemData.std_price = parseFloat(itemData.std_price) || 0;
+            itemData.std_cost = parseFloat(itemData.std_cost) || 0;
+            itemData.current_stock = parseFloat(itemData.current_stock) || 0;
+            itemData.reorder_level = parseFloat(itemData.reorder_level) || 0;
+            itemData.gst_rate = parseFloat(itemData.gst_rate) || 0;
+
+            const req = store.add(itemData);
+            req.onsuccess = (e) => {
+                // Blockchain Audit (Optional Log)
+                this.logAudit("Inventory", "Create", `Added Item: ${itemData.name}`);
+                resolve(e.target.result);
+            };
+            req.onerror = (e) => reject("Error creating item: " + e.target.error);
+        });
+    }
+
+    async updateItem(itemData) {
+        return new Promise((resolve, reject) => {
+            const tx = this.db.transaction('items', 'readwrite');
+            const store = tx.objectStore('items');
+            
+            // नंबर को सही करना
+            itemData.std_price = parseFloat(itemData.std_price) || 0;
+            itemData.std_cost = parseFloat(itemData.std_cost) || 0;
+            itemData.current_stock = parseFloat(itemData.current_stock) || 0;
+
+            const req = store.put(itemData);
+            req.onsuccess = () => {
+                this.logAudit("Inventory", "Update", `Updated Item: ${itemData.name}`);
+                resolve("Item Updated");
+            };
+            req.onerror = (e) => reject("Error updating item: " + e.target.error);
+        });
+    }
+
+    async deleteItem(id) {
+        return new Promise((resolve, reject) => {
+            const tx = this.db.transaction('items', 'readwrite');
+            const store = tx.objectStore('items');
+            const req = store.delete(id);
+            req.onsuccess = () => {
+                this.logAudit("Inventory", "Delete", `Deleted Item ID: ${id}`);
+                resolve("Item Deleted");
+            };
+            req.onerror = (e) => reject("Error deleting item: " + e.target.error);
+        });
+    }
+    // --- 5.3 LIST HELPERS (Loading Fix) ---
+
+    async getItems() { return await this.getAll('items'); }
+    
+    async getGroups() { return await this.getAll('groups'); }
+    
+    async getLedgers() { return await this.getAll('ledgers'); }
 
     // --- 6. STANDARD HELPERS ---
 

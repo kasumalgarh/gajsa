@@ -141,7 +141,7 @@
             
             // Load Data
             [allItems, ledgers] = await Promise.all([
-                DB.getAll(DB.db.transaction('items', 'readonly').objectStore('items')),
+                DB.getAll('items'),
                 DB.getLedgers()
             ]);
             
@@ -348,7 +348,7 @@
         }
 
         async function generateInvNo() {
-            const all = await DB.getAll(DB.db.transaction('vouchers').objectStore('vouchers'));
+            const all = await DB.getAll('vouchers');
             const count = all.filter(v=>v.type==='Sales').length + 1;
             document.getElementById('invoiceNo').innerText = `INV-${new Date().getFullYear()}-${count}`;
         }
