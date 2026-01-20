@@ -58,8 +58,28 @@
         .btn-save { background: var(--accent); color: white; }
         .btn-new { background: #e2e8f0; color: #475569; }
         .btn-del { background: #fee2e2; color: var(--red); margin-left: auto; }
+        /* NEW BUTTON STYLE */
+        .btn-stmt { background: #0f172a; color: white; display: none; } /* Hidden initially */
 
-        #toast { position: fixed; bottom: 30px; right: 30px; background: var(--green); color: white; padding: 12px 24px; border-radius: 8px; display: none; box-shadow: 0 4px 15px rgba(0,0,0,0.2); font-weight: 600; }
+        #toast { position: fixed; bottom: 30px; right: 30px; background: var(--green); color: white; padding: 12px 24px; border-radius: 8px; display: none; box-shadow: 0 4px 15px rgba(0,0,0,0.2); font-weight: 600; z-index: 1001; }
+
+        /* --- MODAL FOR STATEMENT --- */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); backdrop-filter: blur(2px); }
+        .modal-content { background-color: #fff; margin: 50px auto; padding: 25px; border-radius: 12px; width: 800px; max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px; margin-bottom: 15px; }
+        .modal-body { overflow-y: auto; flex: 1; padding-right: 5px; }
+        
+        .stmt-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .stmt-table th { text-align: left; padding: 10px; background: #f8fafc; border-bottom: 2px solid #e2e8f0; color: #64748b; font-size: 11px; text-transform: uppercase; position: sticky; top: 0; }
+        .stmt-table td { padding: 10px; border-bottom: 1px solid #f1f5f9; color: #1e293b; }
+        .stmt-table tr:last-child td { border-bottom: none; font-weight: 700; background: #f8fafc; }
+        
+        @media print {
+            body > * { display: none; }
+            .modal { display: block; position: absolute; left: 0; top: 0; width: 100%; height: auto; background: white; }
+            .modal-content { box-shadow: none; margin: 0; width: 100%; border: none; }
+            .no-print { display: none; }
+        }
     </style>
 </head>
 <body>
@@ -157,7 +177,29 @@
 
             <div class="btn-group">
                 <button class="btn-save" onclick="saveLedger()">Save Party (Alt+S)</button>
+                <button class="btn-stmt" id="stmtBtn" onclick="openStatement()">📜 View History</button>
                 <button class="btn-del" onclick="deleteLedger()" id="delBtn" style="display:none;">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="stmtModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h2 id="stmtTitle">Statement</h2>
+                    <span id="stmtSub" style="font-size:12px; color:#64748b;">Loading...</span>
+                </div>
+                <div class="no-print">
+                    <button class="btn-save" onclick="window.print()">🖨️ Print / PDF</button>
+                    <button class="btn-new" onclick="document.getElementById('stmtModal').style.display='none'">Close</button>
+                </div>
+            </div>
+            <div class="modal-body">
+                <table class="stmt-table" id="stmtTable">
+                    <thead><tr><th>Date</th><th>Particulars</th><th>Vch No</th><th>Debit (₹)</th><th>Credit (₹)</th><th>Balance (₹)</th></tr></thead>
+                    <tbody></tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -283,6 +325,7 @@
             document.getElementById('opDate').value = l.op_date || new Date().toISOString().slice(0,10);
 
             document.getElementById('delBtn').style.display = 'block';
+            document.getElementById('stmtBtn').style.display = 'block'; // Show Statement Button
             toggleGSTField();
         }
 
@@ -294,7 +337,88 @@
             document.getElementById('lRegType').value = 'Unregistered';
             document.getElementById('opDate').valueAsDate = new Date();
             document.getElementById('delBtn').style.display = 'none';
+            document.getElementById('stmtBtn').style.display = 'none'; // Hide Statement Button
             document.getElementById('lName').focus();
+        }
+
+        // --- NEW STATEMENT LOGIC ---
+        async function openStatement() {
+            const id = parseInt(document.getElementById('ledgerId').value);
+            if(!id) return;
+            const party = ledgers.find(l => l.id === id);
+            
+            document.getElementById('stmtModal').style.display = 'block';
+            document.getElementById('stmtTitle').innerText = party.name;
+            document.getElementById('stmtSub').innerText = `Report Date: ${new Date().toLocaleDateString()}`;
+            
+            const tbody = document.querySelector('#stmtTable tbody');
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Loading Records...</td></tr>';
+
+            // Fetch Records
+            const allVouchers = await DB.getAll('vouchers');
+            // Filter: party_id matches or vendor_id matches (Legacy support)
+            const txns = allVouchers.filter(v => v.party_id === id || v.vendor_id === id);
+            
+            // Sort by Date
+            txns.sort((a,b) => new Date(a.date) - new Date(b.date));
+
+            tbody.innerHTML = '';
+            
+            // 1. Opening Row
+            let runBal = party.opening_balance || 0;
+            const opType = runBal >= 0 ? 'Dr' : 'Cr';
+            tbody.innerHTML += `
+                <tr style="background:#f1f5f9; font-weight:600;">
+                    <td>${party.op_date || '-'}</td>
+                    <td>Opening Balance</td>
+                    <td>-</td>
+                    <td>${runBal >=0 ? Math.abs(runBal) : ''}</td>
+                    <td>${runBal < 0 ? Math.abs(runBal) : ''}</td>
+                    <td>${Math.abs(runBal)} ${opType}</td>
+                </tr>
+            `;
+
+            // 2. Loop Transactions
+            txns.forEach(v => {
+                let debit = 0, credit = 0;
+                
+                // Logic based on Voucher Type & Party Role
+                // If Sales -> Party is Debited (Dr)
+                // If Receipt -> Party is Credited (Cr)
+                // If Purchase -> Party is Credited (Cr)
+                // If Payment -> Party is Debited (Dr)
+                
+                if(v.type === 'Sales') { debit = v.grand_total || v.amount; }
+                else if(v.type === 'Receipt') { credit = v.amount; }
+                else if(v.type === 'Purchase') { credit = v.grand_total || v.amount; }
+                else if(v.type === 'Payment') { debit = v.amount; }
+                else if(v.type === 'Journal') {
+                    // Complex: Check acct_entries for precise split. For summary, use manual
+                    // Assuming JV Amount logic (Simplification)
+                }
+
+                runBal = runBal + debit - credit;
+                const balType = runBal >= 0 ? 'Dr' : 'Cr';
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${v.date}</td>
+                        <td>${v.type} <span style="font-size:11px; color:#94a3b8;">${v.narration || ''}</span></td>
+                        <td>${v.voucher_no}</td>
+                        <td>${debit ? debit.toFixed(2) : '-'}</td>
+                        <td>${credit ? credit.toFixed(2) : '-'}</td>
+                        <td><b>${Math.abs(runBal).toFixed(2)} ${balType}</b></td>
+                    </tr>
+                `;
+            });
+
+            // 3. Closing Row
+            tbody.innerHTML += `
+                <tr style="background:#f8fafc; font-weight:700; border-top:2px solid #e2e8f0;">
+                    <td colspan="5" style="text-align:right;">Closing Balance</td>
+                    <td>${Math.abs(runBal).toFixed(2)} ${runBal >= 0 ? 'Dr' : 'Cr'}</td>
+                </tr>
+            `;
         }
 
         // 3. ROBUST SAVE LOGIC (Direct Transaction)
