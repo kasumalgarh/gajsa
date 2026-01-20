@@ -81,6 +81,12 @@
         .j-type { width: 70px; } .j-ac { flex: 1; } .j-amt { width: 100px; } .j-act { width: 30px; text-align: center; cursor: pointer; color: red; padding-top: 8px; }
         .journal-row select, .journal-row input { border: none; border-radius: 0; background: transparent; }
 
+        /* BILL SETTLEMENT STYLES (NEW) */
+        .bill-box { background: #fffbeb; border: 1px solid #fcd34d; padding: 10px; border-radius: 8px; margin-bottom: 15px; display: none; }
+        .bill-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px dashed #e2e8f0; font-size: 13px; cursor: pointer; }
+        .bill-item:hover { background: #fef3c7; }
+        .bill-item input { width: auto; margin-right: 10px; }
+
         /* BUTTONS */
         .btn-group { display: flex; gap: 10px; margin-top: 15px; }
         .btn-save { flex: 2; padding: 12px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; color: white; transition: 0.2s; background: var(--green); }
@@ -165,9 +171,19 @@
 
                 <div class="form-group">
                     <label id="lblParty">Party / Ledger</label>
-                    <select id="ac2Select" onchange="updateBalance('ac2')"><option value="">Loading...</option></select>
+                    <select id="ac2Select" onchange="updateBalance('ac2'); loadPendingBills(this.value)"><option value="">Loading...</option></select>
                     <span id="bal2" class="bal-display"></span>
                 </div>
+
+                <div id="billSettlementBox" class="bill-box">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                        <span style="font-weight:700; color:#d97706; font-size:12px;">⚠️ Pending Bills (Tick to Pay)</span>
+                        <span style="font-size:11px; cursor:pointer; color:#d97706;" onclick="document.getElementById('billSettlementBox').style.display='none'">Hide</span>
+                    </div>
+                    <div id="pendingBillList" style="max-height: 150px; overflow-y:auto;">
+                        </div>
+                </div>
+
                 <div class="form-group">
                     <label>Amount (₹)</label>
                     <input type="number" id="amount" placeholder="0.00" style="font-size:18px; font-weight:bold;">
@@ -298,6 +314,9 @@
             const std = document.getElementById('standardInputs');
             const jrn = document.getElementById('journalInputs');
             
+            // Hide Bill Box on Mode Change
+            document.getElementById('billSettlementBox').style.display = 'none';
+
             document.getElementById('date').valueAsDate = new Date();
             const allV = await DB.getAll('vouchers');
             const count = allV.filter(v => v.type === mode).length + 1;
@@ -330,6 +349,59 @@
                     document.getElementById('lblParty').innerText = "Withdraw From (Credit)";
                     populateSelect('ac2Select', getLedgersByType('CashBank'));
                 }
+            }
+        }
+
+        // --- NEW FEATURE: LOAD PENDING BILLS ---
+        async function loadPendingBills(partyId) {
+            const box = document.getElementById('billSettlementBox');
+            const list = document.getElementById('pendingBillList');
+            list.innerHTML = '';
+            box.style.display = 'none';
+
+            // Feature only for Payment/Receipt
+            if(!partyId || (currentMode !== 'Receipt' && currentMode !== 'Payment')) return;
+
+            const targetType = currentMode === 'Receipt' ? 'Sales' : 'Purchase';
+            const all = await DB.getAll('vouchers');
+            
+            // Filter Bills for this Party
+            const bills = all.filter(v => v.type === targetType && (v.party_id == partyId || v.vendor_id == partyId));
+            
+            if(bills.length === 0) return; // No bills
+
+            box.style.display = 'block';
+            bills.sort((a,b) => b.id - a.id).slice(0, 10).forEach(b => {
+                const amt = b.grand_total || b.amount;
+                list.innerHTML += `
+                    <div class="bill-item">
+                        <label style="display:flex; align-items:center; cursor:pointer; margin:0; width:100%;">
+                            <input type="checkbox" class="bill-chk" value="${amt}" data-ref="${b.voucher_no}" onchange="calcBillTotal()">
+                            <span style="flex:1;">
+                                <b>${b.voucher_no}</b> <span style="color:#64748b; font-size:11px;">(${b.date})</span>
+                            </span>
+                            <span style="font-weight:bold;">₹${amt}</span>
+                        </label>
+                    </div>
+                `;
+            });
+        }
+
+        function calcBillTotal() {
+            let total = 0;
+            let refs = [];
+            document.querySelectorAll('.bill-chk:checked').forEach(chk => {
+                total += parseFloat(chk.value);
+                refs.push(chk.getAttribute('data-ref'));
+            });
+            
+            if(total > 0) {
+                document.getElementById('amount').value = total;
+                // Auto-fill Narration
+                const narr = document.getElementById('narration');
+                // Remove old refs if any
+                let txt = narr.value.split('[Agst Ref:')[0].trim();
+                narr.value = txt + (refs.length ? ` [Agst Ref: ${refs.join(', ')}]` : '');
             }
         }
 
