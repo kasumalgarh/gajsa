@@ -1,112 +1,155 @@
 /* FILENAME: ai_engine.js
-   PURPOSE: The "Brain" of Arth Book (Now with Permanent Memory)
+   PURPOSE: The "Brain" of Arth Book – learns from real data + fallback rules
 */
 
 class ArthIntelligence {
     constructor() {
-        this.categoryMap = {}; // Will allow { "tea": "Office Exp", "petrol": "Travel" }
+        this.keywordToLedgerId = new Map(); // "chai" → ledgerId (more reliable than object)
         this.isReady = false;
     }
 
-    // --- 1. REAL LEARNING (No Placeholders) ---
-    // Reads ALL past vouchers to build a probability map
+    // ─── 1. Learn from ALL historical vouchers ───
     async initBrain() {
-        console.log("🧠 AI: Scanning history for patterns...");
-        
-        try {
-            const tx = DB.db.transaction(['vouchers', 'acct_entries', 'ledgers'], 'readonly');
-            const vouchers = await DB.getAll(tx.objectStore('vouchers'));
-            const entries = await DB.getAll(tx.objectStore('acct_entries'));
-            const ledgers = await DB.getAll(tx.objectStore('ledgers'));
+        if (this.isReady) return;
 
-            // Build Knowledge Graph
-            vouchers.forEach(v => {
-                if(!v.narration) return;
-                
-                // Find which ledger was debited (Expense/Asset)
-                const entry = entries.find(e => e.voucher_id === v.id && e.debit > 0);
-                if(entry) {
-                    const ledger = ledgers.find(l => l.id === entry.ledger_id);
-                    if(ledger) {
-                        // Map keywords from narration to ledger
-                        const words = v.narration.toLowerCase().split(' ');
-                        words.forEach(w => {
-                            if(w.length > 3) { // Ignore 'to', 'the', etc.
-                                this.categoryMap[w] = ledger.id;
-                            }
-                        });
-                    }
+        console.log("🧠 AI: Learning from past transactions...");
+
+        try {
+            const vouchers = await DB.getAllFromStore('vouchers');
+            const entries   = await DB.getAllFromStore('acct_entries');
+            const ledgers   = await DB.getAllFromStore('ledgers');
+
+            if (vouchers.length === 0) {
+                console.log("🧠 AI: No vouchers found → skipping learning");
+                this.isReady = true;
+                return;
+            }
+
+            // Build keyword → ledgerId map (last seen wins – simple & effective)
+            for (const v of vouchers) {
+                if (!v.narration || typeof v.narration !== 'string') continue;
+
+                // Find debit entry (usually the expense/asset side)
+                const debitEntry = entries.find(e => e.voucher_id === v.id && Number(e.debit) > 0);
+                if (!debitEntry) continue;
+
+                const ledger = ledgers.find(l => l.id === debitEntry.ledger_id);
+                if (!ledger) continue;
+
+                const words = v.narration.toLowerCase()
+                    .split(/\W+/)                   // better split (handles punctuation)
+                    .filter(w => w.length >= 4);    // skip very short tokens
+
+                for (const word of words) {
+                    this.keywordToLedgerId.set(word, ledger.id);
                 }
-            });
-            
+            }
+
             this.isReady = true;
-            console.log("🧠 AI: I have learned from " + vouchers.length + " transactions.");
-        } catch(e) {
-            console.warn("AI Init failed (Database might be empty):", e);
+            console.log(`🧠 AI: Learned ${this.keywordToLedgerId.size} keyword → ledger mappings from ${vouchers.length} vouchers`);
+        } catch (err) {
+            console.error("🧠 AI init failed:", err);
+            // Still mark ready so we can fall back to rules
+            this.isReady = true;
         }
     }
 
-    // --- 2. AUTO-CATEGORIZATION ---
-    async predictCategory(text) {
-        if (!text || !this.isReady) return null;
-        text = text.toLowerCase();
+    // ─── 2. Predict ledger for new narration ───
+    async predictCategory(narration) {
+        if (!narration || typeof narration !== 'string' || !this.isReady) {
+            return null;
+        }
 
-        // A. Check Learned Patterns
-        const words = text.split(' ');
-        for(let w of words) {
-            if(this.categoryMap[w]) {
-                const ledgers = await DB.getLedgers();
-                return ledgers.find(l => l.id === this.categoryMap[w]);
+        const text = narration.toLowerCase();
+        const words = text.split(/\W+/).filter(w => w.length >= 4);
+
+        // A. Strongest signal: learned keyword match (most recent wins)
+        for (const word of words) {
+            const ledgerId = this.keywordToLedgerId.get(word);
+            if (ledgerId) {
+                const ledger = await DB.getLedgerById(ledgerId); // ← you should add this helper
+                if (ledger) return ledger;
             }
         }
 
-        // B. Hardcoded Rules (Fallback)
+        // B. Fallback – rule-based matching (ordered by priority)
         const rules = [
-            { keywords: ['tea', 'coffee', 'snack', 'food', 'chai'], cat: 'Staff Welfare' },
-            { keywords: ['petrol', 'diesel', 'fuel', 'uber', 'ola', 'auto'], cat: 'Travelling' },
-            { keywords: ['print', 'paper', 'pen', 'ink', 'xerox'], cat: 'Printing' },
-            { keywords: ['jio', 'airtel', 'wi-fi', 'net', 'mobile'], cat: 'Telephone' },
-            { keywords: ['rent', 'shop', 'office'], cat: 'Rent' }
+            { keywords: ['tea', 'chai', 'coffee', 'snack', 'breakfast', 'canteen'],              category: 'Staff Welfare'   },
+            { keywords: ['petrol', 'diesel', 'fuel', 'cng', 'uber', 'ola', 'auto', 'taxi'],     category: 'Travelling'      },
+            { keywords: ['print', 'xerox', 'photocopy', 'paper', 'stationery', 'pen', 'ink'],   category: 'Printing & Stationery' },
+            { keywords: ['jio', 'airtel', 'bsnl', 'wifi', 'broadband', 'recharge', 'mobile'],   category: 'Telephone & Internet' },
+            { keywords: ['rent', 'lease', 'shop rent', 'office rent', 'building'],              category: 'Rent'            },
+            { keywords: ['electricity', 'bill', 'eb', 'discom'],                                category: 'Electricity'     },
         ];
 
-        for (let rule of rules) {
-            if (rule.keywords.some(k => text.includes(k))) {
+        for (const rule of rules) {
+            if (rule.keywords.some(kw => text.includes(kw))) {
+                // Try to find ledger whose name contains the category (case-insensitive)
                 const ledgers = await DB.getLedgers();
-                // Fuzzy match ledger name
-                const match = ledgers.find(l => l.name.toLowerCase().includes(rule.cat.toLowerCase()));
+                const match = ledgers.find(l =>
+                    l.name?.toLowerCase().includes(rule.category.toLowerCase())
+                );
                 if (match) return match;
             }
         }
+
+        // C. Ultimate fallback – most frequently used expense ledger (optional)
+        // You can implement this later when you have enough stats
+
         return null;
     }
 
-    // --- 3. PREDICTIVE CASH FLOW (Real Math) ---
+    // ─── 3. Simple next-month revenue forecast ───
     async predictCashFlow() {
-        const tx = DB.db.transaction(['vouchers'], 'readonly');
-        const allVouchers = await DB.getAll(tx.objectStore('vouchers'));
-        
-        // Filter Sales for last 90 days
-        const today = new Date();
-        const ninetyDaysAgo = new Date();
-        ninetyDaysAgo.setDate(today.getDate() - 90);
+        try {
+            const vouchers = await DB.getAllFromStore('vouchers');
 
-        const sales = allVouchers.filter(v => v.type === 'Sales' && new Date(v.date) >= ninetyDaysAgo);
-        
-        let totalRevenue = 0;
-        sales.forEach(v => totalRevenue += (parseFloat(v.amount) || 0));
+            const today = new Date();
+            const ninetyDaysAgo = new Date(today);
+            ninetyDaysAgo.setDate(today.getDate() - 90);
 
-        // Avoid divide by zero
-        const dailyAvg = totalRevenue / 90;
-        const nextMonthForecast = dailyAvg * 30;
-        
-        return {
-            prediction: nextMonthForecast.toFixed(2),
-            daily_avg: dailyAvg.toFixed(2),
-            status: "Active"
-        };
+            const sales = vouchers.filter(v =>
+                v.type === 'Sales' &&
+                v.date &&
+                new Date(v.date) >= ninetyDaysAgo
+            );
+
+            if (sales.length === 0) {
+                return { prediction: "0.00", daily_avg: "0.00", status: "No data", days: 0 };
+            }
+
+            const totalRevenue = sales.reduce((sum, v) => sum + Number(v.amount || 0), 0);
+            const daysCovered  = 90; // simplistic – can improve later
+
+            const dailyAvg = totalRevenue / daysCovered;
+            const next30d  = dailyAvg * 30;
+
+            return {
+                prediction: next30d.toFixed(2),
+                daily_avg: dailyAvg.toFixed(2),
+                status: "Active",
+                based_on_days: daysCovered,
+                transaction_count: sales.length
+            };
+        } catch (err) {
+            console.warn("Cash flow prediction failed:", err);
+            return { prediction: "0.00", daily_avg: "0.00", status: "Error" };
+        }
     }
 }
 
-// Initialize AI immediately
+// ─── Global singleton + auto-init ───
 const AI = new ArthIntelligence();
-setTimeout(() => AI.initBrain(), 2000); // Wait for DB to load
+
+// Better init timing – wait for DB ready signal if possible
+// For now, conservative delay + retry once
+setTimeout(async () => {
+    await AI.initBrain();
+    // Optional: second attempt after 6 seconds if DB is still loading
+    if (!AI.isReady) {
+        setTimeout(() => AI.initBrain(), 4000);
+    }
+}, 1500);
+
+// Optional: expose for debugging
+window.ArthAI = AI;
