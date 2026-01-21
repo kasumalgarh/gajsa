@@ -12,43 +12,15 @@
         :root { --bg: #f3f4f6; --text: #1e293b; --border: #e5e7eb; --green: #10b981; --red: #ef4444; --blue: #3b82f6; --purple: #8b5cf6; --sidebar-bg: #0f172a; }
         * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
         
-        body { 
-            display: flex;       
-            height: 100vh;       
-            background: var(--bg); 
-            color: var(--text); 
-            overflow: hidden;    
-        }
+        body { display: flex; height: 100vh; background: var(--bg); color: var(--text); overflow: hidden; }
 
         /* SIDEBAR */
-        .sidebar { 
-            width: 260px; 
-            background: var(--sidebar-bg); 
-            padding: 20px; 
-            display: flex; 
-            flex-direction: column; 
-            flex-shrink: 0;      
-            height: 100vh;       
-            overflow-y: auto;    
-            z-index: 100;
-            transition: 0.3s;
-        }
-        
+        .sidebar { width: 260px; background: var(--sidebar-bg); padding: 20px; display: flex; flex-direction: column; flex-shrink: 0; height: 100vh; overflow-y: auto; z-index: 100; transition: 0.3s; }
         .nav-link { padding: 12px 15px; margin-bottom: 5px; border-radius: 8px; color: #94a3b8; text-decoration: none; font-weight: 500; display: block; font-size: 14px; transition: 0.2s; }
         .nav-link:hover, .nav-link.active { background: #1e293b; color: #f8fafc; }
 
-        /* MAIN CONTENT */
-        .main { 
-            flex: 1;             
-            padding: 20px; 
-            overflow-y: auto;    
-            height: 100vh;       
-            display: flex;       
-            flex-direction: column;
-            gap: 20px; 
-        }
-
-        /* CARDS & UI */
+        /* MAIN */
+        .main { flex: 1; padding: 20px; overflow-y: auto; height: 100vh; display: flex; flex-direction: column; gap: 20px; }
         .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid var(--border); height: fit-content; }
         
         /* TABS */
@@ -69,7 +41,6 @@
 
         .bal-display { position: absolute; right: 10px; top: 32px; font-size: 11px; font-weight: 700; background: white; padding: 2px 6px; border-radius: 4px; }
         .bal-dr { color: var(--green); } .bal-cr { color: var(--red); }
-
         .voice-btn { position: absolute; right: 10px; top: 32px; background: none; border: none; cursor: pointer; color: var(--blue); font-size: 16px; }
 
         /* ADVANCED & JOURNAL */
@@ -230,7 +201,6 @@
         window.onload = async () => {
             await DB.init();
             
-            // FIX: Using standardized methods
             [ledgers, groups, allVouchers] = await Promise.all([
                 DB.getAll('ledgers'),
                 DB.getAll('groups'),
@@ -339,7 +309,20 @@
         async function setMode(mode) {
             currentMode = mode;
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelector(`.t-${mode.toLowerCase().slice(0,3)}`).classList.add('active');
+            
+            // --- FIX FOR NULL CLASSLIST ERROR ---
+            const classMap = {
+                'Receipt': 't-rcp',
+                'Payment': 't-pmt',
+                'Contra': 't-cnt',
+                'Journal': 't-jrn'
+            };
+            // Use precise mapping instead of string slicing which was failing
+            const targetClass = classMap[mode];
+            if(targetClass) {
+                document.querySelector(`.${targetClass}`).classList.add('active');
+            }
+            // ------------------------------------
 
             const std = document.getElementById('standardInputs');
             const jrn = document.getElementById('journalInputs');
@@ -583,7 +566,6 @@
                 }
                 
                 try {
-                    // Manual Save Transaction since DB.saveVoucher is custom
                     const tx = DB.db.transaction(['vouchers', 'acct_entries'], 'readwrite');
                     const vStore = tx.objectStore('vouchers');
                     const aStore = tx.objectStore('acct_entries');
@@ -609,7 +591,6 @@
                 return;
             }
 
-            // Journal save logic (same as above manual transaction)
             const jData = {
                 voucher_no: vchNo,
                 date: date,
@@ -651,7 +632,6 @@
                 return;
             }
             
-            // Sort Descending by ID
             allVouchers.sort((a,b) => b.id - a.id).slice(0, 10).forEach(v => {
                 const party = ledgers.find(l => l.id === v.party_id)?.name || '';
                 container.innerHTML += `
@@ -675,25 +655,19 @@
             
             const words = numberToWords(amount);
             const win = window.open('', '_blank', 'width=800,height=600');
-            win.document.write(`
-                <html><head><title>Cheque</title>
-                <style>
-                    body { font-family: 'Times New Roman', serif; padding: 50px; }
-                    .cheque { border: 2px solid #000; padding: 30px; width: 800px; height: 350px; position: relative; }
-                    .date { position: absolute; top: 30px; right: 50px; font-size: 18px; }
-                    .payee { position: absolute; top: 100px; left: 100px; font-size: 22px; }
-                    .amount-words { position: absolute; top: 150px; left: 80px; font-size: 18px; }
-                    .amount-box { position: absolute; top: 140px; right: 50px; border: 1px solid #000; padding: 10px; font-size: 20px; }
-                </style></head>
-                <body onload="window.print(); window.close();">
-                    <div class="cheque">
-                        <div class="date">${chqDate.split('-').reverse().join('/')}</div>
-                        <div class="payee">Pay: <b>${payee}</b></div>
-                        <div class="amount-words">Rupees ${words} Only</div>
-                        <div class="amount-box">₹ ${parseFloat(amount).toFixed(2)}</div>
-                    </div>
-                </body></html>
-            `);
+            
+            win.document.write('<' + 'html' + '><' + 'head' + '><' + 'title' + '>Cheque</' + 'title' + '>');
+            win.document.write('<' + 'style' + '>body { font-family: "Times New Roman", serif; padding: 50px; } .cheque { border: 2px solid #000; padding: 30px; width: 800px; height: 350px; position: relative; } .date { position: absolute; top: 30px; right: 50px; font-size: 18px; } .payee { position: absolute; top: 100px; left: 100px; font-size: 22px; } .amount-words { position: absolute; top: 150px; left: 80px; font-size: 18px; } .amount-box { position: absolute; top: 140px; right: 50px; border: 1px solid #000; padding: 10px; font-size: 20px; }</' + 'style' + '>');
+            win.document.write('</' + 'head' + '><' + 'body onload="window.print(); window.close();"' + '>');
+            win.document.write('<div class="cheque">');
+            win.document.write('<div class="date">' + chqDate.split('-').reverse().join('/') + '</div>');
+            win.document.write('<div class="payee">Pay: <b>' + payee + '</b></div>');
+            win.document.write('<div class="amount-words">Rupees ' + words + ' Only</div>');
+            win.document.write('<div class="amount-box">₹ ' + parseFloat(amount).toFixed(2) + '</div>');
+            win.document.write('</div>');
+            win.document.write('</' + 'body' + '></' + 'html' + '>');
+            
+            win.document.close();
         }
 
         function numberToWords(num) {
