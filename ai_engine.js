@@ -15,10 +15,9 @@ class ArthIntelligence {
         console.log("🧠 AI: Learning from past transactions...");
 
         try {
-            const vouchers = await DB.getAllFromStore('vouchers');
-            const entries   = await DB.getAllFromStore('acct_entries');
-            const ledgers   = await DB.getAllFromStore('ledgers');
-
+           const vouchers = await DB.getAll('vouchers');      // .getAllFromStore हटाकर .getAll करें
+const entries   = await DB.getAll('acct_entries');
+const ledgers   = await DB.getAll('ledgers');
             if (vouchers.length === 0) {
                 console.log("🧠 AI: No vouchers found → skipping learning");
                 this.isReady = true;

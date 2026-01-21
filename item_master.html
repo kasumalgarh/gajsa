@@ -110,7 +110,7 @@
     <div class="overlay" onclick="toggleMenu()"></div>
 
     <div class="sidebar" id="mySidebar">
-        <div class="brand"><i class="fas fa-book"></i> Arth Book</div>
+        <div class="brand">📖 Arth Book</div>
         <a href="index.html" class="nav-link"><i class="fas fa-chart-pie"></i> Dashboard</a>
         <a href="reports.html" class="nav-link"><i class="fas fa-chart-line"></i> Reports</a>
         <a href="gst_filing.html" class="nav-link"><i class="fas fa-university"></i> GST Filing</a>
@@ -155,45 +155,52 @@
                 <div class="form-group">
                     <label>SKU / Barcode</label>
                     <div style="display:flex; gap:10px;">
-                        <input type="text" id="sku" placeholder="Scan or generate" onchange="previewBarcode()">
+                        <input type="text" id="sku" placeholder="Scan or enter" onchange="previewBarcode()">
                         <button class="btn-gen" onclick="generateSKU()">Generate</button>
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label>Category</label>
-                    <input type="text" id="category" list="catList" placeholder="e.g. Electronics">
+                    <input type="text" id="category" list="catList" placeholder="e.g. Electronics, Groceries">
                     <datalist id="catList"></datalist>
                 </div>
 
                 <div class="form-group">
                     <label>Unit</label>
                     <select id="unit">
-                        <option>Pcs</option><option>Kg</option><option>Box</option>
-                        <option>Mtr</option><option>Ltr</option><option>Gram</option>
+                        <option>Pcs</option>
+                        <option>Kg</option>
+                        <option>Box</option>
+                        <option>Mtr</option>
+                        <option>Ltr</option>
+                        <option>Gram</option>
                     </select>
                 </div>
 
                 <div class="form-group">
                     <label>GST Rate (%)</label>
                     <select id="gst">
-                        <option>0</option><option>5</option><option>12</option>
-                        <option selected>18</option><option>28</option>
+                        <option>0</option>
+                        <option>5</option>
+                        <option>12</option>
+                        <option selected>18</option>
+                        <option>28</option>
                     </select>
                 </div>
 
                 <div class="form-group">
                     <label>HSN/SAC Code</label>
-                    <input type="text" id="hsn" placeholder="e.g. 8544">
+                    <input type="text" id="hsn" placeholder="e.g. 8544" maxlength="8">
                 </div>
 
                 <div class="form-group">
-                    <label>Purchase Rate (Cost)</label>
+                    <label>Purchase Rate (₹)</label>
                     <input type="number" id="stdCost" step="0.01" min="0" value="0">
                 </div>
 
                 <div class="form-group">
-                    <label>Sales Rate (Price)</label>
+                    <label>Sales Rate (₹)</label>
                     <input type="number" id="stdPrice" step="0.01" min="0" value="0">
                 </div>
 
@@ -202,14 +209,14 @@
                     <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px,1fr)); gap:15px;">
                         <div>
                             <label>Opening Quantity</label>
-                            <input type="number" id="opQty" min="0" value="0">
+                            <input type="number" id="opQty" min="0" value="0" step="1">
                         </div>
                         <div>
                             <label>Reorder Level</label>
-                            <input type="number" id="reorder" min="0" value="5">
+                            <input type="number" id="reorder" min="0" value="5" step="1">
                         </div>
                         <div>
-                            <label>Track Batch & Expiry?</label>
+                            <label>Track Expiry / Batch?</label>
                             <select id="trackExpiry" onchange="toggleExpiryField()">
                                 <option value="No">No</option>
                                 <option value="Yes">Yes</option>
@@ -243,13 +250,23 @@
         let allItems = [];
         let currentFilter = 'all';
 
+        // Helper: Promise-based transaction wrapper (Fixes Race Condition)
+        function dbTransaction(storeName, mode, callback) {
+            return new Promise((resolve, reject) => {
+                const tx = DB.db.transaction(storeName, mode);
+                const store = tx.objectStore(storeName);
+                const request = callback(store);
+                
+                tx.oncomplete = () => resolve(request?.result ?? true);
+                tx.onerror = () => reject(tx.error);
+            });
+        }
+
         window.onload = async () => {
             await DB.init();
             allItems = await DB.getAll('items') || [];
-
             populateCategories();
             renderList();
-
             document.getElementById('name').focus();
         };
 
@@ -277,18 +294,19 @@
             list.innerHTML = '';
 
             let filtered = allItems.filter(i => {
-                const matchesSearch = i.name.toLowerCase().includes(query) || 
-                                      (i.sku && i.sku.toLowerCase().includes(query)) ||
-                                      (i.category && i.category.toLowerCase().includes(query));
-                if (!matchesSearch) return false;
+                const matches = 
+                    i.name.toLowerCase().includes(query) ||
+                    (i.sku && i.sku.toLowerCase().includes(query)) ||
+                    (i.category && i.category.toLowerCase().includes(query));
+                if (!matches) return false;
                 if (currentFilter === 'low') return (i.current_stock || 0) <= (i.reorder_level || 5);
                 return true;
             });
 
             filtered.sort((a, b) => a.name.localeCompare(b.name));
 
-            let totalCount = filtered.length;
-            let totalValue = filtered.reduce((sum, i) => sum + ((i.current_stock || 0) * (i.std_cost || 0)), 0);
+            const totalCount = filtered.length;
+            const totalValue = filtered.reduce((sum, i) => sum + ((i.current_stock || 0) * (i.std_cost || 0)), 0);
 
             if (filtered.length === 0) {
                 list.innerHTML = '<div style="padding:40px; text-align:center; color:#94a3b8;">No items found</div>';
@@ -327,6 +345,7 @@
         }
 
         function previewBarcode() {
+            if (typeof JsBarcode === 'undefined') return console.warn('JsBarcode not loaded');
             const sku = document.getElementById('sku').value.trim();
             const preview = document.getElementById('barcodePreview');
             if (!sku) {
@@ -334,34 +353,57 @@
                 return;
             }
             preview.style.display = 'block';
-            JsBarcode("#barcodeCanvas", sku, {
-                format: "CODE128",
-                width: 2,
-                height: 70,
-                displayValue: true,
-                fontSize: 16
-            });
+            try {
+                JsBarcode("#barcodeCanvas", sku, {
+                    format: "CODE128",
+                    width: 2,
+                    height: 70,
+                    displayValue: true,
+                    fontSize: 16
+                });
+            } catch (e) {
+                console.error("Barcode generation failed:", e);
+                preview.style.display = 'none';
+            }
         }
 
+        // --- NEW FIXED PRINT FUNCTION (NO SCRIPT INSIDE SCRIPT) ---
         function printBarcode() {
             const canvas = document.getElementById('barcodeCanvas');
-            const name = document.getElementById('name').value || 'Item';
+            const name = document.getElementById('name').value.trim() || 'Item';
             const price = document.getElementById('stdPrice').value || '0';
 
-            const printWindow = window.open('', '', 'width=400,height=600');
-            printWindow.document.write(`
-                <html><head><title>Barcode Label</title>
-                <style>
-                    body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
-                    h3 { margin: 10px 0; }
-                    .price { font-size: 24px; font-weight: bold; margin: 10px 0; }
-                </style></head>
-                <body onload="window.print(); window.close();">
-                    <h3>${name}</h3>
-                    <img src="${canvas.toDataURL()}" style="max-width:100%;">
-                    <div class="price">₹${parseFloat(price).toFixed(2)}</div>
-                </body></html>
-            `);
+            if (!canvas || canvas.style.display === 'none') {
+                return alert("Please generate a barcode first!");
+            }
+
+            const imgData = canvas.toDataURL("image/png");
+
+            const win = window.open('', '_blank', 'width=400,height=600');
+            
+            // Write HTML without any <script> tags inside to prevent parsing errors
+            win.document.write('<html><head><title>Barcode</title>');
+            win.document.write('<style>');
+            win.document.write('body { font-family: sans-serif; text-align: center; padding: 20px; }');
+            win.document.write('img { max-width: 100%; height: auto; }');
+            win.document.write('.price { font-size: 24px; font-weight: bold; margin-top: 10px; }');
+            win.document.write('</style>');
+            win.document.write('</head><body>');
+            
+            win.document.write('<h3>' + name + '</h3>');
+            win.document.write('<img src="' + imgData + '">');
+            win.document.write('<div class="price">₹' + parseFloat(price).toFixed(2) + '</div>');
+            
+            win.document.write('</body></html>');
+            
+            win.document.close(); // Important for browser to finish loading
+            win.focus();
+
+            // Print Command from Parent Window (Safe way)
+            setTimeout(function() {
+                win.print();
+                win.close();
+            }, 500);
         }
 
         function toggleExpiryField() {
@@ -370,18 +412,24 @@
         }
 
         function newItem() {
-            document.querySelectorAll('.form-group input, .form-group select').forEach(el => {
-                if(el.id !== 'gst' && el.id !== 'unit' && el.id !== 'reorder') el.value = '';
-            });
-            document.getElementById('gst').value = '18';
-            document.getElementById('unit').value = 'Pcs';
-            document.getElementById('reorder').value = '5';
-            document.getElementById('trackExpiry').value = 'No';
             document.getElementById('itemId').value = '';
+            document.getElementById('name').value = '';
+            document.getElementById('sku').value = '';
+            document.getElementById('category').value = '';
+            document.getElementById('hsn').value = '';
+            document.getElementById('stdCost').value = '0';
+            document.getElementById('stdPrice').value = '0';
+            document.getElementById('opQty').value = '0';
+            document.getElementById('reorder').value = '5';
+            document.getElementById('unit').value = 'Pcs';
+            document.getElementById('gst').value = '18';
+            document.getElementById('trackExpiry').value = 'No';
+            document.getElementById('opExpiry').value = '';
+            
             document.getElementById('deleteBtn').style.display = 'none';
             document.getElementById('barcodePreview').style.display = 'none';
-            toggleExpiryField();
             document.getElementById('formTitle').innerText = 'New Product';
+            toggleExpiryField();
             document.getElementById('name').focus();
         }
 
@@ -391,12 +439,12 @@
             document.getElementById('sku').value = item.sku || '';
             document.getElementById('category').value = item.category || '';
             document.getElementById('unit').value = item.unit || 'Pcs';
-            document.getElementById('gst').value = item.gst_rate || 18;
+            document.getElementById('gst').value = item.gst_rate ?? 18;
             document.getElementById('hsn').value = item.hsn || '';
-            document.getElementById('stdCost').value = item.std_cost || 0;
-            document.getElementById('stdPrice').value = item.std_price || 0;
-            document.getElementById('opQty').value = item.op_qty || 0; // Show opening, but not used for current
-            document.getElementById('reorder').value = item.reorder_level || 5;
+            document.getElementById('stdCost').value = item.std_cost ?? 0;
+            document.getElementById('stdPrice').value = item.std_price ?? 0;
+            document.getElementById('opQty').value = item.op_qty ?? 0;
+            document.getElementById('reorder').value = item.reorder_level ?? 5;
             document.getElementById('trackExpiry').value = item.track_expiry || 'No';
             document.getElementById('opExpiry').value = item.expiry_date || '';
 
@@ -421,43 +469,55 @@
                 sku,
                 category: document.getElementById('category').value.trim() || null,
                 unit: document.getElementById('unit').value,
-                gst_rate: parseFloat(document.getElementById('gst').value),
+                gst_rate: parseFloat(document.getElementById('gst').value) || 0,
                 hsn: document.getElementById('hsn').value.trim() || null,
                 std_cost: parseFloat(document.getElementById('stdCost').value) || 0,
                 std_price: parseFloat(document.getElementById('stdPrice').value) || 0,
+                op_qty: parseFloat(document.getElementById('opQty').value) || 0,
                 reorder_level: parseFloat(document.getElementById('reorder').value) || 5,
                 track_expiry: document.getElementById('trackExpiry').value,
                 expiry_date: document.getElementById('opExpiry').value || null
             };
 
             const id = document.getElementById('itemId').value;
-            if (id) {
-                data.id = parseInt(id);
-                // Preserve current_stock on edit
-                const existing = allItems.find(i => i.id == id);
-                if (existing) data.current_stock = existing.current_stock;
-                await DB.db.transaction('items', 'readwrite').objectStore('items').put(data);
-            } else {
-                data.current_stock = parseFloat(document.getElementById('opQty').value) || 0;
-                await DB.db.transaction('items', 'readwrite').objectStore('items').add(data);
-            }
 
-            showToast();
-            allItems = await DB.getAll('items');
-            populateCategories();
-            renderList();
-            newItem();
+            try {
+                if (id) {
+                    data.id = parseInt(id);
+                    const existing = allItems.find(i => i.id === data.id);
+                    if (existing) data.current_stock = existing.current_stock; // preserve actual stock
+                    await dbTransaction('items', 'readwrite', store => store.put(data));
+                } else {
+                    data.current_stock = data.op_qty; // initial stock = opening qty
+                    await dbTransaction('items', 'readwrite', store => store.add(data));
+                }
+
+                showToast('Item Saved Successfully!');
+                allItems = await DB.getAll('items');
+                populateCategories();
+                renderList();
+                newItem();
+
+            } catch (err) {
+                console.error("Save failed:", err);
+                alert("Error saving item. Check console for details.");
+            }
         }
 
         async function deleteItem() {
             const id = document.getElementById('itemId').value;
             if (!id || !confirm('Delete this item permanently?')) return;
 
-            await DB.db.transaction('items', 'readwrite').objectStore('items').delete(parseInt(id));
-            showToast('Item Deleted');
-            allItems = await DB.getAll('items');
-            renderList();
-            newItem();
+            try {
+                await dbTransaction('items', 'readwrite', store => store.delete(parseInt(id)));
+                showToast('Item Deleted');
+                allItems = await DB.getAll('items');
+                renderList();
+                newItem();
+            } catch (err) {
+                console.error("Delete failed:", err);
+                alert("Error deleting item.");
+            }
         }
 
         function showToast(message = 'Item Saved Successfully!') {
@@ -467,10 +527,16 @@
             setTimeout(() => toast.style.display = 'none', 2500);
         }
 
-        // Keyboard Shortcuts
+        // Keyboard shortcuts
         document.addEventListener('keydown', e => {
-            if (e.altKey && e.key === 'n') { e.preventDefault(); newItem(); }
-            if (e.altKey && e.key === 's') { e.preventDefault(); saveItem(); }
+            if (e.altKey && e.key === 'n') {
+                e.preventDefault();
+                newItem();
+            }
+            if (e.altKey && e.key === 's') {
+                e.preventDefault();
+                saveItem();
+            }
         });
     </script>
 </body>

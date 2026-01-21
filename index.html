@@ -184,6 +184,7 @@
             }
 
             if (sessionStorage.getItem('user_session')) {
+                await DB.init(); // <--- FIXED: Ensure DB is ready before dashboard
                 document.getElementById('loginOverlay').style.display = 'none';
                 initDashboard();
             }
@@ -418,7 +419,11 @@
                 }
             });
 
-            if (window.salesChart) window.salesChart.destroy();
+            // FIXED: Safe destroy for Sales Chart
+            if (window.salesChart?.destroy) {
+                window.salesChart.destroy();
+            }
+            
             window.salesChart = new Chart(document.getElementById('salesChart'), {
                 type: 'line',
                 data: {
@@ -439,7 +444,11 @@
             });
 
             // GST Doughnut
-            if (window.gstChart) window.gstChart.destroy();
+            // FIXED: Safe destroy for GST Chart
+            if (window.gstChart?.destroy) {
+                window.gstChart.destroy();
+            }
+            
             const gstCanvas = document.getElementById('gstChart');
             if (inTax + outTax === 0) {
                 const ctx = gstCanvas.getContext('2d');
@@ -480,18 +489,25 @@
         }
     </script>
 
-    <!-- PWA Service Worker -->
     <script>
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
-                    .then(reg => console.log('SW Registered'))
-                    .catch(err => console.error('SW Registration Failed', err));
-            });
+            // FIXED: Added check to prevent errors when running without a server (file://)
+            const isLocalhost = Boolean(
+                window.location.hostname === 'localhost' ||
+                window.location.hostname === '[::1]' ||
+                window.location.hostname.match(/^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/)
+            );
+
+            if (window.location.protocol === 'https:' || isLocalhost) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('/sw.js')
+                        .then(reg => console.log('SW Registered'))
+                        .catch(err => console.error('SW Registration Failed', err));
+                });
+            }
         }
     </script>
 
-    <!-- Self-Healing Password Migration -->
     <script>
         window.addEventListener('load', async () => {
             try {
