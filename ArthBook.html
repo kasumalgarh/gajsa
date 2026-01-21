@@ -2,499 +2,551 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="icon" type="image/x-icon" href="favicon.ico">
-    <title>Arth Book - Ledger Master</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <title>Arth Book - Parties / Ledgers</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
     <style>
         :root {
-            --sidebar-bg: #0f172a; --sidebar-text: #94a3b8; --active-text: #f8fafc;
-            --bg: #f8fafc; --card-bg: #ffffff;
-            --accent: #6366f1; --text: #1e293b; --border: #e2e8f0; --muted: #64748b;
-            --green: #10b981; --red: #ef4444; --blue: #3b82f6;
+            --sidebar-bg: #0f172a;
+            --sidebar-active: #1e293b;
+            --accent: #6366f1;
+            --bg: #f8fafc;
+            --text: #1e293b;
+            --muted: #64748b;
+            --border: #e2e8f0;
+            --green: #10b981;
+            --red: #ef4444;
+            --shadow: 0 4px 12px rgba(0,0,0,0.08);
+            --transition: all 0.3s ease;
         }
         * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
         body { display: flex; height: 100vh; background: var(--bg); color: var(--text); overflow: hidden; }
 
         /* SIDEBAR */
-        .sidebar { width: 260px; background: var(--sidebar-bg); padding: 20px; display: flex; flex-direction: column; flex-shrink: 0; }
-        .nav-link { padding: 12px 15px; margin-bottom: 5px; border-radius: 8px; color: var(--sidebar-text); text-decoration: none; font-weight: 500; display: flex; align-items: center; gap: 12px; transition: 0.2s; font-size: 14px; }
-        .nav-link:hover, .nav-link.active { background: #1e293b; color: var(--active-text); }
-        .nav-icon { font-size: 18px; }
+        .sidebar { 
+            width: 260px; background: var(--sidebar-bg); padding: 20px; display: flex; 
+            flex-direction: column; flex-shrink: 0; height: 100vh; overflow-y: auto; 
+            transition: var(--transition); z-index: 100;
+        }
+        .brand { font-size: 20px; font-weight: 800; color: white; margin-bottom: 40px; display: flex; align-items: center; gap: 10px; }
+        .nav-link { display: flex; align-items: center; gap: 12px; padding: 14px 18px; color: #94a3b8; text-decoration: none; border-radius: 10px; margin-bottom: 6px; font-weight: 500; transition: var(--transition); }
+        .nav-link:hover, .nav-link.active { background: var(--sidebar-active); color: white; }
 
-        /* MAIN CONTENT */
-        .main { flex: 1; padding: 20px; overflow-y: auto; display: flex; gap: 20px; }
-        
-        /* LEFT: LIST PANEL */
-        .list-panel { width: 320px; background: #fff; border-radius: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; }
+        /* MOBILE MENU */
+        .menu-btn { display: none; position: fixed; top: 15px; left: 15px; z-index: 1100; background: none; border: none; font-size: 1.6rem; color: var(--text); cursor: pointer; }
+        .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 900; }
+
+        /* MAIN */
+        .main { flex: 1; display: flex; padding: 20px; gap: 20px; overflow: hidden; }
+
+        /* LIST PANEL */
+        .list-panel { width: 380px; background: white; border-radius: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; box-shadow: var(--shadow); }
         .search-box { padding: 15px; border-bottom: 1px solid var(--border); background: #f8fafc; border-radius: 12px 12px 0 0; }
-        .search-box input { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; outline: none; }
-        
+        .search-box input { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; }
+
         .list-content { flex: 1; overflow-y: auto; }
-        .ledger-item { padding: 12px 15px; border-bottom: 1px solid #f1f5f9; cursor: pointer; transition: 0.2s; display: flex; justify-content: space-between; align-items: center; }
+        .ledger-item { padding: 16px 20px; border-bottom: 1px solid var(--border); cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: var(--transition); }
         .ledger-item:hover { background: #f0f9ff; }
-        .ledger-item.active { background: #e0e7ff; border-left: 4px solid var(--accent); }
-        .l-name { font-weight: 600; font-size: 14px; color: #334155; }
-        .l-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
-        .l-bal { font-size: 12px; font-weight: 700; }
-        .dr { color: var(--green); } .cr { color: var(--red); }
+        .ledger-item.active { background: #eef2ff; border-left: 5px solid var(--accent); }
 
-        /* RIGHT: FORM PANEL */
-        .form-panel { flex: 1; background: #fff; border-radius: 12px; border: 1px solid var(--border); padding: 30px; display: flex; flex-direction: column; overflow-y: auto; }
-        .form-header { margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
-        .form-header h2 { font-size: 20px; font-weight: 700; color: #1e293b; }
+        .ledger-info strong { display: block; font-size: 15px; }
+        .ledger-info span { font-size: 12px; color: var(--muted); }
+        .balance-info { text-align: right; }
+        .balance-amount { font-size: 14px; font-weight: 700; }
+        .dr { color: var(--green); }
+        .cr { color: var(--red); }
+        .balance-label { font-size: 11px; color: var(--muted); display: block; margin-top: 4px; }
 
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .field { margin-bottom: 5px; }
-        .full-width { grid-column: span 2; }
-        
-        label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 5px; }
-        input, select, textarea { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; outline: none; transition: 0.2s; background: #fff; }
-        input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
-        
-        .section-title { font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 15px; margin-bottom: 10px; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px; grid-column: span 2; }
+        /* FORM PANEL */
+        .form-panel { flex: 1; background: white; border-radius: 12px; border: 1px solid var(--border); padding: 30px; display: flex; flex-direction: column; overflow-y: auto; box-shadow: var(--shadow); }
+        .form-header { font-size: 22px; font-weight: 700; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; }
 
-        .btn-group { display: flex; gap: 10px; margin-top: 30px; }
-        button { padding: 10px 24px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; }
+        .form-section { grid-column: 1 / -1; }
+        .section-title { font-size: 14px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px; margin: 20px 0 10px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+
+        .form-group { }
+        label { display: block; font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 8px; }
+        input, select { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; transition: var(--transition); }
+        input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
+
+        .balance-row { display: flex; gap: 10px; align-items: center; }
+        .balance-row input { flex: 1; }
+
+        .actions { margin-top: 40px; display: flex; justify-content: space-between; align-items: center; }
+
+        .btn { padding: 12px 24px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: var(--transition); }
+        .btn:hover { opacity: 0.9; transform: translateY(-2px); box-shadow: var(--shadow); }
         .btn-save { background: var(--accent); color: white; }
-        .btn-new { background: #e2e8f0; color: #475569; }
-        .btn-del { background: #fee2e2; color: var(--red); margin-left: auto; }
-        /* NEW BUTTON STYLE */
-        .btn-stmt { background: #0f172a; color: white; display: none; } /* Hidden initially */
+        .btn-new { background: #e2e8f0; color: var(--text); }
+        .btn-del { background: #fee2e2; color: var(--red); }
+        .btn-stmt { background: #1e293b; color: white; }
 
-        #toast { position: fixed; bottom: 30px; right: 30px; background: var(--green); color: white; padding: 12px 24px; border-radius: 8px; display: none; box-shadow: 0 4px 15px rgba(0,0,0,0.2); font-weight: 600; z-index: 1001; }
+        /* TOAST */
+        #toast { position: fixed; top: 20px; right: 20px; background: var(--green); color: white; padding: 14px 28px; border-radius: 8px; font-weight: 600; box-shadow: var(--shadow); display: none; z-index: 2000; }
 
-        /* --- MODAL FOR STATEMENT --- */
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); backdrop-filter: blur(2px); }
-        .modal-content { background-color: #fff; margin: 50px auto; padding: 25px; border-radius: 12px; width: 800px; max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px; margin-bottom: 15px; }
-        .modal-body { overflow-y: auto; flex: 1; padding-right: 5px; }
-        
+        /* STATEMENT MODAL */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); z-index: 1000; align-items: center; justify-content: center; }
+        .modal-content { background: white; width: 90%; max-width: 900px; max-height: 90vh; border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); display: flex; flex-direction: column; }
+        .modal-header { padding: 20px 25px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: #f8fafc; }
+        .modal-body { flex: 1; overflow-y: auto; padding: 20px; }
         .stmt-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        .stmt-table th { text-align: left; padding: 10px; background: #f8fafc; border-bottom: 2px solid #e2e8f0; color: #64748b; font-size: 11px; text-transform: uppercase; position: sticky; top: 0; }
-        .stmt-table td { padding: 10px; border-bottom: 1px solid #f1f5f9; color: #1e293b; }
-        .stmt-table tr:last-child td { border-bottom: none; font-weight: 700; background: #f8fafc; }
-        
+        .stmt-table th { background: #f1f5f9; padding: 12px; text-align: left; font-weight: 600; color: var(--muted); border-bottom: 2px solid var(--border); position: sticky; top: 0; }
+        .stmt-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+        .stmt-table .bal { font-weight: 700; }
+        .stmt-table tr.closing { background: #f0f9ff; font-weight: 700; border-top: 2px solid var(--accent); }
+
         @media print {
-            body > * { display: none; }
-            .modal { display: block; position: absolute; left: 0; top: 0; width: 100%; height: auto; background: white; }
-            .modal-content { box-shadow: none; margin: 0; width: 100%; border: none; }
-            .no-print { display: none; }
+            body > *:not(.modal) { display: none; }
+            .modal, .modal-content { position: static; width: 100%; height: auto; background: white; box-shadow: none; }
+            .modal-header .no-print { display: none; }
+        }
+
+        @media (max-width: 900px) {
+            .menu-btn { display: block; }
+            .sidebar { position: fixed; left: -100%; top: 0; height: 100%; z-index: 1000; box-shadow: var(--shadow); }
+            .sidebar.active { left: 0; }
+            .overlay.active { display: block; }
+            .main { flex-direction: column; padding: 15px; }
+            .list-panel { width: 100%; max-height: 40vh; }
+            .form-grid { grid-template-columns: 1fr; }
+            .modal-content { width: 95%; }
         }
     </style>
 </head>
 <body>
 
-    <div class="sidebar">
-        <div style="font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 40px;">🚀 ArthBook</div>
-        <a href="index.html" class="nav-link"><span class="nav-icon">📊</span> Dashboard</a>
-        <a href="reports.html" class="nav-link"><span class="nav-icon">📈</span> Reports</a>
-        <a href="gst_filing.html" class="nav-link"><span class="nav-icon">🏛️</span> GST Filing</a>
-        <a href="sales_invoice.html" class="nav-link"><span class="nav-icon">🧾</span> Sales Invoice</a>
-        <a href="purchase_invoice.html" class="nav-link"><span class="nav-icon">🚚</span> Purchase Entry</a>
-        <a href="vouchers.html" class="nav-link"><span class="nav-icon">💸</span> Vouchers (JV)</a>
-        <a href="item_master.html" class="nav-link"><span class="nav-icon">📦</span> Inventory</a>
-        <a href="ArthBook.html" class="nav-link active"><span class="nav-icon">👥</span> Parties</a>
-        <a href="coa.html" class="nav-link"><span class="nav-icon">🗂️</span> Accounts</a>
-        <a href="settings.html" class="nav-link"><span class="nav-icon">⚙️</span> Settings</a>
+    <button class="menu-btn" onclick="toggleMenu()">☰</button>
+    <div class="overlay" onclick="toggleMenu()"></div>
+
+    <div class="sidebar" id="mySidebar">
+        <div class="brand"><i class="fas fa-book"></i> Arth Book</div>
+        <a href="index.html" class="nav-link"><i class="fas fa-chart-pie"></i> Dashboard</a>
+        <a href="reports.html" class="nav-link"><i class="fas fa-chart-line"></i> Reports</a>
+        <a href="gst_filing.html" class="nav-link"><i class="fas fa-university"></i> GST Filing</a>
+        <a href="sales_invoice.html" class="nav-link"><i class="fas fa-file-invoice"></i> Sales</a>
+        <a href="purchase_invoice.html" class="nav-link"><i class="fas fa-truck"></i> Purchase</a>
+        <a href="vouchers.html" class="nav-link"><i class="fas fa-receipt"></i> Vouchers</a>
+        <a href="item_master.html" class="nav-link"><i class="fas fa-boxes"></i> Inventory</a>
+        <a href="ArthBook.html" class="nav-link active"><i class="fas fa-users"></i> Parties</a>
+        <a href="coa.html" class="nav-link"><i class="fas fa-balance-scale"></i> Accounts</a>
+        <a href="settings.html" class="nav-link"><i class="fas fa-cogs"></i> Settings</a>
     </div>
 
     <div class="main">
         <div class="list-panel">
             <div class="search-box">
-                <input type="text" id="searchInput" placeholder="Search Party..." onkeyup="renderList(this.value)">
+                <input type="text" id="searchInput" placeholder="🔍 Search by Name, Phone, GSTIN..." onkeyup="renderList()">
             </div>
             <div class="list-content" id="ledgerList"></div>
         </div>
 
         <div class="form-panel">
             <div class="form-header">
-                <h2>Party / Ledger Master</h2>
-                <button class="btn-new" onclick="resetForm()">+ New Party</button>
+                <span id="formTitle">New Party / Ledger</span>
+                <button class="btn btn-new" onclick="newLedger()">+ New Party</button>
             </div>
             <input type="hidden" id="ledgerId">
 
             <div class="form-grid">
-                <div class="section-title">Basic Information</div>
-                <div class="field full-width">
-                    <label>Ledger Name *</label>
-                    <input type="text" id="lName" placeholder="e.g. Rahul Traders" required>
-                </div>
-                <div class="field">
-                    <label>Under Group *</label>
-                    <select id="groupSelect"><option value="">-- Select Group --</option></select>
-                </div>
-                <div class="field">
-                    <label>Contact Person / Phone</label>
-                    <input type="text" id="lPhone" placeholder="Mobile Number">
-                </div>
-
-                <div class="section-title">Tax & Registration</div>
-                <div class="field">
-                    <label>Registration Type</label>
-                    <select id="lRegType" onchange="toggleGSTField()">
-                        <option value="Regular">Regular (With GSTIN)</option>
-                        <option value="Unregistered" selected>Unregistered</option>
-                        <option value="Composition">Composition</option>
-                        <option value="Consumer">Consumer</option>
-                    </select>
-                </div>
-                <div class="field">
-                    <label>GSTIN</label>
-                    <input type="text" id="lGST" placeholder="NA" maxlength="15">
-                </div>
-                <div class="field">
-                    <label>State</label>
-                    <select id="lState"><option value="">-- Select State --</option></select>
-                </div>
-                <div class="field">
-                    <label>Address</label>
-                    <input type="text" id="lAddr" placeholder="City, Area">
-                </div>
-
-                <div class="section-title">Credit Limits & Banking</div>
-                <div class="field">
-                    <label>Credit Limit (₹)</label>
-                    <input type="number" id="lLimit" placeholder="Max Credit Allowed">
-                </div>
-                <div class="field">
-                    <label>Credit Period (Days)</label>
-                    <input type="number" id="lDays" placeholder="e.g. 30">
-                </div>
-
-                <div class="section-title">Opening Balance</div>
-                <div class="field">
-                    <label>Amount</label>
-                    <div style="display:flex; gap:5px;">
-                        <input type="number" id="opBal" value="0">
-                        <select id="opType" style="width:80px;"><option value="Dr">Dr</option><option value="Cr">Cr</option></select>
+                <div class="form-section">
+                    <div class="section-title">Basic Details</div>
+                    <div class="form-group">
+                        <label>Ledger Name *</label>
+                        <input type="text" id="ledgerName" placeholder="e.g. Rahul Traders" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Group *</label>
+                        <select id="groupSelect"></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Contact / Phone</label>
+                        <input type="text" id="ledgerPhone" placeholder="+91 98765 43210">
                     </div>
                 </div>
-                <div class="field">
-                    <label>As On Date</label>
-                    <input type="date" id="opDate">
+
+                <div class="form-section">
+                    <div class="section-title">Tax Registration</div>
+                    <div class="form-group">
+                        <label>Registration Type</label>
+                        <select id="regType" onchange="toggleGSTIN()">
+                            <option>Unregistered</option>
+                            <option>Regular</option>
+                            <option>Composition</option>
+                            <option>Consumer</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>GSTIN</label>
+                        <input type="text" id="ledgerGSTIN" placeholder="Leave blank if unregistered" maxlength="15">
+                    </div>
+                    <div class="form-group">
+                        <label>State</label>
+                        <select id="ledgerState"></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Address</label>
+                        <input type="text" id="ledgerAddress" placeholder="City, Area, Pin">
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="section-title">Credit Terms</div>
+                    <div class="form-group">
+                        <label>Credit Limit (₹)</label>
+                        <input type="number" id="creditLimit" min="0" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Credit Days</label>
+                        <input type="number" id="creditDays" min="0" value="0">
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="section-title">Opening Balance</div>
+                    <div class="form-group">
+                        <label>As on Date</label>
+                        <input type="date" id="opDate">
+                    </div>
+                    <div class="form-group">
+                        <label>Opening Amount</label>
+                        <div class="balance-row">
+                            <input type="number" id="opAmount" min="0" value="0">
+                            <select id="opSide">
+                                <option value="Dr">Dr (To Receive)</option>
+                                <option value="Cr">Cr (To Pay)</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="btn-group">
-                <button class="btn-save" onclick="saveLedger()">Save Party (Alt+S)</button>
-                <button class="btn-stmt" id="stmtBtn" onclick="openStatement()">📜 View History</button>
-                <button class="btn-del" onclick="deleteLedger()" id="delBtn" style="display:none;">Delete</button>
+            <div class="actions">
+                <button class="btn btn-save" onclick="saveLedger()">💾 Save Ledger</button>
+                <button class="btn btn-stmt" id="stmtBtn" style="display:none;" onclick="showStatement()">📜 View Statement</button>
+                <button class="btn btn-del" id="deleteBtn" style="display:none;" onclick="deleteLedger()">🗑️ Delete</button>
             </div>
         </div>
     </div>
 
+    <!-- Statement Modal -->
     <div id="stmtModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
                 <div>
-                    <h2 id="stmtTitle">Statement</h2>
-                    <span id="stmtSub" style="font-size:12px; color:#64748b;">Loading...</span>
+                    <h2 id="stmtPartyName">Party Statement</h2>
+                    <span id="stmtPeriod" style="font-size:13px; color:var(--muted);">All Time</span>
                 </div>
                 <div class="no-print">
-                    <button class="btn-save" onclick="window.print()">🖨️ Print / PDF</button>
-                    <button class="btn-new" onclick="document.getElementById('stmtModal').style.display='none'">Close</button>
+                    <button class="btn btn-save" onclick="window.print()">🖨️ Print / PDF</button>
+                    <button class="btn btn-new" onclick="closeModal()">Close</button>
                 </div>
             </div>
             <div class="modal-body">
                 <table class="stmt-table" id="stmtTable">
-                    <thead><tr><th>Date</th><th>Particulars</th><th>Vch No</th><th>Debit (₹)</th><th>Credit (₹)</th><th>Balance (₹)</th></tr></thead>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Particulars</th>
+                            <th>Voucher #</th>
+                            <th>Debit (₹)</th>
+                            <th>Credit (₹)</th>
+                            <th>Balance (₹)</th>
+                        </tr>
+                    </thead>
                     <tbody></tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <div id="toast">Saved Successfully!</div>
+    <div id="toast">Ledger Saved Successfully!</div>
 
-    <script src="db.js"></script><script src="auth.js"></script>
+    <script src="db.js"></script>
     <script>
-        // 1. HARDCODED STATES (No DB needed)
-        const INDIAN_STATES = [
-            { code: "35", name: "Andaman & Nicobar Islands" }, { code: "37", name: "Andhra Pradesh" },
-            { code: "12", name: "Arunachal Pradesh" }, { code: "18", name: "Assam" },
-            { code: "10", name: "Bihar" }, { code: "04", name: "Chandigarh" },
-            { code: "22", name: "Chhattisgarh" }, { code: "26", name: "Dadra & Nagar Haveli" },
-            { code: "07", name: "Delhi" }, { code: "30", name: "Goa" },
-            { code: "24", name: "Gujarat" }, { code: "06", name: "Haryana" },
-            { code: "02", name: "Himachal Pradesh" }, { code: "01", name: "Jammu & Kashmir" },
-            { code: "20", name: "Jharkhand" }, { code: "29", name: "Karnataka" },
-            { code: "32", name: "Kerala" }, { code: "31", name: "Lakshadweep" },
-            { code: "23", name: "Madhya Pradesh" }, { code: "27", name: "Maharashtra" },
-            { code: "14", name: "Manipur" }, { code: "17", name: "Meghalaya" },
-            { code: "15", name: "Mizoram" }, { code: "13", name: "Nagaland" },
-            { code: "21", name: "Odisha" }, { code: "34", name: "Puducherry" },
-            { code: "03", name: "Punjab" }, { code: "08", name: "Rajasthan" },
-            { code: "11", name: "Sikkim" }, { code: "33", name: "Tamil Nadu" },
-            { code: "36", name: "Telangana" }, { code: "16", name: "Tripura" },
-            { code: "09", name: "Uttar Pradesh" }, { code: "05", name: "Uttarakhand" },
-            { code: "19", name: "West Bengal" }
+        const STATES = [
+            {code:"01",name:"Jammu & Kashmir"},{code:"02",name:"Himachal Pradesh"},{code:"03",name:"Punjab"},
+            {code:"04",name:"Chandigarh"},{code:"05",name:"Uttarakhand"},{code:"06",name:"Haryana"},
+            {code:"07",name:"Delhi"},{code:"08",name:"Rajasthan"},{code:"09",name:"Uttar Pradesh"},
+            {code:"10",name:"Bihar"},{code:"11",name:"Sikkim"},{code:"12",name:"Arunachal Pradesh"},
+            {code:"13",name:"Nagaland"},{code:"14",name:"Manipur"},{code:"15",name:"Mizoram"},
+            {code:"16",name:"Tripura"},{code:"17",name:"Meghalaya"},{code:"18",name:"Assam"},
+            {code:"19",name:"West Bengal"},{code:"20",name:"Jharkhand"},{code:"21",name:"Odisha"},
+            {code:"22",name:"Chhattisgarh"},{code:"23",name:"Madhya Pradesh"},{code:"24",name:"Gujarat"},
+            {code:"25",name:"Daman & Diu"},{code:"26",name:"Dadra & Nagar Haveli"},{code:"27",name:"Maharashtra"},
+            {code:"28",name:"Andhra Pradesh"},{code:"29",name:"Karnataka"},{code:"30",name:"Goa"},
+            {code:"31",name:"Lakshadweep"},{code:"32",name:"Kerala"},{code:"33",name:"Tamil Nadu"},
+            {code:"34",name:"Puducherry"},{code:"35",name:"Andaman & Nicobar Islands"},{code:"36",name:"Telangana"},
+            {code:"37",name:"Andhra Pradesh (New)"}
         ];
 
-        let groups=[], ledgers=[];
+        let groups = [], ledgers = [];
 
         window.onload = async () => {
             await DB.init();
-            
-            // 2. FETCH DATA (Using Generic getAll if helper missing)
-            groups = await DB.getAll('groups');
-            ledgers = await DB.getAll('ledgers');
+            groups = await DB.getAll('groups') || [];
+            ledgers = await DB.getAll('ledgers') || [];
 
-            populateDropdowns();
+            populateGroups();
+            populateStates();
             renderList();
             document.getElementById('opDate').valueAsDate = new Date();
+            document.getElementById('ledgerName').focus();
         };
 
-        function populateDropdowns() {
-            // Groups
-            const gSel = document.getElementById('groupSelect');
-            gSel.innerHTML = '<option value="">-- Select Group --</option>';
-            groups.sort((a,b)=>a.name.localeCompare(b.name)).forEach(g => {
-                let op = document.createElement('option');
-                op.value = g.id; op.text = g.name;
-                gSel.appendChild(op);
-            });
+        function toggleMenu() {
+            document.getElementById('mySidebar').classList.toggle('active');
+            document.querySelector('.overlay').classList.toggle('active');
+        }
 
-            // States (From Local Array)
-            const sSel = document.getElementById('lState');
-            sSel.innerHTML = '<option value="">-- Select State --</option>';
-            INDIAN_STATES.forEach(s => {
-                let op = document.createElement('option');
-                op.value = s.code; op.text = s.name;
-                sSel.appendChild(op);
+        function populateGroups() {
+            const select = document.getElementById('groupSelect');
+            select.innerHTML = '<option value="">-- Select Group --</option>';
+            groups.sort((a,b) => a.name.localeCompare(b.name)).forEach(g => {
+                const opt = document.createElement('option');
+                opt.value = g.id;
+                opt.textContent = g.name;
+                select.appendChild(opt);
             });
         }
 
-        function toggleGSTField() {
-            const type = document.getElementById('lRegType').value;
-            const gstInput = document.getElementById('lGST');
-            if(type === 'Unregistered' || type === 'Consumer') {
-                gstInput.placeholder = "NA";
-            } else {
-                gstInput.placeholder = "Enter GSTIN";
-            }
+        function populateStates() {
+            const select = document.getElementById('ledgerState');
+            select.innerHTML = '<option value="">-- Select State --</option>';
+            STATES.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s.code;
+                opt.textContent = s.name;
+                select.appendChild(opt);
+            });
         }
 
-        function renderList(q = "") {
-            const list = document.getElementById('ledgerList');
-            list.innerHTML = '';
-            
-            const filtered = ledgers.filter(l => l.name.toLowerCase().includes(q.toLowerCase()));
-            
-            if(filtered.length === 0) {
-                list.innerHTML = '<div style="padding:20px; text-align:center; color:#ccc;">No Parties Found</div>';
+        function toggleGSTIN() {
+            const type = document.getElementById('regType').value;
+            const gstField = document.getElementById('ledgerGSTIN');
+            gstField.required = type === 'Regular';
+            gstField.placeholder = type === 'Regular' ? '15-digit GSTIN' : 'NA (Not Applicable)';
+        }
+
+        function renderList() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            const container = document.getElementById('ledgerList');
+            container.innerHTML = '';
+
+            let filtered = ledgers.filter(l => 
+                l.name.toLowerCase().includes(query) ||
+                (l.phone && l.phone.includes(query)) ||
+                (l.gstin && l.gstin.toLowerCase().includes(query))
+            );
+
+            filtered.sort((a,b) => a.name.localeCompare(b.name));
+
+            if (filtered.length === 0) {
+                container.innerHTML = '<div style="padding:40px; text-align:center; color:#94a3b8;">No parties found</div>';
                 return;
             }
 
-            filtered.sort((a,b)=>a.name.localeCompare(b.name)).forEach(l => {
-                const grp = groups.find(g => g.id == l.group_id)?.name || '-';
-                let balHtml = '<span style="color:#cbd5e1">-</span>';
-                if(l.opening_balance) {
-                    const type = l.opening_balance > 0 ? 'Dr' : 'Cr';
-                    balHtml = `<span class="l-bal ${type.toLowerCase()}">₹${Math.abs(l.opening_balance)} ${type}</span>`;
-                }
+            filtered.forEach(ledger => {
+                const group = groups.find(g => g.id === ledger.group_id)?.name || 'Unknown';
+                const bal = ledger.opening_balance || 0;
+                const side = bal >= 0 ? 'Dr' : 'Cr';
+                const balClass = bal >= 0 ? 'dr' : 'cr';
 
                 const div = document.createElement('div');
                 div.className = 'ledger-item';
-                div.onclick = () => loadLedger(l);
+                div.onclick = () => loadLedger(ledger);
+
                 div.innerHTML = `
-                    <div>
-                        <div class="l-name">${l.name}</div>
-                        <div class="l-sub">${grp} • ${l.reg_type || 'Unreg'}</div>
+                    <div class="ledger-info">
+                        <strong>${ledger.name}</strong>
+                        <span>${group} • ${ledger.reg_type || 'Unregistered'}</span>
                     </div>
-                    ${balHtml}
+                    <div class="balance-info">
+                        <div class="balance-amount ${balClass}">₹${Math.abs(bal).toLocaleString('en-IN')}</div>
+                        <span class="balance-label">${side} Balance</span>
+                    </div>
                 `;
-                list.appendChild(div);
+                container.appendChild(div);
             });
         }
 
-        function loadLedger(l) {
-            document.getElementById('ledgerId').value = l.id;
-            document.getElementById('lName').value = l.name;
-            document.getElementById('groupSelect').value = l.group_id;
-            document.getElementById('lPhone').value = l.phone || '';
-            document.getElementById('lRegType').value = l.reg_type || 'Unregistered';
-            document.getElementById('lGST').value = l.gstin || '';
-            document.getElementById('lState').value = l.state_code || '';
-            document.getElementById('lAddr').value = l.address || '';
-            
-            document.getElementById('lLimit').value = l.credit_limit || '';
-            document.getElementById('lDays').value = l.credit_days || '';
-            
-            document.getElementById('opBal').value = Math.abs(l.opening_balance || 0);
-            document.getElementById('opType').value = (l.opening_balance || 0) >= 0 ? 'Dr' : 'Cr';
-            document.getElementById('opDate').value = l.op_date || new Date().toISOString().slice(0,10);
+        function loadLedger(ledger) {
+            document.getElementById('ledgerId').value = ledger.id;
+            document.getElementById('ledgerName').value = ledger.name || '';
+            document.getElementById('groupSelect').value = ledger.group_id || '';
+            document.getElementById('ledgerPhone').value = ledger.phone || '';
+            document.getElementById('regType').value = ledger.reg_type || 'Unregistered';
+            document.getElementById('ledgerGSTIN').value = ledger.gstin || '';
+            document.getElementById('ledgerState').value = ledger.state_code || '';
+            document.getElementById('ledgerAddress').value = ledger.address || '';
+            document.getElementById('creditLimit').value = ledger.credit_limit || 0;
+            document.getElementById('creditDays').value = ledger.credit_days || 0;
+            document.getElementById('opDate').value = ledger.op_date || new Date().toISOString().slice(0,10);
+            document.getElementById('opAmount').value = Math.abs(ledger.opening_balance || 0);
+            document.getElementById('opSide').value = (ledger.opening_balance || 0) >= 0 ? 'Dr' : 'Cr';
 
-            document.getElementById('delBtn').style.display = 'block';
-            document.getElementById('stmtBtn').style.display = 'block'; // Show Statement Button
-            toggleGSTField();
+            toggleGSTIN();
+            document.getElementById('deleteBtn').style.display = 'block';
+            document.getElementById('stmtBtn').style.display = 'block';
+            document.getElementById('formTitle').innerText = 'Edit Party / Ledger';
+
+            // Highlight
+            document.querySelectorAll('.ledger-item').forEach(item => item.classList.remove('active'));
+            event.currentTarget.classList.add('active');
         }
 
-        function resetForm() {
-            document.querySelectorAll('input').forEach(i => i.value = '');
-            document.getElementById('ledgerId').value = '';
-            document.getElementById('groupSelect').value = '';
-            document.getElementById('opBal').value = 0;
-            document.getElementById('lRegType').value = 'Unregistered';
+        function newLedger() {
+            document.querySelectorAll('.form-group input, .form-group select').forEach(el => {
+                if (!['opDate'].includes(el.id)) el.value = '';
+            });
             document.getElementById('opDate').valueAsDate = new Date();
-            document.getElementById('delBtn').style.display = 'none';
-            document.getElementById('stmtBtn').style.display = 'none'; // Hide Statement Button
-            document.getElementById('lName').focus();
+            document.getElementById('opAmount').value = 0;
+            document.getElementById('opSide').value = 'Dr';
+            document.getElementById('regType').value = 'Unregistered';
+            document.getElementById('ledgerId').value = '';
+            document.getElementById('deleteBtn').style.display = 'none';
+            document.getElementById('stmtBtn').style.display = 'none';
+            document.getElementById('formTitle').innerText = 'New Party / Ledger';
+            toggleGSTIN();
+            document.querySelectorAll('.ledger-item').forEach(item => item.classList.remove('active'));
+            document.getElementById('ledgerName').focus();
         }
 
-        // --- NEW STATEMENT LOGIC ---
-        async function openStatement() {
-            const id = parseInt(document.getElementById('ledgerId').value);
-            if(!id) return;
-            const party = ledgers.find(l => l.id === id);
-            
-            document.getElementById('stmtModal').style.display = 'block';
-            document.getElementById('stmtTitle').innerText = party.name;
-            document.getElementById('stmtSub').innerText = `Report Date: ${new Date().toLocaleDateString()}`;
-            
-            const tbody = document.querySelector('#stmtTable tbody');
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Loading Records...</td></tr>';
-
-            // Fetch Records
-            const allVouchers = await DB.getAll('vouchers');
-            // Filter: party_id matches or vendor_id matches (Legacy support)
-            const txns = allVouchers.filter(v => v.party_id === id || v.vendor_id === id);
-            
-            // Sort by Date
-            txns.sort((a,b) => new Date(a.date) - new Date(b.date));
-
-            tbody.innerHTML = '';
-            
-            // 1. Opening Row
-            let runBal = party.opening_balance || 0;
-            const opType = runBal >= 0 ? 'Dr' : 'Cr';
-            tbody.innerHTML += `
-                <tr style="background:#f1f5f9; font-weight:600;">
-                    <td>${party.op_date || '-'}</td>
-                    <td>Opening Balance</td>
-                    <td>-</td>
-                    <td>${runBal >=0 ? Math.abs(runBal) : ''}</td>
-                    <td>${runBal < 0 ? Math.abs(runBal) : ''}</td>
-                    <td>${Math.abs(runBal)} ${opType}</td>
-                </tr>
-            `;
-
-            // 2. Loop Transactions
-            txns.forEach(v => {
-                let debit = 0, credit = 0;
-                
-                // Logic based on Voucher Type & Party Role
-                // If Sales -> Party is Debited (Dr)
-                // If Receipt -> Party is Credited (Cr)
-                // If Purchase -> Party is Credited (Cr)
-                // If Payment -> Party is Debited (Dr)
-                
-                if(v.type === 'Sales') { debit = v.grand_total || v.amount; }
-                else if(v.type === 'Receipt') { credit = v.amount; }
-                else if(v.type === 'Purchase') { credit = v.grand_total || v.amount; }
-                else if(v.type === 'Payment') { debit = v.amount; }
-                else if(v.type === 'Journal') {
-                    // Complex: Check acct_entries for precise split. For summary, use manual
-                    // Assuming JV Amount logic (Simplification)
-                }
-
-                runBal = runBal + debit - credit;
-                const balType = runBal >= 0 ? 'Dr' : 'Cr';
-
-                tbody.innerHTML += `
-                    <tr>
-                        <td>${v.date}</td>
-                        <td>${v.type} <span style="font-size:11px; color:#94a3b8;">${v.narration || ''}</span></td>
-                        <td>${v.voucher_no}</td>
-                        <td>${debit ? debit.toFixed(2) : '-'}</td>
-                        <td>${credit ? credit.toFixed(2) : '-'}</td>
-                        <td><b>${Math.abs(runBal).toFixed(2)} ${balType}</b></td>
-                    </tr>
-                `;
-            });
-
-            // 3. Closing Row
-            tbody.innerHTML += `
-                <tr style="background:#f8fafc; font-weight:700; border-top:2px solid #e2e8f0;">
-                    <td colspan="5" style="text-align:right;">Closing Balance</td>
-                    <td>${Math.abs(runBal).toFixed(2)} ${runBal >= 0 ? 'Dr' : 'Cr'}</td>
-                </tr>
-            `;
-        }
-
-        // 3. ROBUST SAVE LOGIC (Direct Transaction)
         async function saveLedger() {
-            const name = document.getElementById('lName').value;
-            const grp = document.getElementById('groupSelect').value;
-            if(!name || !grp) return alert("Name & Group required!");
+            const name = document.getElementById('ledgerName').value.trim();
+            const groupId = document.getElementById('groupSelect').value;
+            if (!name || !groupId) return alert('Name and Group are required!');
 
-            let bal = parseFloat(document.getElementById('opBal').value) || 0;
-            if(document.getElementById('opType').value === 'Cr') bal = -bal;
+            let opBal = parseFloat(document.getElementById('opAmount').value) || 0;
+            if (document.getElementById('opSide').value === 'Cr') opBal = -opBal;
 
             const data = {
-                name: name,
-                group_id: parseInt(grp),
-                phone: document.getElementById('lPhone').value,
-                reg_type: document.getElementById('lRegType').value,
-                gstin: document.getElementById('lGST').value,
-                state_code: document.getElementById('lState').value,
-                address: document.getElementById('lAddr').value,
-                credit_limit: parseFloat(document.getElementById('lLimit').value) || 0,
-                credit_days: parseInt(document.getElementById('lDays').value) || 0,
-                opening_balance: bal,
+                name,
+                group_id: parseInt(groupId),
+                phone: document.getElementById('ledgerPhone').value.trim(),
+                reg_type: document.getElementById('regType').value,
+                gstin: document.getElementById('ledgerGSTIN').value.trim() || null,
+                state_code: document.getElementById('ledgerState').value || null,
+                address: document.getElementById('ledgerAddress').value.trim() || null,
+                credit_limit: parseFloat(document.getElementById('creditLimit').value) || 0,
+                credit_days: parseInt(document.getElementById('creditDays').value) || 0,
+                opening_balance: opBal,
                 op_date: document.getElementById('opDate').value
             };
 
             const id = document.getElementById('ledgerId').value;
-            
-            // Direct IndexedDB Transaction
-            const tx = DB.db.transaction('ledgers', 'readwrite');
-            const store = tx.objectStore('ledgers');
-            
-            if(id) {
-                data.id = parseInt(id);
-                store.put(data);
-            } else {
-                store.add(data);
-            }
+            if (id) data.id = parseInt(id);
 
-            tx.oncomplete = async () => {
+            try {
+                const tx = DB.db.transaction('ledgers', 'readwrite');
+                id ? tx.objectStore('ledgers').put(data) : tx.objectStore('ledgers').add(data);
+                await tx.done;
+
                 showToast();
-                ledgers = await DB.getAll('ledgers'); // Refresh
-                renderList(document.getElementById('searchInput').value);
-                resetForm();
-            };
-            
-            tx.onerror = (e) => alert("Error saving: " + e.target.error);
+                ledgers = await DB.getAll('ledgers');
+                renderList();
+                newLedger();
+            } catch (e) {
+                alert('Error: Ledger name must be unique');
+                console.error(e);
+            }
         }
 
-        // 4. ROBUST DELETE LOGIC
         async function deleteLedger() {
             const id = document.getElementById('ledgerId').value;
-            if(!id) return;
-            if(confirm("Delete this party?")) {
+            if (!id || !confirm('Delete this ledger permanently? All transactions will be orphaned.')) return;
+
+            try {
                 const tx = DB.db.transaction('ledgers', 'readwrite');
-                tx.objectStore('ledgers').delete(parseInt(id));
-                
-                tx.oncomplete = async () => {
-                    ledgers = await DB.getAll('ledgers');
-                    renderList();
-                    resetForm();
-                };
-                
-                tx.onerror = (e) => alert("Cannot delete: " + e.target.error);
+                await tx.objectStore('ledgers').delete(parseInt(id));
+                showToast('Ledger Deleted');
+                ledgers = await DB.getAll('ledgers');
+                renderList();
+                newLedger();
+            } catch (e) {
+                alert('Cannot delete ledger with transactions');
             }
         }
 
-        function showToast() {
-            const t = document.getElementById('toast');
-            t.style.display='block';
-            setTimeout(()=>t.style.display='none', 2000);
+        async function showStatement() {
+            const id = parseInt(document.getElementById('ledgerId').value);
+            if (!id) return;
+
+            const ledger = ledgers.find(l => l.id === id);
+            document.getElementById('stmtPartyName').innerText = ledger.name;
+            document.getElementById('stmtPeriod').innerText = `As on ${new Date().toLocaleDateString('en-IN')}`;
+
+            const tbody = document.querySelector('#stmtTable tbody');
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:30px;">Loading statement...</td></tr>';
+
+            document.getElementById('stmtModal').style.display = 'flex';
+
+            const vouchers = await DB.getAll('vouchers');
+            const acctEntries = await DB.getAll('acct_entries');
+
+            const relevant = vouchers.filter(v => v.party_id === id);
+            relevant.sort((a,b) => a.date.localeCompare(b.date));
+
+            let runningBal = ledger.opening_balance || 0;
+            tbody.innerHTML = `
+                <tr style="background:#f8fafc;">
+                    <td>${ledger.op_date || '-'}</td>
+                    <td><strong>Opening Balance</strong></td>
+                    <td>-</td>
+                    <td class="amt">${runningBal >= 0 ? runningBal.toLocaleString('en-IN') : ''}</td>
+                    <td class="amt">${runningBal < 0 ? Math.abs(runningBal).toLocaleString('en-IN') : ''}</td>
+                    <td class="amt bal">${Math.abs(runningBal).toLocaleString('en-IN')} ${runningBal >= 0 ? 'Dr' : 'Cr'}</td>
+                </tr>
+            `;
+
+            relevant.forEach(v => {
+                // Determine Debit/Credit based on type
+                let debit = 0, credit = 0;
+                if (v.type === 'Sales') debit = v.grand_total || v.amount || 0;
+                else if (v.type === 'Purchase') credit = v.grand_total || v.amount || 0;
+                else if (v.type === 'Receipt') credit = v.amount || 0;
+                else if (v.type === 'Payment') debit = v.amount || 0;
+
+                runningBal += debit - credit;
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${v.date}</td>
+                        <td>${v.narration || v.type}</td>
+                        <td>${v.voucher_no}</td>
+                        <td class="amt">${debit ? debit.toLocaleString('en-IN') : ''}</td>
+                        <td class="amt">${credit ? credit.toLocaleString('en-IN') : ''}</td>
+                        <td class="amt bal">${Math.abs(runningBal).toLocaleString('en-IN')} ${runningBal >= 0 ? 'Dr' : 'Cr'}</td>
+                    </tr>
+                `;
+            });
+
+            const side = runningBal >= 0 ? 'Dr' : 'Cr';
+            tbody.innerHTML += `
+                <tr class="closing">
+                    <td colspan="5" style="text-align:right;"><strong>Closing Balance</strong></td>
+                    <td class="amt bal"><strong>${Math.abs(runningBal).toLocaleString('en-IN')} ${side}</strong></td>
+                </tr>
+            `;
         }
 
-        // Shortcut
+        function closeModal() {
+            document.getElementById('stmtModal').style.display = 'none';
+        }
+
+        function showToast(message = 'Ledger Saved Successfully!') {
+            const toast = document.getElementById('toast');
+            toast.innerText = message;
+            toast.style.display = 'block';
+            setTimeout(() => toast.style.display = 'none', 2500);
+        }
+
+        // Shortcuts
         document.addEventListener('keydown', e => {
-            if(e.altKey && e.key.toLowerCase() === 's') saveLedger();
-            if(e.altKey && e.key.toLowerCase() === 'n') resetForm();
+            if (e.altKey && e.key === 'n') { e.preventDefault(); newLedger(); }
+            if (e.altKey && e.key === 's') { e.preventDefault(); saveLedger(); }
         });
     </script>
 </body>

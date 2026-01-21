@@ -2,269 +2,322 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="icon" type="image/x-icon" href="favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
     <title>Arth Book - Chart of Accounts</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
     <style>
         :root {
-            --sidebar-bg: #0f172a; --sidebar-text: #94a3b8; --active-text: #f8fafc;
-            --bg: #f8fafc; --card-bg: #ffffff;
-            --accent: #8b5cf6; /* Violet for Groups */
-            --text: #1e293b; --border: #e2e8f0; --muted: #64748b;
+            --sidebar-bg: #0f172a;
+            --sidebar-active: #1e293b;
+            --accent: #8b5cf6; /* Violet */
+            --bg: #f8fafc;
+            --text: #1e293b;
+            --muted: #64748b;
+            --border: #e2e8f0;
+            --green: #10b981;
+            --red: #ef4444;
+            --orange: #f59e0b;
+            --shadow: 0 4px 12px rgba(0,0,0,0.08);
+            --transition: all 0.3s ease;
         }
         * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
         body { display: flex; height: 100vh; background: var(--bg); color: var(--text); overflow: hidden; }
 
-        .sidebar { width: 260px; background: var(--sidebar-bg); padding: 20px; display: flex; flex-direction: column; flex-shrink: 0; }
-        .brand { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 40px; display: flex; align-items: center; gap: 10px; }
-        .nav-link { padding: 12px 15px; margin-bottom: 5px; border-radius: 8px; color: var(--sidebar-text); text-decoration: none; font-weight: 500; display: flex; align-items: center; gap: 12px; transition: 0.2s; font-size: 14px; }
-        .nav-link:hover, .nav-link.active { background: #1e293b; color: var(--active-text); }
-        .nav-icon { font-size: 18px; }
+        /* SIDEBAR */
+        .sidebar { 
+            width: 260px; background: var(--sidebar-bg); padding: 20px; display: flex; 
+            flex-direction: column; flex-shrink: 0; height: 100vh; overflow-y: auto; 
+            transition: var(--transition); z-index: 100;
+        }
+        .brand { font-size: 20px; font-weight: 800; color: white; margin-bottom: 40px; display: flex; align-items: center; gap: 10px; }
+        .nav-link { display: flex; align-items: center; gap: 12px; padding: 14px 18px; color: #94a3b8; text-decoration: none; border-radius: 10px; margin-bottom: 6px; font-weight: 500; transition: var(--transition); }
+        .nav-link:hover, .nav-link.active { background: var(--sidebar-active); color: white; }
 
+        /* MOBILE MENU */
+        .menu-btn { display: none; position: fixed; top: 15px; left: 15px; z-index: 1100; background: none; border: none; font-size: 1.6rem; color: var(--text); cursor: pointer; }
+        .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 900; }
+
+        /* MAIN */
         .main { flex: 1; display: flex; padding: 20px; gap: 20px; overflow: hidden; }
-        
-        .list-panel { width: 400px; background: #fff; border-radius: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; }
-        .search-box { padding: 15px; border-bottom: 1px solid var(--border); }
-        .search-box input { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; outline: none; }
-        .list-content { flex: 1; overflow-y: auto; padding: 0; }
-        
-        .tree-item { padding: 10px 15px; border-bottom: 1px solid #f1f5f9; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
-        .tree-item:hover { background: #f8fafc; }
-        .tree-item.active { background: #f3e8ff; border-left: 4px solid var(--accent); }
-        
-        .badge { padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; text-transform: uppercase; }
+
+        /* LIST PANEL */
+        .list-panel { width: 380px; background: white; border-radius: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; box-shadow: var(--shadow); }
+        .search-box { padding: 15px; border-bottom: 1px solid var(--border); background: #f8fafc; border-radius: 12px 12px 0 0; }
+        .search-box input { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; }
+
+        .list-content { flex: 1; overflow-y: auto; }
+        .tree-item { padding: 14px 18px; border-bottom: 1px solid var(--border); cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: var(--transition); }
+        .tree-item:hover { background: #f3e8ff; }
+        .tree-item.active { background: #ede9fe; border-left: 5px solid var(--accent); }
+
+        .group-info strong { display: block; font-size: 15px; }
+        .group-info span { font-size: 12px; color: var(--muted); }
+        .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+
         .badge-asset { background: #dbeafe; color: #1e40af; }
         .badge-liab { background: #fee2e2; color: #991b1b; }
         .badge-inc { background: #dcfce7; color: #166534; }
         .badge-exp { background: #ffedd5; color: #9a3412; }
 
-        .form-panel { flex: 1; background: #fff; border-radius: 12px; border: 1px solid var(--border); padding: 30px; display: flex; flex-direction: column; }
-        .form-header { font-size: 20px; font-weight: 700; margin-bottom: 25px; color: #0f172a; border-bottom: 1px solid var(--border); padding-bottom: 15px; display: flex; justify-content: space-between; }
-        
-        .form-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
-        .field { margin-bottom: 15px; }
-        label { display: block; font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 5px; }
-        input, select { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; outline: none; }
-        input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.1); }
+        /* FORM PANEL */
+        .form-panel { flex: 1; background: white; border-radius: 12px; border: 1px solid var(--border); padding: 30px; display: flex; flex-direction: column; box-shadow: var(--shadow); }
+        .form-header { font-size: 22px; font-weight: 700; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; }
 
-        .actions { margin-top: auto; padding-top: 25px; border-top: 1px solid var(--border); display: flex; gap: 10px; }
-        .btn { padding: 10px 24px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; }
+        .form-group { }
+        label { display: block; font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+        input, select { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; transition: var(--transition); }
+        input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(139,92,246,0.15); }
+
+        .helper-text { font-size: 12px; color: var(--muted); margin-top: 6px; }
+
+        .actions { margin-top: auto; padding-top: 30px; display: flex; justify-content: space-between; align-items: center; }
+
+        .btn { padding: 12px 24px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: var(--transition); }
+        .btn:hover { opacity: 0.9; transform: translateY(-2px); box-shadow: var(--shadow); }
         .btn-save { background: var(--accent); color: white; }
-        .btn-save:hover { background: #7c3aed; }
         .btn-new { background: #e2e8f0; color: var(--text); }
-        .btn-del { background: #fee2e2; color: #991b1b; margin-left: auto; }
-        
-        /* New Classes to fix Inline Styles */
-        .helper-text { color: var(--muted); margin-top: 5px; display: block; font-size: 12px; }
-        #delBtn { display: none; } /* Hidden by default via CSS */
-        
-        #toast { position: fixed; top: 20px; right: 20px; background: var(--accent); color: white; padding: 12px 24px; border-radius: 6px; display: none; }
+        .btn-del { background: #fee2e2; color: var(--red); }
+
+        /* TOAST */
+        #toast { position: fixed; top: 20px; right: 20px; background: var(--accent); color: white; padding: 14px 28px; border-radius: 8px; font-weight: 600; box-shadow: var(--shadow); display: none; z-index: 2000; }
+
+        /* MOBILE */
+        @media (max-width: 900px) {
+            .menu-btn { display: block; }
+            .sidebar { position: fixed; left: -100%; top: 0; height: 100%; z-index: 1000; box-shadow: var(--shadow); }
+            .sidebar.active { left: 0; }
+            .overlay.active { display: block; }
+            .main { flex-direction: column; padding: 15px; }
+            .list-panel { width: 100%; max-height: 40vh; }
+            .form-panel { flex: 1; }
+            .form-grid { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
 
-    <div class="sidebar">
-        <div class="brand">🚀 ArthBook</div>
-        <a href="index.html" class="nav-link"><span class="nav-icon">📊</span> Dashboard</a>
-        <a href="reports.html" class="nav-link"><span class="nav-icon">📈</span> Reports</a>
-        <a href="gst_filing.html" class="nav-link"><span class="nav-icon">🏛️</span> GST Filing</a>
-        <a href="sales_invoice.html" class="nav-link"><span class="nav-icon">🧾</span> Sales Invoice</a>
-        <a href="purchase_invoice.html" class="nav-link"><span class="nav-icon">🚚</span> Purchase Entry</a>
-        <a href="vouchers.html" class="nav-link"><span class="nav-icon">💸</span> Vouchers (JV)</a>
-        <a href="item_master.html" class="nav-link"><span class="nav-icon">📦</span> Inventory</a>
-        <a href="ArthBook.html" class="nav-link"><span class="nav-icon">👥</span> Parties / Ledgers</a>
-        <a href="coa.html" class="nav-link active"><span class="nav-icon">🗂️</span> Chart of Accounts</a>
-        <a href="settings.html" class="nav-link"><span class="nav-icon">⚙️</span> Settings</a>
+    <button class="menu-btn" onclick="toggleMenu()">☰</button>
+    <div class="overlay" onclick="toggleMenu()"></div>
+
+    <div class="sidebar" id="mySidebar">
+        <div class="brand"><i class="fas fa-book"></i> Arth Book</div>
+        <a href="index.html" class="nav-link"><i class="fas fa-chart-pie"></i> Dashboard</a>
+        <a href="reports.html" class="nav-link"><i class="fas fa-chart-line"></i> Reports</a>
+        <a href="gst_filing.html" class="nav-link"><i class="fas fa-university"></i> GST Filing</a>
+        <a href="sales_invoice.html" class="nav-link"><i class="fas fa-file-invoice"></i> Sales</a>
+        <a href="purchase_invoice.html" class="nav-link"><i class="fas fa-truck"></i> Purchase</a>
+        <a href="vouchers.html" class="nav-link"><i class="fas fa-receipt"></i> Vouchers</a>
+        <a href="item_master.html" class="nav-link"><i class="fas fa-boxes"></i> Inventory</a>
+        <a href="ArthBook.html" class="nav-link"><i class="fas fa-users"></i> Parties</a>
+        <a href="coa.html" class="nav-link active"><i class="fas fa-balance-scale"></i> Chart of Accounts</a>
+        <a href="settings.html" class="nav-link"><i class="fas fa-cogs"></i> Settings</a>
     </div>
 
     <div class="main">
         <div class="list-panel">
             <div class="search-box">
-                <input type="text" placeholder="Search Groups..." aria-label="Search Groups" onkeyup="renderList(this.value)">
+                <input type="text" id="searchInput" placeholder="🔍 Search Groups..." onkeyup="renderList()">
             </div>
             <div class="list-content" id="groupList"></div>
         </div>
 
         <div class="form-panel">
             <div class="form-header">
-                <span>Account Group</span>
-                <button class="btn btn-new" onclick="resetForm()">New Group</button>
+                <span id="formTitle">New Account Group</span>
+                <button class="btn btn-new" onclick="newGroup()">+ New Group</button>
             </div>
             <input type="hidden" id="groupId">
 
             <div class="form-grid">
-                <div class="field">
-                    <label for="name">Group Name *</label>
-                    <input type="text" id="name" placeholder="e.g. Indirect Incomes" required>
+                <div class="form-group">
+                    <label>Group Name *</label>
+                    <input type="text" id="groupName" placeholder="e.g. Indirect Expenses" required>
                 </div>
-                <div class="field">
-                    <label for="nature">Primary Nature *</label>
-                    <select id="nature" onchange="filterParents()">
+
+                <div class="form-group">
+                    <label>Primary Nature *</label>
+                    <select id="groupNature">
                         <option value="Asset">Asset</option>
                         <option value="Liability">Liability</option>
                         <option value="Income">Income</option>
                         <option value="Expense">Expense</option>
                     </select>
                 </div>
-                <div class="field">
-                    <label for="parentSelect">Under / Parent Group (Optional)</label>
-                    <select id="parentSelect">
-                        <option value="">-- Primary --</option>
+
+                <div class="form-group">
+                    <label>Parent Group (Optional)</label>
+                    <select id="parentGroup">
+                        <option value="">-- Primary Group --</option>
                     </select>
-                    <small class="helper-text">Select existing group to make this a sub-group.</small>
+                    <span class="helper-text">Make this a sub-group under an existing group</span>
                 </div>
             </div>
 
             <div class="actions">
-                <button class="btn btn-save" onclick="saveGroup()">Save Group</button>
-                <button class="btn btn-del" onclick="deleteGroup()" id="delBtn">Delete</button>
+                <button class="btn btn-save" onclick="saveGroup()">💾 Save Group</button>
+                <button class="btn btn-del" id="deleteBtn" style="display:none;" onclick="deleteGroup()">🗑️ Delete Group</button>
             </div>
         </div>
     </div>
 
-    <div id="toast">Group Saved!</div>
+    <div id="toast">Group Saved Successfully!</div>
 
-    <script src="db.js"></script><script src="auth.js"></script>
+    <script src="db.js"></script>
     <script>
-        let groups = [];
+        let allGroups = [];
 
         window.onload = async () => {
-            try {
-                await DB.init();
-                await refreshData();
-            } catch(e) { console.error(e); }
+            await DB.init();
+            allGroups = await DB.getAll('groups') || [];
+            renderList();
+            populateParentSelect();
+            document.getElementById('groupName').focus();
         };
 
-        async function refreshData() {
-            groups = await DB.getAll('groups');
-            renderList();
-            populateParents();
+        function toggleMenu() {
+            document.getElementById('mySidebar').classList.toggle('active');
+            document.querySelector('.overlay').classList.toggle('active');
         }
 
-        function renderList(query = '') {
-            const listDiv = document.getElementById('groupList');
-            listDiv.innerHTML = '';
-            
-            const filtered = groups.filter(g => g.name.toLowerCase().includes(query.toLowerCase()));
-            
-            // Sort: Nature first, then Name
+        function populateParentSelect() {
+            const select = document.getElementById('parentGroup');
+            select.innerHTML = '<option value="">-- Primary Group --</option>';
+            allGroups.sort((a,b) => a.name.localeCompare(b.name)).forEach(g => {
+                const opt = document.createElement('option');
+                opt.value = g.id;
+                opt.textContent = g.name;
+                select.appendChild(opt);
+            });
+        }
+
+        function renderList() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            const container = document.getElementById('groupList');
+            container.innerHTML = '';
+
+            let filtered = allGroups.filter(g => g.name.toLowerCase().includes(query));
+
             filtered.sort((a,b) => a.nature.localeCompare(b.nature) || a.name.localeCompare(b.name));
 
-            filtered.forEach(g => {
-                let badgeClass = '';
-                if(g.nature === 'Asset') badgeClass = 'badge-asset';
-                else if(g.nature === 'Liability') badgeClass = 'badge-liab';
-                else if(g.nature === 'Income') badgeClass = 'badge-inc';
-                else badgeClass = 'badge-exp';
+            if (filtered.length === 0) {
+                container.innerHTML = '<div style="padding:40px; text-align:center; color:#94a3b8;">No groups found</div>';
+                return;
+            }
 
-                const el = document.createElement('div');
-                el.className = 'tree-item';
-                el.onclick = () => loadGroup(g);
-                el.innerHTML = `
-                    <div>
-                        <div style="font-weight:600; font-size:14px;">${g.name}</div>
-                        <div style="font-size:11px; color:#64748b;">Under: ${g.parent || 'Primary'}</div>
+            filtered.forEach(group => {
+                const badgeClass = 
+                    group.nature === 'Asset' ? 'badge-asset' :
+                    group.nature === 'Liability' ? 'badge-liab' :
+                    group.nature === 'Income' ? 'badge-inc' :
+                    'badge-exp';
+
+                const div = document.createElement('div');
+                div.className = 'tree-item';
+                div.onclick = () => loadGroup(group);
+
+                div.innerHTML = `
+                    <div class="group-info">
+                        <strong>${group.name}</strong>
+                        <span>Under: ${group.parent_name || 'Primary'}</span>
                     </div>
-                    <span class="badge ${badgeClass}">${g.nature}</span>
+                    <span class="badge ${badgeClass}">${group.nature}</span>
                 `;
-                listDiv.appendChild(el);
+                container.appendChild(div);
             });
         }
 
-        function populateParents() {
-            const sel = document.getElementById('parentSelect');
-            sel.innerHTML = '<option value="">-- Primary --</option>';
-            groups.sort((a,b) => a.name.localeCompare(b.name)).forEach(g => {
-                let opt = document.createElement('option');
-                opt.value = g.name; 
-                opt.text = g.name;
-                sel.appendChild(opt);
-            });
-        }
+        function loadGroup(group) {
+            document.getElementById('groupId').value = group.id;
+            document.getElementById('groupName').value = group.name;
+            document.getElementById('groupNature').value = group.nature;
+            document.getElementById('parentGroup').value = group.parent_id || '';
 
-        function filterParents() {
-            // Optional: You could hide parents that don't match the selected nature
-        }
+            // System groups protection
+            const systemNames = ['Capital Account', 'Current Assets', 'Current Liabilities', 'Duties & Taxes', 'Sales Accounts', 'Purchase Accounts', 'Direct Expenses', 'Indirect Expenses', 'Cash-in-Hand', 'Bank Accounts', 'Sundry Debtors', 'Sundry Creditors'];
+            const isSystem = systemNames.includes(group.name);
 
-        function loadGroup(g) {
-            document.getElementById('groupId').value = g.id;
-            document.getElementById('name').value = g.name;
-            document.getElementById('nature').value = g.nature;
-            document.getElementById('parentSelect').value = g.parent || '';
-            
-            // Protect System Groups
-            const systemGroups = ["Sundry Debtors", "Sundry Creditors", "Cash-in-Hand", "Sales Accounts", "Purchase Accounts", "Duties & Taxes"];
-            const isSystem = systemGroups.includes(g.name);
-            
-            document.getElementById('name').disabled = isSystem;
-            document.getElementById('nature').disabled = isSystem;
-            // Use JS to toggle display instead of inline style
-            document.getElementById('delBtn').style.display = isSystem ? 'none' : 'block';
-            
+            document.getElementById('groupName').disabled = isSystem;
+            document.getElementById('groupNature').disabled = isSystem;
+            document.getElementById('parentGroup').disabled = isSystem;
+            document.getElementById('deleteBtn').style.display = isSystem ? 'none' : 'block';
+
+            document.getElementById('formTitle').innerText = 'Edit Account Group';
+
             // Highlight active
-            document.querySelectorAll('.tree-item').forEach(x => x.classList.remove('active'));
+            document.querySelectorAll('.tree-item').forEach(item => item.classList.remove('active'));
+            event.currentTarget.classList.add('active');
         }
 
-        function resetForm() {
+        function newGroup() {
             document.getElementById('groupId').value = '';
-            document.getElementById('name').value = '';
-            document.getElementById('parentSelect').value = '';
-            document.getElementById('nature').disabled = false;
-            document.getElementById('name').disabled = false;
-            document.getElementById('delBtn').style.display = 'none';
-            document.getElementById('name').focus();
+            document.getElementById('groupName').value = '';
+            document.getElementById('groupNature').value = 'Asset';
+            document.getElementById('parentGroup').value = '';
+            document.getElementById('groupName').disabled = false;
+            document.getElementById('groupNature').disabled = false;
+            document.getElementById('parentGroup').disabled = false;
+            document.getElementById('deleteBtn').style.display = 'none';
+            document.getElementById('formTitle').innerText = 'New Account Group';
+            document.getElementById('groupName').focus();
+
+            document.querySelectorAll('.tree-item').forEach(item => item.classList.remove('active'));
         }
 
         async function saveGroup() {
-            const name = document.getElementById('name').value.trim();
-            const nature = document.getElementById('nature').value;
-            const parent = document.getElementById('parentSelect').value;
-            
-            if(!name) return alert("Group Name is required");
+            const name = document.getElementById('groupName').value.trim();
+            if (!name) return alert('Group name is required!');
 
             const data = {
-                name: name,
-                nature: nature,
-                parent: parent || null
+                name,
+                nature: document.getElementById('groupNature').value,
+                parent_id: document.getElementById('parentGroup').value || null
             };
 
-            const idVal = document.getElementById('groupId').value;
-            if(idVal) data.id = parseInt(idVal);
+            const id = document.getElementById('groupId').value;
+            if (id) data.id = parseInt(id);
 
             try {
                 const tx = DB.db.transaction('groups', 'readwrite');
                 const store = tx.objectStore('groups');
-                if(data.id) store.put(data); else store.add(data);
-                
-                tx.oncomplete = () => {
-                    showToast();
-                    resetForm();
-                    refreshData();
-                };
-                tx.onerror = () => alert("Error: Group Name must be unique");
-            } catch(e) { console.error(e); }
+                data.id ? store.put(data) : store.add(data);
+
+                await tx.done;
+                showToast('Group Saved Successfully!');
+                allGroups = await DB.getAll('groups');
+                populateParentSelect();
+                renderList();
+                newGroup();
+            } catch (e) {
+                alert('Error: Group name must be unique or other issue.');
+                console.error(e);
+            }
         }
 
         async function deleteGroup() {
             const id = document.getElementById('groupId').value;
-            if(!id) return;
-            if(!confirm("Are you sure?")) return;
+            if (!id || !confirm('Delete this group? Ledgers under it will become orphaned.')) return;
 
             try {
                 const tx = DB.db.transaction('groups', 'readwrite');
-                tx.objectStore('groups').delete(parseInt(id));
-                tx.oncomplete = () => {
-                    alert("Group Deleted");
-                    resetForm();
-                    refreshData();
-                };
-            } catch(e) { alert("Delete failed"); }
+                await tx.objectStore('groups').delete(parseInt(id));
+                showToast('Group Deleted');
+                allGroups = await DB.getAll('groups');
+                populateParentSelect();
+                renderList();
+                newGroup();
+            } catch (e) {
+                alert('Cannot delete group with ledgers');
+            }
         }
 
-        function showToast() {
-            const t = document.getElementById('toast');
-            t.style.display = 'block';
-            setTimeout(() => t.style.display = 'none', 2000);
+        function showToast(message = 'Group Saved Successfully!') {
+            const toast = document.getElementById('toast');
+            toast.innerText = message;
+            toast.style.display = 'block';
+            setTimeout(() => toast.style.display = 'none', 2500);
         }
     </script>
 </body>
