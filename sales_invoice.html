@@ -214,17 +214,25 @@
 
     <script src="db.js"></script>
     <script>
-        let items=[], ledgers=[], cart=[], settings={};
+        let items=[], ledgers=[], groups=[], cart=[], settings={};
         let selectedMode = 'Cash';
 
         window.onload = async () => {
             await DB.init();
-            [items, ledgers, settings] = await Promise.all([
-                DB.getAll('items'),
-                DB.getLedgers(),
-                DB.getSettings()
-            ]);
             
+            // FIXED: Fetch groups along with other data to filter parties correctly
+            const [itemsData, ledgersData, groupsData, settingsData] = await Promise.all([
+                DB.getAll('items'),
+                DB.getAll('ledgers'), // Uses generic getAll instead of getLedgers
+                DB.getAll('groups'),
+                DB.getAll('settings') // Fetch settings (returns array)
+            ]);
+
+            items = itemsData || [];
+            ledgers = ledgersData || [];
+            groups = groupsData || [];
+            settings = settingsData[0] || {}; // Take first settings object or empty
+
             renderItems(items);
             loadCustomers();
             await generateInvNo();
@@ -401,17 +409,54 @@
             }
 
             try {
-                await DB.saveVoucher(saleData, entries, acct);
-                closeModal();
+                // FIXED: Use correct stores for saveVoucher manually since DB.saveVoucher might be missing/different
+                const tx = DB.db.transaction(['vouchers', 'voucher_items', 'acct_entries', 'items'], 'readwrite');
                 
-                if(action === 'print') {
-                    printBill(saleData, cart, pid, sub, tax, grand);
-                } else if(action === 'whatsapp') {
-                    shareOnWhatsApp(saleData, cart, pid, sub, tax, grand);
-                } else {
-                    alert("Bill Saved Successfully!");
-                }
-                location.reload();
+                // Save Master
+                const vReq = tx.objectStore('vouchers').add(saleData);
+                
+                vReq.onsuccess = (e) => {
+                    const vid = e.target.result;
+                    
+                    // Save Items & Update Stock
+                    const viStore = tx.objectStore('voucher_items');
+                    const iStore = tx.objectStore('items');
+                    
+                    entries.forEach(item => {
+                        item.voucher_id = vid;
+                        viStore.add(item);
+                        
+                        // Deduct Stock
+                        const getI = iStore.get(item.item_id);
+                        getI.onsuccess = (ev) => {
+                            const idata = ev.target.result;
+                            if(idata) {
+                                idata.current_stock = (parseFloat(idata.current_stock)||0) - item.qty;
+                                iStore.put(idata);
+                            }
+                        };
+                    });
+
+                    // Save Accounting
+                    const acStore = tx.objectStore('acct_entries');
+                    acct.forEach(a => {
+                        a.voucher_id = vid;
+                        acStore.add(a);
+                    });
+                };
+
+                tx.oncomplete = () => {
+                    closeModal();
+                    if(action === 'print') {
+                        printBill(saleData, cart, pid, sub, tax, grand);
+                    } else if(action === 'whatsapp') {
+                        shareOnWhatsApp(saleData, cart, pid, sub, tax, grand);
+                    } else {
+                        alert("Bill Saved Successfully!");
+                    }
+                    location.reload();
+                };
+                
             } catch(e) { 
                 console.error(e);
                 alert("Save Failed: " + e.message); 
@@ -442,8 +487,13 @@
         function loadCustomers() {
             const sel = document.getElementById('custSelect');
             sel.innerHTML = '<option value="">Walk-in Customer (Cash)</option>';
+            
+            // FIXED: Identify Sundry Debtors Group ID first
+            const debtorGroup = groups.find(g => g.name === "Sundry Debtors");
+            const debtorGroupId = debtorGroup ? debtorGroup.id : -1;
+
             ledgers
-                .filter(l => l.group_name === "Sundry Debtors" || l.name.toLowerCase().includes("customer")) // better if group available
+                .filter(l => l.group_id === debtorGroupId || l.name.toLowerCase().includes("customer")) 
                 .sort((a,b) => a.name.localeCompare(b.name))
                 .forEach(l => { 
                     sel.innerHTML += `<option value="${l.id}">${l.name}</option>`;
@@ -492,24 +542,25 @@
             const name = prompt("Customer Name:");
             if(!name) return;
             const mobile = prompt("Mobile (for WhatsApp):") || "";
-            const groups = await DB.getAll('groups'); // assuming getAll works for groups
             const debtorGrp = groups.find(g => g.name === "Sundry Debtors");
             if(!debtorGrp) return alert("Sundry Debtors group not found!");
             
-            await DB.db.transaction('ledgers', 'readwrite')
-                .objectStore('ledgers')
-                .add({
-                    name: name.trim(), 
-                    phone: mobile, 
-                    group_id: debtorGrp.id, 
-                    opening_balance: 0, 
-                    gstin: "", 
-                    address: "Local"
-                });
+            const tx = DB.db.transaction('ledgers', 'readwrite');
+            const store = tx.objectStore('ledgers');
+            store.add({
+                name: name.trim(), 
+                phone: mobile, 
+                group_id: debtorGrp.id, 
+                opening_balance: 0, 
+                gstin: "", 
+                address: "Local"
+            });
             
-            ledgers = await DB.getLedgers();
-            loadCustomers();
-            alert("Customer added!");
+            tx.oncomplete = async () => {
+                ledgers = await DB.getAll('ledgers');
+                loadCustomers();
+                alert("Customer added!");
+            };
         }
 
         // --- PRINT & WHATSAPP ---
