@@ -6,6 +6,7 @@
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <title>Arth Book - Chart of Accounts</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
         :root {
@@ -119,26 +120,40 @@
     <div class="main">
         <div class="list-panel">
             <div class="search-box">
-                <input type="text" id="searchInput" placeholder="🔍 Search Groups..." onkeyup="renderList()">
+                <input type="text" id="searchInput" placeholder="🔍 Search Groups & Ledgers..." onkeyup="renderList()">
             </div>
             <div class="list-content" id="groupList"></div>
         </div>
 
         <div class="form-panel">
             <div class="form-header">
-                <span id="formTitle">New Account Group</span>
-                <button class="btn btn-new" onclick="newGroup()">+ New Group</button>
+                <span id="formTitle">New Account / Group</span>
+                <button class="btn btn-new" onclick="newEntity()">+ New Entry</button>
             </div>
-            <input type="hidden" id="groupId">
-
-            <div class="form-grid">
+            <input type="hidden" id="entityId">
+            <input type="hidden" id="currentStore" value="groups"> <div class="form-grid">
                 <div class="form-group">
-                    <label>Group Name *</label>
-                    <input type="text" id="groupName" placeholder="e.g. Indirect Expenses" required>
+                    <label>Account Type</label>
+                    <select id="entityType" onchange="toggleFormFields()">
+                        <option value="group">📁 Account Group (Folder)</option>
+                        <option value="ledger">📒 Ledger Account (File)</option>
+                    </select>
                 </div>
 
                 <div class="form-group">
-                    <label>Primary Nature *</label>
+                    <label>Name *</label>
+                    <input type="text" id="entityName" placeholder="e.g. HDFC Bank / Cash" required>
+                </div>
+
+                <div class="form-group">
+                    <label id="parentLabel">Under Group *</label>
+                    <select id="parentGroup">
+                        <option value="">-- Primary --</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="natureGroup">
+                    <label>Nature</label>
                     <select id="groupNature">
                         <option value="Asset">Asset</option>
                         <option value="Liability">Liability</option>
@@ -147,50 +162,72 @@
                     </select>
                 </div>
 
-                <div class="form-group">
-                    <label>Parent Group (Optional)</label>
-                    <select id="parentGroup">
-                        <option value="">-- Primary Group --</option>
-                    </select>
-                    <span class="helper-text">Make this a sub-group under an existing group</span>
+                <div class="form-group" id="opBalGroup" style="display:none;">
+                    <label>Opening Balance (₹)</label>
+                    <input type="number" id="openingBal" placeholder="0.00">
+                    <span class="helper-text">Enter positive for Dr (Asset/Exp), negative for Cr (Liab/Inc)</span>
                 </div>
             </div>
 
             <div class="actions">
-                <button class="btn btn-save" onclick="saveGroup()">💾 Save Group</button>
-                <button class="btn btn-del" id="deleteBtn" style="display:none;" onclick="deleteGroup()">🗑️ Delete Group</button>
+                <button class="btn btn-save" onclick="saveEntity()">💾 Save</button>
+                <button class="btn btn-del" id="deleteBtn" style="display:none;" onclick="deleteEntity()">🗑️ Delete</button>
             </div>
         </div>
     </div>
 
-    <div id="toast">Group Saved Successfully!</div>
+    <div id="toast">Saved Successfully!</div>
 
     <script src="db.js"></script>
     <script>
         let allGroups = [];
+        let allLedgers = [];
 
         window.onload = async () => {
             await DB.init();
-            allGroups = await DB.getAll('groups') || [];
-            renderList();
-            populateParentSelect();
-            document.getElementById('groupName').focus();
+            await loadData();
+            document.getElementById('entityName').focus();
         };
+
+        async function loadData() {
+            allGroups = await DB.getAll('groups') || [];
+            allLedgers = await DB.getAll('ledgers') || [];
+            populateParentSelect();
+            renderList();
+        }
 
         function toggleMenu() {
             document.getElementById('mySidebar').classList.toggle('active');
             document.querySelector('.overlay').classList.toggle('active');
         }
 
+        function toggleFormFields() {
+            const type = document.getElementById('entityType').value;
+            const opBalDiv = document.getElementById('opBalGroup');
+            const natureDiv = document.getElementById('natureGroup');
+
+            if (type === 'ledger') {
+                opBalDiv.style.display = 'block';
+                natureDiv.style.display = 'none'; // Ledgers inherit nature from group
+                document.getElementById('parentLabel').innerText = "Under Group *";
+            } else {
+                opBalDiv.style.display = 'none';
+                natureDiv.style.display = 'block';
+                document.getElementById('parentLabel').innerText = "Parent Group (Optional)";
+            }
+        }
+
         function populateParentSelect() {
             const select = document.getElementById('parentGroup');
-            select.innerHTML = '<option value="">-- Primary Group --</option>';
+            const currentVal = select.value;
+            select.innerHTML = '<option value="">-- Primary --</option>';
             allGroups.sort((a,b) => a.name.localeCompare(b.name)).forEach(g => {
                 const opt = document.createElement('option');
                 opt.value = g.id;
                 opt.textContent = g.name;
                 select.appendChild(opt);
             });
+            if(currentVal) select.value = currentVal;
         }
 
         function renderList() {
@@ -198,133 +235,194 @@
             const container = document.getElementById('groupList');
             container.innerHTML = '';
 
-            let filtered = allGroups.filter(g => g.name.toLowerCase().includes(query));
+            // Combine Lists for display
+            const displayList = [
+                ...allGroups.map(g => ({...g, type: 'group'})),
+                ...allLedgers.map(l => ({...l, type: 'ledger'}))
+            ];
 
-            filtered.sort((a,b) => a.nature.localeCompare(b.nature) || a.name.localeCompare(b.name));
+            let filtered = displayList.filter(item => item.name.toLowerCase().includes(query));
+
+            // Sort: Groups first, then Ledgers
+            filtered.sort((a,b) => {
+                if (a.type !== b.type) return a.type === 'group' ? -1 : 1;
+                return a.name.localeCompare(b.name);
+            });
 
             if (filtered.length === 0) {
-                container.innerHTML = '<div style="padding:40px; text-align:center; color:#94a3b8;">No groups found</div>';
+                container.innerHTML = '<div style="padding:40px; text-align:center; color:#94a3b8;">No entries found</div>';
                 return;
             }
 
-            filtered.forEach(group => {
-                const badgeClass = 
-                    group.nature === 'Asset' ? 'badge-asset' :
-                    group.nature === 'Liability' ? 'badge-liab' :
-                    group.nature === 'Income' ? 'badge-inc' :
-                    'badge-exp';
+            filtered.forEach(item => {
+                let badgeClass = '';
+                let nature = item.nature;
+                let parentName = '';
 
-                // FIX: Correctly find parent name from ID
-                const parentName = group.parent_id 
-                    ? (allGroups.find(g => g.id == group.parent_id)?.name || 'Unknown') 
-                    : 'Primary';
+                if (item.type === 'group') {
+                    badgeClass = getBadgeClass(item.nature);
+                    parentName = item.parent_id ? (allGroups.find(g => g.id == item.parent_id)?.name || 'Unknown') : 'Primary';
+                } else {
+                    // Ledger: Find parent group to determine nature
+                    const parent = allGroups.find(g => g.id == item.group_id);
+                    nature = parent ? parent.nature : 'Unknown';
+                    badgeClass = getBadgeClass(nature);
+                    parentName = parent ? parent.name : 'Unknown';
+                }
 
                 const div = document.createElement('div');
                 div.className = 'tree-item';
-                div.onclick = () => loadGroup(group);
+                div.onclick = () => loadEntity(item);
+
+                const icon = item.type === 'group' ? '<i class="fas fa-folder" style="color:#fbbf24; margin-right:8px;"></i>' : '<i class="fas fa-book" style="color:#8b5cf6; margin-right:8px;"></i>';
 
                 div.innerHTML = `
-                    <div class="group-info">
-                        <strong>${group.name}</strong>
-                        <span>Under: ${parentName}</span>
+                    <div class="group-info" style="display:flex; align-items:center;">
+                        ${icon}
+                        <div>
+                            <strong>${item.name}</strong>
+                            <span>Under: ${parentName}</span>
+                        </div>
                     </div>
-                    <span class="badge ${badgeClass}">${group.nature}</span>
+                    <div style="text-align:right;">
+                        <span class="badge ${badgeClass}">${nature}</span>
+                        ${item.type === 'ledger' ? `<br><span style="font-size:11px; color:#64748b;">₹ ${item.opening_balance || 0}</span>` : ''}
+                    </div>
                 `;
                 container.appendChild(div);
             });
         }
 
-        function loadGroup(group) {
-            document.getElementById('groupId').value = group.id;
-            document.getElementById('groupName').value = group.name;
-            document.getElementById('groupNature').value = group.nature;
-            document.getElementById('parentGroup').value = group.parent_id || '';
+        function getBadgeClass(nature) {
+            return nature === 'Asset' ? 'badge-asset' :
+                   nature === 'Liability' ? 'badge-liab' :
+                   nature === 'Income' ? 'badge-inc' : 'badge-exp';
+        }
 
-            // System groups protection
-            const systemNames = ['Capital Account', 'Current Assets', 'Current Liabilities', 'Duties & Taxes', 'Sales Accounts', 'Purchase Accounts', 'Direct Expenses', 'Indirect Expenses', 'Cash-in-Hand', 'Bank Accounts', 'Sundry Debtors', 'Sundry Creditors'];
-            const isSystem = systemNames.includes(group.name);
+        function loadEntity(item) {
+            document.getElementById('entityId').value = item.id;
+            document.getElementById('entityName').value = item.name;
+            document.getElementById('entityType').value = item.type;
+            
+            // Set Store logic
+            document.getElementById('currentStore').value = item.type === 'group' ? 'groups' : 'ledgers';
 
-            document.getElementById('groupName').disabled = isSystem;
+            if (item.type === 'group') {
+                document.getElementById('parentGroup').value = item.parent_id || '';
+                document.getElementById('groupNature').value = item.nature;
+                document.getElementById('entityType').disabled = true; // Cannot change type once created
+            } else {
+                document.getElementById('parentGroup').value = item.group_id || '';
+                document.getElementById('openingBal').value = item.opening_balance || 0;
+                document.getElementById('entityType').disabled = true;
+            }
+
+            toggleFormFields();
+
+            // System Checks
+            const systemNames = ['Capital Account', 'Current Assets', 'Current Liabilities', 'Duties & Taxes', 'Sales Accounts', 'Purchase Accounts', 'Direct Expenses', 'Indirect Expenses', 'Cash-in-Hand', 'Bank Accounts', 'Sundry Debtors', 'Sundry Creditors', 'Cash A/c', 'Local Sales', 'Local Purchase', 'Output GST', 'Input GST'];
+            const isSystem = systemNames.includes(item.name);
+
+            document.getElementById('entityName').disabled = isSystem;
             document.getElementById('groupNature').disabled = isSystem;
             document.getElementById('parentGroup').disabled = isSystem;
             document.getElementById('deleteBtn').style.display = isSystem ? 'none' : 'block';
 
-            document.getElementById('formTitle').innerText = 'Edit Account Group';
+            document.getElementById('formTitle').innerText = isSystem ? 'View System Entry' : 'Edit Entry';
 
             // Highlight active
-            document.querySelectorAll('.tree-item').forEach(item => item.classList.remove('active'));
+            document.querySelectorAll('.tree-item').forEach(i => i.classList.remove('active'));
             event.currentTarget.classList.add('active');
         }
 
-        function newGroup() {
-            document.getElementById('groupId').value = '';
-            document.getElementById('groupName').value = '';
-            document.getElementById('groupNature').value = 'Asset';
+        function newEntity() {
+            document.getElementById('entityId').value = '';
+            document.getElementById('entityName').value = '';
             document.getElementById('parentGroup').value = '';
-            document.getElementById('groupName').disabled = false;
+            document.getElementById('openingBal').value = '';
+            document.getElementById('entityType').value = 'ledger'; // Default to ledger for ease
+            document.getElementById('entityType').disabled = false;
+            document.getElementById('entityName').disabled = false;
             document.getElementById('groupNature').disabled = false;
             document.getElementById('parentGroup').disabled = false;
             document.getElementById('deleteBtn').style.display = 'none';
-            document.getElementById('formTitle').innerText = 'New Account Group';
-            document.getElementById('groupName').focus();
+            document.getElementById('formTitle').innerText = 'New Entry';
+            document.getElementById('currentStore').value = 'new';
+            
+            toggleFormFields();
+            document.getElementById('entityName').focus();
 
             document.querySelectorAll('.tree-item').forEach(item => item.classList.remove('active'));
         }
 
-        async function saveGroup() {
-            const name = document.getElementById('groupName').value.trim();
-            if (!name) return alert('Group name is required!');
+        async function saveEntity() {
+            const name = document.getElementById('entityName').value.trim();
+            const type = document.getElementById('entityType').value;
+            const parentId = document.getElementById('parentGroup').value;
 
-            const data = {
-                name,
-                nature: document.getElementById('groupNature').value,
-                parent_id: document.getElementById('parentGroup').value || null
-            };
+            if (!name) return alert('Name is required!');
+            
+            const id = document.getElementById('entityId').value;
+            const storeName = type === 'group' ? 'groups' : 'ledgers';
 
-            const id = document.getElementById('groupId').value;
+            let data = {};
+
+            if (type === 'group') {
+                data = {
+                    name,
+                    nature: document.getElementById('groupNature').value,
+                    parent_id: parentId ? parseInt(parentId) : null
+                };
+            } else {
+                if (!parentId) return alert('Ledgers must have a parent Group!');
+                data = {
+                    name,
+                    group_id: parseInt(parentId),
+                    opening_balance: parseFloat(document.getElementById('openingBal').value) || 0
+                };
+            }
+
             if (id) data.id = parseInt(id);
 
             try {
-                const tx = DB.db.transaction('groups', 'readwrite');
-                const store = tx.objectStore('groups');
+                const tx = DB.db.transaction(storeName, 'readwrite');
+                const store = tx.objectStore(storeName);
                 
-                // Add or Put
                 id ? store.put(data) : store.add(data);
 
                 tx.oncomplete = async () => {
-                    showToast('Group Saved Successfully!');
-                    allGroups = await DB.getAll('groups');
-                    populateParentSelect();
-                    renderList();
-                    newGroup();
+                    showToast('Saved Successfully!');
+                    await loadData();
+                    newEntity();
                 };
             } catch (e) {
-                alert('Error: Group name must be unique or other issue.');
+                alert('Error: Name must be unique.');
                 console.error(e);
             }
         }
 
-        async function deleteGroup() {
-            const id = document.getElementById('groupId').value;
-            if (!id || !confirm('Delete this group? Ledgers under it will become orphaned.')) return;
+        async function deleteEntity() {
+            const id = document.getElementById('entityId').value;
+            const type = document.getElementById('entityType').value;
+            const storeName = type === 'group' ? 'groups' : 'ledgers';
+
+            if (!id || !confirm(`Delete this ${type}?`)) return;
 
             try {
-                const tx = DB.db.transaction('groups', 'readwrite');
-                await tx.objectStore('groups').delete(parseInt(id));
+                const tx = DB.db.transaction(storeName, 'readwrite');
+                await tx.objectStore(storeName).delete(parseInt(id));
                 
                 tx.oncomplete = async () => {
-                    showToast('Group Deleted');
-                    allGroups = await DB.getAll('groups');
-                    populateParentSelect();
-                    renderList();
-                    newGroup();
+                    showToast('Deleted');
+                    await loadData();
+                    newEntity();
                 };
             } catch (e) {
-                alert('Cannot delete group with ledgers');
+                alert('Cannot delete. It might be in use.');
             }
         }
 
-        function showToast(message = 'Group Saved Successfully!') {
+        function showToast(message) {
             const toast = document.getElementById('toast');
             toast.innerText = message;
             toast.style.display = 'block';
