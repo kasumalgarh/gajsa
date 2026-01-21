@@ -131,7 +131,9 @@
             <button class="tab-btn" onclick="showTab('users')">👥 Users</button>
             <button class="tab-btn" onclick="showTab('tools')">🔌 Tools</button>
             <button class="tab-btn" onclick="showTab('logs')">📜 Logs</button>
-            <button class="tab-btn" onclick="showTab('backup')">💾 Backup</button>
+            <button class="tab-btn" onclick="showTab('backup')">💾 Backup</button><button class="btn" style="background: var(--orange); color: white; width: 100%; margin-top: 10px;" onclick="forceSyncNow()">
+    🔄 Sync Now (Cloud & Local)
+</button>
         </div>
 
         <div class="content-area">
@@ -250,13 +252,52 @@
             </div>
 
             <div id="backup" class="tab-content">
+                <div class="card" style="border-top: 4px solid var(--accent);">
+                    <h3>☁️ Cloud & Local Backup Settings</h3>
+                    <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 20px;">डेटा को सुरक्षित रखने के लिए GitHub और पेनड्राइव बैकअप सेट करें।</p>
+
+                    <div class="form-grid">
+                        <div style="grid-column: 1 / -1;">
+                             <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid var(--border);">
+                                <input type="checkbox" id="auto_backup_enabled" style="width: 20px; height: 20px;">
+                                <strong>Enable Auto Backup (Every 30 Mins)</strong>
+                            </label>
+                        </div>
+
+                        <div class="form-group">
+                            <label>GitHub Personal Access Token</label>
+                            <input type="password" id="github_token" placeholder="ghp_xxxxxxxxxxxx">
+                        </div>
+                        <div class="form-group">
+                            <label>GitHub Repository Path</label>
+                            <input type="text" id="github_repo" placeholder="username/repository-name">
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 20px; padding-top: 20px; border-top: 1px dashed var(--border);">
+                        <label style="font-weight: 600; margin-bottom: 8px; display: block;">Local Backup (Pendrive/PC Folder)</label>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <button class="btn" id="btnSelectFolder" style="background: #64748b; color: white;">
+                                📁 Select Backup Folder
+                            </button>
+                            <div id="folderStatus" style="font-size: 14px; color: #10b981; font-weight: 600; display: none;">
+                                ✅ Folder Connected!
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="saveBackupSettings()" style="margin-top: 20px;">
+                        💾 Save Backup Configuration
+                    </button>
+                </div>
+
                 <div class="card">
-                    <h3>Backup & Restore</h3>
+                    <h3>Manual Backup & Restore</h3>
                     <div style="background:#f0fdf4; padding:20px; border-radius:12px; border:1px solid #86efac; margin-bottom:30px;">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
                             <div>
-                                <strong>Auto Backup</strong><br>
-                                <span style="color:var(--text-muted);">Downloads backup every hour automatically</span>
+                                <strong>Browser Auto Download</strong><br>
+                                <span style="color:var(--text-muted);">Downloads backup file to Downloads folder every hour</span>
                             </div>
                             <label class="switch">
                                 <input type="checkbox" id="autoBackupSwitch" onchange="toggleAutoBackup()">
@@ -267,13 +308,13 @@
 
                     <div class="form-grid">
                         <div style="text-align:center; padding:20px; border:1px dashed var(--border); border-radius:12px;">
-                            <h4>Manual Backup</h4>
-                            <button class="btn btn-primary" onclick="manualBackup()">📥 Download Now</button>
+                            <h4>Download JSON File</h4>
+                            <button class="btn btn-primary" onclick="manualBackup()" style="margin-top: 10px;">📥 Download Now</button>
                         </div>
                         <div style="text-align:center; padding:20px; border:1px dashed var(--border); border-radius:12px;">
-                            <h4>Restore from File</h4>
+                            <h4>Restore from JSON</h4>
                             <input type="file" id="restoreInput" accept=".json" style="display:none;" onchange="restoreBackup(this)">
-                            <button class="btn btn-warn" onclick="document.getElementById('restoreInput').click()">📤 Upload JSON</button>
+                            <button class="btn btn-warn" onclick="document.getElementById('restoreInput').click()" style="margin-top: 10px;">📤 Upload JSON</button>
                         </div>
                     </div>
                 </div>
@@ -333,10 +374,12 @@
                 return;
             }
 
+            // Load All Data
             loadCompanySettings();
             loadConfig();
             loadUsers();
             loadLogs();
+            loadBackupSettings(); // Loaded here now
 
             // Auto Backup State
             const autoBackup = localStorage.getItem('arthbook_auto_backup') === 'true';
@@ -475,7 +518,57 @@
             });
         }
 
-        // Backup
+        // --- BACKUP LOGIC (Consolidated) ---
+
+        // 1. Load Backup Settings (GitHub/Pendrive config)
+        async function loadBackupSettings() {
+            // Fetch from 'settings' store with id 'global'
+            // DB.getSettings() is already defined above as a helper
+            const settings = await DB.getSettings();
+            
+            // Checkboxes and Inputs
+            if(document.getElementById('auto_backup_enabled')) {
+                document.getElementById('auto_backup_enabled').checked = settings.auto_backup_enabled || false;
+            }
+            if(document.getElementById('github_token')) {
+                document.getElementById('github_token').value = settings.github_token || '';
+            }
+            if(document.getElementById('github_repo')) {
+                document.getElementById('github_repo').value = settings.github_repo || '';
+            }
+        }
+
+        // 2. Save Backup Settings
+        async function saveBackupSettings() {
+            const currentSettings = await DB.getSettings();
+            
+            const newConfig = {
+                ...currentSettings, // Keep existing settings like company info
+                id: 'global',
+                auto_backup_enabled: document.getElementById('auto_backup_enabled').checked,
+                github_token: document.getElementById('github_token').value.trim(),
+                github_repo: document.getElementById('github_repo').value.trim()
+            };
+
+            const tx = DB.db.transaction('settings', 'readwrite');
+            await tx.objectStore('settings').put(newConfig);
+            alert("✅ Backup Settings Saved!");
+        }
+
+        // 3. Select Folder (Pendrive)
+        if(document.getElementById('btnSelectFolder')) {
+            document.getElementById('btnSelectFolder').onclick = async () => {
+                try {
+                    window.localDirHandle = await window.showDirectoryPicker();
+                    document.getElementById('folderStatus').style.display = 'block';
+                    alert("Folder Selected! अब सॉफ्टवेयर इसमें बैकअप ले सकेगा।");
+                } catch (err) {
+                    console.error("Folder selection cancelled");
+                }
+            };
+        }
+
+        // 4. Browser Auto Backup (Existing Logic)
         function toggleAutoBackup() {
             const enabled = document.getElementById('autoBackupSwitch').checked;
             localStorage.setItem('arthbook_auto_backup', enabled);
@@ -501,7 +594,7 @@
             reader.onload = async (e) => {
                 try {
                     const data = JSON.parse(e.target.result);
-                    // Import logic here if needed, simplified reload for now
+                    // Import logic here if needed
                     alert('Restore functionality ready. (Reloading to apply if implemented)');
                     location.reload();
                 } catch(err) {
@@ -519,6 +612,30 @@
             alert('Reset complete. Reloading...');
             location.reload();
         }
+        async function forceSyncNow() {
+    alert("सिंक शुरू हो रहा है, कृपया 5 सेकंड रुकें...");
+    const settings = await DB.getAll('settings');
+    const config = settings.find(s => s.id === 'global') || {};
+    const data = await DB.getFullBackup();
+
+    // GitHub Sync
+    if (config.github_token && config.github_repo) {
+        const ok = await DB.syncToGithub(config.github_token, config.github_repo, 'cloud_backup.json', data);
+        if(ok) {
+            window.dispatchEvent(new CustomEvent('backup-status', { detail: 'success' }));
+            alert("✅ Cloud Sync Successful! अब आइकन हरा हो जाएगा।");
+        } else {
+            window.dispatchEvent(new CustomEvent('backup-status', { detail: 'error' }));
+            alert("❌ Cloud Sync Failed! कृपया अपना Token और Repo Path चेक करें।");
+        }
+    }
+
+    // Local Sync
+    if (window.localDirHandle) {
+        await DB.syncToLocal(window.localDirHandle, data);
+        window.dispatchEvent(new CustomEvent('backup-status', { detail: 'local_ok' }));
+    }
+}
     </script>
 </body>
 </html>

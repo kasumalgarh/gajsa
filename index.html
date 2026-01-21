@@ -120,7 +120,10 @@
     <div class="sidebar" id="sidebar">
         <div class="brand-logo">
             <i class="fas fa-book"></i> Arth Book
-        </div>
+        </div><div id="syncStatus" style="display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; padding: 5px 10px; border-radius: 20px; background: #f1f5f9; color: #64748b; transition: 0.3s;">
+    <i id="syncIcon" class="fas fa-cloud"></i> 
+    <span id="syncText">Backup: Pending</span>
+</div>
         <ul class="nav-links">
             <li><a href="index.html" class="active"><i class="fas fa-chart-pie"></i> Dashboard</a></li>
             <li><a href="sales_invoice.html"><i class="fas fa-file-invoice"></i> Sales Invoice</a></li>
@@ -551,6 +554,27 @@
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('./sw.js').catch(() => {});
         }
+        // बैकअप स्टेटस अपडेट करने का फंक्शन
+window.addEventListener('backup-status', (e) => {
+    const status = e.detail; // 'success', 'error', या 'local_ok'
+    const div = document.getElementById('syncStatus');
+    const icon = document.getElementById('syncIcon');
+    const text = document.getElementById('syncText');
+
+    if (status === 'success') {
+        div.style.background = '#dcfce7'; // Light Green
+        div.style.color = '#10b981'; // Dark Green
+        text.innerText = "Cloud: Synced";
+        icon.className = "fas fa-cloud-upload-alt";
+    } else if (status === 'local_ok') {
+        text.innerText = "Local: Saved";
+    } else {
+        div.style.background = '#fee2e2'; // Light Red
+        div.style.color = '#ef4444'; // Dark Red
+        text.innerText = "Sync Failed";
+        icon.className = "fas fa-exclamation-triangle";
+    }
+});
     </script>
 </body>
 </html>
