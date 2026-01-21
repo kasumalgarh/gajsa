@@ -97,15 +97,36 @@
             #invNo { display: none; }
         }
 
-        /* PRINT CSS */
+        /* PRINT CSS - A4 TALLY STYLE */
         @media print { 
+            @page { size: A4; margin: 5mm; }
             body * { visibility: hidden; } 
             #printArea, #printArea * { visibility: visible; } 
-            #printArea { position: absolute; left: 0; top: 0; width: 100%; font-family: 'Times New Roman', serif; color: black; background: white; padding: 10px; } 
-            .print-table { width: 100%; border-collapse: collapse; font-size: 10pt; margin: 10px 0; }
-            .print-table th, .print-table td { border: 1px solid black; padding: 4px; text-align: left; }
-            .print-table .right { text-align: right; }
-            .no-print-border th, .no-print-border td { border: none; }
+            #printArea { position: absolute; left: 0; top: 0; width: 100%; font-family: 'Times New Roman', serif; color: black; background: white; padding: 5px; } 
+            
+            .a4-container { border: 1px solid #000; width: 100%; height: 98vh; position: relative; display: flex; flex-direction: column; }
+            .a4-header { text-align: center; border-bottom: 1px solid #000; padding: 5px; }
+            .a4-title { font-weight: bold; font-size: 14pt; margin: 0; }
+            .a4-sub { font-size: 10pt; }
+            
+            .a4-info { display: flex; border-bottom: 1px solid #000; }
+            .a4-box { flex: 1; padding: 5px; border-right: 1px solid #000; font-size: 10pt; }
+            .a4-box:last-child { border-right: none; }
+            
+            .a4-table { width: 100%; border-collapse: collapse; font-size: 10pt; flex: 1; }
+            .a4-table th { border-bottom: 1px solid #000; border-right: 1px solid #000; padding: 3px; font-weight: bold; text-align: center; }
+            .a4-table td { border-right: 1px solid #000; padding: 3px; vertical-align: top; }
+            .a4-table td:last-child, .a4-table th:last-child { border-right: none; }
+            
+            .a4-footer { border-top: 1px solid #000; display: flex; font-size: 10pt; }
+            .a4-foot-left { flex: 1; padding: 5px; border-right: 1px solid #000; }
+            .a4-foot-right { width: 40%; padding: 5px; }
+            
+            .tax-summary { width: 100%; border-collapse: collapse; margin-top: 5px; font-size: 9pt; }
+            .tax-summary th, .tax-summary td { border: 1px solid #000; padding: 2px; text-align: right; }
+            
+            .amount-words { margin-top: 10px; font-weight: bold; font-style: italic; }
+            .signatory { height: 60px; margin-top: 30px; text-align: right; }
         }
     </style>
 </head>
@@ -208,7 +229,7 @@
             <div class="action-btns">
                 <button class="btn" style="background:#f59e0b;" onclick="saveBill('save')">💾 Save</button>
                 <button class="btn" style="background:#25d366; color:white;" onclick="saveBill('whatsapp')">📱 Share</button>
-                <button class="btn" style="background:var(--green); color:white;" onclick="saveBill('print')">🖨️ Print</button>
+                <button class="btn" style="background:var(--green); color:white;" onclick="saveBill('print')">🖨️ Print A4</button>
             </div>
             <button class="btn" style="width:100%; margin-top:10px; background:#64748b;" onclick="closeModal()">Cancel</button>
         </div>
@@ -229,21 +250,21 @@
 
     <script src="db.js"></script>
     <script>
-        let items=[], ledgers=[], groups=[], cart=[], allVouchers=[], voucherItems=[];
+        let items=[], ledgers=[], groups=[], cart=[], allVouchers=[], voucherItems=[], companySettings={};
         let selectedMode = 'Cash';
 
         window.onload = async () => {
             await DB.init();
             
-            // --- SELF REPAIR: Check & Create System Ledgers ---
             await DB._ensureSystemLedgers();
 
-            const [itemsData, ledgersData, groupsData, vData, viData] = await Promise.all([
+            const [itemsData, ledgersData, groupsData, vData, viData, settingsData] = await Promise.all([
                 DB.getAll('items'),
                 DB.getAll('ledgers'),
                 DB.getAll('groups'),
                 DB.getAll('vouchers'),
-                DB.getAll('voucher_items')
+                DB.getAll('voucher_items'),
+                DB.getAll('settings')
             ]);
 
             items = itemsData || [];
@@ -251,6 +272,7 @@
             groups = groupsData || [];
             allVouchers = vData || [];
             voucherItems = viData || [];
+            companySettings = settingsData.find(s => s.id === 'global') || {}; 
 
             renderItems(items);
             loadCustomers();
@@ -296,7 +318,7 @@
             const ex = cart.find(c => c.id === item.id);
             if(ex) ex.qty++;
             else cart.push({
-                id: item.id, name: item.name,
+                id: item.id, name: item.name, hsn: item.hsn || '',
                 qty: 1, unit: item.unit||'Pcs', 
                 rate: parseFloat(item.std_price), dis: 0, gst: item.gst_rate||0
             });
@@ -394,25 +416,19 @@
             const entries = cart.map(c => ({
                 item_id: c.id, qty: c.qty, rate: c.rate, amount: (c.qty*c.rate), 
                 // Store extra info for easy reprint
-                name: c.name, gst: c.gst, unit: c.unit
+                name: c.name, gst: c.gst, unit: c.unit, hsn: c.hsn
             }));
 
-            // --- ACCOUNTING ENTRIES ---
+            // Accounting Logic (Same as before)
             const acct = [];
-            
-            // 1. Debit: Party or Cash
             let debitLedgerId = parseInt(pid) || 0;
             if(!debitLedgerId) {
                 const cashLedger = ledgers.find(l => l.name === "Cash-in-Hand");
                 debitLedgerId = cashLedger ? cashLedger.id : 0;
             }
             acct.push({ ledger_id: debitLedgerId, debit: grand, credit: 0 });
-
-            // 2. Credit: Sales Account
             const salesLedger = ledgers.find(l => l.name === "Local Sales" || l.name.includes("Sales"));
             acct.push({ ledger_id: salesLedger ? salesLedger.id : 0, debit: 0, credit: sub });
-
-            // 3. Credit: GST Output
             if(tax > 0) {
                 const gstLedger = ledgers.find(l => l.name.includes("Output GST"));
                 if(gstLedger) acct.push({ ledger_id: gstLedger.id, debit: 0, credit: tax });
@@ -484,7 +500,7 @@
                         <b>${v.voucher_no}</b> <span style="font-size:12px; color:#666;">(${v.date})</span><br>
                         ${party} - ₹${v.amount}
                     </div>
-                    <button class="btn" style="padding:5px 10px; font-size:12px;" onclick="reprintBill(${v.id})">🖨️ Print</button>
+                    <button class="btn" style="padding:5px 10px; font-size:12px;" onclick="reprintBill(${v.id})">🖨️ Reprint A4</button>
                 `;
                 list.appendChild(div);
             });
@@ -506,15 +522,15 @@
                     qty: vi.qty,
                     rate: vi.rate,
                     unit: product ? product.unit : 'Pcs',
-                    gst: product ? product.gst_rate : 0
+                    gst: product ? product.gst_rate : 0,
+                    hsn: product ? product.hsn : ''
                 };
             });
 
-            // Calculate totals
             let sub = 0, tax = 0;
             cartItems.forEach(c => {
                 const base = c.qty * c.rate;
-                sub += base; // Approx for reprint display
+                sub += base;
                 tax += base * (c.gst/100);
             });
 
@@ -525,12 +541,11 @@
         async function generateInvNo() {
             const currentYear = new Date().getFullYear();
             const thisYearSales = allVouchers.filter(v => v.type === 'Sales' && v.date && v.date.startsWith(currentYear));
-            
             let maxNo = 0;
             thisYearSales.forEach(v => {
                 if(v.voucher_no) {
                     const parts = v.voucher_no.split('-');
-                    if(parts.length === 3 && parts[0] === 'INV' && parseInt(parts[1]) === currentYear) {
+                    if(parts.length === 3 && parseInt(parts[1]) === currentYear) {
                         const num = parseInt(parts[2]);
                         if(num > maxNo) maxNo = num;
                     }
@@ -600,47 +615,137 @@
             };
         }
 
-        // --- PRINT & WHATSAPP ---
+        // --- A4 PRINT FUNCTION ---
         function printBill(data, cartItems, pid, sub, tax, grand) {
-            const party = ledgers.find(l => l.id == pid) || { name: "Walk-in Customer", phone: "" };
+            const party = ledgers.find(l => l.id == pid) || { name: "Walk-in Customer", address: "", gstin: "", phone: "" };
             
+            // Company Info
+            const cName = companySettings.company_name || 'My Company';
+            const cAddr = companySettings.address || '';
+            const cGst = companySettings.gstin || '';
+            const cPhone = companySettings.phone || '';
+            const cBank = companySettings.bank_name ? `Bank: ${companySettings.bank_name}, Acc: ${companySettings.bank_account}, IFSC: ${companySettings.bank_ifsc}` : '';
+
+            // Rows Generation
             let rows = '';
             let sr = 1;
+            let totalGstAmt = 0;
+
             cartItems.forEach(c => {
                 const base = c.qty * c.rate;
-                const taxAmt = base * (c.gst / 100);
+                const gstAmt = base * (c.gst / 100);
+                totalGstAmt += gstAmt;
+                
                 rows += `
                     <tr>
-                        <td>${sr++}</td>
+                        <td style="text-align:center;">${sr++}</td>
                         <td>${c.name}</td>
+                        <td style="text-align:center;">${c.hsn || '-'}</td>
                         <td style="text-align:center;">${c.qty} ${c.unit}</td>
-                        <td class="right">₹${parseFloat(c.rate).toFixed(2)}</td>
-                        <td class="right">₹${base.toFixed(2)}</td>
-                        <td class="right">₹${taxAmt.toFixed(2)}</td>
+                        <td style="text-align:right;">${c.rate.toFixed(2)}</td>
+                        <td style="text-align:right;">${base.toFixed(2)}</td>
                     </tr>`;
             });
 
+            // Fill empty rows to maintain A4 height if needed
+            for(let i=0; i< (10 - cartItems.length); i++) {
+                rows += `<tr><td style="color:white">.</td><td></td><td></td><td></td><td></td><td></td></tr>`;
+            }
+
+            // CGST/SGST Logic (Assuming Intra-state)
+            const cgst = totalGstAmt / 2;
+            const sgst = totalGstAmt / 2;
+
             const printHTML = `
-                <div style="max-width:80mm; margin:auto; font-size:11pt;">
-                    <h3 style="text-align:center;">Arth Book</h3>
-                    <p style="text-align:center; font-size:10pt;">Tax Invoice</p>
-                    <table class="print-table no-print-border" style="width:100%; margin-bottom:10px;">
-                        <tr><td>Invoice:</td><td><strong>${data.voucher_no}</strong></td></tr>
-                        <tr><td>Date:</td><td>${data.date}</td></tr>
-                        <tr><td>Customer:</td><td>${party.name}</td></tr>
-                    </table>
-                    <table class="print-table">
+                <div class="a4-container">
+                    <div class="a4-header">
+                        <h2 class="a4-title">TAX INVOICE</h2>
+                        <h3 style="margin:5px 0;">${cName}</h3>
+                        <div class="a4-sub">${cAddr}<br>GSTIN: ${cGst} | Ph: ${cPhone}</div>
+                    </div>
+
+                    <div class="a4-info">
+                        <div class="a4-box">
+                            <b>Details of Receiver (Billed to):</b><br>
+                            <strong>${party.name}</strong><br>
+                            Address: ${party.address || '-'}<br>
+                            GSTIN: ${party.gstin || '-'}<br>
+                            State Code: ${party.state_code || '08 (RJ)'}
+                        </div>
+                        <div class="a4-box">
+                            <b>Invoice No:</b> ${data.voucher_no}<br>
+                            <b>Date:</b> ${data.date}<br>
+                            <b>Mode:</b> ${data.payment_mode}<br>
+                            <b>Place of Supply:</b> ${companySettings.address ? companySettings.address.split(',').pop() : 'State'}
+                        </div>
+                    </div>
+
+                    <table class="a4-table">
                         <thead>
-                            <tr><th>#</th><th>Item</th><th>Qty</th><th>Rate</th><th>Amount</th><th>GST</th></tr>
+                            <tr style="background:#eee;">
+                                <th width="5%">Sl</th>
+                                <th width="40%">Description of Goods</th>
+                                <th width="10%">HSN/SAC</th>
+                                <th width="10%">Qty</th>
+                                <th width="15%">Rate</th>
+                                <th width="20%">Amount</th>
+                            </tr>
                         </thead>
                         <tbody>${rows}</tbody>
                     </table>
-                    <table class="print-table no-print-border" style="margin-top:10px;">
-                        <tr><td>Subtotal:</td><td class="right">₹${sub.toFixed(2)}</td></tr>
-                        <tr><td>Tax:</td><td class="right">₹${tax.toFixed(2)}</td></tr>
-                        <tr><td><strong>Grand Total:</strong></td><td class="right"><strong>₹${parseFloat(grand).toFixed(2)}</strong></td></tr>
-                    </table>
-                    <p style="text-align:center; margin-top:20px; font-size:10pt;">Thank You! Visit Again 🚀</p>
+
+                    <div class="a4-footer">
+                        <div class="a4-foot-left">
+                            <table class="tax-summary">
+                                <tr>
+                                    <td style="text-align:left;"><b>Taxable Amount</b></td>
+                                    <td>₹${sub.toFixed(2)}</td>
+                                </tr>
+                                <tr>
+                                    <td style="text-align:left;">CGST</td>
+                                    <td>₹${cgst.toFixed(2)}</td>
+                                </tr>
+                                <tr>
+                                    <td style="text-align:left;">SGST</td>
+                                    <td>₹${sgst.toFixed(2)}</td>
+                                </tr>
+                                <tr>
+                                    <td style="text-align:left;"><b>Total Tax</b></td>
+                                    <td><b>₹${totalGstAmt.toFixed(2)}</b></td>
+                                </tr>
+                            </table>
+                            <div class="amount-words">Amount in Words:<br>${numberToWords(grand)} Only</div>
+                            <div style="margin-top:10px; font-size:9pt;">
+                                <b>Bank Details:</b><br>${cBank}<br>
+                                <b>Terms:</b> ${companySettings.terms || 'Goods once sold will not be taken back.'}
+                            </div>
+                        </div>
+                        <div class="a4-foot-right">
+                            <table style="width:100%; border-collapse:collapse;">
+                                <tr>
+                                    <td style="padding:5px;">Total Amount Before Tax</td>
+                                    <td style="text-align:right;">₹${sub.toFixed(2)}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:5px;">Add: CGST</td>
+                                    <td style="text-align:right;">₹${cgst.toFixed(2)}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:5px;">Add: SGST</td>
+                                    <td style="text-align:right;">₹${sgst.toFixed(2)}</td>
+                                </tr>
+                                <tr style="border-top:1px solid #000; font-weight:bold; font-size:12pt;">
+                                    <td style="padding:10px 5px;">Total Amount (GST Incl.)</td>
+                                    <td style="text-align:right;">₹${parseFloat(grand).toFixed(2)}</td>
+                                </tr>
+                            </table>
+                            <div class="signatory">
+                                <br><br>
+                                <b>For ${cName}</b><br>
+                                <span style="font-size:8pt;">(Authorised Signatory)</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             `;
 
@@ -651,9 +756,28 @@
         function shareOnWhatsApp(data, cartItems, pid, sub, tax, grand) {
             const party = ledgers.find(l => l.id == pid) || { name: "Walk-in Customer", phone: "" };
             if(!party.phone) return alert("Customer mobile number missing!");
-            
-            let msg = `*Arth Book Invoice*%0AInv: ${data.voucher_no}%0AAmt: ₹${grand}%0A%0AThanks!`;
+            let msg = `*Invoice: ${data.voucher_no}*%0AAmt: ₹${grand}%0A%0AThanks!`;
             window.open(`https://wa.me/91${party.phone}?text=${msg}`, '_blank');
+        }
+
+        function numberToWords(num) {
+            const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+            const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+            if(num == 0) return 'Zero';
+            const crore = Math.floor(num / 10000000); num %= 10000000;
+            const lakh = Math.floor(num / 100000); num %= 100000;
+            const thousand = Math.floor(num / 1000); num %= 1000;
+            const hundred = Math.floor(num / 100); num %= 100;
+            let words = '';
+            if(crore) words += numberToWords(crore) + ' Crore ';
+            if(lakh) words += numberToWords(lakh) + ' Lakh ';
+            if(thousand) words += numberToWords(thousand) + ' Thousand ';
+            if(hundred) words += ones[hundred] + ' Hundred ';
+            if(num > 0) {
+                if(num < 20) words += ones[num];
+                else words += tens[Math.floor(num/10)] + (num%10 ? ' ' + ones[num%10] : '');
+            }
+            return words.trim();
         }
 
         document.addEventListener('keydown', e => { 
