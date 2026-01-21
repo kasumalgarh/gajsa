@@ -6,27 +6,31 @@
     <title>Purchase Entry - Arth Book</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #064e3b; --accent: #10b981; --bg: #f0fdf4; --text: #064e3b; --border: #d1fae5; }
+        :root { --primary: #064e3b; --accent: #10b981; --bg: #f0fdf4; --text: #064e3b; --border: #d1fae5; --sidebar-bg: #0f172a; }
         * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
         body { display: flex; height: 100vh; background: var(--bg); color: var(--text); overflow: hidden; }
 
-        .sidebar { width: 260px; background: #0f172a; padding: 20px; display: flex; flex-direction: column; flex-shrink: 0; }
+        /* --- SIDEBAR --- */
+        .sidebar { 
+            width: 260px; background: #0f172a; padding: 20px; display: flex; 
+            flex-direction: column; flex-shrink: 0; height: 100vh; overflow-y: auto; 
+        }
         .nav-link { padding: 12px; margin-bottom: 5px; border-radius: 8px; color: #94a3b8; text-decoration: none; font-weight: 500; display: block; }
         .nav-link:hover, .nav-link.active { background: #1e293b; color: white; }
 
+        /* --- MAIN --- */
         .main { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; }
-        .toolbar { background: white; padding: 10px; margin-bottom: 20px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .toolbar { background: white; padding: 10px 15px; margin-bottom: 20px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .container { background: white; max-width: 1000px; margin: 0 auto; padding: 25px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid var(--border); }
         
         .grid-header { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-        input, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; font-size: 13px; }
         label { font-size: 12px; font-weight: 700; color: #64748b; display: block; margin-bottom: 5px; }
         
         .table-wrap { overflow-x: auto; margin-bottom: 20px; border: 1px solid var(--border); border-radius: 6px; }
         table { width: 100%; border-collapse: collapse; font-size: 13px; }
         th { background: var(--primary); color: white; padding: 10px; text-align: left; }
         td { border-bottom: 1px solid #e2e8f0; padding: 5px; }
-        td input { border: none; background: transparent; padding: 5px; width: 100%; }
         
         .btn { padding: 10px 20px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; color: white; }
         .btn-add { background: #ecfdf5; color: var(--primary); border: 1px dashed var(--primary); width: 100%; margin-bottom: 20px; }
@@ -34,13 +38,33 @@
 
         .totals { display: flex; justify-content: flex-end; gap: 30px; font-size: 14px; font-weight: 600; padding-top: 15px; border-top: 2px solid var(--border); }
         
-        /* NEW STYLES FOR RECENT TABLE */
+        /* RECENT PURCHASES */
         .recent-box { margin-top:30px; background:white; padding:15px; border-radius:8px; border:1px solid var(--border); }
         .recent-table { width:100%; border-collapse:collapse; font-size:13px; }
         .recent-table th { background:#f1f5f9; padding:10px; text-align:left; color:#333; border-bottom: 2px solid #ddd; }
         .recent-table td { padding:10px; border-bottom:1px solid #eee; }
-        .btn-del { background: #fee2e2; color: #ef4444; padding: 5px 10px; font-size: 12px; border-radius: 4px; cursor: pointer; border: 1px solid #fecaca; }
-        .btn-del:hover { background: #fecaca; }
+        .btn-del { background: #fee2e2; color: #ef4444; padding: 5px 10px; font-size: 12px; border-radius: 4px; cursor: pointer; border: 1px solid #fecaca; margin-right:5px; }
+        .btn-print { background: #e0f2fe; color: #0369a1; padding: 5px 10px; font-size: 12px; border-radius: 4px; cursor: pointer; border: 1px solid #bae6fd; }
+
+        /* --- PRINT CSS (A4 TALLY) --- */
+        @media print { 
+            @page { size: A4; margin: 5mm; }
+            body * { visibility: hidden; } 
+            #printArea, #printArea * { visibility: visible; } 
+            #printArea { position: absolute; left: 0; top: 0; width: 100%; font-family: 'Times New Roman', serif; color: black; background: white; padding: 5px; } 
+            
+            .a4-container { border: 1px solid #000; width: 100%; height: 98vh; display: flex; flex-direction: column; }
+            .a4-header { text-align: center; border-bottom: 1px solid #000; padding: 10px; background: #f9f9f9 !important; -webkit-print-color-adjust: exact; }
+            .a4-info { display: flex; border-bottom: 1px solid #000; }
+            .a4-box { flex: 1; padding: 10px; border-right: 1px solid #000; font-size: 10pt; }
+            .a4-box:last-child { border-right: none; }
+            .a4-table { width: 100%; border-collapse: collapse; font-size: 10pt; flex: 1; }
+            .a4-table th, .a4-table td { border: 1px solid #000; padding: 5px; }
+            .a4-footer { border-top: 1px solid #000; display: flex; font-size: 10pt; height: 200px; }
+            .a4-foot-left { flex: 1; padding: 10px; border-right: 1px solid #000; }
+            .a4-foot-right { width: 40%; padding: 10px; }
+            .sign-box { margin-top: 50px; text-align: right; font-weight: bold; }
+        }
     </style>
 </head>
 <body>
@@ -60,14 +84,14 @@
     <div class="main">
         <div class="toolbar">
             <h2 style="font-size:18px;">Purchase Entry</h2>
-            <button class="btn btn-save" onclick="savePurchase()">💾 Save Purchase</button>
+            <button class="btn btn-save" onclick="savePurchase()">💾 Save & Print A4</button>
         </div>
 
         <div class="container">
             <div class="grid-header">
-                <div><label>Invoice No</label><input type="text" id="invNo"></div>
+                <div><label>Invoice No</label><input type="text" id="invNo" placeholder="Bill Number"></div>
                 <div><label>Date</label><input type="date" id="invDate"></div>
-                <div><label>Supplier</label><select id="partySelect"></select></div>
+                <div><label>Supplier (Party)</label><select id="partySelect"></select></div>
             </div>
 
             <div class="table-wrap">
@@ -76,8 +100,8 @@
                         <tr>
                             <th width="40%">Item</th>
                             <th width="15%">Qty</th>
-                            <th width="15%">Rate</th>
-                            <th width="10%">Tax %</th>
+                            <th width="15%">Purchase Rate</th>
+                            <th width="10%">GST %</th>
                             <th width="15%">Total</th>
                             <th width="5%"></th>
                         </tr>
@@ -95,7 +119,7 @@
         </div>
 
         <div class="recent-box">
-            <h3>Recent Purchases (Delete old entries here)</h3>
+            <h3>Recent Purchase Invoices</h3>
             <table class="recent-table">
                 <thead>
                     <tr>
@@ -111,65 +135,63 @@
         </div>
     </div>
 
+    <div id="printArea"></div>
+
     <script src="db.js"></script>
     <script>
-        let items = [], ledgers = [];
+        let items = [], ledgers = [], companySettings = {};
 
         window.onload = async () => {
             await DB.init();
-            
-            // --- SELF REPAIR: Check & Create System Ledgers ---
-            await ensureLedger("Local Purchase", "Purchase Accounts");
-            await ensureLedger("Input GST", "Duties & Taxes");
-
+            await DB._ensureSystemLedgers(); // Ensure Purchase and Tax ledgers exist
             await loadData();
             document.getElementById('invDate').valueAsDate = new Date();
             addRow();
         };
 
-        async function ensureLedger(name, groupName) {
-            const all = await DB.getAll('ledgers');
-            if(!all.find(l => l.name === name)) {
-                const groups = await DB.getAll('groups');
-                const grp = groups.find(g => g.name === groupName) || groups[0];
-                const tx = DB.db.transaction('ledgers', 'readwrite');
-                tx.objectStore('ledgers').add({ name: name, group_id: grp.id, opening_balance: 0 });
-                return new Promise(r => tx.oncomplete = r);
-            }
-        }
-
         async function loadData() {
-            [items, ledgers] = await Promise.all([DB.getAll('items'), DB.getAll('ledgers')]);
+            [items, ledgers, settingsData] = await Promise.all([
+                DB.getAll('items'), 
+                DB.getAll('ledgers'),
+                DB.getAll('settings')
+            ]);
             
+            companySettings = settingsData.find(s => s.id === 'global') || {};
+
             const sel = document.getElementById('partySelect');
             sel.innerHTML = '<option value="">Select Supplier</option>';
-            ledgers.forEach(l => {
-                if(!['Local Purchase', 'Input GST', 'Local Sales', 'Output GST'].includes(l.name)) {
-                    sel.innerHTML += `<option value="${l.id}">${l.name}</option>`;
-                }
-            });
+            
+            // Sundry Creditors (Suppliers)
+            const groups = await DB.getAll('groups');
+            const creditorGrp = groups.find(g => g.name === "Sundry Creditors");
+            
+            ledgers.filter(l => l.group_id === (creditorGrp ? creditorGrp.id : -1))
+                   .sort((a,b) => a.name.localeCompare(b.name))
+                   .forEach(l => { sel.innerHTML += `<option value="${l.id}">${l.name}</option>`; });
 
-            // --- LOAD RECENT ENTRIES WITH DELETE BUTTON ---
+            loadRecentList();
+        }
+
+        async function loadRecentList() {
             const vouchers = await DB.getAll('vouchers');
             const tbody = document.getElementById('recentList');
             tbody.innerHTML = '';
             
-            // Sort by ID descending (newest first)
             const purchases = vouchers.filter(v => v.type === 'Purchase').sort((a,b) => b.id - a.id);
 
-            purchases.forEach(v => {
-                const partyName = ledgers.find(l => l.id == v.party_id)?.name || 'Unknown';
+            purchases.slice(0, 10).forEach(v => {
+                const party = ledgers.find(l => l.id == v.party_id)?.name || 'Walk-in';
                 tbody.innerHTML += `
                     <tr>
                         <td>${v.date}</td>
                         <td>${v.voucher_no}</td>
-                        <td>${partyName}</td>
-                        <td>₹${v.amount}</td>
+                        <td>${party}</td>
+                        <td>₹${v.amount.toFixed(2)}</td>
                         <td>
-                            <button class="btn-del" onclick="deleteVoucher(${v.id})">🗑️ Delete</button>
+                            <button class="btn-print" onclick="reprintA4(${v.id})">🖨️ A4</button>
+                            <button class="btn-del" onclick="deleteVoucher(${v.id})">🗑️</button>
                         </td>
-                    </tr>
-                `;
+                    </tr>`;
             });
         }
 
@@ -177,16 +199,16 @@
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td>
-                    <select class="item-sel" onchange="fillRow(this)" style="width:100%; border:none;">
+                    <select class="item-sel" onchange="fillRow(this)">
                         <option value="">Select Item</option>
-                        ${items.map(i => `<option value="${i.id}" data-rate="${i.std_cost}" data-gst="${i.gst_rate}">${i.name}</option>`).join('')}
+                        ${items.map(i => `<option value="${i.id}" data-rate="${i.std_cost}" data-gst="${i.gst_rate}" data-hsn="${i.hsn||''}" data-unit="${i.unit||'Pcs'}">${i.name}</option>`).join('')}
                     </select>
                 </td>
                 <td><input type="number" class="qty" value="1" onchange="calc(this)"></td>
                 <td><input type="number" class="rate" value="0" onchange="calc(this)"></td>
                 <td><input type="number" class="gst" value="0" readonly></td>
                 <td><input type="text" class="amt" value="0.00" readonly style="font-weight:bold; text-align:right;"></td>
-                <td><button onclick="this.closest('tr').remove(); calcTotal()" style="color:red; background:none; border:none; cursor:pointer;">×</button></td>
+                <td style="text-align:center;"><button onclick="this.closest('tr').remove(); calcTotal()" style="color:red; border:none; background:none; cursor:pointer;">×</button></td>
             `;
             document.getElementById('rows').appendChild(tr);
         }
@@ -227,112 +249,198 @@
 
         async function savePurchase() {
             const pid = document.getElementById('partySelect').value;
+            const date = document.getElementById('invDate').value;
+            const invNo = document.getElementById('invNo').value || 'PUR-' + Date.now();
+            
             if(!pid) return alert("Select Supplier");
+            
+            const cartItems = [];
+            document.querySelectorAll('#rows tr').forEach(tr => {
+                const itemID = parseInt(tr.querySelector('.item-sel').value);
+                if(itemID) {
+                    const opt = tr.querySelector('.item-sel').selectedOptions[0];
+                    cartItems.push({
+                        item_id: itemID,
+                        name: opt.text,
+                        qty: parseFloat(tr.querySelector('.qty').value),
+                        rate: parseFloat(tr.querySelector('.rate').value),
+                        gst: parseFloat(opt.dataset.gst),
+                        hsn: opt.dataset.hsn,
+                        unit: opt.dataset.unit
+                    });
+                }
+            });
+
+            if(cartItems.length === 0) return alert("Add at least one item!");
 
             const taxable = parseFloat(document.getElementById('lblTaxable').innerText);
-            const tax = parseFloat(document.getElementById('lblTax').innerText);
-            const total = parseFloat(document.getElementById('lblTotal').innerText);
+            const taxTotal = parseFloat(document.getElementById('lblTax').innerText);
+            const grand = parseFloat(document.getElementById('lblTotal').innerText);
 
-            if(total === 0) return alert("Total is 0!");
-
-            // --- ACCOUNTING FIX: Force System Ledgers ---
-            const allLedgers = await DB.getAll('ledgers');
-            const purchLedger = allLedgers.find(l => l.name === 'Local Purchase');
-            const taxLedger = allLedgers.find(l => l.name === 'Input GST');
-
-            if(!purchLedger || !taxLedger) return alert("System Ledgers Missing! Reload Page.");
-
-            // Prepare Master
             const voucher = {
-                voucher_no: document.getElementById('invNo').value || 'PUR-' + Date.now(),
-                date: document.getElementById('invDate').value,
+                voucher_no: invNo,
+                date: date,
                 type: 'Purchase',
                 party_id: parseInt(pid),
-                amount: total
+                amount: grand
             };
 
             const tx = DB.db.transaction(['vouchers', 'voucher_items', 'acct_entries', 'items'], 'readwrite');
-            const vStore = tx.objectStore('vouchers');
-            const vReq = vStore.add(voucher);
-
-            vReq.onsuccess = (e) => {
+            
+            tx.objectStore('vouchers').add(voucher).onsuccess = (e) => {
                 const vid = e.target.result;
                 const acStore = tx.objectStore('acct_entries');
-                
-                // 1. Credit Party (Full Payable)
-                acStore.add({ voucher_id: vid, ledger_id: parseInt(pid), credit: total, debit: 0 });
-
-                // 2. Debit Purchase (Only Cost)
-                acStore.add({ voucher_id: vid, ledger_id: purchLedger.id, credit: 0, debit: taxable });
-
-                // 3. Debit Input Tax (Only Tax)
-                if(tax > 0) {
-                    acStore.add({ voucher_id: vid, ledger_id: taxLedger.id, credit: 0, debit: tax });
-                }
-
-                // 4. Save Items & Update Stock
                 const viStore = tx.objectStore('voucher_items');
                 const iStore = tx.objectStore('items');
 
-                document.querySelectorAll('#rows tr').forEach(tr => {
-                    const itemID = parseInt(tr.querySelector('.item-sel').value);
-                    if(itemID) {
-                        const qty = parseFloat(tr.querySelector('.qty').value);
-                        const rate = parseFloat(tr.querySelector('.rate').value);
-                        
-                        viStore.add({ voucher_id: vid, item_id: itemID, qty, rate });
+                // 1. Credit Party (Sundry Creditor)
+                acStore.add({ voucher_id: vid, ledger_id: parseInt(pid), credit: grand, debit: 0 });
 
-                        // Update Stock
-                        const req = iStore.get(itemID);
-                        req.onsuccess = (ev) => {
-                            const d = ev.target.result;
-                            if(d) {
-                                d.current_stock = (parseFloat(d.current_stock) || 0) + qty;
-                                // CRITICAL FIX: Only update cost, NOT assuming it includes tax
-                                d.std_cost = rate; 
-                                iStore.put(d);
-                            }
+                // 2. Debit Local Purchase Ledger
+                const purchLedger = ledgers.find(l => l.name === 'Local Purchase');
+                if(purchLedger) acStore.add({ voucher_id: vid, ledger_id: purchLedger.id, credit: 0, debit: taxable });
+
+                // 3. Debit Input GST
+                const taxLedger = ledgers.find(l => l.name === 'Input GST');
+                if(taxLedger && taxTotal > 0) acStore.add({ voucher_id: vid, ledger_id: taxLedger.id, credit: 0, debit: taxTotal });
+
+                // 4. Save Items & Add Stock
+                cartItems.forEach(ci => {
+                    viStore.add({ voucher_id: vid, item_id: ci.item_id, qty: ci.qty, rate: ci.rate });
+                    
+                    const getI = iStore.get(ci.item_id);
+                    getI.onsuccess = (ev) => {
+                        const d = ev.target.result;
+                        if(d) {
+                            d.current_stock = (parseFloat(d.current_stock) || 0) + ci.qty;
+                            d.std_cost = ci.rate; // Update last purchase cost
+                            iStore.put(d);
                         }
-                    }
+                    };
                 });
             };
 
             tx.oncomplete = () => {
-                alert("Saved Correctly! Check Reports now.");
-                location.reload();
+                printA4Invoice(voucher, cartItems, pid, taxable, taxTotal, grand);
+                setTimeout(() => location.reload(), 1000);
             };
         }
 
-        // --- NEW DELETE FUNCTION ---
+        async function reprintA4(vid) {
+            const vouchers = await DB.getAll('vouchers');
+            const v = vouchers.find(v => v.id === vid);
+            if(!v) return;
+
+            const [vItems, allItems] = await Promise.all([DB.getAll('voucher_items'), DB.getAll('items')]);
+            const billItems = vItems.filter(vi => vi.voucher_id === vid).map(vi => {
+                const product = allItems.find(i => i.id === vi.item_id);
+                return {
+                    name: product?.name || 'Item',
+                    qty: vi.qty,
+                    rate: vi.rate,
+                    gst: product?.gst_rate || 0,
+                    hsn: product?.hsn || '-',
+                    unit: product?.unit || 'Pcs'
+                };
+            });
+
+            let sub = 0, tax = 0;
+            billItems.forEach(ci => {
+                const base = ci.qty * ci.rate;
+                sub += base;
+                tax += base * (ci.gst/100);
+            });
+
+            printA4Invoice(v, billItems, v.party_id, sub, tax, v.amount);
+        }
+
+        function printA4Invoice(data, cartItems, pid, sub, tax, grand) {
+            const party = ledgers.find(l => l.id == pid) || { name: "Cash Supplier", address: "", gstin: "" };
+            const cName = companySettings.company_name || 'My Business';
+            const cAddr = companySettings.address || '';
+            const cGst = companySettings.gstin || '';
+
+            let rows = '';
+            cartItems.forEach((c, idx) => {
+                const amt = c.qty * c.rate;
+                rows += `<tr>
+                    <td style="text-align:center;">${idx+1}</td>
+                    <td>${c.name}</td>
+                    <td style="text-align:center;">${c.hsn || '-'}</td>
+                    <td style="text-align:center;">${c.qty} ${c.unit}</td>
+                    <td style="text-align:right;">${c.rate.toFixed(2)}</td>
+                    <td style="text-align:right;">${amt.toFixed(2)}</td>
+                </tr>`;
+            });
+
+            // Fill extra rows
+            for(let i=0; i<(12-cartItems.length); i++) rows += '<tr><td style="color:white">.</td><td></td><td></td><td></td><td></td><td></td></tr>';
+
+            const html = `
+                <div class="a4-container">
+                    <div class="a4-header">
+                        <h2 style="text-decoration:underline;">PURCHASE INVOICE</h2>
+                        <h3 style="margin-top:5px;">${cName}</h3>
+                        <p style="font-size:9pt;">${cAddr}<br>GSTIN: ${cGst}</p>
+                    </div>
+                    <div class="a4-info">
+                        <div class="a4-box">
+                            <b>Supplier Details:</b><br>
+                            <strong>${party.name}</strong><br>
+                            ${party.address || 'Local'}<br>
+                            GSTIN: ${party.gstin || 'N/A'}
+                        </div>
+                        <div class="a4-box">
+                            <b>Invoice No:</b> ${data.voucher_no}<br>
+                            <b>Date:</b> ${data.date}<br>
+                            <b>Type:</b> Tax Purchase
+                        </div>
+                    </div>
+                    <table class="a4-table">
+                        <thead>
+                            <tr style="background:#f2f2f2;">
+                                <th>Sl</th><th>Item Description</th><th>HSN</th><th>Qty</th><th>Rate</th><th>Basic Amt</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                    <div class="a4-footer">
+                        <div class="a4-foot-left">
+                            <b>Tax Analysis:</b><br>
+                            CGST (9%): ₹${(tax/2).toFixed(2)}<br>
+                            SGST (9%): ₹${(tax/2).toFixed(2)}<br><br>
+                            <b>Total Tax: ₹${tax.toFixed(2)}</b>
+                        </div>
+                        <div class="a4-foot-right">
+                            <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                                <span>Taxable Value:</span><span>₹${sub.toFixed(2)}</span>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; margin-bottom:10px; border-bottom:1px solid #000; padding-bottom:5px;">
+                                <span>Total GST:</span><span>₹${tax.toFixed(2)}</span>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:12pt;">
+                                <span>Net Payable:</span><span>₹${grand.toFixed(2)}</span>
+                            </div>
+                            <div class="sign-box">Authorised Signatory</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('printArea').innerHTML = html;
+            window.print();
+        }
+
         async function deleteVoucher(id) {
-            if(!confirm("Are you sure you want to delete this purchase entry?")) return;
-            
-            // NOTE: In a real app we should also reverse stock, but for fixing bad data, direct delete is fine.
+            if(!confirm("Delete this invoice? Stock will NOT be reversed.")) return;
             const tx = DB.db.transaction(['vouchers', 'acct_entries', 'voucher_items'], 'readwrite');
-            
-            // Delete Master
             tx.objectStore('vouchers').delete(id);
             
-            // Delete Related Accounting (This cleans the bad 0 GST entries)
+            // Clean acct entries
             const acStore = tx.objectStore('acct_entries');
-            const acIdx = acStore.index('voucher_id');
-            const acReq = acIdx.getAllKeys(id);
-            acReq.onsuccess = () => {
-                acReq.result.forEach(key => acStore.delete(key));
-            };
+            const idx = acStore.index('voucher_id');
+            idx.getAllKeys(id).onsuccess = (e) => e.target.result.forEach(k => acStore.delete(k));
 
-            // Delete Related Items
-            const viStore = tx.objectStore('voucher_items');
-            const viIdx = viStore.index('voucher_id');
-            const viReq = viIdx.getAllKeys(id);
-            viReq.onsuccess = () => {
-                viReq.result.forEach(key => viStore.delete(key));
-            };
-
-            tx.oncomplete = () => {
-                alert("Entry Deleted!");
-                location.reload();
-            };
+            tx.oncomplete = () => location.reload();
         }
     </script>
 </body>
