@@ -141,16 +141,25 @@
     </div>
 
     <script src="db.js"></script>
-    <script src="ai_engine.js"></script>
+    <script src="ai_engine.js" onerror="console.warn('AI Engine not loaded')"></script>
+
     <script>
         let ledgers = [], items = [], groups = [], acctEntries = [], vouchers = [], batches = [];
         let ledgerMap = {}, itemMap = {};
 
+        // --- FIXED: AI SAFETY CHECK (No redeclaration) ---
+        if (!window.AI) {
+            window.AI = {
+                predictNextMonth: async () => ({ forecast: 0, dailyAvg: 0, currentMonth: 0 })
+            };
+        }
+
         window.onload = async () => {
             await DB.init();
 
+            // FIXED: Using correct DB methods
             [ledgers, items, groups, acctEntries, vouchers, batches] = await Promise.all([
-                DB.getLedgers(),
+                DB.getAll('ledgers'), 
                 DB.getAll('items'),
                 DB.getAll('groups'),
                 DB.getAll('acct_entries'),
@@ -158,11 +167,9 @@
                 DB.getAll('batches') || []
             ]);
 
-            // Maps for quick lookup
             ledgers.forEach(l => ledgerMap[l.id] = l.name);
             items.forEach(i => itemMap[i.id] = i.name);
 
-            // Default dates: Current month
             const today = new Date();
             document.getElementById('toDate').valueAsDate = today;
             document.getElementById('fromDate').valueAsDate = new Date(today.getFullYear(), today.getMonth(), 1);
@@ -204,30 +211,35 @@
             container.innerHTML = '<div style="text-align:center; padding:80px; color:#94a3b8;"><h3>Generating Report...</h3></div>';
 
             setTimeout(async () => {
-                if(type === 'Health') await renderBusinessHealth(container);
-                else if(type === 'PL') renderProfitLoss(container);
-                else if(type === 'BalanceSheet') renderBalanceSheet(container);
-                else if(type === 'TrialBalance') renderTrialBalance(container);
-                else if(type === 'DayBook') renderDayBook(container);
-                else if(type === 'Ledger') renderPartyLedger(container);
-                else if(type === 'Stock') renderStockSummary(container);
-                else if(type === 'LowStock') renderLowStock(container);
-                else if(type === 'Expiry') renderExpiryReport(container);
+                try {
+                    if(type === 'Health') await renderBusinessHealth(container);
+                    else if(type === 'PL') renderProfitLoss(container);
+                    else if(type === 'BalanceSheet') renderBalanceSheet(container);
+                    else if(type === 'TrialBalance') renderTrialBalance(container);
+                    else if(type === 'DayBook') renderDayBook(container);
+                    else if(type === 'Ledger') renderPartyLedger(container);
+                    else if(type === 'Stock') renderStockSummary(container);
+                    else if(type === 'LowStock') renderLowStock(container);
+                    else if(type === 'Expiry') renderExpiryReport(container);
+                } catch (e) {
+                    console.error(e);
+                    container.innerHTML = `<h3 style="color:red; text-align:center;">Error: ${e.message}</h3>`;
+                }
             }, 200);
         }
 
-        // --- CORE ACCOUNTING HELPERS ---
+        // --- ACCOUNTING HELPERS ---
         function calculateLedgerBalance(ledgerId, upToDate = null) {
             const ledger = ledgers.find(l => l.id === ledgerId);
             if(!ledger) return 0;
-            let balance = ledger.opening_balance || 0;
+            let balance = parseFloat(ledger.opening_balance) || 0;
 
             acctEntries
                 .filter(e => e.ledger_id === ledgerId)
                 .forEach(e => {
                     const v = vouchers.find(v => v.id === e.voucher_id);
                     if(!upToDate || (v && v.date <= upToDate)) {
-                        balance += (e.debit || 0) - (e.credit || 0);
+                        balance += (parseFloat(e.debit) || 0) - (parseFloat(e.credit) || 0);
                     }
                 });
             return balance;
@@ -239,8 +251,9 @@
                 const bal = calculateLedgerBalance(l.id);
                 const group = groups.find(g => g.id === l.group_id);
                 const root = group ? GROUP_TYPES[group.name] || 'Liabilities' : 'Liabilities';
+                
                 if(root === 'Assets' || root === 'Expenses') balances[root] += bal;
-                else balances[root] += Math.abs(bal) * -1; // Credit side positive
+                else balances[root] += Math.abs(bal) * -1;
             });
             return balances;
         }
@@ -265,10 +278,10 @@
             'Indirect Expenses': 'Expenses'
         };
 
-        // --- REPORT RENDERERS ---
+        // --- RENDERERS ---
         async function renderBusinessHealth(container) {
             const stockValue = items.reduce((sum, i) => sum + ((i.current_stock || 0) * (i.std_cost || 0)), 0);
-            const prediction = await AI.predictNextMonth() || { forecast: 0, dailyAvg: 0 };
+            const prediction = await window.AI.predictNextMonth() || { forecast: 0, dailyAvg: 0 };
 
             container.innerHTML = `
                 <h2>Business Health Overview</h2>
@@ -300,7 +313,7 @@
                     datasets: [{
                         label: 'Revenue',
                         data: [prediction.currentMonth || 0, prediction.forecast || 0],
-                        borderColor: var(--accent),
+                        borderColor: '#2563eb',
                         backgroundColor: 'rgba(37,99,235,0.1)',
                         tension: 0.4,
                         fill: true
@@ -423,8 +436,8 @@
             <tr><td colspan="3"><strong>Opening Balance</strong></td><td class="amt"></td><td class="amt"></td><td class="amt"><strong>₹${openingBal.toLocaleString('en-IN')}</strong></td></tr>`;
 
             relevantEntries.forEach(x => {
-                const dr = x.entry.debit || 0;
-                const cr = x.entry.credit || 0;
+                const dr = parseFloat(x.entry.debit) || 0;
+                const cr = parseFloat(x.entry.credit) || 0;
                 runningBal += dr - cr;
                 html += `<tr><td>${x.voucher.date}</td><td>${x.voucher.voucher_no}</td><td>${x.voucher.narration || x.voucher.type}</td>
                 <td class="amt">${dr ? '₹' + dr.toLocaleString('en-IN') : ''}</td>
