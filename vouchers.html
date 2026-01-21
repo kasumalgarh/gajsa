@@ -229,9 +229,13 @@
 
         window.onload = async () => {
             await DB.init();
-            ledgers = await DB.getLedgers();
-            groups = await DB.getAll('groups') || [];
-            allVouchers = await DB.getAll('vouchers');
+            
+            // FIX: Using standardized methods
+            [ledgers, groups, allVouchers] = await Promise.all([
+                DB.getAll('ledgers'),
+                DB.getAll('groups'),
+                DB.getAll('vouchers')
+            ]);
             
             document.getElementById('date').valueAsDate = new Date();
             await generateVoucherNo();
@@ -579,18 +583,34 @@
                 }
                 
                 try {
-                    await DB.saveVoucher(vData, [], acctEntries);
-                    alert("Voucher Saved Successfully!");
-                    if(printAfter) window.print();
-                    location.reload();
+                    // Manual Save Transaction since DB.saveVoucher is custom
+                    const tx = DB.db.transaction(['vouchers', 'acct_entries'], 'readwrite');
+                    const vStore = tx.objectStore('vouchers');
+                    const aStore = tx.objectStore('acct_entries');
+
+                    const vReq = vStore.add(vData);
+                    
+                    vReq.onsuccess = (e) => {
+                        const vid = e.target.result;
+                        acctEntries.forEach(a => {
+                            a.voucher_id = vid;
+                            aStore.add(a);
+                        });
+                    };
+
+                    tx.oncomplete = () => {
+                        alert("Voucher Saved Successfully!");
+                        if(printAfter) window.print();
+                        location.reload();
+                    };
                 } catch(e) {
                     alert("Save Failed: " + e.message);
                 }
                 return;
             }
 
-            // Journal save
-            const vData = {
+            // Journal save logic (same as above manual transaction)
+            const jData = {
                 voucher_no: vchNo,
                 date: date,
                 type: 'Journal',
@@ -599,10 +619,24 @@
             };
 
             try {
-                await DB.saveVoucher(vData, [], acctEntries);
-                alert("Journal Entry Saved!");
-                if(printAfter) window.print();
-                location.reload();
+                const tx = DB.db.transaction(['vouchers', 'acct_entries'], 'readwrite');
+                const vStore = tx.objectStore('vouchers');
+                const aStore = tx.objectStore('acct_entries');
+
+                const vReq = vStore.add(jData);
+                vReq.onsuccess = (e) => {
+                    const vid = e.target.result;
+                    acctEntries.forEach(a => {
+                        a.voucher_id = vid;
+                        aStore.add(a);
+                    });
+                };
+
+                tx.oncomplete = () => {
+                    alert("Journal Entry Saved!");
+                    if(printAfter) window.print();
+                    location.reload();
+                };
             } catch(e) {
                 alert("Save Failed: " + e.message);
             }
@@ -617,6 +651,7 @@
                 return;
             }
             
+            // Sort Descending by ID
             allVouchers.sort((a,b) => b.id - a.id).slice(0, 10).forEach(v => {
                 const party = ledgers.find(l => l.id === v.party_id)?.name || '';
                 container.innerHTML += `
@@ -661,7 +696,6 @@
             `);
         }
 
-        // Simple number to words (Indian style)
         function numberToWords(num) {
             const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten',
                           'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
