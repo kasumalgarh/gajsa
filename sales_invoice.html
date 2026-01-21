@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
-    <title>Sales POS - Arth Book (v2.0)</title>
+    <title>Sales POS - Arth Book</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root { --primary: #1e293b; --accent: #2563eb; --border: #cbd5e1; --bg: #f1f5f9; --green: #10b981; --red: #ef4444; --sidebar-bg: #0f172a; }
         * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
         body { background: var(--bg); color: var(--primary); height: 100vh; display:flex; overflow:hidden; }
 
-        /* --- SIDEBAR (Consistent) --- */
+        /* --- SIDEBAR --- */
         .sidebar { 
             width: 260px; background: var(--sidebar-bg); padding: 20px; display: flex; 
             flex-direction: column; flex-shrink: 0; height: 100vh; overflow-y: auto; z-index: 100; transition: 0.3s;
@@ -83,12 +83,9 @@
             .sidebar.active { left: 0; }
             .menu-btn { display: block; }
             .main-content { padding: 5px; }
-            
             .pos-layout { flex-direction: column; }
-            
             .item-list-area { flex: 0 0 40vh; }
             .cart-area { flex: 1; }
-            
             .party-panel { grid-template-columns: 1fr; gap: 5px; }
             .toolbar { padding: 5px; }
             #invNo { display: none; }
@@ -220,18 +217,21 @@
         window.onload = async () => {
             await DB.init();
             
-            // FIXED: Fetch groups along with other data to filter parties correctly
+            // --- SELF REPAIR: Check & Create System Ledgers ---
+            // This ensures Local Sales & Output GST exist to prevent errors
+            await DB._ensureSystemLedgers();
+
             const [itemsData, ledgersData, groupsData, settingsData] = await Promise.all([
                 DB.getAll('items'),
-                DB.getAll('ledgers'), // Uses generic getAll instead of getLedgers
+                DB.getAll('ledgers'),
                 DB.getAll('groups'),
-                DB.getAll('settings') // Fetch settings (returns array)
+                DB.getAll('settings')
             ]);
 
             items = itemsData || [];
             ledgers = ledgersData || [];
             groups = groupsData || [];
-            settings = settingsData[0] || {}; // Take first settings object or empty
+            settings = settingsData[0] || {}; 
 
             renderItems(items);
             loadCustomers();
@@ -385,14 +385,14 @@
             if(!debitLedgerId) {
                 const cashLedger = ledgers.find(l => l.name === "Cash-in-Hand");
                 debitLedgerId = cashLedger ? cashLedger.id : 0;
-                if(!debitLedgerId) return alert("Error: Cash-in-Hand ledger not found!");
+                if(!debitLedgerId) return alert("Error: Cash-in-Hand ledger not found! (Try reloading)");
             }
             acct.push({ ledger_id: debitLedgerId, debit: grand, credit: 0 });
 
             // 2. Credit: Sales Account (only taxable amount)
             const salesLedger = ledgers.find(l => l.name === "Local Sales" || l.name.includes("Sales"));
             const salesId = salesLedger ? salesLedger.id : 0;
-            if(!salesId) return alert("Error: Sales ledger not found!");
+            if(!salesId) return alert("Error: Sales ledger not found! (Try reloading)");
             acct.push({ ledger_id: salesId, debit: 0, credit: sub });
 
             // 3. Credit: GST Output Ledger (if tax exists)
@@ -404,12 +404,12 @@
                     l.name.toLowerCase().includes("sgst") ||
                     l.name.toLowerCase().includes("igst")
                 );
-                if(!gstLedger) return alert("Error: GST Output ledger not found! Create a ledger like 'Output GST'.");
+                // Fallback if specific tax ledger not found, find group Duties
+                if(!gstLedger) return alert("Error: Output GST ledger not found! (Try reloading)");
                 acct.push({ ledger_id: gstLedger.id, debit: 0, credit: tax });
             }
 
             try {
-                // FIXED: Use correct stores for saveVoucher manually since DB.saveVoucher might be missing/different
                 const tx = DB.db.transaction(['vouchers', 'voucher_items', 'acct_entries', 'items'], 'readwrite');
                 
                 // Save Master
@@ -488,7 +488,6 @@
             const sel = document.getElementById('custSelect');
             sel.innerHTML = '<option value="">Walk-in Customer (Cash)</option>';
             
-            // FIXED: Identify Sundry Debtors Group ID first
             const debtorGroup = groups.find(g => g.name === "Sundry Debtors");
             const debtorGroupId = debtorGroup ? debtorGroup.id : -1;
 
@@ -508,9 +507,7 @@
             }
             const p = ledgers.find(l => l.id == pid);
             if(!p) return;
-            // Approximate balance (sales only - quick for POS)
             let bal = p.opening_balance || 0;
-            // In real, calculate from acct_entries, but for now approximate
             document.getElementById('partyStats').innerHTML = `<span class="stat-box" style="color:${bal>0?'red':'green'}">Bal: ₹${bal.toFixed(2)}</span>`;
         }
 

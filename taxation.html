@@ -88,7 +88,7 @@
         <div style="font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 40px;">🚀 Arth Book</div> 
         <a href="index.html" class="nav-link">📊 Dashboard</a>
         <a href="reports.html" class="nav-link">📈 Reports</a>
-        <a href="gst_filing.html" class="nav-link active">🏛️ GST Filing</a>
+        <a href="gst_filing.html" class="nav-link">🏛️ GST Filing</a>
         <a href="sales_invoice.html" class="nav-link">🧾 Sales Invoice</a>
         <a href="purchase_invoice.html" class="nav-link">🚚 Purchase Entry</a>
         <a href="vouchers.html" class="nav-link">💸 Vouchers (JV)</a>
@@ -235,7 +235,8 @@
         async function fetchBusinessIncome() {
             const vouchers = await DB.getAll('vouchers');
             const items = await DB.getAll('items');
-            const ledgers = await DB.getLedgers();
+            // FIXED: Use getAll('ledgers') instead of getLedgers()
+            const ledgers = await DB.getAll('ledgers');
             const groups = await DB.getAll('groups');
             const entries = await DB.getAll('acct_entries');
 
