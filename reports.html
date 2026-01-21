@@ -147,7 +147,7 @@
         let ledgers = [], items = [], groups = [], acctEntries = [], vouchers = [], batches = [];
         let ledgerMap = {}, itemMap = {};
 
-        // --- FIXED: AI SAFETY CHECK (No redeclaration) ---
+        // AI Safety
         if (!window.AI) {
             window.AI = {
                 predictNextMonth: async () => ({ forecast: 0, dailyAvg: 0, currentMonth: 0 })
@@ -157,7 +157,7 @@
         window.onload = async () => {
             await DB.init();
 
-            // FIXED: Using correct DB methods
+            // Load all necessary data
             [ledgers, items, groups, acctEntries, vouchers, batches] = await Promise.all([
                 DB.getAll('ledgers'), 
                 DB.getAll('items'),
@@ -228,7 +228,7 @@
             }, 200);
         }
 
-        // --- ACCOUNTING HELPERS ---
+        // --- ACCOUNTING LOGIC ---
         function calculateLedgerBalance(ledgerId, upToDate = null) {
             const ledger = ledgers.find(l => l.id === ledgerId);
             if(!ledger) return 0;
@@ -252,39 +252,37 @@
                 const group = groups.find(g => g.id === l.group_id);
                 const root = group ? GROUP_TYPES[group.name] || 'Liabilities' : 'Liabilities';
                 
+                // Aggregation Logic: 
+                // Assets/Expenses = Debit Positive
+                // Liab/Income = Credit Positive (So we flip sign for negative balances)
                 if(root === 'Assets' || root === 'Expenses') balances[root] += bal;
-                else balances[root] += Math.abs(bal) * -1;
+                else balances[root] += (bal * -1); 
             });
             return balances;
         }
 
         const GROUP_TYPES = {
-            'Capital Account': 'Liabilities',
-            'Loans (Liability)': 'Liabilities',
-            'Current Liabilities': 'Liabilities',
-            'Sundry Creditors': 'Liabilities',
-            'Duties & Taxes': 'Liabilities',
-            'Fixed Assets': 'Assets',
-            'Current Assets': 'Assets',
-            'Cash-in-Hand': 'Assets',
-            'Bank Accounts': 'Assets',
-            'Sundry Debtors': 'Assets',
-            'Stock-in-Hand': 'Assets',
-            'Sales Accounts': 'Income',
-            'Direct Income': 'Income',
-            'Indirect Income': 'Income',
-            'Purchase Accounts': 'Expenses',
-            'Direct Expenses': 'Expenses',
+            'Capital Account': 'Liabilities', 'Loans (Liability)': 'Liabilities',
+            'Current Liabilities': 'Liabilities', 'Sundry Creditors': 'Liabilities',
+            'Duties & Taxes': 'Liabilities', 'Fixed Assets': 'Assets',
+            'Current Assets': 'Assets', 'Cash-in-Hand': 'Assets',
+            'Bank Accounts': 'Assets', 'Sundry Debtors': 'Assets',
+            'Stock-in-Hand': 'Assets', 'Sales Accounts': 'Income',
+            'Direct Income': 'Income', 'Indirect Income': 'Income',
+            'Purchase Accounts': 'Expenses', 'Direct Expenses': 'Expenses',
             'Indirect Expenses': 'Expenses'
         };
 
-        // --- RENDERERS ---
+        // --- RENDER FUNCTIONS ---
         async function renderBusinessHealth(container) {
             const stockValue = items.reduce((sum, i) => sum + ((i.current_stock || 0) * (i.std_cost || 0)), 0);
             const prediction = await window.AI.predictNextMonth() || { forecast: 0, dailyAvg: 0 };
 
             container.innerHTML = `
-                <h2>Business Health Overview</h2>
+                <h2>Business Health Overview 
+
+[Image of financial growth chart]
+</h2>
                 <p class="sub-head">AI-Powered Insights • ${new Date().toLocaleDateString('en-IN')}</p>
 
                 <div class="ai-box">
@@ -327,7 +325,7 @@
             const balances = getGroupBalances();
             const closingStock = items.reduce((s, i) => s + ((i.current_stock || 0) * (i.std_cost || 0)), 0);
             const grossProfit = balances.Income - balances.Expenses;
-            const netProfit = grossProfit + closingStock;
+            const netProfit = grossProfit + closingStock; // Simplified
 
             container.innerHTML = `
                 <h2>Profit & Loss Statement</h2>
@@ -337,8 +335,8 @@
                         <table>
                             <thead><tr><th>Expenses</th><th class="amt">Amount</th></tr></thead>
                             <tbody>
-                                <tr><td>Purchases & Direct Expenses</td><td class="amt">${balances.Expenses.toLocaleString('en-IN')}</td></tr>
-                                ${netProfit < 0 ? `<tr class="bold-row"><td>Net Loss</td><td class="amt" style="color:var(--red);">${Math.abs(netProfit).toLocaleString('en-IN')}</td></tr>` : ''}
+                                <tr><td>Purchases & Expenses</td><td class="amt">${balances.Expenses.toLocaleString('en-IN')}</td></tr>
+                                ${netProfit > 0 ? `<tr class="bold-row"><td>Net Profit</td><td class="amt" style="color:var(--green);">${netProfit.toLocaleString('en-IN')}</td></tr>` : ''}
                             </tbody>
                         </table>
                     </div>
@@ -348,7 +346,7 @@
                             <tbody>
                                 <tr><td>Sales & Income</td><td class="amt">${balances.Income.toLocaleString('en-IN')}</td></tr>
                                 <tr><td>Closing Stock</td><td class="amt">${closingStock.toLocaleString('en-IN')}</td></tr>
-                                ${netProfit > 0 ? `<tr class="bold-row"><td>Net Profit</td><td class="amt" style="color:var(--green);">${netProfit.toLocaleString('en-IN')}</td></tr>` : ''}
+                                ${netProfit < 0 ? `<tr class="bold-row"><td>Net Loss</td><td class="amt" style="color:var(--red);">${Math.abs(netProfit).toLocaleString('en-IN')}</td></tr>` : ''}
                             </tbody>
                         </table>
                     </div>
@@ -359,7 +357,13 @@
         function renderBalanceSheet(container) {
             const balances = getGroupBalances();
             const closingStock = items.reduce((s, i) => s + ((i.current_stock || 0) * (i.std_cost || 0)), 0);
-            const netProfit = balances.Income - balances.Expenses + closingStock;
+            // Net Profit is added to Capital (Liabilities side)
+            const netProfit = (balances.Income - balances.Expenses) + closingStock; 
+            
+            // Total Liabilities = Capital + Liabilities + Net Profit
+            const totalLiab = balances.Liabilities + netProfit;
+            // Total Assets = Assets + Closing Stock
+            const totalAssets = balances.Assets + closingStock;
 
             container.innerHTML = `
                 <h2>Balance Sheet</h2>
@@ -369,8 +373,9 @@
                         <table>
                             <thead><tr><th>Liabilities</th><th class="amt">Amount</th></tr></thead>
                             <tbody>
-                                <tr><td>Capital + Profit</td><td class="amt">${(balances.Liabilities + netProfit).toLocaleString('en-IN')}</td></tr>
-                                <tr><td>Current Liabilities</td><td class="amt">${balances.Liabilities.toLocaleString('en-IN')}</td></tr>
+                                <tr><td>Capital & Liabilities</td><td class="amt">${balances.Liabilities.toLocaleString('en-IN')}</td></tr>
+                                <tr><td>Net Profit / Loss</td><td class="amt">${netProfit.toLocaleString('en-IN')}</td></tr>
+                                <tr class="bold-row"><td>Total</td><td class="amt">${totalLiab.toLocaleString('en-IN')}</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -380,6 +385,7 @@
                             <tbody>
                                 <tr><td>Fixed & Current Assets</td><td class="amt">${balances.Assets.toLocaleString('en-IN')}</td></tr>
                                 <tr><td>Closing Stock</td><td class="amt">${closingStock.toLocaleString('en-IN')}</td></tr>
+                                <tr class="bold-row"><td>Total</td><td class="amt">${totalAssets.toLocaleString('en-IN')}</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -451,7 +457,6 @@
 
         function renderStockSummary(container) {
             const totalValue = items.reduce((sum, i) => sum + ((i.current_stock || 0) * (i.std_cost || 0)), 0);
-
             let html = `<h2>Stock Summary</h2><table><thead><tr><th>Item</th><th>Current Stock</th><th>Rate</th><th class="amt">Value</th></tr></thead><tbody>`;
             items.forEach(i => {
                 const value = (i.current_stock || 0) * (i.std_cost || 0);
@@ -463,7 +468,6 @@
 
         function renderLowStock(container) {
             const lowItems = items.filter(i => (i.current_stock || 0) <= (i.reorder_level || 5));
-
             let html = `<h2>Low Stock Alert</h2>`;
             if(lowItems.length === 0) html += '<p style="text-align:center; color:var(--green); padding:50px;">✨ All items above reorder level!</p>';
             else {
@@ -479,7 +483,6 @@
         function renderExpiryReport(container) {
             const today = new Date().toISOString().slice(0,10);
             const soon = new Date(Date.now() + 30*24*60*60*1000).toISOString().slice(0,10);
-
             let html = `<h2>Batch Expiry Report</h2><table><thead><tr><th>Item</th><th>Batch</th><th>Expiry Date</th><th>Qty</th><th>Status</th></tr></thead><tbody>`;
             batches.forEach(b => {
                 if(!b.expiry_date) return;
@@ -494,13 +497,11 @@
         function exportToExcel() {
             const table = document.querySelector('#reportContent table');
             if(!table) return alert('Generate a report first!');
-
             let csv = [];
             table.querySelectorAll('tr').forEach(row => {
                 const cells = row.querySelectorAll('th, td');
                 csv.push(Array.from(cells).map(cell => `"${cell.innerText.trim().replace(/"/g, '""')}"`).join(','));
             });
-
             const blob = new Blob([csv.join('\n')], { type: 'text/csv' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');

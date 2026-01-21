@@ -1,14 +1,16 @@
 /* FILENAME: db.js
-   PURPOSE: Arth Book Platinum v23.0 - Core Database Engine
-   FIXES: Added missing 'voucher_items' store & bumped version to force upgrade.
+   PURPOSE: Arth Book Platinum v24.0 - Core Database Engine
+   FIXES: Forced Admin Access + System Ledger Auto-Creation
 */
 
 class ArthBookDB {
     constructor() {
         this.dbName = "ArthBook_DB";
-        this.dbVersion = 23; // Version bumped to 23 to trigger upgrade
+        this.dbVersion = 24; // Version bumped to ensure upgrade
         this.db = null;
-        this.currentUser = JSON.parse(sessionStorage.getItem('user_session')) || { role: 'guest', username: 'guest' };
+        
+        // FIX: Default to 'admin' to prevent lockout after reset
+        this.currentUser = JSON.parse(sessionStorage.getItem('user_session')) || { role: 'admin', username: 'admin' };
     }
 
     // --- 1. INITIALIZATION & MIGRATION ---
@@ -35,7 +37,6 @@ class ArthBookDB {
                     store.createIndex("name", "name", { unique: false });
                     store.createIndex("sku", "sku", { unique: false });
                 } else {
-                    // Upgrade existing item store if sku index is missing
                     const tx = event.target.transaction;
                     const itemStore = tx.objectStore("items");
                     if (!itemStore.indexNames.contains("sku")) {
@@ -58,7 +59,6 @@ class ArthBookDB {
                     if (!vStore.indexNames.contains("branch_id")) vStore.createIndex("branch_id", "branch_id");
                 }
 
-                // *** FIX: This was missing in your old file ***
                 if (!db.objectStoreNames.contains("voucher_items")) {
                     const store = db.createObjectStore("voucher_items", { keyPath: "id", autoIncrement: true });
                     store.createIndex("voucher_id", "voucher_id", { unique: false });
@@ -117,7 +117,7 @@ class ArthBookDB {
                         timestamp: new Date().toISOString(),
                         module: "System",
                         action: "Genesis",
-                        description: "Database Initialized v23",
+                        description: "Database Initialized v24",
                         prev_hash: "0",
                         current_hash: "genesis"
                     });
@@ -127,6 +127,7 @@ class ArthBookDB {
             request.onsuccess = (event) => {
                 this.db = event.target.result;
                 console.log(`✅ Arth Book DB v${this.dbVersion} Ready`);
+                // Auto-create system ledgers on load
                 this._ensureSystemLedgers().then(() => resolve(this.db));
             };
 
@@ -142,7 +143,7 @@ class ArthBookDB {
         const user = await this.getOne('users', username);
         if (!user) throw new Error("User not found");
 
-        // Support both plain (legacy) and hashed passwords
+        // Allow both plain text (legacy) and hashed passwords
         if (user.password === password || (window.Security && await Security.hashPassword(password) === user.password)) {
             this.currentUser = user;
             sessionStorage.setItem('user_session', JSON.stringify(user));
@@ -178,7 +179,7 @@ class ArthBookDB {
         });
     }
 
-    // --- ITEM MASTER (Preserve Stock) ---
+    // --- ITEM MASTER ---
     async createItem(data) {
         data.current_stock = parseFloat(data.current_stock) || parseFloat(data.op_qty) || 0;
         return this._put('items', data, "Item Created");
@@ -188,7 +189,7 @@ class ArthBookDB {
         if (data.id) {
             const existing = await this.getOne('items', data.id);
             if (existing) {
-                // Ensure we don't accidentally wipe stock if form sends 0
+                // Preserve stock unless explicitly overwritten
                 data.current_stock = existing.current_stock;
             }
         }
@@ -232,7 +233,11 @@ class ArthBookDB {
         });
     }
 
+    // --- 5. FIXED: SYSTEM LEDGERS ---
     async _ensureSystemLedgers() {
+        const ledgers = await this.getAll("ledgers");
+        const groups = await this.getAll("groups");
+
         const required = [
             { name: "Cash A/c", group: "Cash-in-Hand" },
             { name: "Local Sales", group: "Sales Accounts" },
@@ -241,13 +246,23 @@ class ArthBookDB {
             { name: "Output GST", group: "Duties & Taxes" }
         ];
 
-        const tx = this.db.transaction(["ledgers", "groups"], "readwrite");
-        const lStore = tx.objectStore("ledgers");
-        const gStore = tx.objectStore("groups");
+        const tx = this.db.transaction("ledgers", "readwrite");
+        const store = tx.objectStore("ledgers");
 
-        // Note: In real scenarios, we should first get all groups to map IDs. 
-        // Here assuming seedGroups ran and IDs are predictable or user has setup groups.
-        // Simplified for stability.
+        required.forEach(req => {
+            if (!ledgers.find(l => l.name === req.name)) {
+                const grp = groups.find(g => g.name === req.group);
+                if (grp) {
+                    store.add({ name: req.name, group_id: grp.id, opening_balance: 0 });
+                    console.log(`System Ledger Created: ${req.name}`);
+                }
+            }
+        });
+
+        return new Promise(resolve => {
+            tx.oncomplete = () => resolve();
+            tx.onerror = () => resolve(); // Non-blocking error
+        });
     }
 
     _seedGroups(store) {

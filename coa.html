@@ -214,6 +214,11 @@
                     group.nature === 'Income' ? 'badge-inc' :
                     'badge-exp';
 
+                // FIX: Correctly find parent name from ID
+                const parentName = group.parent_id 
+                    ? (allGroups.find(g => g.id == group.parent_id)?.name || 'Unknown') 
+                    : 'Primary';
+
                 const div = document.createElement('div');
                 div.className = 'tree-item';
                 div.onclick = () => loadGroup(group);
@@ -221,7 +226,7 @@
                 div.innerHTML = `
                     <div class="group-info">
                         <strong>${group.name}</strong>
-                        <span>Under: ${group.parent_name || 'Primary'}</span>
+                        <span>Under: ${parentName}</span>
                     </div>
                     <span class="badge ${badgeClass}">${group.nature}</span>
                 `;
@@ -282,14 +287,17 @@
             try {
                 const tx = DB.db.transaction('groups', 'readwrite');
                 const store = tx.objectStore('groups');
-                data.id ? store.put(data) : store.add(data);
+                
+                // Add or Put
+                id ? store.put(data) : store.add(data);
 
-                await tx.done;
-                showToast('Group Saved Successfully!');
-                allGroups = await DB.getAll('groups');
-                populateParentSelect();
-                renderList();
-                newGroup();
+                tx.oncomplete = async () => {
+                    showToast('Group Saved Successfully!');
+                    allGroups = await DB.getAll('groups');
+                    populateParentSelect();
+                    renderList();
+                    newGroup();
+                };
             } catch (e) {
                 alert('Error: Group name must be unique or other issue.');
                 console.error(e);
@@ -303,11 +311,14 @@
             try {
                 const tx = DB.db.transaction('groups', 'readwrite');
                 await tx.objectStore('groups').delete(parseInt(id));
-                showToast('Group Deleted');
-                allGroups = await DB.getAll('groups');
-                populateParentSelect();
-                renderList();
-                newGroup();
+                
+                tx.oncomplete = async () => {
+                    showToast('Group Deleted');
+                    allGroups = await DB.getAll('groups');
+                    populateParentSelect();
+                    renderList();
+                    newGroup();
+                };
             } catch (e) {
                 alert('Cannot delete group with ledgers');
             }

@@ -197,8 +197,10 @@
 
         window.onload = async () => {
             await DB.init();
-            company = await DB.getSettings() || {};
-            myStateCode = company.state_code || '08'; // Default to Rajasthan if missing
+            
+            // FIX: Using standardized DB methods compatible with v24
+            company = await DB.getOne('settings', 'global') || {}; 
+            myStateCode = company.state_code || '08';
 
             const today = new Date();
             const monthStr = today.toISOString().slice(0,7);
@@ -225,8 +227,8 @@
             const end = `${year}-${month}-31`;
 
             const vouchers = await DB.getAll('vouchers');
-            const items = await DB.getAll('items');
-            const ledgers = await DB.getLedgers();
+            // FIX: Using getAll instead of getLedgers
+            const ledgers = await DB.getAll('ledgers'); 
 
             const sales = vouchers.filter(v => v.type === 'Sales' && v.date >= start && v.date <= end);
             const purchases = vouchers.filter(v => v.type === 'Purchase' && v.date >= start && v.date <= end);
@@ -242,11 +244,9 @@
 
                 let invTaxable = 0, invIGST = 0, invCGST = 0, invSGST = 0;
 
-                // Need item entries - assuming voucher_items or acct_entries have item info
-                // Simplified: Use voucher amount as taxable, assume avg rate 18%
-                // Better: Loop through items if stored per voucher (future enhancement)
-                const taxable = v.amount || 0; // Placeholder
-                const rate = 18; // Average or from items
+                // Simplified calculation (Tax inclusive reverse calc or simple logic)
+                const taxable = v.amount || 0; 
+                const rate = 18; 
                 const tax = taxable * (rate / 100);
 
                 if (isInter) invIGST = tax;
@@ -272,7 +272,6 @@
                         sgst: invSGST.toFixed(2)
                     });
                 } else {
-                    // Aggregate B2CS by state/rate
                     const key = `${partyState}-${rate}`;
                     if (!gstData.b2cs[key]) gstData.b2cs[key] = { state: partyState, rate, taxable: 0, igst: 0, cgst: 0, sgst: 0 };
                     gstData.b2cs[key].taxable += invTaxable;
@@ -280,8 +279,6 @@
                     gstData.b2cs[key].cgst += invCGST;
                     gstData.b2cs[key].sgst += invSGST;
                 }
-
-                // HSN (simplified - need item details)
             });
 
             // Process Purchases (ITC)
@@ -366,7 +363,6 @@
         function renderHSN() {
             const body = document.querySelector('#hsnTable tbody');
             body.innerHTML = '<tr><td colspan="8" style="text-align:center; color:var(--muted);">HSN data aggregation in progress (item-level required)</td></tr>';
-            // Future: Proper HSN from item entries
         }
 
         function downloadGSTR1() {
@@ -385,7 +381,7 @@
                             num: 1,
                             itm_det: {
                                 txval: parseFloat(b.taxable),
-                                rt: 18, // Simplified
+                                rt: 18, 
                                 iamt: parseFloat(b.igst),
                                 camt: parseFloat(b.cgst),
                                 samt: parseFloat(b.sgst)

@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="icon" type="image/x-icon" href="favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
     <title>Login - Arth Book</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
@@ -78,36 +79,55 @@
         <button onclick="handleLogin()">Unlock System 🔒</button>
         <div class="error" id="errorMsg">Invalid Credentials</div>
         
-        <div class="footer">Local Secure Environment v20.0</div>
+        <div class="footer">Local Secure Environment v24.0</div>
     </div>
 
-    <script src="db.js"></script><script src="auth.js"></script>
+    <script src="db.js"></script>
+    <script src="security_utils.js" onerror="console.log('Security Utils missing')"></script>
+    
     <script>
-        // Init DB immediately to load users
-        DB.init();
+        // Init DB immediately
+        window.onload = async () => {
+            await DB.init();
+            
+            // Auto-redirect if already logged in
+            if(sessionStorage.getItem('user_session')) {
+                window.location.href = 'index.html';
+            }
+        };
 
         async function handleLogin() {
-            const u = document.getElementById('user').value;
+            const u = document.getElementById('user').value.trim();
             const p = document.getElementById('pass').value;
             const btn = document.querySelector('button');
             const err = document.getElementById('errorMsg');
+
+            if(!u || !p) return;
 
             btn.innerText = "Verifying...";
             err.style.display = 'none';
 
             try {
-                // Call the Login function from DB.js
-                const user = await DB.loginUser(u, p);
+                // Try direct login first
+                try {
+                    await DB.login(u, p);
+                } catch(loginErr) {
+                    // Try hashed login if direct fails (for security utils support)
+                    if(window.Security) {
+                        const hashed = await Security.hashPassword(p);
+                        await DB.login(u, hashed);
+                    } else {
+                        throw loginErr;
+                    }
+                }
                 
-                // Save session
-                sessionStorage.setItem('currentUser', JSON.stringify(user));
-                
-                // Redirect
+                // Session is set inside DB.login(), just redirect
                 window.location.href = 'index.html';
                 
             } catch (e) {
+                console.error(e);
                 btn.innerText = "Unlock System 🔒";
-                err.innerText = "❌ " + e;
+                err.innerText = "❌ Invalid Username or Password";
                 err.style.display = 'block';
             }
         }

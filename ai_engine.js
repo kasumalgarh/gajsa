@@ -15,9 +15,11 @@ class ArthIntelligence {
         console.log("🧠 AI: Learning from past transactions...");
 
         try {
-           const vouchers = await DB.getAll('vouchers');      // .getAllFromStore हटाकर .getAll करें
-const entries   = await DB.getAll('acct_entries');
-const ledgers   = await DB.getAll('ledgers');
+            // FIX: Updated method names to match new db.js
+            const vouchers = await DB.getAll('vouchers');      
+            const entries  = await DB.getAll('acct_entries');
+            const ledgers  = await DB.getAll('ledgers');
+
             if (vouchers.length === 0) {
                 console.log("🧠 AI: No vouchers found → skipping learning");
                 this.isReady = true;
@@ -66,7 +68,8 @@ const ledgers   = await DB.getAll('ledgers');
         for (const word of words) {
             const ledgerId = this.keywordToLedgerId.get(word);
             if (ledgerId) {
-                const ledger = await DB.getLedgerById(ledgerId); // ← you should add this helper
+                // FIX: Use standard DB method
+                const ledger = await DB.getOne('ledgers', ledgerId); 
                 if (ledger) return ledger;
             }
         }
@@ -84,8 +87,9 @@ const ledgers   = await DB.getAll('ledgers');
         for (const rule of rules) {
             if (rule.keywords.some(kw => text.includes(kw))) {
                 // Try to find ledger whose name contains the category (case-insensitive)
-                const ledgers = await DB.getLedgers();
-                const match = ledgers.find(l =>
+                // FIX: Use standard DB method
+                const ledgers = await DB.getAll('ledgers');
+                const match = ledgers.find(l => 
                     l.name?.toLowerCase().includes(rule.category.toLowerCase())
                 );
                 if (match) return match;
@@ -93,23 +97,22 @@ const ledgers   = await DB.getAll('ledgers');
         }
 
         // C. Ultimate fallback – most frequently used expense ledger (optional)
-        // You can implement this later when you have enough stats
-
         return null;
     }
 
     // ─── 3. Simple next-month revenue forecast ───
     async predictCashFlow() {
         try {
-            const vouchers = await DB.getAllFromStore('vouchers');
+            // FIX: Use standard DB method
+            const vouchers = await DB.getAll('vouchers');
 
             const today = new Date();
             const ninetyDaysAgo = new Date(today);
             ninetyDaysAgo.setDate(today.getDate() - 90);
 
-            const sales = vouchers.filter(v =>
-                v.type === 'Sales' &&
-                v.date &&
+            const sales = vouchers.filter(v => 
+                v.type === 'Sales' && 
+                v.date && 
                 new Date(v.date) >= ninetyDaysAgo
             );
 
@@ -141,7 +144,6 @@ const ledgers   = await DB.getAll('ledgers');
 const AI = new ArthIntelligence();
 
 // Better init timing – wait for DB ready signal if possible
-// For now, conservative delay + retry once
 setTimeout(async () => {
     await AI.initBrain();
     // Optional: second attempt after 6 seconds if DB is still loading

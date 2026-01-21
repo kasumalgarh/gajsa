@@ -10,18 +10,10 @@
 
     <style>
         :root {
-            --sidebar-bg: #0f172a;
-            --sidebar-active: #1e293b;
-            --accent: #0ea5e9;
-            --bg: #f8fafc;
-            --text: #1e293b;
-            --muted: #64748b;
-            --border: #e2e8f0;
-            --green: #10b981;
-            --red: #ef4444;
-            --orange: #f59e0b;
-            --shadow: 0 4px 12px rgba(0,0,0,0.08);
-            --transition: all 0.3s ease;
+            --sidebar-bg: #0f172a; --sidebar-active: #1e293b; --accent: #0ea5e9;
+            --bg: #f8fafc; --text: #1e293b; --muted: #64748b; --border: #e2e8f0;
+            --green: #10b981; --red: #ef4444; --orange: #f59e0b;
+            --shadow: 0 4px 12px rgba(0,0,0,0.08); --transition: all 0.3s ease;
         }
         * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
         body { display: flex; height: 100vh; background: var(--bg); color: var(--text); overflow: hidden; }
@@ -181,11 +173,11 @@
                 <div class="form-group">
                     <label>GST Rate (%)</label>
                     <select id="gst">
-                        <option>0</option>
-                        <option>5</option>
-                        <option>12</option>
-                        <option selected>18</option>
-                        <option>28</option>
+                        <option value="0">0</option>
+                        <option value="5">5</option>
+                        <option value="12">12</option>
+                        <option value="18" selected>18</option>
+                        <option value="28">28</option>
                     </select>
                 </div>
 
@@ -195,12 +187,12 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Purchase Rate (₹)</label>
+                    <label>Purchase Rate (Base Price)</label>
                     <input type="number" id="stdCost" step="0.01" min="0" value="0">
                 </div>
 
                 <div class="form-group">
-                    <label>Sales Rate (₹)</label>
+                    <label>Sales Rate (Base Price)</label>
                     <input type="number" id="stdPrice" step="0.01" min="0" value="0">
                 </div>
 
@@ -249,18 +241,6 @@
     <script>
         let allItems = [];
         let currentFilter = 'all';
-
-        // Helper: Promise-based transaction wrapper
-        function dbTransaction(storeName, mode, callback) {
-            return new Promise((resolve, reject) => {
-                const tx = DB.db.transaction(storeName, mode);
-                const store = tx.objectStore(storeName);
-                const request = callback(store);
-                
-                tx.oncomplete = () => resolve(request?.result ?? true);
-                tx.onerror = () => reject(tx.error);
-            });
-        }
 
         window.onload = async () => {
             await DB.init();
@@ -355,11 +335,7 @@
             preview.style.display = 'block';
             try {
                 JsBarcode("#barcodeCanvas", sku, {
-                    format: "CODE128",
-                    width: 2,
-                    height: 70,
-                    displayValue: true,
-                    fontSize: 16
+                    format: "CODE128", width: 2, height: 70, displayValue: true, fontSize: 16
                 });
             } catch (e) {
                 console.error("Barcode generation failed:", e);
@@ -367,7 +343,6 @@
             }
         }
 
-        // --- NEW SAFETY FIX: Strings are split to prevent browser parsing error ---
         function printBarcode() {
             const canvas = document.getElementById('barcodeCanvas');
             const name = document.getElementById('name').value.trim() || 'Item';
@@ -378,23 +353,16 @@
             }
 
             const imgData = canvas.toDataURL("image/png");
-
             const win = window.open('', '_blank', 'width=400,height=600');
             
-            // WE SPLIT THE TAGS ('<' + 'head') SO BROWSER DOES NOT GET CONFUSED
             win.document.write('<' + 'html' + '><' + 'head' + '><' + 'title' + '>Barcode</' + 'title' + '>');
-            win.document.write('<' + 'style' + '>');
-            win.document.write('body { font-family: sans-serif; text-align: center; padding: 20px; }');
-            win.document.write('img { max-width: 100%; height: auto; }');
-            win.document.write('.price { font-size: 24px; font-weight: bold; margin-top: 10px; }');
-            win.document.write('</' + 'style' + '>');
+            win.document.write('<' + 'style' + '>body { font-family: sans-serif; text-align: center; padding: 20px; } img { max-width: 100%; height: auto; } .price { font-size: 24px; font-weight: bold; margin-top: 10px; }</' + 'style' + '>');
             win.document.write('</' + 'head' + '><' + 'body' + '>');
             
             win.document.write('<h3>' + name + '</h3>');
             win.document.write('<img src="' + imgData + '">');
             win.document.write('<div class="price">₹' + parseFloat(price).toFixed(2) + '</div>');
             
-            // THIS LINE CAUSED THE ERROR. NOW IT IS FIXED:
             win.document.write('<' + '/body' + '><' + '/html' + '>'); 
             
             win.document.close();
@@ -454,6 +422,7 @@
             document.getElementById('formTitle').innerText = 'Edit Product';
         }
 
+        // FIX: Using DB class methods for safer transactions & Audit Logs
         async function saveItem() {
             const name = document.getElementById('name').value.trim();
             if (!name) return alert('Item name is required!');
@@ -484,12 +453,9 @@
             try {
                 if (id) {
                     data.id = parseInt(id);
-                    const existing = allItems.find(i => i.id === data.id);
-                    if (existing) data.current_stock = existing.current_stock;
-                    await dbTransaction('items', 'readwrite', store => store.put(data));
+                    await DB.updateItem(data);
                 } else {
-                    data.current_stock = data.op_qty;
-                    await dbTransaction('items', 'readwrite', store => store.add(data));
+                    await DB.createItem(data);
                 }
 
                 showToast('Item Saved Successfully!');
@@ -509,7 +475,7 @@
             if (!id || !confirm('Delete this item permanently?')) return;
 
             try {
-                await dbTransaction('items', 'readwrite', store => store.delete(parseInt(id)));
+                await DB.deleteItem(parseInt(id));
                 showToast('Item Deleted');
                 allItems = await DB.getAll('items');
                 renderList();
