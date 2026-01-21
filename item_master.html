@@ -250,7 +250,7 @@
         let allItems = [];
         let currentFilter = 'all';
 
-        // Helper: Promise-based transaction wrapper (Fixes Race Condition)
+        // Helper: Promise-based transaction wrapper
         function dbTransaction(storeName, mode, callback) {
             return new Promise((resolve, reject) => {
                 const tx = DB.db.transaction(storeName, mode);
@@ -367,7 +367,7 @@
             }
         }
 
-        // --- NEW FIXED PRINT FUNCTION (NO SCRIPT INSIDE SCRIPT) ---
+        // --- NEW SAFETY FIX: Strings are split to prevent browser parsing error ---
         function printBarcode() {
             const canvas = document.getElementById('barcodeCanvas');
             const name = document.getElementById('name').value.trim() || 'Item';
@@ -381,25 +381,25 @@
 
             const win = window.open('', '_blank', 'width=400,height=600');
             
-            // Write HTML without any <script> tags inside to prevent parsing errors
-            win.document.write('<html><head><title>Barcode</title>');
-            win.document.write('<style>');
+            // WE SPLIT THE TAGS ('<' + 'head') SO BROWSER DOES NOT GET CONFUSED
+            win.document.write('<' + 'html' + '><' + 'head' + '><' + 'title' + '>Barcode</' + 'title' + '>');
+            win.document.write('<' + 'style' + '>');
             win.document.write('body { font-family: sans-serif; text-align: center; padding: 20px; }');
             win.document.write('img { max-width: 100%; height: auto; }');
             win.document.write('.price { font-size: 24px; font-weight: bold; margin-top: 10px; }');
-            win.document.write('</style>');
-            win.document.write('</head><body>');
+            win.document.write('</' + 'style' + '>');
+            win.document.write('</' + 'head' + '><' + 'body' + '>');
             
             win.document.write('<h3>' + name + '</h3>');
             win.document.write('<img src="' + imgData + '">');
             win.document.write('<div class="price">₹' + parseFloat(price).toFixed(2) + '</div>');
             
-            win.document.write('</body></html>');
+            // THIS LINE CAUSED THE ERROR. NOW IT IS FIXED:
+            win.document.write('<' + '/body' + '><' + '/html' + '>'); 
             
-            win.document.close(); // Important for browser to finish loading
+            win.document.close();
             win.focus();
 
-            // Print Command from Parent Window (Safe way)
             setTimeout(function() {
                 win.print();
                 win.close();
@@ -485,10 +485,10 @@
                 if (id) {
                     data.id = parseInt(id);
                     const existing = allItems.find(i => i.id === data.id);
-                    if (existing) data.current_stock = existing.current_stock; // preserve actual stock
+                    if (existing) data.current_stock = existing.current_stock;
                     await dbTransaction('items', 'readwrite', store => store.put(data));
                 } else {
-                    data.current_stock = data.op_qty; // initial stock = opening qty
+                    data.current_stock = data.op_qty;
                     await dbTransaction('items', 'readwrite', store => store.add(data));
                 }
 
