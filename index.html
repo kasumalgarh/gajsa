@@ -80,7 +80,7 @@
             </div>
             <div class="table-container" id="searchTable" style="display: none; margin-top: 15px;">
                 <table>
-                    <thead><tr><th>Date</th><th>Type</th><th>Voucher #</th><th>Amount</th><th>Action</th></tr></thead>
+                    <thead><tr><th>Date</th><th>Party</th><th>Type</th><th>Voucher #</th><th>Amount</th><th>Action</th></tr></thead>
                     <tbody id="searchBody"></tbody>
                 </table>
             </div>
@@ -90,25 +90,25 @@
         <div class="dashboard-grid">
             <div class="card green-edge">
                 <h3>Gross Profit</h3>
-                <div class="value" id="grossProfit">₹ 0</div>
+                <div class="value" id="grossProfit">₹0</div>
                 <div style="font-size: 0.8rem; color: #666;">Sales - Cost of Goods</div>
             </div>
             
             <div class="card gold-edge">
                 <h3>Cash In Hand</h3>
-                <div class="value" id="cashBal">₹ 0</div>
+                <div class="value" id="cashBal">₹0</div>
                 <div style="font-size: 0.8rem; color: #666;" id="cashStatus">Drawer Balance</div>
             </div>
 
             <div class="card blue-edge">
                 <h3>Receivables (Lena)</h3>
-                <div class="value" id="receivables">₹ 0</div>
+                <div class="value" id="receivables">₹0</div>
                 <div style="font-size: 0.8rem; color: #666;" id="debtorsCount">0 Customers Pending</div>
             </div>
 
             <div class="card red-edge">
                 <h3>Payables (Dena)</h3>
-                <div class="value" id="payables">₹ 0</div>
+                <div class="value" id="payables">₹0</div>
                 <div style="font-size: 0.8rem; color: #666;">Due to Suppliers</div>
             </div>
         </div>
@@ -127,10 +127,10 @@
                 </div>
                 <div style="margin-top: 10px; font-size: 0.9rem;">
                     <div style="display:flex; justify-content:space-between; color: var(--success-color);">
-                        <span>Input (Credit):</span> <span id="inTax" style="font-weight:bold;">₹ 0</span>
+                        <span>Input (Credit):</span> <span id="inTax" style="font-weight:bold;">₹0</span>
                     </div>
                     <div style="display:flex; justify-content:space-between; color: var(--danger-color); margin-top: 5px;">
-                        <span>Output (Pay):</span> <span id="outTax" style="font-weight:bold;">₹ 0</span>
+                        <span>Output (Pay):</span> <span id="outTax" style="font-weight:bold;">₹0</span>
                     </div>
                 </div>
             </div>
@@ -169,8 +169,6 @@
         }
 
         // --- AUTH & SECURITY LOGIC ---
-        
-        // Show Device ID on Login Screen
         window.onload = async () => {
             if(window.Security) {
                 const devID = await Security.getMachineID();
@@ -192,18 +190,13 @@
             await DB.init();
             
             try {
-                // 2. Hash Password (If using Security Utils)
-                // Note: For now, if your DB has "123", we use plain. 
-                // FUTURE: Change this line to: const hashedP = await Security.hashPassword(p);
-                // For this transition phase, we will try both (Legacy Support)
-                
+                // FIXED: Try Plain first, then Hashed (Robust Login)
                 try {
                     await DB.login(u, p); // Try Plain
                 } catch (err) {
                     // Try Hashed (Future Proofing)
-                    // const hashedP = await Security.hashPassword(p);
-                    // await DB.login(u, hashedP);
-                    throw err; // Throw if plain fails for now
+                    const hashedP = await Security.hashPassword(p);
+                    await DB.login(u, hashedP);
                 }
 
                 document.getElementById('loginOverlay').style.display = 'none';
@@ -220,8 +213,9 @@
             }
         }
 
-        // --- DASHBOARD DATA LOGIC (PRESERVED FROM OLD CODE) ---
+        // --- DASHBOARD DATA LOGIC ---
         let globalVouchers = []; 
+        let globalLedgerMap = {}; // FIXED: Made Global for Search
 
         async function initDashboard() {
             try { await DB.init(); runAnalytics(); }
@@ -229,10 +223,8 @@
         }
 
         async function runAnalytics() {
-            // Using DB transactions to fetch data
             const tx = DB.db.transaction(['vouchers', 'items', 'ledgers', 'acct_entries', 'groups'], 'readonly');
             
-            // Optimisation: In future use DB.getPaginated for lists, but getAll is fine for totals for now.
             const [vouchers, items, ledgers, entries, groups] = await Promise.all([
                 getAll(tx.objectStore('vouchers')), 
                 getAll(tx.objectStore('items')), 
@@ -242,7 +234,10 @@
             ]);
 
             globalVouchers = vouchers;
-            const ledgerMap = {}; ledgers.forEach(l => ledgerMap[l.id] = l);
+            // FIXED: Populate Global Map
+            globalLedgerMap = {};
+            ledgers.forEach(l => globalLedgerMap[l.id] = l);
+
             const balances = {};
             entries.forEach(e => { balances[e.ledger_id] = (balances[e.ledger_id] || 0) + (e.debit || 0) - (e.credit || 0); });
 
@@ -324,7 +319,7 @@
             const recent = vouchers.sort((a,b) => b.id - a.id).slice(0, 8);
             if(recent.length > 0) {
                 document.getElementById('recentTxn').innerHTML = recent.map(v => {
-                    const pName = ledgerMap[v.party_id]?.name || "Cash / Unknown";
+                    const pName = globalLedgerMap[v.party_id]?.name || "Cash / Unknown";
                     const isSale = v.type === 'Sales';
                     return `
                         <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #f0f0f0;">
@@ -342,7 +337,7 @@
             renderCharts(vouchers, inTax, outTax);
         }
 
-        // --- SEARCH LOGIC (PRESERVED) ---
+        // --- FIXED: UNIVERSAL SEARCH LOGIC ---
         function searchVouchers() {
             const query = document.getElementById('univSearch').value.toLowerCase().trim();
             const table = document.getElementById('searchTable');
@@ -351,16 +346,25 @@
 
             if (!query) { table.style.display = 'none'; noRes.style.display = 'none'; return; }
 
-            const results = globalVouchers.filter(v => v.voucher_no.toLowerCase().includes(query) || v.date.includes(query) || v.amount.toString().includes(query));
+            const results = globalVouchers.filter(v => {
+                const partyName = globalLedgerMap[v.party_id]?.name || '';
+                return v.voucher_no.toLowerCase().includes(query) || 
+                       v.date.includes(query) || 
+                       v.amount.toString().includes(query) ||
+                       partyName.toLowerCase().includes(query); // Added Party Name Search
+            });
+
             tbody.innerHTML = '';
             
             if (results.length > 0) {
-                table.style.display = 'block'; // Using block because table-container handles overflow
+                table.style.display = 'block';
                 noRes.style.display = 'none';
                 results.sort((a,b) => b.id - a.id).forEach(v => {
                     const tr = document.createElement('tr');
+                    const pName = globalLedgerMap[v.party_id]?.name || "Cash / Unknown";
                     let targetPage = v.type === 'Sales' ? 'sales_invoice.html' : (v.type === 'Purchase' ? 'purchase_invoice.html' : 'vouchers.html');
-                    tr.innerHTML = `<td>${v.date}</td><td><span class="badge ${v.type==='Sales'?'badge-success':'badge-pending'}">${v.type}</span></td><td>${v.voucher_no}</td><td>₹${v.amount}</td><td><button class="btn btn-primary" style="padding:2px 8px; font-size:0.8rem;" onclick="window.location.href='${targetPage}?id=${v.id}'">Open</button></td>`;
+                    
+                    tr.innerHTML = `<td>${v.date}</td><td><b>${pName}</b></td><td><span class="badge ${v.type==='Sales'?'badge-success':'badge-pending'}">${v.type}</span></td><td>${v.voucher_no}</td><td>${fmt(v.amount)}</td><td><button class="btn btn-primary" style="padding:2px 8px; font-size:0.8rem;" onclick="window.location.href='${targetPage}?id=${v.id}'">Open</button></td>`;
                     tbody.appendChild(tr);
                 });
             } else {
@@ -376,6 +380,7 @@
             btn.disabled = true;
             spin.classList.add('fa-spin');
             await runAnalytics();
+            // FIXED: Smoother removal
             setTimeout(() => { spin.classList.remove('fa-spin'); btn.disabled = false; }, 500);
         }
 
@@ -408,20 +413,33 @@
                  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
              });
  
-             // GST Chart Logic
-             if (window.gstChartInstance) window.gstChartInstance.destroy();
+             // FIXED: GST Chart Empty State
              const gstCtx = document.getElementById('gstChart');
-             if(gstCtx && (inTax > 0 || outTax > 0)) {
-                 window.gstChartInstance = new Chart(gstCtx, {
-                     type: 'doughnut',
-                     data: { labels: ['Input Credit', 'Output Liability'], datasets: [{ data: [inTax, outTax], backgroundColor: ['#388e3c', '#d32f2f'], borderWidth: 0 }] },
-                     options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { display: false } } }
-                 });
+             if(gstCtx) {
+                if (window.gstChartInstance) window.gstChartInstance.destroy();
+                
+                if (inTax > 0 || outTax > 0) {
+                     window.gstChartInstance = new Chart(gstCtx, {
+                         type: 'doughnut',
+                         data: { labels: ['Input Credit', 'Output Liability'], datasets: [{ data: [inTax, outTax], backgroundColor: ['#388e3c', '#d32f2f'], borderWidth: 0 }] },
+                         options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { display: false } } }
+                     });
+                } else {
+                    // Empty State Visualization
+                    const ctx = gstCtx.getContext('2d');
+                    ctx.clearRect(0, 0, gstCtx.width, gstCtx.height);
+                    ctx.font = '14px Inter';
+                    ctx.fillStyle = '#94a3b8';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('No GST Data', gstCtx.width/2, gstCtx.height/2);
+                }
              }
         }
 
         function getAll(store) { return new Promise(resolve => { const req = store.getAll(); req.onsuccess = () => resolve(req.result); }); }
-        function fmt(num) { return "₹ " + (num || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+        // FIXED: Formatting
+        function fmt(num) { return "₹" + (num || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
     </script>
     
     <script>
@@ -430,9 +448,10 @@
           navigator.serviceWorker.register('sw.js').then(reg => console.log('Arth Book PWA Active')).catch(err => console.log('PWA Failed', err));
         });
       }
-      <script>
+    </script>
+
+    <script>
     // SELF-HEALING SECURITY SCRIPT
-    // This runs automatically to fix old insecure passwords
     window.addEventListener('load', async () => {
         await DB.init();
         if(!window.Security) return;
@@ -457,7 +476,6 @@
             alert("System Security Updated: Old passwords have been encrypted.");
         }
     });
-</script>
     </script>
 </body>
 </html>

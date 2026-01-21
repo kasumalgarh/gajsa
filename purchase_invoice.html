@@ -133,7 +133,7 @@
         <a href="purchase_invoice.html" class="nav-link active">🚚 Purchase Entry</a>
         <a href="vouchers.html" class="nav-link">💸 Vouchers (JV)</a>
         <a href="item_master.html" class="nav-link">📦 Inventory</a>
-        <a href="moneywise.html" class="nav-link">👥 Parties</a>
+        <a href="ArthBook.html" class="nav-link">👥 Parties</a>
         <a href="coa.html" class="nav-link">🗂️ Accounts</a>
         <a href="settings.html" class="nav-link">⚙️ Settings</a>
     </div>
@@ -147,7 +147,7 @@
                 <option value="Order">Purchase Order</option>
             </select>
             <div style="display:flex; gap:10px; width: 100%; justify-content: flex-end;">
-                <button class="btn btn-new" onclick="resetPage()">📄 New</button>
+                <button class="btn btn-new" onclick="newEntry()">📄 New</button>
                 <button class="btn btn-save" onclick="saveData()">💾 Save</button>
             </div>
         </div>
@@ -160,7 +160,7 @@
                 </div>
                 <div class="meta-grid">
                     <span>Ref / Bill No:</span>
-                    <input type="text" id="invNo" class="input-field" placeholder="Entry No">
+                    <input type="text" id="invNo" class="input-field" readonly placeholder="Auto Generated">
                     <span>Date:</span>
                     <input type="date" id="invDate" class="input-field">
                 </div>
@@ -172,10 +172,10 @@
                     <select id="partySelect" class="input-field" style="width:100%; margin-top:5px;" onchange="loadPartyDetails()">
                         <option value="">-- Select Supplier --</option>
                     </select>
-                    <input type="text" id="partyDetails" readonly style="width:100%; margin-top:5px; background:transparent; border:none; color:#64748b; font-size:12px;" placeholder="Address / GSTIN">
+                    <input type="text" id="partyDetails" readonly style="width:100%; margin-top:5px; background:transparent; border:none; color:#64748b; font-size:12px;" placeholder="Address / GSTIN will appear here">
                 </div>
                 <div class="supp-right">
-                    <input type="text" id="barcodeScan" class="scan-input" placeholder="🔍 Scan Barcode..." onkeyup="handleScan(event)">
+                    <input type="text" id="barcodeScan" class="scan-input" placeholder="🔍 Scan Barcode (Enter)" onkeyup="handleScan(event)">
                 </div>
             </div>
 
@@ -206,8 +206,8 @@
                     <textarea id="narration" rows="3" class="input-field" style="width:100%;" placeholder="Enter details..."></textarea>
                 </div>
                 <div class="calc-box">
-                    <div class="total-row"><span>Taxable</span><span id="taxableAmt">0.00</span></div>
-                    <div class="total-row"><span>Tax (GST)</span><span id="taxAmt">0.00</span></div>
+                    <div class="total-row"><span>Taxable Amount</span><span id="taxableAmt">0.00</span></div>
+                    <div class="total-row"><span>GST (Input)</span><span id="taxAmt">0.00</span></div>
                     <div class="total-row grand-total"><span>Net Payable</span><span id="grandTotal">₹ 0.00</span></div>
                 </div>
             </div>
@@ -224,25 +224,28 @@
         </div>
     </div>
 
-    <script src="db.js"></script><script src="auth.js"></script>
+    <script src="db.js"></script>
     <script>
-        let itemsList = [], ledgersList = [];
+        let itemsList = [], ledgersList = [], allVouchers = [], allGRNs = [];
 
         window.onload = async () => {
             await DB.init();
-            await Promise.all([loadParties(), loadItems()]);
+            ledgersList = await DB.getLedgers();
+            itemsList = await DB.getAll('items');
+            
+            await loadParties();
+            await generateInvNo();
+            document.getElementById('invDate').valueAsDate = new Date();
             
             const urlParams = new URLSearchParams(window.location.search);
             const mode = urlParams.get('mode');
-            if(mode) {
+            if(mode && ['Purchase','GRN','Return','Order'].includes(mode)) {
                 document.getElementById('docType').value = mode;
-                changeMode();
-            } else {
-                resetPage();
             }
+            changeMode();
             
-            loadRecent();
-            document.getElementById('invDate').valueAsDate = new Date();
+            addItemRow(); // initial empty row
+            await loadRecent();
         };
 
         function toggleMenu() {
@@ -253,109 +256,145 @@
         function changeMode() {
             const type = document.getElementById('docType').value;
             const titleMap = {
-                'Purchase': ['Purchase Invoice', 'Inward Supply'],
-                'GRN': ['Goods Receipt Note', 'Stock Entry Only (No Accounts)'],
-                'Return': ['Debit Note', 'Purchase Return'],
-                'Order': ['Purchase Order', 'Order Booking']
+                'Purchase': ['Purchase Invoice', 'Inward Supply Record'],
+                'GRN': ['Goods Receipt Note', 'Stock Entry Only (No Accounting)'],
+                'Return': ['Debit Note (Return)', 'Purchase Return to Supplier'],
+                'Order': ['Purchase Order', 'Order Booking (No Stock/Accounting)']
             };
             document.getElementById('pageTitle').innerText = titleMap[type][0];
             document.getElementById('pageDesc').innerText = titleMap[type][1];
+            generateInvNo(); // refresh prefix
+        }
+
+        async function generateInvNo() {
+            const type = document.getElementById('docType').value;
+            const prefixMap = { Purchase: 'PUR', GRN: 'GRN', Return: 'DBN', Order: 'ORD' };
+            const prefix = prefixMap[type] || 'PUR';
+            const currentYear = new Date().getFullYear();
             
-            const prefix = type.substring(0,3).toUpperCase();
-            document.getElementById('invNo').value = `${prefix}-${Date.now().toString().slice(-4)}`;
+            // Fetch fresh data
+            allVouchers = await DB.getAll('vouchers');
+            allGRNs = await DB.getAll('grn_master') || [];
+            
+            let relevant = [];
+            if(type === 'GRN') {
+                relevant = allGRNs.filter(g => g.grn_no && g.grn_no.startsWith(prefix));
+            } else {
+                relevant = allVouchers.filter(v => v.type === type && v.voucher_no && v.voucher_no.startsWith(prefix));
+            }
+            
+            let maxNo = 0;
+            relevant.forEach(entry => {
+                const parts = entry.voucher_no ? entry.voucher_no.split('-') : (entry.grn_no || '').split('-');
+                if(parts.length >= 3 && parts[0] === prefix && parseInt(parts[1]) === currentYear) {
+                    const num = parseInt(parts[2]);
+                    if(num > maxNo) maxNo = num;
+                }
+            });
+            
+            const newNo = `${prefix}-${currentYear}-${String(maxNo + 1).padStart(4, '0')}`;
+            document.getElementById('invNo').value = newNo;
         }
 
         async function loadParties() {
-            ledgersList = await DB.getLedgers();
-            const groups = await DB.getGroups();
-            const validIds = groups.filter(g => g.name.includes("Creditor") || g.name.includes("Liabilities")).map(g=>g.id);
+            const groups = await DB.getAll('groups');
+            const creditorGrp = groups.find(g => g.name.includes("Creditor") || g.name.includes("Liabilities"));
+            if(!creditorGrp) return console.warn("Creditor group not found");
             
             const sel = document.getElementById('partySelect');
             sel.innerHTML = '<option value="">-- Select Supplier --</option>';
-            ledgersList.filter(l => validIds.includes(l.group_id))
-                       .sort((a,b)=>a.name.localeCompare(b.name))
-                       .forEach(l => {
-                           sel.innerHTML += `<option value="${l.id}">${l.name}</option>`;
-                       });
+            ledgersList
+                .filter(l => l.group_id === creditorGrp.id)
+                .sort((a,b) => a.name.localeCompare(b.name))
+                .forEach(l => {
+                    sel.innerHTML += `<option value="${l.id}">${l.name}</option>`;
+                });
         }
-
-        async function loadItems() { itemsList = await DB.getItems(); }
 
         function loadPartyDetails() {
             const pid = document.getElementById('partySelect').value;
             const p = ledgersList.find(l => l.id == pid);
-            document.getElementById('partyDetails').value = p ? `${p.address || ''} | ${p.gstin || ''}` : '';
+            document.getElementById('partyDetails').value = p ? `${p.address || ''} ${p.gstin ? '| GSTIN: ' + p.gstin : ''}`.trim() : '';
         }
 
         function handleScan(e) {
             if(e.key === 'Enter') {
-                const val = e.target.value.toLowerCase();
-                const item = itemsList.find(i => (i.sku && i.sku.toLowerCase() === val) || i.name.toLowerCase().includes(val));
+                const val = e.target.value.trim().toLowerCase();
+                if(!val) return;
+                const item = itemsList.find(i => 
+                    (i.sku && i.sku.toLowerCase() === val) || 
+                    i.name.toLowerCase().includes(val)
+                );
                 if(item) {
                     addItemRow(item);
                     e.target.value = '';
                 } else {
-                    alert("Item not found");
+                    alert("Item not found!");
                 }
             }
         }
 
-        function addItemRow(data = null) {
+        function addItemRow(preselectItem = null) {
             const tbody = document.getElementById('itemRows');
+            const rowNum = tbody.children.length + 1;
             const tr = document.createElement('tr');
-            const itemData = data && data.item_id ? itemsList.find(i=>i.id==data.item_id) : data;
             
             tr.innerHTML = `
-                <td class="text-center">${tbody.children.length + 1}</td>
+                <td class="text-center">${rowNum}</td>
                 <td>
                     <select class="item-select" onchange="fillItem(this)" style="width:100%">
-                        <option value="">Select Item</option>
-                        ${itemsList.map(i => `<option value="${i.id}" data-rate="${i.std_cost||0}" data-gst="${i.gst_rate||18}" ${itemData && itemData.id==i.id ? 'selected':''}>${i.name}</option>`).join('')}
+                        <option value="">-- Select Item --</option>
+                        ${itemsList.map(i => `<option value="${i.id}" data-rate="${i.std_cost||0}" data-gst="${i.gst_rate||18}" data-unit="${i.unit||''}" ${preselectItem && preselectItem.id==i.id ? 'selected':''}>${i.name}</option>`).join('')}
                     </select>
                 </td>
-                <td><input type="text" class="batch batch-field" placeholder="Batch" value="${data && data.batch_no ? data.batch_no : ''}"></td>
-                <td><input type="date" class="exp batch-field" value="${data && data.expiry_date ? data.expiry_date : ''}"></td>
-                <td><input type="number" class="qty text-right" value="${data && data.qty ? data.qty : 1}" onchange="calc(this)"></td>
-                <td><input type="text" class="unit text-center" readonly value="${itemData ? (itemData.unit||'') : ''}"></td>
-                <td><input type="number" class="rate text-right" value="${data && data.rate ? data.rate : 0}" onchange="calc(this)"></td>
-                <td><input type="number" class="gst text-right" value="${itemData ? itemData.gst_rate : 18}" readonly></td>
+                <td><input type="text" class="batch batch-field" placeholder="Batch"></td>
+                <td><input type="date" class="exp batch-field"></td>
+                <td><input type="number" min="0.01" step="0.01" class="qty text-right" value="1" onchange="calcRow(this)"></td>
+                <td><input type="text" class="unit text-center" readonly></td>
+                <td><input type="number" step="0.01" class="rate text-right" value="0" onchange="calcRow(this)"></td>
+                <td><input type="number" class="gst text-right" readonly value="18"></td>
                 <td class="text-right amt" style="font-weight:bold;">0.00</td>
-                <td><button onclick="this.closest('tr').remove(); calcTotals()" style="color:red;background:none;border:none;">×</button></td>
+                <td><button onclick="this.closest('tr').remove(); renumberRows(); calcTotals()" style="color:red;background:none;border:none;cursor:pointer;">×</button></td>
             `;
             tbody.appendChild(tr);
             
-            const sel = tr.querySelector('.item-select');
-            if(itemData) {
-                // Pre-fill if item exists
-                tr.querySelector('.rate').value = data && data.rate ? data.rate : (itemData.std_cost || 0);
-                calc(sel);
+            if(preselectItem) {
+                const select = tr.querySelector('.item-select');
+                select.value = preselectItem.id;
+                fillItem(select);
             }
         }
 
-        function fillItem(sel) {
-            const opt = sel.options[sel.selectedIndex];
-            const tr = sel.closest('tr');
-            tr.querySelector('.rate').value = opt.dataset.rate || 0;
-            tr.querySelector('.gst').value = opt.dataset.gst || 18;
-            
-            const item = itemsList.find(i => i.id == sel.value);
-            tr.querySelector('.unit').value = item ? item.unit : '';
-            calc(sel);
+        function renumberRows() {
+            document.querySelectorAll('#itemRows tr').forEach((tr, i) => {
+                tr.querySelector('td:first-child').innerText = i + 1;
+            });
         }
 
-        function calc(el) {
+        function fillItem(selectEl) {
+            if(!selectEl.value) return;
+            const opt = selectEl.selectedOptions[0];
+            const tr = selectEl.closest('tr');
+            tr.querySelector('.rate').value = parseFloat(opt.dataset.rate || 0).toFixed(2);
+            tr.querySelector('.gst').value = opt.dataset.gst || 18;
+            tr.querySelector('.unit').value = opt.dataset.unit || '';
+            calcRow(selectEl);
+        }
+
+        function calcRow(el) {
             const tr = el.closest('tr');
             const qty = parseFloat(tr.querySelector('.qty').value) || 0;
             const rate = parseFloat(tr.querySelector('.rate').value) || 0;
             const gst = parseFloat(tr.querySelector('.gst').value) || 0;
-
+            
             const taxable = qty * rate;
-            const tax = taxable * (gst/100);
-            const total = taxable + tax;
-
+            const taxAmt = taxable * (gst / 100);
+            const total = taxable + taxAmt;
+            
             tr.querySelector('.amt').innerText = total.toFixed(2);
-            tr.dataset.taxable = taxable;
-            tr.dataset.tax = tax;
+            tr.dataset.taxable = taxable.toFixed(2);
+            tr.dataset.tax = taxAmt.toFixed(2);
+            
             calcTotals();
         }
 
@@ -370,98 +409,138 @@
             document.getElementById('grandTotal').innerText = "₹ " + Math.round(taxable + tax).toFixed(2);
         }
 
-        // --- FIXED SAVE DATA (Dynamic Ledger ID) ---
+        async function newEntry() {
+            document.getElementById('partySelect').value = "";
+            document.getElementById('partyDetails').value = "";
+            document.getElementById('itemRows').innerHTML = "";
+            document.getElementById('narration').value = "";
+            document.getElementById('barcodeScan').value = "";
+            addItemRow();
+            calcTotals();
+            await generateInvNo();
+        }
+
         async function saveData() {
             const type = document.getElementById('docType').value;
             const pid = document.getElementById('partySelect').value;
-            if(!pid) return alert("Select Supplier");
-
-            let entries = [];
+            if(!pid) return alert("Please select a supplier!");
+            
             const rows = document.querySelectorAll('#itemRows tr');
+            if(rows.length === 0) return alert("Add at least one item!");
+            
+            let entries = [];
+            let hasItem = false;
             for(let tr of rows) {
-                const iid = tr.querySelector('.item-select').value;
-                if(iid) {
+                const itemId = tr.querySelector('.item-select').value;
+                const qty = parseFloat(tr.querySelector('.qty').value) || 0;
+                if(itemId && qty > 0) {
+                    hasItem = true;
+                    const sign = (type === 'Return') ? -1 : 1;
                     entries.push({
-                        item_id: parseInt(iid),
-                        qty: parseFloat(tr.querySelector('.qty').value),
+                        item_id: parseInt(itemId),
+                        qty: qty * sign,
                         rate: parseFloat(tr.querySelector('.rate').value),
-                        batch_no: tr.querySelector('.batch').value,
+                        batch_no: tr.querySelector('.batch').value.trim(),
                         expiry_date: tr.querySelector('.exp').value
                     });
                 }
             }
-            if(entries.length===0) return alert("No items");
-
-            const amt = parseFloat(document.getElementById('grandTotal').innerText.replace('₹ ',''));
+            if(!hasItem) return alert("No valid items to save!");
+            
+            const taxable = parseFloat(document.getElementById('taxableAmt').innerText);
+            const tax = parseFloat(document.getElementById('taxAmt').innerText);
+            const grand = Math.round(taxable + tax);
+            const sign = (type === 'Return') ? -1 : 1;
+            const finalAmount = grand * sign;
             
             const masterData = {
                 voucher_no: document.getElementById('invNo').value,
-                date: document.getElementById('invDate').value,
+                date: document.getElementById('invDate').value || new Date().toISOString().slice(0,10),
                 party_id: parseInt(pid),
                 type: type,
-                amount: amt,
-                narration: document.getElementById('narration').value
+                amount: Math.abs(finalAmount), // store positive amount
+                narration: document.getElementById('narration').value.trim()
             };
-
+            
             try {
                 if(type === 'GRN') {
                     await DB.createGRN({
                         grn_no: masterData.voucher_no,
                         date: masterData.date,
                         vendor_id: masterData.party_id,
-                        amount: masterData.amount
+                        amount: grand
                     }, entries);
-                    alert("GRN Created! Stock Updated.");
-                } 
-                else {
+                    alert("GRN Saved Successfully! Stock Updated.");
+                } else if(type === 'Order') {
+                    // Order: No stock update, no accounting
+                    await DB.saveVoucher(masterData, [], []); // empty entries & acct
+                    alert("Purchase Order Saved!");
+                } else {
+                    // Purchase & Return
                     let acct = [];
-                    if(type === 'Purchase' || type === 'Return') {
-                        const taxable = parseFloat(document.getElementById('taxableAmt').innerText);
-                        
-                        // 1. Party Account
-                        acct.push({ ledger_id: parseInt(pid), debit: 0, credit: amt }); 
-
-                        // 2. Dynamic Purchase Account Search (FIXED)
-                        const purLedger = ledgersList.find(l => l.name === "Local Purchase") || ledgersList.find(l => l.name.includes("Purchase Accounts"));
-                        const purId = purLedger ? purLedger.id : 0;
-                        if(purId === 0) return alert("System Error: 'Local Purchase' Ledger not found!");
-
-                        // Purchase Account (Debit)
-                        acct.push({ ledger_id: purId, debit: taxable, credit: 0 }); 
+                    
+                    // Find Purchase Ledger
+                    const purLedger = ledgersList.find(l => l.name === "Local Purchase" || l.name.includes("Purchase"));
+                    if(!purLedger) return alert("Error: Purchase ledger not found! Create 'Local Purchase'.");
+                    
+                    // Find Input GST Ledger
+                    const gstLedger = ledgersList.find(l => 
+                        l.name.toLowerCase().includes("input gst") || 
+                        l.name.toLowerCase().includes("itc") ||
+                        l.name.toLowerCase().includes("gst input")
+                    );
+                    if(tax > 0 && !gstLedger) return alert("Error: Input GST ledger not found! Create one like 'Input GST'.");
+                    
+                    if(type === 'Purchase') {
+                        // Debit Purchase + Input GST, Credit Party
+                        acct.push({ ledger_id: purLedger.id, debit: taxable, credit: 0 });
+                        if(tax > 0) acct.push({ ledger_id: gstLedger.id, debit: tax, credit: 0 });
+                        acct.push({ ledger_id: parseInt(pid), debit: 0, credit: grand });
+                    } else if(type === 'Return') {
+                        // Debit Party, Credit Purchase Return + Output GST (reverse)
+                        acct.push({ ledger_id: parseInt(pid), debit: grand, credit: 0 });
+                        acct.push({ ledger_id: purLedger.id, debit: 0, credit: taxable });
+                        if(tax > 0) acct.push({ ledger_id: gstLedger.id, debit: 0, credit: tax });
                     }
                     
                     await DB.saveVoucher(masterData, entries, acct);
-                    alert("Entry Saved Successfully!");
+                    alert(`${type === 'Return' ? 'Debit Note' : 'Purchase'} Saved Successfully!`);
                 }
-                resetPage();
-                loadRecent();
-            } catch(e) { alert("Error: " + e); }
-        }
-
-        function resetPage() {
-            document.getElementById('invNo').value = "";
-            document.getElementById('partySelect').value = "";
-            document.getElementById('itemRows').innerHTML = "";
-            addItemRow();
-            calcTotals();
-            changeMode(); 
+                
+                await newEntry();
+                await loadRecent();
+            } catch(e) {
+                console.error(e);
+                alert("Save Failed: " + e.message);
+            }
         }
 
         async function loadRecent() {
-            const all = await DB.getAll('vouchers');
-            const grns = await DB.getAll('grn_master');
+            allVouchers = await DB.getAll('vouchers');
+            allGRNs = await DB.getAll('grn_master') || [];
             
             const tbody = document.getElementById('recentList');
             tbody.innerHTML = '';
             
             const mixed = [
-                ...all.map(x=>({...x, source:'Voucher'})), 
-                ...grns.map(x=>({...x, voucher_no: x.grn_no, type:'GRN', source:'GRN'}))
-            ].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 10);
-
-            mixed.forEach(v => {
-                const pName = ledgersList.find(l => l.id == (v.party_id || v.vendor_id))?.name || '-';
-                tbody.innerHTML += `<tr><td>${v.date}</td><td>${v.voucher_no}</td><td>${v.type}</td><td>${pName}</td><td>${v.amount}</td><td><button style='border:none;background:none;color:blue;'>View</button></td></tr>`;
+                ...allVouchers.map(v => ({...v, source: 'voucher'})),
+                ...allGRNs.map(g => ({...g, voucher_no: g.grn_no, type: 'GRN', party_id: g.vendor_id, source: 'grn'}))
+            ]
+            .sort((a,b) => new Date(b.date) - new Date(a.date))
+            .slice(0, 15);
+            
+            mixed.forEach(entry => {
+                const partyName = ledgersList.find(l => l.id == (entry.party_id || entry.vendor_id))?.name || '-';
+                const amount = entry.amount || 0;
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${entry.date}</td>
+                        <td>${entry.voucher_no || entry.grn_no}</td>
+                        <td>${entry.type}</td>
+                        <td>${partyName}</td>
+                        <td>₹${amount.toFixed(2)}</td>
+                        <td><button style="border:none;background:none;color:var(--accent);cursor:pointer;" onclick="alert('View/Edit not implemented yet')">View</button></td>
+                    </tr>`;
             });
         }
     </script>

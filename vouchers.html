@@ -12,7 +12,6 @@
         :root { --bg: #f3f4f6; --text: #1e293b; --border: #e5e7eb; --green: #10b981; --red: #ef4444; --blue: #3b82f6; --purple: #8b5cf6; --sidebar-bg: #0f172a; }
         * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
         
-        /* --- LAYOUT FIX (Sidebar Issue Solved) --- */
         body { 
             display: flex;       
             height: 100vh;       
@@ -21,7 +20,7 @@
             overflow: hidden;    
         }
 
-        /* SIDEBAR (Desktop Default) */
+        /* SIDEBAR */
         .sidebar { 
             width: 260px; 
             background: var(--sidebar-bg); 
@@ -32,7 +31,7 @@
             height: 100vh;       
             overflow-y: auto;    
             z-index: 100;
-            transition: 0.3s;    /* Animation for mobile slide */
+            transition: 0.3s;
         }
         
         .nav-link { padding: 12px 15px; margin-bottom: 5px; border-radius: 8px; color: #94a3b8; text-decoration: none; font-weight: 500; display: block; font-size: 14px; transition: 0.2s; }
@@ -68,7 +67,7 @@
         input, select, textarea { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; outline: none; }
         input:focus, select:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
 
-        .bal-display { position: absolute; right: 0; top: 0; font-size: 11px; font-weight: 700; }
+        .bal-display { position: absolute; right: 10px; top: 32px; font-size: 11px; font-weight: 700; background: white; padding: 2px 6px; border-radius: 4px; }
         .bal-dr { color: var(--green); } .bal-cr { color: var(--red); }
 
         .voice-btn { position: absolute; right: 10px; top: 32px; background: none; border: none; cursor: pointer; color: var(--blue); font-size: 16px; }
@@ -78,14 +77,17 @@
         .checkbox-group { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; cursor: pointer; margin-bottom: 10px; }
         .journal-grid { display: none; margin-bottom: 15px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
         .journal-row { display: flex; border-bottom: 1px solid var(--border); background: #fff; }
-        .j-type { width: 70px; } .j-ac { flex: 1; } .j-amt { width: 100px; } .j-act { width: 30px; text-align: center; cursor: pointer; color: red; padding-top: 8px; }
-        .journal-row select, .journal-row input { border: none; border-radius: 0; background: transparent; }
+        .j-type { width: 70px; padding: 8px; } 
+        .j-ac { flex: 1; padding: 8px; } 
+        .j-amt { width: 120px; padding: 8px; } 
+        .j-act { width: 40px; text-align: center; cursor: pointer; color: red; padding: 8px; }
+        .journal-row select, .journal-row input { border: none; border-radius: 0; background: transparent; height: 100%; }
 
-        /* BILL SETTLEMENT STYLES (NEW) */
+        /* BILL SETTLEMENT */
         .bill-box { background: #fffbeb; border: 1px solid #fcd34d; padding: 10px; border-radius: 8px; margin-bottom: 15px; display: none; }
         .bill-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px dashed #e2e8f0; font-size: 13px; cursor: pointer; }
         .bill-item:hover { background: #fef3c7; }
-        .bill-item input { width: auto; margin-right: 10px; }
+        .bill-item label { display: flex; align-items: center; cursor: pointer; margin: 0; width: 100%; }
 
         /* BUTTONS */
         .btn-group { display: flex; gap: 10px; margin-top: 15px; }
@@ -93,20 +95,20 @@
         .btn-print { flex: 1; background: #64748b; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; }
         
         .txn-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
-        .tag { padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; }
+        .tag { padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; background: #e2e8f0; }
 
-        /* --- MOBILE & RESPONSIVE CSS --- */
+        /* MOBILE RESPONSIVE */
         .menu-btn { display: none; position: absolute; top: 15px; left: 15px; font-size: 24px; cursor: pointer; background: none; border: none; z-index: 50; }
         .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 90; }
-        .overlay.active { display: block; }
 
         @media (max-width: 900px) {
             .sidebar { position: fixed; left: -100%; top: 0; height: 100%; width: 250px; box-shadow: 5px 0 15px rgba(0,0,0,0.3); }
             .sidebar.active { left: 0; }
             .menu-btn { display: block; }
-            .main { padding: 60px 15px 15px 15px; } /* Space for menu button */
+            .main { padding: 60px 15px 15px 15px; }
             .form-row { flex-direction: column; gap: 10px; }
             .btn-group { flex-direction: column; }
+            .tabs { flex-wrap: wrap; }
         }
     </style>
 </head>
@@ -154,107 +156,130 @@
             <div id="standardInputs">
                 <div class="form-group">
                     <label id="lblAccount">Account (Bank/Cash)</label>
-                    <select id="ac1Select" onchange="checkBank(this); updateBalance('ac1')"><option value="">Loading...</option></select>
+                    <select id="ac1Select" onchange="checkBank(this); updateBalance('ac1')"><option value="">-- Select --</option></select>
                     <span id="bal1" class="bal-display"></span>
                 </div>
                 
                 <div id="bankOptions" class="advanced-box">
-                    <div style="display:flex; justify-content:space-between;">
-                        <label class="checkbox-group"><input type="checkbox" id="isPDC"> Post Dated Cheque (PDC)</label>
-                        <button onclick="printCheque()" style="padding:2px 8px; font-size:11px; cursor:pointer;">🖨️ Print Cheque</button>
-                    </div>
+                    <div class="checkbox-group"><input type="checkbox" id="isPDC"> Post Dated Cheque (PDC)</div>
                     <div class="form-row" style="margin-bottom:0;">
-                        <div class="form-group" style="margin-bottom:0;"><label>Cheque No <small>(Scan enabled)</small></label><input type="text" id="chqNo"></div>
+                        <div class="form-group" style="margin-bottom:0;"><label>Cheque No</label><input type="text" id="chqNo" placeholder="Scan or type"></div>
                         <div class="form-group" style="margin-bottom:0;"><label>Cheque Date</label><input type="date" id="chqDate"></div>
                     </div>
+                    <button onclick="printCheque()" style="margin-top:10px; padding:6px 12px; font-size:12px;">🖨️ Print Cheque</button>
                 </div>
 
                 <div class="form-group">
                     <label id="lblParty">Party / Ledger</label>
-                    <select id="ac2Select" onchange="updateBalance('ac2'); loadPendingBills(this.value)"><option value="">Loading...</option></select>
+                    <select id="ac2Select" onchange="updateBalance('ac2'); loadPendingBills(this.value)"><option value="">-- Select --</option></select>
                     <span id="bal2" class="bal-display"></span>
                 </div>
 
                 <div id="billSettlementBox" class="bill-box">
-                    <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-                        <span style="font-weight:700; color:#d97706; font-size:12px;">⚠️ Pending Bills (Tick to Pay)</span>
-                        <span style="font-size:11px; cursor:pointer; color:#d97706;" onclick="document.getElementById('billSettlementBox').style.display='none'">Hide</span>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                        <span style="font-weight:700; color:#d97706; font-size:13px;">Pending Bills - Tick to Settle</span>
+                        <span style="font-size:11px; cursor:pointer; color:#d97706;" onclick="this.parentElement.parentElement.style.display='none'">✕</span>
                     </div>
-                    <div id="pendingBillList" style="max-height: 150px; overflow-y:auto;">
-                        </div>
+                    <div id="pendingBillList" style="max-height:180px; overflow-y:auto;"></div>
+                    <div style="margin-top:8px; font-weight:bold; text-align:right;">Selected: ₹<span id="selectedBillAmt">0.00</span></div>
                 </div>
 
                 <div class="form-group">
                     <label>Amount (₹)</label>
-                    <input type="number" id="amount" placeholder="0.00" style="font-size:18px; font-weight:bold;">
+                    <input type="number" id="amount" step="0.01" placeholder="0.00" style="font-size:18px; font-weight:bold;" onchange="clearBillSelectionIfMismatch()">
                 </div>
             </div>
 
             <div id="journalInputs" style="display:none;">
                 <div class="journal-grid" id="journalRows"></div>
-                <button type="button" onclick="addJournalRow()" style="width:100%; padding:8px; border:1px dashed #ccc; cursor:pointer;">+ Add Row</button>
-                <div style="padding:10px; display:flex; justify-content:space-between; font-weight:bold; font-size:13px;">
-                    <span>Total Debit: <span id="totDr">0.00</span></span>
-                    <span>Total Credit: <span id="totCr">0.00</span></span>
-                    <span id="diffDisplay" style="color:red;">Diff: 0.00</span>
+                <button type="button" onclick="addJournalRow()" style="width:100%; padding:10px; border:1px dashed var(--border); background:#f8fafc; cursor:pointer; margin:10px 0;">+ Add Ledger Row</button>
+                <div style="padding:10px; display:flex; justify-content:space-between; font-weight:bold; font-size:14px; background:#f1f5f9; border-radius:6px;">
+                    <span>Total Debit: ₹<span id="totDr">0.00</span></span>
+                    <span>Total Credit: ₹<span id="totCr">0.00</span></span>
+                    <span id="diffDisplay" style="color:red;">Diff: ₹0.00</span>
                 </div>
             </div>
 
             <div class="form-group">
                 <label>Narration</label>
-                <textarea id="narration" rows="2" placeholder="Being amount paid..."></textarea>
-                <button type="button" class="voice-btn" onclick="startVoice()" title="Speak Narration">🎤</button>
+                <textarea id="narration" rows="3" placeholder="Being cash received towards..."></textarea>
+                <button type="button" class="voice-btn" onclick="startVoice()" title="Voice to Text">🎤</button>
             </div>
 
             <div class="btn-group">
-                <button class="btn-save" id="saveBtn" onclick="saveVoucher(false)">Save Only (Enter)</button>
+                <button class="btn-save" id="saveBtn" onclick="saveVoucher(false)">Save Voucher (Ctrl+Enter)</button>
                 <button class="btn-print" onclick="saveVoucher(true)">Save & Print</button>
             </div>
         </div>
 
         <div class="card">
-            <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
-                <span style="font-weight:700;">Recent Transactions</span>
-                <span style="font-size:12px; color:var(--blue); cursor:pointer;" onclick="loadRecent()">↻ Refresh</span>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <span style="font-weight:700;">Recent Vouchers</span>
+                <button style="font-size:12px; background:none; border:none; color:var(--blue); cursor:pointer;" onclick="loadRecent()">↻ Refresh</button>
             </div>
-            <div id="recentList"></div>
+            <div id="recentList" style="max-height:300px; overflow-y:auto;"></div>
         </div>
     </div>
 
-    <script src="security_utils.js"></script>
     <script src="db.js"></script>
-    <script src="ai_engine.js"></script>
-    
     <script>
         let currentMode = 'Receipt';
-        let ledgers = [], groups = [];
-        let recognition; 
+        let ledgers = [], groups = [], allVouchers = [];
+        let recognition;
 
         window.onload = async () => {
             await DB.init();
             ledgers = await DB.getLedgers();
-            groups = await DB.getGroups();
+            groups = await DB.getAll('groups') || [];
+            allVouchers = await DB.getAll('vouchers');
+            
+            document.getElementById('date').valueAsDate = new Date();
+            await generateVoucherNo();
             setMode('Receipt');
             loadRecent();
-            
-            // Shortcuts
+
+            // Keyboard Shortcuts
             document.addEventListener('keydown', e => {
                 if(e.key === 'F5') { e.preventDefault(); setMode('Payment'); }
                 if(e.key === 'F6') { e.preventDefault(); setMode('Receipt'); }
                 if(e.key === 'F7') { e.preventDefault(); setMode('Journal'); }
                 if(e.key === 'F4') { e.preventDefault(); setMode('Contra'); }
-                if(e.key === 'Enter' && e.ctrlKey) { saveVoucher(false); }
+                if(e.ctrlKey && e.key === 'Enter') { e.preventDefault(); saveVoucher(false); }
             });
 
-            // Voice
-            if ('webkitSpeechRecognition' in window) {
-                recognition = new webkitSpeechRecognition();
+            // Voice Recognition
+            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
                 recognition.continuous = false;
                 recognition.lang = 'en-IN';
                 recognition.onresult = (event) => {
-                    document.getElementById('narration').value += (" " + event.results[0][0].transcript).trim();
+                    const transcript = event.results[0][0].transcript;
+                    document.getElementById('narration').value += (document.getElementById('narration').value ? " " : "") + transcript;
                 };
+                recognition.onend = () => { document.getElementById('narration').placeholder = "Being cash received towards..."; };
             }
+
+            // Barcode/Cheque Scan Listener
+            let scanBuffer = "";
+            let scanTimer;
+            document.addEventListener('keydown', (e) => {
+                if (e.key.length === 1 && document.activeElement.tagName === 'BODY') {
+                    scanBuffer += e.key;
+                    clearTimeout(scanTimer);
+                    scanTimer = setTimeout(() => {
+                        if(scanBuffer.length > 4) {
+                            if(document.getElementById('bankOptions').style.display === 'block') {
+                                document.getElementById('chqNo').value = scanBuffer;
+                            } else {
+                                document.getElementById('narration').value += ` Ref: ${scanBuffer}`;
+                            }
+                        }
+                        scanBuffer = "";
+                    }, 100);
+                } else if(e.key === 'Enter') {
+                    scanBuffer = "";
+                }
+            });
         };
 
         function toggleMenu() {
@@ -262,128 +287,136 @@
             document.querySelector('.overlay').classList.toggle('active');
         }
 
-        // BARCODE LISTENER
-        let scanBuffer = "";
-        let scanTimer;
-        document.addEventListener('keydown', (e) => {
-            if (e.key.length === 1) {
-                scanBuffer += e.key;
-                clearTimeout(scanTimer);
-                scanTimer = setTimeout(() => {
-                    if(scanBuffer.length > 5 && document.activeElement.tagName === 'BODY') {
-                        if(document.getElementById('bankOptions').style.display === 'block') {
-                            document.getElementById('chqNo').value = scanBuffer;
-                        } else {
-                            document.getElementById('narration').value = `Ref: ${scanBuffer}`;
-                        }
-                    }
-                    scanBuffer = "";
-                }, 50);
-            }
-        });
-
         function startVoice() {
             if(recognition) {
                 document.getElementById('narration').placeholder = "Listening... Speak now";
                 recognition.start();
-            } else { alert("Voice features need Chrome browser"); }
+            } else {
+                alert("Voice input not supported in this browser. Use Chrome/Edge.");
+            }
         }
 
         function getLedgersByType(type) {
-            const isBank = l => { const g = groups.find(x=>x.id==l.group_id)?.name||''; return g.includes('Bank') || g.includes('Cash'); };
-            if(type === 'CashBank') return ledgers.filter(l => isBank(l));
-            if(type === 'Others') return ledgers.filter(l => !isBank(l));
+            const isCashBank = (l) => {
+                const gName = groups.find(g => g.id === l.group_id)?.name || '';
+                return gName.toLowerCase().includes('cash') || gName.toLowerCase().includes('bank');
+            };
+            if(type === 'CashBank') return ledgers.filter(isCashBank);
+            if(type === 'Others') return ledgers.filter(l => !isCashBank(l));
             return ledgers;
         }
 
         function populateSelect(id, list) {
             const sel = document.getElementById(id);
-            sel.innerHTML = '<option value="">-- Select --</option>';
-            list.sort((a,b)=>a.name.localeCompare(b.name)).forEach(l => {
+            sel.innerHTML = '<option value="">-- Select Ledger --</option>';
+            list.sort((a,b) => a.name.localeCompare(b.name)).forEach(l => {
                 sel.innerHTML += `<option value="${l.id}">${l.name}</option>`;
             });
+        }
+
+        async function generateVoucherNo() {
+            const prefixMap = { Receipt: 'REC', Payment: 'PMT', Contra: 'CNT', Journal: 'JRN' };
+            const prefix = prefixMap[currentMode] || 'JRN';
+            const year = new Date().getFullYear();
+            
+            const relevant = allVouchers.filter(v => v.type === currentMode);
+            let maxNo = 0;
+            relevant.forEach(v => {
+                if(v.voucher_no && v.voucher_no.startsWith(prefix + '-' + year)) {
+                    const num = parseInt(v.voucher_no.split('-')[2]);
+                    if(num > maxNo) maxNo = num;
+                }
+            });
+            
+            const newNo = `${prefix}-${year}-${String(maxNo + 1).padStart(4, '0')}`;
+            document.getElementById('vchNo').value = newNo;
         }
 
         async function setMode(mode) {
             currentMode = mode;
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            const map = {'Receipt':'.t-rcp', 'Payment':'.t-pmt', 'Contra':'.t-cnt', 'Journal':'.t-jrn'};
-            document.querySelector(map[mode]).classList.add('active');
+            document.querySelector(`.t-${mode.toLowerCase().slice(0,3)}`).classList.add('active');
 
-            const btn = document.getElementById('saveBtn');
             const std = document.getElementById('standardInputs');
             const jrn = document.getElementById('journalInputs');
+            const btn = document.getElementById('saveBtn');
             
-            // Hide Bill Box on Mode Change
             document.getElementById('billSettlementBox').style.display = 'none';
-
-            document.getElementById('date').valueAsDate = new Date();
-            const allV = await DB.getAll('vouchers');
-            const count = allV.filter(v => v.type === mode).length + 1;
-            document.getElementById('vchNo').value = `${mode.substring(0,3).toUpperCase()}-${String(count).padStart(4,'0')}`;
+            document.getElementById('amount').value = '';
+            document.getElementById('narration').value = '';
+            document.getElementById('bankOptions').style.display = 'none';
+            
+            await generateVoucherNo();
 
             if(mode === 'Journal') {
-                std.style.display = 'none'; jrn.style.display = 'block';
-                btn.style.background = 'var(--purple)'; btn.innerText = 'Save Journal';
+                std.style.display = 'none';
+                jrn.style.display = 'block';
+                btn.style.background = 'var(--purple)';
+                btn.innerText = 'Save Journal Entry';
                 document.getElementById('journalRows').innerHTML = '';
-                addJournalRow('Dr'); addJournalRow('Cr');
+                addJournalRow('Dr');
+                addJournalRow('Cr');
+                calcJ();
             } else {
-                std.style.display = 'block'; jrn.style.display = 'none';
-                
-                if (mode === 'Receipt') {
-                    btn.style.background = 'var(--green)'; btn.innerText = 'Save Receipt';
-                    document.getElementById('lblAccount').innerText = "Deposit To (Debit)";
+                std.style.display = 'block';
+                jrn.style.display = 'none';
+
+                if(mode === 'Receipt') {
+                    btn.style.background = 'var(--green)';
+                    btn.innerText = 'Save Receipt';
+                    document.getElementById('lblAccount').innerText = "Received In (Cash/Bank - Debit)";
+                    document.getElementById('lblParty').innerText = "Received From (Party - Credit)";
                     populateSelect('ac1Select', getLedgersByType('CashBank'));
-                    document.getElementById('lblParty').innerText = "Received From (Credit)";
                     populateSelect('ac2Select', getLedgersByType('Others'));
-                } else if (mode === 'Payment') {
-                    btn.style.background = 'var(--red)'; btn.innerText = 'Save Payment';
-                    document.getElementById('lblAccount').innerText = "Paid From (Credit)";
+                } else if(mode === 'Payment') {
+                    btn.style.background = 'var(--red)';
+                    btn.innerText = 'Save Payment';
+                    document.getElementById('lblAccount').innerText = "Paid From (Cash/Bank - Credit)";
+                    document.getElementById('lblParty').innerText = "Paid To (Party - Debit)";
                     populateSelect('ac1Select', getLedgersByType('CashBank'));
-                    document.getElementById('lblParty').innerText = "Paid To (Debit)";
                     populateSelect('ac2Select', getLedgersByType('Others'));
-                } else { 
-                    btn.style.background = 'var(--blue)'; btn.innerText = 'Save Contra';
-                    document.getElementById('lblAccount').innerText = "Deposit To (Debit)";
+                } else { // Contra
+                    btn.style.background = 'var(--blue)';
+                    btn.innerText = 'Save Contra';
+                    document.getElementById('lblAccount').innerText = "Transfer To (Debit)";
+                    document.getElementById('lblParty').innerText = "Transfer From (Credit)";
                     populateSelect('ac1Select', getLedgersByType('CashBank'));
-                    document.getElementById('lblParty').innerText = "Withdraw From (Credit)";
                     populateSelect('ac2Select', getLedgersByType('CashBank'));
                 }
             }
         }
 
-        // --- NEW FEATURE: LOAD PENDING BILLS ---
         async function loadPendingBills(partyId) {
-            const box = document.getElementById('billSettlementBox');
+            if(!partyId || (currentMode !== 'Receipt' && currentMode !== 'Payment')) {
+                document.getElementById('billSettlementBox').style.display = 'none';
+                return;
+            }
+
+            const billType = currentMode === 'Receipt' ? 'Sales' : 'Purchase';
+            const bills = allVouchers.filter(v => v.type === billType && v.party_id == partyId && v.amount > 0);
+            
             const list = document.getElementById('pendingBillList');
+            const box = document.getElementById('billSettlementBox');
             list.innerHTML = '';
-            box.style.display = 'none';
-
-            // Feature only for Payment/Receipt
-            if(!partyId || (currentMode !== 'Receipt' && currentMode !== 'Payment')) return;
-
-            const targetType = currentMode === 'Receipt' ? 'Sales' : 'Purchase';
-            const all = await DB.getAll('vouchers');
             
-            // Filter Bills for this Party
-            const bills = all.filter(v => v.type === targetType && (v.party_id == partyId || v.vendor_id == partyId));
-            
-            if(bills.length === 0) return; // No bills
+            if(bills.length === 0) {
+                box.style.display = 'none';
+                return;
+            }
 
             box.style.display = 'block';
-            bills.sort((a,b) => b.id - a.id).slice(0, 10).forEach(b => {
-                const amt = b.grand_total || b.amount;
+            bills.sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(b => {
+                const amt = b.amount;
                 list.innerHTML += `
                     <div class="bill-item">
-                        <label style="display:flex; align-items:center; cursor:pointer; margin:0; width:100%;">
+                        <label>
                             <input type="checkbox" class="bill-chk" value="${amt}" data-ref="${b.voucher_no}" onchange="calcBillTotal()">
-                            <span style="flex:1;">
-                                <b>${b.voucher_no}</b> <span style="color:#64748b; font-size:11px;">(${b.date})</span>
+                            <span style="flex:1; margin-left:8px;">
+                                <b>${b.voucher_no}</b> <span style="color:#64748b; font-size:11px;">${b.date}</span>
                             </span>
-                            <span style="font-weight:bold;">₹${amt}</span>
+                            <span style="font-weight:bold;">₹${amt.toFixed(2)}</span>
                         </label>
-                    </div>
-                `;
+                    </div>`;
             });
         }
 
@@ -392,140 +425,266 @@
             let refs = [];
             document.querySelectorAll('.bill-chk:checked').forEach(chk => {
                 total += parseFloat(chk.value);
-                refs.push(chk.getAttribute('data-ref'));
+                refs.push(chk.dataset.ref);
             });
+            document.getElementById('selectedBillAmt').innerText = total.toFixed(2);
+            document.getElementById('amount').value = total.toFixed(2);
             
-            if(total > 0) {
-                document.getElementById('amount').value = total;
-                // Auto-fill Narration
-                const narr = document.getElementById('narration');
-                // Remove old refs if any
-                let txt = narr.value.split('[Agst Ref:')[0].trim();
-                narr.value = txt + (refs.length ? ` [Agst Ref: ${refs.join(', ')}]` : '');
+            if(refs.length) {
+                let narr = document.getElementById('narration').value.trim();
+                narr = narr.replace(/ \[Agst Ref:.*\]/, '');
+                document.getElementById('narration').value = narr + ` [Agst Ref: ${refs.join(', ')}]`;
+            }
+        }
+
+        function clearBillSelectionIfMismatch() {
+            const entered = parseFloat(document.getElementById('amount').value) || 0;
+            let selected = 0;
+            document.querySelectorAll('.bill-chk:checked').forEach(chk => selected += parseFloat(chk.value));
+            if(Math.abs(entered - selected) > 0.01) {
+                document.querySelectorAll('.bill-chk').forEach(chk => chk.checked = false);
+                document.getElementById('selectedBillAmt').innerText = '0.00';
             }
         }
 
         function checkBank(sel) {
-            const id = parseInt(sel.value);
-            const l = ledgers.find(x => x.id === id);
-            const g = groups.find(x => x.id === l?.group_id)?.name || '';
-            document.getElementById('bankOptions').style.display = g.includes("Bank") ? 'block' : 'none';
+            if(!sel.value) return;
+            const ledger = ledgers.find(l => l.id == sel.value);
+            const groupName = groups.find(g => g.id === ledger.group_id)?.name || '';
+            document.getElementById('bankOptions').style.display = groupName.toLowerCase().includes('bank') ? 'block' : 'none';
         }
 
-        function addJournalRow(type='Dr') {
-            const div = document.createElement('div');
-            div.className = 'journal-row';
-            let opts = '<option value="">Select</option>';
-            ledgers.forEach(l => opts += `<option value="${l.id}">${l.name}</option>`);
-            div.innerHTML = `
-                <div class="j-type"><select class="j-t" onchange="calcJ()"><option value="Dr" ${type=='Dr'?'selected':''}>Dr</option><option value="Cr" ${type=='Cr'?'selected':''}>Cr</option></select></div>
-                <div class="j-ac"><select class="j-l">${opts}</select></div>
-                <div class="j-amt"><input type="number" class="j-a" placeholder="0.00" onchange="calcJ()"></div>
-                <div class="j-act" onclick="this.parentElement.remove();calcJ()">×</div>
+        function addJournalRow(defaultType = 'Dr') {
+            const container = document.getElementById('journalRows');
+            const row = document.createElement('div');
+            row.className = 'journal-row';
+            
+            let options = '<option value="">-- Select Ledger --</option>';
+            ledgers.forEach(l => options += `<option value="${l.id}">${l.name}</option>`);
+            
+            row.innerHTML = `
+                <div class="j-type">
+                    <select class="j-type-sel" onchange="calcJ()">
+                        <option value="Dr" ${defaultType==='Dr'?'selected':''}>Dr</option>
+                        <option value="Cr" ${defaultType==='Cr'?'selected':''}>Cr</option>
+                    </select>
+                </div>
+                <div class="j-ac">
+                    <select class="j-ledger" onchange="calcJ()">${options}</select>
+                </div>
+                <div class="j-amt">
+                    <input type="number" class="j-amt-inp" step="0.01" placeholder="0.00" onchange="calcJ()">
+                </div>
+                <div class="j-act" onclick="this.parentElement.remove(); calcJ()">×</div>
             `;
-            document.getElementById('journalRows').appendChild(div);
+            container.appendChild(row);
         }
 
         function calcJ() {
-            let dr=0, cr=0;
+            let dr = 0, cr = 0;
             document.querySelectorAll('.journal-row').forEach(row => {
-                const t = row.querySelector('.j-t').value;
-                const a = parseFloat(row.querySelector('.j-a').value)||0;
-                if(t==='Dr') dr+=a; else cr+=a;
+                const type = row.querySelector('.j-type-sel').value;
+                const amt = parseFloat(row.querySelector('.j-amt-inp').value) || 0;
+                if(type === 'Dr') dr += amt;
+                else cr += amt;
             });
             document.getElementById('totDr').innerText = dr.toFixed(2);
             document.getElementById('totCr').innerText = cr.toFixed(2);
-            const diff = dr-cr;
-            const dEl = document.getElementById('diffDisplay');
-            dEl.innerText = `Diff: ${Math.abs(diff).toFixed(2)}`;
-            dEl.style.color = Math.abs(diff)<0.01 ? 'green' : 'red';
-            document.getElementById('saveBtn').disabled = Math.abs(diff)>0.01;
+            const diff = Math.abs(dr - cr);
+            document.getElementById('diffDisplay').innerText = `Diff: ₹${diff.toFixed(2)}`;
+            document.getElementById('diffDisplay').style.color = diff < 0.01 ? 'green' : 'red';
+            document.getElementById('saveBtn').disabled = diff >= 0.01;
         }
 
-        async function saveVoucher(print) {
-            let entries = [];
-            const narration = document.getElementById('narration').value;
-            const pdc = document.getElementById('isPDC').checked;
-            const chq = document.getElementById('chqNo').value;
+        async function updateBalance(prefix) {
+            const selId = prefix === 'ac1' ? 'ac1Select' : 'ac2Select';
+            const balId = prefix === 'ac1' ? 'bal1' : 'bal2';
+            const ledgerId = parseInt(document.getElementById(selId).value);
+            if(!ledgerId) {
+                document.getElementById(balId).innerText = '';
+                return;
+            }
             
-            const vData = {
-                voucher_no: document.getElementById('vchNo').value,
-                date: document.getElementById('date').value,
-                type: currentMode,
-                amount: 0,
-                narration: narration + (chq ? ` [Chq: ${chq}]` : ''),
-                is_pdc: pdc,
-                cheque_date: document.getElementById('chqDate').value
-            };
+            const ledger = ledgers.find(l => l.id === ledgerId);
+            const entries = await DB.getAll('acct_entries');
+            let balance = (ledger.opening_balance || 0);
+            entries.filter(e => e.ledger_id === ledgerId).forEach(e => {
+                balance += (e.debit || 0) - (e.credit || 0);
+            });
+            
+            const absBal = Math.abs(balance).toFixed(2);
+            const type = balance >= 0 ? 'Dr' : 'Cr';
+            document.getElementById(balId).innerText = `₹${absBal} ${type}`;
+            document.getElementById(balId).className = `bal-display ${balance >= 0 ? 'bal-dr' : 'bal-cr'}`;
+        }
+
+        async function saveVoucher(printAfter) {
+            const narration = document.getElementById('narration').value.trim();
+            const date = document.getElementById('date').value || new Date().toISOString().slice(0,10);
+            const vchNo = document.getElementById('vchNo').value;
+            
+            let acctEntries = [];
+            let amount = 0;
 
             if(currentMode === 'Journal') {
+                if(document.getElementById('saveBtn').disabled) return alert("Debit and Credit must match!");
                 document.querySelectorAll('.journal-row').forEach(row => {
-                    const t = row.querySelector('.j-t').value;
-                    const l = parseInt(row.querySelector('.j-l').value);
-                    const a = parseFloat(row.querySelector('.j-a').value);
-                    if(l && a) entries.push({ ledger_id: l, debit: t=='Dr'?a:0, credit: t=='Cr'?a:0 });
+                    const type = row.querySelector('.j-type-sel').value;
+                    const ledgerId = parseInt(row.querySelector('.j-ledger').value);
+                    const amt = parseFloat(row.querySelector('.j-amt-inp').value) || 0;
+                    if(ledgerId && amt > 0) {
+                        acctEntries.push({
+                            ledger_id: ledgerId,
+                            debit: type === 'Dr' ? amt : 0,
+                            credit: type === 'Cr' ? amt : 0
+                        });
+                        amount = Math.max(amount, amt);
+                    }
                 });
             } else {
-                const amt = parseFloat(document.getElementById('amount').value);
+                const amt = parseFloat(document.getElementById('amount').value) || 0;
+                if(amt <= 0) return alert("Enter valid amount");
+                amount = amt;
+                
                 const ac1 = parseInt(document.getElementById('ac1Select').value);
                 const ac2 = parseInt(document.getElementById('ac2Select').value);
-                if(!amt || !ac1 || !ac2) return alert("Fill all fields");
-                vData.amount = amt; vData.party_id = ac2;
+                if(!ac1 || !ac2) return alert("Select both accounts");
+                
+                const isPDC = document.getElementById('isPDC').checked;
+                const chqNo = document.getElementById('chqNo').value.trim();
+                const chqDate = document.getElementById('chqDate').value;
+                
+                let extraNarr = '';
+                if(chqNo) extraNarr += ` [Chq: ${chqNo}${chqDate ? ' Dt: ' + chqDate : ''}]`;
+                if(isPDC) extraNarr += ' [PDC]';
+                
+                const vData = {
+                    voucher_no: vchNo,
+                    date: date,
+                    type: currentMode,
+                    amount: amount,
+                    narration: narration + extraNarr,
+                    party_id: ac2
+                };
 
                 if(currentMode === 'Receipt') {
-                    entries.push({ ledger_id: ac1, debit: amt, credit: 0 });
-                    entries.push({ ledger_id: ac2, debit: 0, credit: amt });
+                    acctEntries.push({ ledger_id: ac1, debit: amount, credit: 0 });
+                    acctEntries.push({ ledger_id: ac2, debit: 0, credit: amount });
                 } else if(currentMode === 'Payment') {
-                    entries.push({ ledger_id: ac2, debit: amt, credit: 0 });
-                    entries.push({ ledger_id: ac1, debit: 0, credit: amt });
-                } else {
-                    entries.push({ ledger_id: ac1, debit: amt, credit: 0 });
-                    entries.push({ ledger_id: ac2, debit: 0, credit: amt });
+                    acctEntries.push({ ledger_id: ac1, debit: 0, credit: amount });
+                    acctEntries.push({ ledger_id: ac2, debit: amount, credit: 0 });
+                } else { // Contra
+                    acctEntries.push({ ledger_id: ac1, debit: amount, credit: 0 });
+                    acctEntries.push({ ledger_id: ac2, debit: 0, credit: amount });
                 }
+                
+                try {
+                    await DB.saveVoucher(vData, [], acctEntries);
+                    alert("Voucher Saved Successfully!");
+                    if(printAfter) window.print();
+                    location.reload();
+                } catch(e) {
+                    alert("Save Failed: " + e.message);
+                }
+                return;
             }
 
-            try {
-                await DB.saveVoucher(vData, [], entries);
-                if(print) window.print();
-                alert("Saved Successfully!");
-                location.reload();
-            } catch(e) { alert("Error: " + e); }
-        }
+            // Journal save
+            const vData = {
+                voucher_no: vchNo,
+                date: date,
+                type: 'Journal',
+                amount: amount,
+                narration: narration || 'Journal Entry'
+            };
 
-        async function updateBalance(el) {
-            const id = parseInt(document.getElementById(el === 'ac1' ? 'ac1Select' : 'ac2Select').value);
-            if(!id) return;
-            const entries = await DB.getAll('acct_entries');
-            const l = ledgers.find(x => x.id === id);
-            let bal = l.opening_balance || 0;
-            entries.filter(e => e.ledger_id === id).forEach(e => bal += (e.debit - e.credit));
-            const span = document.getElementById(el === 'ac1' ? 'bal1' : 'bal2');
-            span.innerText = `₹${Math.abs(bal).toFixed(2)} ${bal>=0?'Dr':'Cr'}`;
-            span.className = `bal-display ${bal>=0?'bal-dr':'bal-cr'}`;
+            try {
+                await DB.saveVoucher(vData, [], acctEntries);
+                alert("Journal Entry Saved!");
+                if(printAfter) window.print();
+                location.reload();
+            } catch(e) {
+                alert("Save Failed: " + e.message);
+            }
         }
 
         async function loadRecent() {
-            const all = await DB.getAll('vouchers');
-            const list = document.getElementById('recentList');
-            list.innerHTML = '';
-            all.sort((a,b)=>b.id-a.id).slice(0,5).forEach(v => {
-                list.innerHTML += `<div class="txn-item"><div><span class="tag" style="background:#eee;">${v.type}</span> <b>${v.voucher_no}</b></div><b>₹${v.amount||0}</b></div>`;
+            allVouchers = await DB.getAll('vouchers');
+            const container = document.getElementById('recentList');
+            container.innerHTML = '';
+            if(allVouchers.length === 0) {
+                container.innerHTML = '<div style="text-align:center; color:#999; padding:20px;">No transactions yet</div>';
+                return;
+            }
+            
+            allVouchers.sort((a,b) => b.id - a.id).slice(0, 10).forEach(v => {
+                const party = ledgers.find(l => l.id === v.party_id)?.name || '';
+                container.innerHTML += `
+                    <div class="txn-item">
+                        <div>
+                            <span class="tag">${v.type}</span> 
+                            <b>${v.voucher_no}</b> 
+                            <span style="color:#64748b; font-size:11px;">${v.date}</span>
+                            ${party ? `<br><small>${party}</small>` : ''}
+                        </div>
+                        <div style="font-weight:bold;">₹${(v.amount||0).toFixed(2)}</div>
+                    </div>`;
             });
         }
 
         function printCheque() {
-            const name = document.getElementById('ac2Select').selectedOptions[0].text;
-            const amt = document.getElementById('amount').value;
-            const date = document.getElementById('chqDate').value;
-            if(!amt || !date) return alert("Fill Amount & Cheque Date");
-            const w = window.open('', '', 'width=800,height=400');
-            w.document.write(`<div style="padding:50px; font-family:monospace; transform: rotate(0deg);">
-                <div style="position:absolute; top:20px; right:50px;">${date.split('-').reverse().join('')}</div>
-                <div style="position:absolute; top:80px; left:100px;">Pay <b>${name.split('[')[0]}</b></div>
-                <div style="position:absolute; top:130px; left:100px;">Rupees ${amt} Only</div>
-                <div style="position:absolute; top:150px; right:50px; border:1px solid #000; padding:5px;">₹ ${amt}/-</div>
-            </div>`);
-            w.print();
+            const payee = document.getElementById('ac2Select').selectedOptions[0]?.text || '__________';
+            const amount = document.getElementById('amount').value;
+            const chqDate = document.getElementById('chqDate').value || new Date().toISOString().slice(0,10);
+            if(!amount) return alert("Enter amount first");
+            
+            const words = numberToWords(amount);
+            const win = window.open('', '_blank', 'width=800,height=600');
+            win.document.write(`
+                <html><head><title>Cheque</title>
+                <style>
+                    body { font-family: 'Times New Roman', serif; padding: 50px; }
+                    .cheque { border: 2px solid #000; padding: 30px; width: 800px; height: 350px; position: relative; }
+                    .date { position: absolute; top: 30px; right: 50px; font-size: 18px; }
+                    .payee { position: absolute; top: 100px; left: 100px; font-size: 22px; }
+                    .amount-words { position: absolute; top: 150px; left: 80px; font-size: 18px; }
+                    .amount-box { position: absolute; top: 140px; right: 50px; border: 1px solid #000; padding: 10px; font-size: 20px; }
+                </style></head>
+                <body onload="window.print(); window.close();">
+                    <div class="cheque">
+                        <div class="date">${chqDate.split('-').reverse().join('/')}</div>
+                        <div class="payee">Pay: <b>${payee}</b></div>
+                        <div class="amount-words">Rupees ${words} Only</div>
+                        <div class="amount-box">₹ ${parseFloat(amount).toFixed(2)}</div>
+                    </div>
+                </body></html>
+            `);
+        }
+
+        // Simple number to words (Indian style)
+        function numberToWords(num) {
+            const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten',
+                          'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+            const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+            if(num == 0) return 'Zero';
+            const crore = Math.floor(num / 10000000);
+            num %= 10000000;
+            const lakh = Math.floor(num / 100000);
+            num %= 100000;
+            const thousand = Math.floor(num / 1000);
+            num %= 1000;
+            const hundred = Math.floor(num / 100);
+            num %= 100;
+            let words = '';
+            if(crore) words += numberToWords(crore) + ' Crore ';
+            if(lakh) words += numberToWords(lakh) + ' Lakh ';
+            if(thousand) words += numberToWords(thousand) + ' Thousand ';
+            if(hundred) words += ones[hundred] + ' Hundred ';
+            if(num > 0) {
+                if(num < 20) words += ones[num];
+                else words += tens[Math.floor(num/10)] + (num%10 ? ' ' + ones[num%10] : '');
+            }
+            return words.trim();
         }
     </script>
 </body>

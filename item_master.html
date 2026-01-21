@@ -63,7 +63,7 @@
         .btn-save { background: var(--accent); color: white; }
         .btn-new { background: #e2e8f0; color: var(--text); }
         .btn-del { background: #fee2e2; color: var(--red); float: right; }
-        .btn-gen { background: var(--primary); color: white; font-size: 11px; padding: 5px 10px; border-radius: 4px; cursor: pointer; border: none; }
+        .btn-gen { background: var(--accent); color: white; font-size: 11px; padding: 5px 10px; border-radius: 4px; cursor: pointer; border: none; }
 
         #toast { position: fixed; top: 20px; right: 20px; background: var(--accent); color: white; padding: 12px 24px; border-radius: 6px; display: none; font-weight: 600; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
         
@@ -83,8 +83,8 @@
         <a href="purchase_invoice.html" class="nav-link"><span class="nav-icon">🚚</span> Purchase Entry</a>
         <a href="vouchers.html" class="nav-link"><span class="nav-icon">💸</span> Vouchers (JV)</a>
         <a href="item_master.html" class="nav-link active"><span class="nav-icon">📦</span> Inventory</a>
-        <a href="ArthBook.html" class="nav-link"><span class="nav-icon">👥</span> Parties / Ledgers</a>
-        <a href="coa.html" class="nav-link"><span class="nav-icon">🗂️</span> Chart of Accounts</a>
+        <a href="moneywise.html" class="nav-link"><span class="nav-icon">👥</span> Parties</a>
+        <a href="coa.html" class="nav-link"><span class="nav-icon">🗂️</span> Accounts</a>
         <a href="settings.html" class="nav-link"><span class="nav-icon">⚙️</span> Settings</a>
     </div>
 
@@ -213,6 +213,7 @@
             const cats = new Set();
             (await DB.getItems()).forEach(i => { if(i.category) cats.add(i.category); });
             const dl = document.getElementById('catList');
+            dl.innerHTML = '';
             cats.forEach(c => { let op = document.createElement('option'); op.value = c; dl.appendChild(op); });
         };
 
@@ -280,6 +281,10 @@
                 return true;
             });
 
+            if(filtered.length === 0) {
+                listDiv.innerHTML = '<div style="padding:20px; text-align:center; color:#ccc;">No Items Found</div>';
+            }
+
             filtered.sort((a,b) => a.name.localeCompare(b.name)).forEach(i => {
                 const stock = i.current_stock || 0;
                 const val = stock * (i.std_cost || 0);
@@ -323,17 +328,18 @@
             document.getElementById('reorder').value = i.reorder_level || 5;
             document.getElementById('trackExpiry').value = i.track_expiry || 'No';
             
-            // Set Expiry if exists
             if(i.expiry_date) document.getElementById('expiryDate').value = i.expiry_date;
             
             toggleBatchFields();
             if(i.sku) previewBarcode(i.sku);
+            else document.getElementById('barcodePreview').style.display = 'none';
             
             document.getElementById('delBtn').style.display = 'block';
         }
 
         function resetForm() {
             document.querySelectorAll('input').forEach(i => i.value = '');
+            document.getElementById('itemId').value = ''; // Clear ID
             document.getElementById('gst').value = 18;
             document.getElementById('unit').value = 'Pcs';
             document.getElementById('stdCost').value = 0;
@@ -352,7 +358,6 @@
             const name = document.getElementById('name').value;
             if(!name) return alert("Name is required");
             
-            // Auto Generate SKU if empty
             if(!document.getElementById('sku').value) {
                 generateSKU();
             }
@@ -372,19 +377,26 @@
                 expiry_date: document.getElementById('expiryDate').value || null
             };
             
-            // Update current stock based on Op Qty if New
-            // Note: In real app, changing Op Qty later is tricky, but for simplicity:
-            data.current_stock = data.op_qty; // Reset to Op Qty (User should use Purchase for adding more)
-
             const id = document.getElementById('itemId').value;
-            if(id) data.id = parseInt(id);
+            
+            if(id) {
+                // UPDATE MODE: Keep existing stock, don't reset to Op Qty
+                data.id = parseInt(id);
+                // We need to fetch existing item to preserve current_stock
+                const existing = items.find(i => i.id == data.id);
+                if(existing) {
+                    data.current_stock = existing.current_stock; // Preserve Stock
+                }
+                await DB.updateItem(data);
+            } else {
+                // CREATE MODE: Set Stock = Op Qty
+                data.current_stock = data.op_qty; 
+                await DB.createItem(data);
+            }
 
-            try {
-                await DB.createItem(data); // db.js handles create/update
-                showToast();
-                resetForm();
-                renderList();
-            } catch(e) { alert("Error: " + e); }
+            showToast();
+            resetForm();
+            renderList();
         }
 
         async function deleteItem() {
@@ -402,7 +414,6 @@
             setTimeout(() => t.style.display='none', 2000);
         }
 
-        // Shortcuts
         document.addEventListener('keydown', e => {
             if(e.altKey && e.key.toLowerCase() === 's') saveItem();
             if(e.altKey && e.key.toLowerCase() === 'n') resetForm();

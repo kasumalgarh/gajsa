@@ -84,24 +84,25 @@
             .menu-btn { display: block; }
             .main-content { padding: 5px; }
             
-            .pos-layout { flex-direction: column-reverse; } /* Cart on top/bottom? Let's keep Cart Bottom for thumb reach, Item Top */
             .pos-layout { flex-direction: column; }
             
-            .item-list-area { flex: 0 0 40vh; } /* Items take 40% height */
+            .item-list-area { flex: 0 0 40vh; }
             .cart-area { flex: 1; }
             
             .party-panel { grid-template-columns: 1fr; gap: 5px; }
             .toolbar { padding: 5px; }
-            #invNo { display: none; } /* Hide Inv No to save space */
+            #invNo { display: none; }
         }
 
         /* PRINT CSS */
         @media print { 
             body * { visibility: hidden; } 
             #printArea, #printArea * { visibility: visible; } 
-            #printArea { position: absolute; left: 0; top: 0; width: 100%; font-family: 'Times New Roman', serif; color: black; background: white; } 
-            .print-table { width: 100%; border-collapse: collapse; font-size: 10pt; }
-            .print-table th, .print-table td { border: 1px solid black; padding: 4px; }
+            #printArea { position: absolute; left: 0; top: 0; width: 100%; font-family: 'Times New Roman', serif; color: black; background: white; padding: 10px; } 
+            .print-table { width: 100%; border-collapse: collapse; font-size: 10pt; margin: 10px 0; }
+            .print-table th, .print-table td { border: 1px solid black; padding: 4px; text-align: left; }
+            .print-table .right { text-align: right; }
+            .no-print-border th, .no-print-border td { border: none; }
         }
     </style>
 </head>
@@ -119,20 +120,21 @@
         <a href="purchase_invoice.html" class="nav-link">🚚 Purchase Entry</a>
         <a href="vouchers.html" class="nav-link">💸 Vouchers (JV)</a>
         <a href="item_master.html" class="nav-link">📦 Inventory</a>
-        <a href="moneywise.html" class="nav-link">👥 Parties</a>
+        <a href="ArthBook.html" class="nav-link">👥 Parties</a>
         <a href="coa.html" class="nav-link">🗂️ Accounts</a>
         <a href="settings.html" class="nav-link">⚙️ Settings</a>
     </div>
 
     <div class="main-content">
-        <div class="toolbar" style="padding-left: 50px;"> <div class="search-grp">
+        <div class="toolbar" style="padding-left: 50px;"> 
+            <div class="search-grp">
                 <input type="text" id="searchBar" placeholder="🔍 Search / Scan (F2)" style="flex:1;" onkeyup="handleSearch(this.value)">
             </div>
             
-            <div style="display:flex; gap:5px;">
+            <div style="display:flex; gap:5px; align-items:center;">
                 <button class="btn" style="background:#f59e0b;" onclick="holdBill()">⏸️ Hold</button>
                 <button class="btn" style="background:#0ea5e9;" onclick="recallBill()">▶️ Recall</button>
-                <div style="font-weight:bold; color:var(--accent); align-self:center; margin-left:10px;" id="invNo">INV-...</div>
+                <div style="font-weight:bold; color:var(--accent); margin-left:10px;" id="invNo">INV-...</div>
             </div>
         </div>
 
@@ -153,7 +155,8 @@
                     <div class="party-stats" id="partyStats">
                         <span class="stat-box">Bal: ₹0</span>
                     </div>
-                    <input type="date" id="billDate" style="display:none;"> </div>
+                    <input type="date" id="billDate" style="grid-column: 1 / -1; margin-top:5px;">
+                </div>
 
                 <div class="cart-header">
                     <div>#</div>
@@ -188,7 +191,7 @@
         <div class="modal">
             <h2 style="margin-bottom:15px; border-bottom:1px solid #eee;">Payment</h2>
             <div style="text-align:center; margin-bottom:20px;">
-                <div style="font-size:32px; font-weight:800; color:var(--accent);" id="modalTotal">₹0</div>
+                <div style="font-size:32px; font-weight:800; color:var(--accent);" id="modalTotal">₹0.00</div>
             </div>
 
             <label style="font-size:12px; font-weight:600;">Payment Mode</label>
@@ -211,21 +214,20 @@
 
     <script src="db.js"></script>
     <script>
-        let items=[], ledgers=[], vouchers=[], cart=[], settings={};
+        let items=[], ledgers=[], cart=[], settings={};
         let selectedMode = 'Cash';
 
         window.onload = async () => {
             await DB.init();
-            [items, ledgers, vouchers, settings] = await Promise.all([
+            [items, ledgers, settings] = await Promise.all([
                 DB.getAll('items'),
                 DB.getLedgers(),
-                DB.getAll('vouchers'),
                 DB.getSettings()
             ]);
             
             renderItems(items);
             loadCustomers();
-            generateInvNo();
+            await generateInvNo();
             document.getElementById('billDate').valueAsDate = new Date();
         };
 
@@ -238,14 +240,14 @@
         function renderItems(list) {
             const container = document.getElementById('itemContainer');
             container.innerHTML = '';
-            list.slice(0, 50).forEach(i => { 
+            list.forEach(i => { 
                 const div = document.createElement('div');
                 div.className = `product-card ${i.current_stock<=5?'low-stock':''}`;
                 div.onclick = () => addToCart(i);
                 div.innerHTML = `
                     <div class="p-name">${i.name}</div>
                     <div>
-                        <div class="p-price">₹${i.std_price}</div>
+                        <div class="p-price">₹${parseFloat(i.std_price).toFixed(2)}</div>
                         <div class="p-stock">Stock: ${i.current_stock}</div>
                     </div>
                 `;
@@ -254,10 +256,11 @@
         }
 
         function handleSearch(q) {
-            q = q.toLowerCase();
+            q = q.trim().toLowerCase();
+            if(!q) { renderItems(items); return; }
             const exact = items.find(i => i.sku && i.sku.toLowerCase() === q);
             if(exact) { addToCart(exact); document.getElementById('searchBar').value=''; return; }
-            const filtered = items.filter(i => i.name.toLowerCase().includes(q) || (i.sku && i.sku.includes(q)));
+            const filtered = items.filter(i => i.name.toLowerCase().includes(q) || (i.sku && i.sku.toLowerCase().includes(q)));
             renderItems(filtered);
         }
 
@@ -268,7 +271,7 @@
             else cart.push({
                 id: item.id, name: item.name,
                 qty: 1, unit: item.unit||'Pcs', 
-                rate: item.std_price, dis: 0, gst: item.gst_rate||0
+                rate: parseFloat(item.std_price), dis: 0, gst: item.gst_rate||0
             });
             renderCart();
         }
@@ -276,6 +279,14 @@
         function renderCart() {
             const body = document.getElementById('cartBody');
             body.innerHTML = '';
+            if(cart.length===0) {
+                body.innerHTML = '<div style="text-align:center; padding:50px; color:#ccc;">Start Billing...</div>';
+                document.getElementById('lblSub').innerText = '0.00';
+                document.getElementById('lblTax').innerText = '0.00';
+                document.getElementById('lblGrand').innerText = '0.00';
+                return;
+            }
+
             let sub=0, tax=0;
 
             cart.forEach((c, i) => {
@@ -293,9 +304,9 @@
                 row.innerHTML = `
                     <div>${i+1}</div>
                     <div style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${c.name}</div>
-                    <input type="number" value="${c.qty}" onchange="updateRow(${i}, 'qty', this.value)" style="width:40px">
-                    <input type="number" value="${c.rate}" onchange="updateRow(${i}, 'rate', this.value)">
-                    <div style="text-align:right; font-weight:bold;">${lineTotal.toFixed(0)}</div>
+                    <input type="number" min="1" value="${c.qty}" onchange="updateRow(${i}, 'qty', this.value)" style="width:50px">
+                    <input type="number" value="${c.rate.toFixed(2)}" onchange="updateRow(${i}, 'rate', this.value)" step="0.01">
+                    <div style="text-align:right; font-weight:bold;">₹${lineTotal.toFixed(2)}</div>
                     <div onclick="cart.splice(${i},1); renderCart()" style="cursor:pointer; color:red; text-align:center;">×</div>
                 `;
                 body.appendChild(row);
@@ -308,11 +319,13 @@
         }
 
         function updateRow(idx, field, val) {
-            cart[idx][field] = parseFloat(val) || 0;
+            const num = parseFloat(val);
+            if(isNaN(num) || num < 0) return;
+            cart[idx][field] = num;
             renderCart();
         }
 
-        // --- PAYMENT & SAVING (FIXED LOGIC) ---
+        // --- PAYMENT & SAVING ---
         function openPaymentModal() {
             if(cart.length===0) return alert("Cart Empty");
             document.getElementById('modalTotal').innerText = "₹" + document.getElementById('lblGrand').innerText;
@@ -326,13 +339,27 @@
         }
 
         async function saveBill(action) {
-            const grand = parseFloat(document.getElementById('lblGrand').innerText);
+            if(cart.length===0) return alert("Cart is empty!");
+
+            // Recalculate totals accurately
+            let sub = 0, tax = 0;
+            cart.forEach(c => {
+                const base = c.qty * c.rate;
+                const disAmt = base * (c.dis / 100);
+                const taxable = base - disAmt;
+                sub += taxable;
+                tax += taxable * (c.gst / 100);
+            });
+            const grand = Math.round(sub + tax);
+
             const pid = document.getElementById('custSelect').value;
             const invNo = document.getElementById('invNo').innerText;
+            const billDate = document.getElementById('billDate').value;
             const remarks = document.getElementById('billNote').value || "POS Sale";
             
             const saleData = {
-                voucher_no: invNo, date: new Date().toISOString().slice(0,10),
+                voucher_no: invNo, 
+                date: billDate || new Date().toISOString().slice(0,10),
                 type: 'Sales', party_id: parseInt(pid) || 0,
                 amount: grand, payment_mode: selectedMode,
                 narration: remarks
@@ -342,100 +369,232 @@
                 item_id: c.id, qty: c.qty, rate: c.rate, amount: (c.qty*c.rate)
             }));
 
-            // --- ACCOUNTING FIX: DYNAMIC LEDGER SEARCH ---
+            // --- ACCOUNTING ENTRIES ---
             const acct = [];
             
-            // 1. Sales Account (Credit)
-            const salesLedger = ledgers.find(l => l.name === "Local Sales") || ledgers.find(l => l.name.includes("Sales Accounts"));
-            const salesId = salesLedger ? salesLedger.id : 0;
-            if(salesId === 0) return alert("Error: 'Local Sales' Ledger not found!");
-            acct.push({ ledger_id: salesId, debit: 0, credit: grand });
-
-            // 2. Party or Cash Account (Debit)
-            let debitLedgerId = parseInt(pid);
+            // 1. Debit: Party or Cash
+            let debitLedgerId = parseInt(pid) || 0;
             if(!debitLedgerId) {
-                // Walk-in -> Find Cash Ledger
                 const cashLedger = ledgers.find(l => l.name === "Cash-in-Hand");
                 debitLedgerId = cashLedger ? cashLedger.id : 0;
-                if(debitLedgerId === 0) return alert("Error: 'Cash-in-Hand' Ledger not found!");
+                if(!debitLedgerId) return alert("Error: Cash-in-Hand ledger not found!");
             }
             acct.push({ ledger_id: debitLedgerId, debit: grand, credit: 0 });
+
+            // 2. Credit: Sales Account (only taxable amount)
+            const salesLedger = ledgers.find(l => l.name === "Local Sales" || l.name.includes("Sales"));
+            const salesId = salesLedger ? salesLedger.id : 0;
+            if(!salesId) return alert("Error: Sales ledger not found!");
+            acct.push({ ledger_id: salesId, debit: 0, credit: sub });
+
+            // 3. Credit: GST Output Ledger (if tax exists)
+            if(tax > 0) {
+                const gstLedger = ledgers.find(l => 
+                    l.name.toLowerCase().includes("output gst") || 
+                    l.name.toLowerCase().includes("gst payable") ||
+                    l.name.toLowerCase().includes("cgst") || 
+                    l.name.toLowerCase().includes("sgst") ||
+                    l.name.toLowerCase().includes("igst")
+                );
+                if(!gstLedger) return alert("Error: GST Output ledger not found! Create a ledger like 'Output GST'.");
+                acct.push({ ledger_id: gstLedger.id, debit: 0, credit: tax });
+            }
 
             try {
                 await DB.saveVoucher(saleData, entries, acct);
                 closeModal();
                 
                 if(action === 'print') {
-                    printBill(saleData, cart, pid);
+                    printBill(saleData, cart, pid, sub, tax, grand);
                 } else if(action === 'whatsapp') {
-                    shareOnWhatsApp(saleData, cart, pid);
-                    alert("Shared!");
-                    setTimeout(() => location.reload(), 1000);
+                    shareOnWhatsApp(saleData, cart, pid, sub, tax, grand);
                 } else {
-                    alert("Saved Successfully!");
-                    location.reload();
+                    alert("Bill Saved Successfully!");
                 }
-            } catch(e) { alert("Error: " + e); }
+                location.reload();
+            } catch(e) { 
+                console.error(e);
+                alert("Save Failed: " + e.message); 
+            }
         }
 
         // --- UTILS ---
+        async function generateInvNo() {
+            const allVouchers = await DB.getAll('vouchers');
+            const currentYear = new Date().getFullYear();
+            const thisYearSales = allVouchers.filter(v => v.type === 'Sales' && v.date && v.date.startsWith(currentYear));
+            
+            let maxNo = 0;
+            thisYearSales.forEach(v => {
+                if(v.voucher_no) {
+                    const parts = v.voucher_no.split('-');
+                    if(parts.length === 3 && parts[0] === 'INV' && parseInt(parts[1]) === currentYear) {
+                        const num = parseInt(parts[2]);
+                        if(num > maxNo) maxNo = num;
+                    }
+                }
+            });
+            
+            const newInv = `INV-${currentYear}-${String(maxNo + 1).padStart(4, '0')}`;
+            document.getElementById('invNo').innerText = newInv;
+        }
+
         function loadCustomers() {
             const sel = document.getElementById('custSelect');
             sel.innerHTML = '<option value="">Walk-in Customer (Cash)</option>';
-            ledgers.sort((a,b)=>a.name.localeCompare(b.name)).forEach(l => { sel.innerHTML += `<option value="${l.id}">${l.name}</option>`; });
+            ledgers
+                .filter(l => l.group_name === "Sundry Debtors" || l.name.toLowerCase().includes("customer")) // better if group available
+                .sort((a,b) => a.name.localeCompare(b.name))
+                .forEach(l => { 
+                    sel.innerHTML += `<option value="${l.id}">${l.name}</option>`;
+                });
         }
+
         function loadPartyInfo() {
             const pid = document.getElementById('custSelect').value;
-            if(!pid) { document.getElementById('partyStats').innerHTML=''; return; }
-            const p = ledgers.find(l=>l.id==pid);
+            if(!pid) { 
+                document.getElementById('partyStats').innerHTML = ''; 
+                return; 
+            }
+            const p = ledgers.find(l => l.id == pid);
+            if(!p) return;
+            // Approximate balance (sales only - quick for POS)
             let bal = p.opening_balance || 0;
-            vouchers.filter(v=>v.party_id==pid).forEach(v=>{ bal += (v.type==='Sales'? v.amount : -v.amount) });
-            const col = bal>0 ? 'red':'green';
-            document.getElementById('partyStats').innerHTML = `<span class="stat-box" style="color:${col}">Bal: ₹${bal}</span>`;
-        }
-        async function generateInvNo() {
-            const salesVouchers = vouchers.filter(v => v.type === 'Sales');
-            let nextNo = salesVouchers.length + 1;
-            let newInv = `INV-${new Date().getFullYear()}-${nextNo}`;
-            document.getElementById('invNo').innerText = newInv;
+            // In real, calculate from acct_entries, but for now approximate
+            document.getElementById('partyStats').innerHTML = `<span class="stat-box" style="color:${bal>0?'red':'green'}">Bal: ₹${bal.toFixed(2)}</span>`;
         }
 
         function holdBill() {
             if(cart.length === 0) return alert("Nothing to hold!");
-            localStorage.setItem('heldBill', JSON.stringify({ cart, cust: document.getElementById('custSelect').value }));
-            cart=[]; renderCart(); alert("Bill Held!");
-        }
-        function recallBill() {
-            const data = JSON.parse(localStorage.getItem('heldBill'));
-            if(!data) return alert("No held bill!");
-            cart = data.cart; document.getElementById('custSelect').value = data.cust;
-            renderCart(); localStorage.removeItem('heldBill');
-        }
-        async function quickAddCust() {
-            const name = prompt("Name:"); if(!name) return;
-            const mobile = prompt("Mobile:") || "";
-            // Find 'Sundry Debtors' group ID first
-            const grp = (await DB.getGroups()).find(g => g.name === "Sundry Debtors");
-            if(grp) {
-                await DB.db.transaction('ledgers', 'readwrite').objectStore('ledgers').add({name:name, phone:mobile, group_id:grp.id, opening_balance:0, gstin:"", address:"Local"});
-                ledgers = await DB.getLedgers(); loadCustomers();
-            } else alert("Error: Sundry Debtors group missing");
-        }
-        
-        // WhatsApp & Print (Simplified)
-        function shareOnWhatsApp(data, items, pid) {
-            const party = ledgers.find(l => l.id == pid);
-            const phone = party ? party.phone : "";
-            if(!phone) { alert("Customer phone missing!"); return; }
-            let msg = `*INVOICE: ${data.voucher_no}* Total: ₹${data.amount}`;
-            window.open(`https://wa.me/91${phone}?text=${encodeURIComponent(msg)}`, '_blank');
-        }
-        function printBill(data, items, pid) {
-            window.print();
-            setTimeout(() => location.reload(), 1000);
+            localStorage.setItem('heldBill_POS', JSON.stringify({ 
+                cart, 
+                cust: document.getElementById('custSelect').value,
+                note: document.getElementById('billNote').value,
+                date: document.getElementById('billDate').value
+            }));
+            alert("Bill Held!");
+            cart = []; renderCart();
         }
 
-        document.addEventListener('keydown', e => { if(e.ctrlKey && e.key==='Enter') openPaymentModal(); if(e.key==='F2') document.getElementById('searchBar').focus(); });
+        function recallBill() {
+            const data = JSON.parse(localStorage.getItem('heldBill_POS') || 'null');
+            if(!data) return alert("No held bill found!");
+            cart = data.cart;
+            document.getElementById('custSelect').value = data.cust || '';
+            document.getElementById('billNote').value = data.note || '';
+            document.getElementById('billDate').value = data.date || '';
+            renderCart();
+            loadPartyInfo();
+            localStorage.removeItem('heldBill_POS');
+        }
+
+        async function quickAddCust() {
+            const name = prompt("Customer Name:");
+            if(!name) return;
+            const mobile = prompt("Mobile (for WhatsApp):") || "";
+            const groups = await DB.getAll('groups'); // assuming getAll works for groups
+            const debtorGrp = groups.find(g => g.name === "Sundry Debtors");
+            if(!debtorGrp) return alert("Sundry Debtors group not found!");
+            
+            await DB.db.transaction('ledgers', 'readwrite')
+                .objectStore('ledgers')
+                .add({
+                    name: name.trim(), 
+                    phone: mobile, 
+                    group_id: debtorGrp.id, 
+                    opening_balance: 0, 
+                    gstin: "", 
+                    address: "Local"
+                });
+            
+            ledgers = await DB.getLedgers();
+            loadCustomers();
+            alert("Customer added!");
+        }
+
+        // --- PRINT & WHATSAPP ---
+        function printBill(data, cartItems, pid, sub, tax, grand) {
+            const party = ledgers.find(l => l.id == pid) || { name: "Walk-in Customer", phone: "" };
+            
+            let rows = '';
+            let sr = 1;
+            cartItems.forEach(c => {
+                const base = c.qty * c.rate;
+                const taxAmt = base * (c.gst / 100);
+                rows += `
+                    <tr>
+                        <td>${sr++}</td>
+                        <td>${c.name}</td>
+                        <td style="text-align:center;">${c.qty} ${c.unit}</td>
+                        <td class="right">₹${c.rate.toFixed(2)}</td>
+                        <td class="right">₹${base.toFixed(2)}</td>
+                        <td class="right">₹${taxAmt.toFixed(2)}</td>
+                    </tr>`;
+            });
+
+            const printHTML = `
+                <div style="max-width:80mm; margin:auto; font-size:11pt;">
+                    <h3 style="text-align:center;">Arth Book</h3>
+                    <p style="text-align:center; font-size:10pt;">Tax Invoice</p>
+                    <table class="print-table no-print-border" style="width:100%; margin-bottom:10px;">
+                        <tr><td>Invoice:</td><td><strong>${data.voucher_no}</strong></td></tr>
+                        <tr><td>Date:</td><td>${data.date}</td></tr>
+                        <tr><td>Customer:</td><td>${party.name}</td></tr>
+                    </table>
+                    <table class="print-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Item</th>
+                                <th>Qty</th>
+                                <th>Rate</th>
+                                <th>Amount</th>
+                                <th>GST</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                    <table class="print-table no-print-border" style="margin-top:10px;">
+                        <tr><td>Subtotal:</td><td class="right">₹${sub.toFixed(2)}</td></tr>
+                        <tr><td>Tax:</td><td class="right">₹${tax.toFixed(2)}</td></tr>
+                        <tr><td><strong>Grand Total:</strong></td><td class="right"><strong>₹${grand.toFixed(2)}</strong></td></tr>
+                    </table>
+                    ${data.narration ? `<p style="margin-top:10px;"><strong>Note:</strong> ${data.narration}</p>` : ''}
+                    <p style="text-align:center; margin-top:20px; font-size:10pt;">Thank You! Visit Again 🚀</p>
+                </div>
+            `;
+
+            document.getElementById('printArea').innerHTML = printHTML;
+            window.print();
+        }
+
+        function shareOnWhatsApp(data, cartItems, pid, sub, tax, grand) {
+            const party = ledgers.find(l => l.id == pid) || { name: "Walk-in Customer", phone: "" };
+            if(!party.phone) return alert("Customer mobile number missing for WhatsApp!");
+            
+            let msg = `*Arth Book - Tax Invoice*%0A`;
+            msg += `Invoice: *${data.voucher_no}*%0ADate: ${data.date}%0ACustomer: ${party.name}%0A%0A`;
+            msg += `Item                  Qty   Amount%0A`;
+            msg += `--------------------------------%0A`;
+            cartItems.forEach(c => {
+                const amt = (c.qty * c.rate).toFixed(2);
+                const name = c.name.substring(0,20).padEnd(20);
+                msg += `${name} ${c.qty.toString().padEnd(4)} ₹${amt}%0A`;
+            });
+            msg += `--------------------------------%0A`;
+            msg += `Subtotal: ₹${sub.toFixed(2)}%0ATax: ₹${tax.toFixed(2)}%0A`;
+            msg += `*Total: ₹${grand.toFixed(2)}*%0A`;
+            msg += `Payment: ${data.payment_mode}%0A`;
+            msg += `%0AThank You! 🚀`;
+            
+            window.open(`https://wa.me/91${party.phone}?text=${msg}`, '_blank');
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', e => { 
+            if(e.ctrlKey && e.key==='Enter') openPaymentModal(); 
+            if(e.key==='F2') { e.preventDefault(); document.getElementById('searchBar').focus(); }
+        });
     </script>
 </body>
 </html>
