@@ -16,20 +16,20 @@
 <body>
 
     <div id="loginOverlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #002171; z-index: 9999; display: flex; align-items: center; justify-content: center; color: white;">
-        <div class="card" style="width: 350px; text-align: center; border-top: 5px solid var(--accent-color);">
+        <div class="card" style="width: 350px; max-width:90%; text-align: center; border-top: 5px solid var(--accent-color); padding:20px;">
             <div style="font-size: 50px; margin-bottom: 10px;">🛡️</div>
-            <h2 style="color: var(--primary-color);">Arth Book</h2>
-            <p style="color: #666; font-size: 12px; margin-bottom: 20px;">Secure Business Operating System</p>
+            <h2 style="color: white; margin-bottom:5px;">Arth Book</h2>
+            <p style="color: #bbb; font-size: 13px; margin-bottom: 20px;">Secure Business Operating System</p>
             <form onsubmit="handleLogin(event)">
                 <div class="form-group">
-                    <input type="text" id="username" placeholder="Username (admin)" required>
+                    <input type="text" id="username" placeholder="Username (admin)" required autocomplete="username">
                 </div>
                 <div class="form-group">
-                    <input type="password" id="password" placeholder="Password" required>
+                    <input type="password" id="password" placeholder="Password" required autocomplete="current-password">
                 </div>
-                <button type="submit" class="btn btn-primary" style="width: 100%;">Unlock Device</button>
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding:12px; font-size:16px;">Unlock Device</button>
             </form>
-            <div style="margin-top: 15px; font-size: 10px; color: #999;">
+            <div style="margin-top: 20px; font-size: 11px; color: #aaa;">
                 Device ID: <span id="displayMachineID">Checking...</span>
             </div>
         </div>
@@ -41,9 +41,9 @@
             <span><i class="fas fa-book"></i> Arth Book</span>
         </div>
         <div class="user-menu">
-            <span id="todayDate" style="font-size: 0.8rem; margin-right: 10px;">...</span>
-            <button class="btn btn-warning" onclick="logout()" style="padding: 5px 10px; font-size: 0.8rem;">
-                <i class="fas fa-power-off"></i>
+            <span id="todayDate" style="font-size: 0.9rem; margin-right: 15px;">...</span>
+            <button class="btn btn-warning" onclick="logout()" style="padding: 8px 15px; font-size: 0.9rem;">
+                <i class="fas fa-power-off"></i> Logout
             </button>
         </div>
     </header>
@@ -57,7 +57,7 @@
             <li><a href="item_master.html"><i class="fas fa-boxes"></i> Inventory & Stock</a></li>
             <li><a href="ArthBook.html"><i class="fas fa-users"></i> Parties (Ledgers)</a></li>
             <li><a href="reports.html"><i class="fas fa-chart-line"></i> Smart Reports</a></li>
-            <hr style="margin: 10px 0; border: 0; border-top: 1px solid #ddd;">
+            <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;">
             <li><a href="gst_filing.html"><i class="fas fa-university"></i> GST Filing</a></li>
             <li><a href="taxation.html"><i class="fas fa-calculator"></i> Global Tax / ITR</a></li>
             <li><a href="settings.html"><i class="fas fa-cogs"></i> Settings</a></li>
@@ -66,88 +66,88 @@
     </div>
 
     <main>
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap:wrap; gap:10px;">
             <h2 style="color: var(--primary-color);">Executive Overview</h2>
             <button class="btn btn-primary" id="refreshBtn" onclick="refreshDashboard()">
-                <i class="fas fa-sync-alt" id="spinIcon"></i> Refresh
+                <i class="fas fa-sync-alt" id="spinIcon"></i> Refresh Data
             </button>
         </div>
 
-        <div class="card" style="margin-bottom: 20px; padding: 15px;">
-            <div style="display: flex; gap: 10px;">
-                <input type="text" id="univSearch" placeholder="🔍 Search Bill No, Party Name, or Amount..." onkeyup="if(event.key==='Enter') searchVouchers()">
+        <div class="card" style="margin-bottom: 20px; padding: 20px;">
+            <div style="display: flex; gap: 10px; flex-wrap:wrap;">
+                <input type="text" id="univSearch" placeholder="🔍 Search Bill No, Party Name, Amount..." style="flex:1; min-width:250px;" onkeyup="if(event.key==='Enter') searchVouchers()">
                 <button class="btn btn-primary" onclick="searchVouchers()">Find</button>
             </div>
-            <div class="table-container" id="searchTable" style="display: none; margin-top: 15px;">
+            <div class="table-container" id="searchTable" style="display: none; margin-top: 20px;">
                 <table>
                     <thead><tr><th>Date</th><th>Party</th><th>Type</th><th>Voucher #</th><th>Amount</th><th>Action</th></tr></thead>
                     <tbody id="searchBody"></tbody>
                 </table>
             </div>
-            <div id="noResult" style="display:none; padding:10px; text-align:center; color:#666;">No records found.</div>
+            <div id="noResult" style="display:none; padding:20px; text-align:center; color:#666; font-size:14px;">No records found.</div>
         </div>
 
         <div class="dashboard-grid">
             <div class="card green-edge">
                 <h3>Gross Profit</h3>
                 <div class="value" id="grossProfit">₹0</div>
-                <div style="font-size: 0.8rem; color: #666;">Sales - Cost of Goods</div>
+                <div style="font-size: 0.9rem; color: #666;">Sales - Cost of Goods Sold</div>
             </div>
             
             <div class="card gold-edge">
                 <h3>Cash In Hand</h3>
                 <div class="value" id="cashBal">₹0</div>
-                <div style="font-size: 0.8rem; color: #666;" id="cashStatus">Drawer Balance</div>
+                <div style="font-size: 0.9rem; color: #666;" id="cashStatus">Drawer Balance</div>
             </div>
 
             <div class="card blue-edge">
                 <h3>Receivables (Lena)</h3>
                 <div class="value" id="receivables">₹0</div>
-                <div style="font-size: 0.8rem; color: #666;" id="debtorsCount">0 Customers Pending</div>
+                <div style="font-size: 0.9rem; color: #666;" id="debtorsCount">0 Customers Pending</div>
             </div>
 
             <div class="card red-edge">
                 <h3>Payables (Dena)</h3>
                 <div class="value" id="payables">₹0</div>
-                <div style="font-size: 0.8rem; color: #666;">Due to Suppliers</div>
+                <div style="font-size: 0.9rem; color: #666;">Due to Suppliers</div>
             </div>
         </div>
 
-        <div class="dashboard-grid" style="grid-template-columns: 2fr 1fr;">
+        <div class="dashboard-grid" style="grid-template-columns: 2fr 1fr; gap:20px;">
             <div class="card">
-                <h3>Sales Trends (6 Months)</h3>
-                <div style="position: relative; height: 250px;">
+                <h3>Sales Trends (Last 6 Months)</h3>
+                <div style="position: relative; height: 280px; margin-top:10px;">
                     <canvas id="salesChart"></canvas>
                 </div>
             </div>
             <div class="card">
-                <h3>Tax Liability (GST)</h3>
-                <div style="position: relative; height: 200px;">
+                <h3>GST Tax Liability</h3>
+                <div style="position: relative; height: 220px; margin-top:10px;">
                     <canvas id="gstChart"></canvas>
                 </div>
-                <div style="margin-top: 10px; font-size: 0.9rem;">
-                    <div style="display:flex; justify-content:space-between; color: var(--success-color);">
-                        <span>Input (Credit):</span> <span id="inTax" style="font-weight:bold;">₹0</span>
+                <div style="margin-top: 15px; font-size: 1rem;">
+                    <div style="display:flex; justify-content:space-between; color: var(--success-color); font-weight:600;">
+                        <span>Input Credit Available:</span> <span id="inTax">₹0</span>
                     </div>
-                    <div style="display:flex; justify-content:space-between; color: var(--danger-color); margin-top: 5px;">
-                        <span>Output (Pay):</span> <span id="outTax" style="font-weight:bold;">₹0</span>
+                    <div style="display:flex; justify-content:space-between; color: var(--danger-color); margin-top: 8px; font-weight:600;">
+                        <span>Output Tax Payable:</span> <span id="outTax">₹0</span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="dashboard-grid" style="grid-template-columns: 1fr 1fr;">
+        <div class="dashboard-grid" style="grid-template-columns: 1fr 1fr; gap:20px;">
             <div class="card">
                 <h3>Recent Transactions</h3>
-                <div id="recentTxn" style="margin-top: 10px;">
-                    <div class="text-center" style="color: #999;">Loading...</div>
+                <div id="recentTxn" style="margin-top: 15px; max-height:300px; overflow-y:auto;">
+                    <div class="text-center" style="color: #999; padding:20px;">Loading recent activity...</div>
                 </div>
             </div>
 
             <div class="card">
                 <h3>⚠️ Action Needed</h3>
-                <div id="alertsList" style="margin-top: 10px;">
-                    <div class="text-center" style="color: #999;">All systems healthy.</div>
+                <div id="alertsList" style="margin-top: 15px; max-height:300px; overflow-y:auto;">
+                    <div class="text-center" style="color:#999; padding:20px;">All systems healthy ✨</div>
                 </div>
             </div>
         </div>
@@ -157,215 +157,232 @@
         <i class="fas fa-plus"></i>
     </a>
 
-    <script src="security_utils.js"></script> <script src="db.js"></script> 
+    <div id="toast" style="position:fixed; bottom:80px; left:50%; transform:translateX(-50%); background:var(--success-color); color:white; padding:12px 30px; border-radius:8px; display:none; font-weight:600; box-shadow:var(--shadow); z-index:1000;">Dashboard Refreshed!</div>
+
+    <script src="security_utils.js"></script>
+    <script src="db.js"></script>
     <script src="ai_engine.js"></script>
     <script src="tally_bridge.js"></script>
+
     <script>
-        // --- UI LOGIC ---
-        document.getElementById('todayDate').innerText = new Date().toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' });
+        // Global Vars
+        let globalVouchers = [];
+        let globalLedgerMap = {};
+
+        // UI Init
+        document.getElementById('todayDate').innerText = new Date().toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
 
         function toggleSidebar() {
-            document.querySelector('.sidebar').classList.toggle('active');
+            document.getElementById('sidebar').classList.toggle('active');
         }
 
-        // --- AUTH & SECURITY LOGIC ---
-        window.onload = async () => {
-            if(window.Security) {
+        // AUTH
+        window.addEventListener('load', async () => {
+            if (window.Security) {
                 const devID = await Security.getMachineID();
                 document.getElementById('displayMachineID').innerText = devID;
             }
-        };
 
-        if(sessionStorage.getItem('user_session')) {
-            document.getElementById('loginOverlay').style.display = 'none';
-            initDashboard();
-        }
+            if (sessionStorage.getItem('user_session')) {
+                document.getElementById('loginOverlay').style.display = 'none';
+                initDashboard();
+            }
+        });
 
         async function handleLogin(e) {
             e.preventDefault();
-            const u = document.getElementById('username').value;
+            const u = document.getElementById('username').value.trim();
             const p = document.getElementById('password').value;
-            
-            // 1. Initialize DB
+
             await DB.init();
-            
+
             try {
-                // FIXED: Try Plain first, then Hashed (Robust Login)
+                // Try plain first (legacy), then hashed
                 try {
-                    await DB.login(u, p); // Try Plain
-                } catch (err) {
-                    // Try Hashed (Future Proofing)
-                    const hashedP = await Security.hashPassword(p);
-                    await DB.login(u, hashedP);
+                    await DB.login(u, p);
+                } catch {
+                    const hashed = await Security.hashPassword(p);
+                    await DB.login(u, hashed);
                 }
 
+                sessionStorage.setItem('user_session', JSON.stringify({ username: u }));
                 document.getElementById('loginOverlay').style.display = 'none';
                 initDashboard();
-            } catch(err) { 
-                alert("Invalid Credentials or Device Mismatch!"); 
+            } catch {
+                alert('Invalid credentials or device not registered!');
             }
         }
 
         function logout() {
-            if(confirm("Secure Logout?")) {
+            if (confirm('Secure logout?')) {
                 sessionStorage.removeItem('user_session');
                 location.reload();
             }
         }
 
-        // --- DASHBOARD DATA LOGIC ---
-        let globalVouchers = []; 
-        let globalLedgerMap = {}; // FIXED: Made Global for Search
-
+        // DASHBOARD CORE
         async function initDashboard() {
-            try { await DB.init(); runAnalytics(); }
-            catch(e) { console.error(e); }
+            await runAnalytics();
         }
 
         async function runAnalytics() {
             const tx = DB.db.transaction(['vouchers', 'items', 'ledgers', 'acct_entries', 'groups'], 'readonly');
-            
             const [vouchers, items, ledgers, entries, groups] = await Promise.all([
-                getAll(tx.objectStore('vouchers')), 
-                getAll(tx.objectStore('items')), 
-                getAll(tx.objectStore('ledgers')), 
-                getAll(tx.objectStore('acct_entries')), 
+                getAll(tx.objectStore('vouchers')),
+                getAll(tx.objectStore('items')),
+                getAll(tx.objectStore('ledgers')),
+                getAll(tx.objectStore('acct_entries')),
                 getAll(tx.objectStore('groups'))
             ]);
 
             globalVouchers = vouchers;
-            // FIXED: Populate Global Map
             globalLedgerMap = {};
             ledgers.forEach(l => globalLedgerMap[l.id] = l);
 
             const balances = {};
-            entries.forEach(e => { balances[e.ledger_id] = (balances[e.ledger_id] || 0) + (e.debit || 0) - (e.credit || 0); });
+            entries.forEach(e => {
+                balances[e.ledger_id] = (balances[e.ledger_id] || 0) + (e.debit || 0) - (e.credit || 0);
+            });
 
-            // Metrics Calculation
+            // Gross Profit
             let totalSales = 0, totalPur = 0;
             vouchers.forEach(v => {
                 if (v.type === 'Sales') totalSales += v.amount || 0;
                 if (v.type === 'Purchase') totalPur += v.amount || 0;
             });
 
-            // Gross Profit Logic
-            let openingStockVal = items.reduce((sum, i) => sum + (parseFloat(i.op_value) || (parseFloat(i.op_qty || 0) * parseFloat(i.std_cost || 0))), 0);
-            let closingStockVal = items.reduce((sum, i) => sum + ((i.current_stock || 0) * (i.std_cost || 0)), 0);
-            let cogs = openingStockVal + totalPur - closingStockVal;
-            let profit = totalSales - cogs;
-            
+            const openingStockVal = items.reduce((sum, i) => sum + ((i.op_qty || 0) * (i.std_cost || 0)), 0);
+            const closingStockVal = items.reduce((sum, i) => sum + ((i.current_stock || 0) * (i.std_cost || 0)), 0);
+            const cogs = openingStockVal + totalPur - closingStockVal;
+            const profit = totalSales - cogs;
+
             const pEl = document.getElementById('grossProfit');
             pEl.innerText = fmt(profit);
             pEl.style.color = profit >= 0 ? 'var(--success-color)' : 'var(--danger-color)';
 
-            // Cash & Bank
-            const cashGrpId = groups.find(g => g.name === "Cash-in-Hand")?.id;
+            // Cash Balance
+            const cashGrp = groups.find(g => g.name === 'Cash-in-Hand');
             let cashTotal = 0;
-            ledgers.filter(l => l.group_id === cashGrpId).forEach(l => { cashTotal += (l.opening_balance || 0) + (balances[l.id] || 0); });
+            if (cashGrp) {
+                ledgers.filter(l => l.group_id === cashGrp.id).forEach(l => {
+                    cashTotal += (l.opening_balance || 0) + (balances[l.id] || 0);
+                });
+            }
             const cEl = document.getElementById('cashBal');
             cEl.innerText = fmt(cashTotal);
-            if (cashTotal < 0) { cEl.style.color = 'var(--danger-color)'; document.getElementById('cashStatus').innerText = "⚠️ Negative Balance!"; }
-            else { document.getElementById('cashStatus').innerText = "Drawer Balance"; }
+            document.getElementById('cashStatus').innerText = cashTotal < 0 ? '⚠️ Negative Balance!' : 'Drawer Balance';
+            cEl.style.color = cashTotal < 0 ? 'var(--danger-color)' : 'inherit';
 
-            // Receivables & Payables
-            const debtGrpId = groups.find(g => g.name === "Sundry Debtors")?.id;
-            let receivables = 0, debtCount = 0;
-            ledgers.filter(l => l.group_id === debtGrpId).forEach(l => {
-                let bal = (l.opening_balance || 0) + (balances[l.id] || 0);
-                if (bal > 0) { receivables += bal; debtCount++; }
-            });
+            // Receivables
+            const debtorsGrp = groups.find(g => g.name === 'Sundry Debtors');
+            let receivables = 0, debtorCount = 0;
+            if (debtorsGrp) {
+                ledgers.filter(l => l.group_id === debtorsGrp.id).forEach(l => {
+                    const bal = (l.opening_balance || 0) + (balances[l.id] || 0);
+                    if (bal > 0) { receivables += bal; debtorCount++; }
+                });
+            }
             document.getElementById('receivables').innerText = fmt(receivables);
-            document.getElementById('debtorsCount').innerText = `${debtCount} Pending`;
+            document.getElementById('debtorsCount').innerText = `${debtorCount} Customers Pending`;
 
-            const credGrpId = groups.find(g => g.name === "Sundry Creditors")?.id;
+            // Payables
+            const creditorsGrp = groups.find(g => g.name === 'Sundry Creditors');
             let payables = 0;
-            ledgers.filter(l => l.group_id === credGrpId).forEach(l => {
-                let bal = (l.opening_balance || 0) + (balances[l.id] || 0);
-                if (bal < 0) payables += Math.abs(bal);
-            });
+            if (creditorsGrp) {
+                ledgers.filter(l => l.group_id === creditorsGrp.id).forEach(l => {
+                    const bal = (l.opening_balance || 0) + (balances[l.id] || 0);
+                    if (bal < 0) payables += Math.abs(bal);
+                });
+            }
             document.getElementById('payables').innerText = fmt(payables);
 
-            // GST Calculations
-            const taxGrpId = groups.find(g => g.name === "Duties & Taxes")?.id;
+            // GST
+            const taxGrp = groups.find(g => g.name === 'Duties & Taxes');
             let inTax = 0, outTax = 0;
-            if (taxGrpId) {
-                ledgers.filter(l => l.group_id === taxGrpId).forEach(l => {
-                    let bal = (l.opening_balance || 0) + (balances[l.id] || 0);
-                    if (bal > 0) inTax += bal; else outTax += Math.abs(bal);
+            if (taxGrp) {
+                ledgers.filter(l => l.group_id === taxGrp.id).forEach(l => {
+                    const bal = (l.opening_balance || 0) + (balances[l.id] || 0);
+                    if (bal > 0) inTax += bal;
+                    else outTax += Math.abs(bal);
                 });
             }
             document.getElementById('inTax').innerText = fmt(inTax);
             document.getElementById('outTax').innerText = fmt(outTax);
 
             // Alerts
-            let alerts = [];
-            if (cashTotal < 0) alerts.push({ title: "Negative Cash", sub: "Check entries immediately", type: "critical" });
-            items.filter(i => (i.current_stock || 0) <= (i.reorder_level || 5)).forEach(i => alerts.push({ title: "Low Stock: " + i.name, sub: `Only ${i.current_stock} left`, type: "warning" }));
-            
-            const alertDiv = document.getElementById('alertsList');
-            if (alerts.length > 0) {
-                alertDiv.innerHTML = alerts.map(a => `
-                    <div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #eee; cursor:pointer;" onclick="${a.title.includes('Stock') ? 'location.href=\'item_master.html\'' : ''}">
-                        <div>
-                            <div style="font-weight:600; color:${a.type === 'critical' ? 'red' : 'orange'}">${a.title}</div>
-                            <div style="font-size:0.8rem; color:#666;">${a.sub}</div>
-                        </div>
-                        <span>${a.type === 'critical' ? '🛑' : '⚠️'}</span>
-                    </div>
-                `).join('');
-            } else { alertDiv.innerHTML = '<div class="text-center" style="color:#999; padding:10px;">✨ All systems healthy.</div>'; }
+            const alerts = [];
+            if (cashTotal < 0) alerts.push({ title: 'Negative Cash Balance', sub: 'Immediate attention required', type: 'critical' });
+            items.filter(i => (i.current_stock || 0) <= (i.reorder_level || 5)).forEach(i => 
+                alerts.push({ title: `Low Stock: ${i.name}`, sub: `Only ${i.current_stock || 0} left`, type: 'warning' })
+            );
 
-            // Recent Transactions List
-            const recent = vouchers.sort((a,b) => b.id - a.id).slice(0, 8);
-            if(recent.length > 0) {
-                document.getElementById('recentTxn').innerHTML = recent.map(v => {
-                    const pName = globalLedgerMap[v.party_id]?.name || "Cash / Unknown";
-                    const isSale = v.type === 'Sales';
-                    return `
-                        <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #f0f0f0;">
-                            <div>
-                                <div style="font-weight:600; color:#333;">${pName}</div>
-                                <div style="font-size:0.8rem; color:#999;">${v.voucher_no} • ${v.date}</div>
-                            </div>
-                            <div style="font-weight:bold; color:${isSale ? 'var(--success-color)' : 'var(--danger-color)'}">
-                                ${isSale ? '+' : '-'} ${fmt(v.amount)}
-                            </div>
-                        </div>`;
-                }).join('');
-            }
+            const alertDiv = document.getElementById('alertsList');
+            alertDiv.innerHTML = alerts.length ? alerts.map(a => `
+                <div style="display:flex; justify-content:space-between; padding:12px; border-bottom:1px solid #eee; cursor:pointer;" onclick="${a.type==='warning' ? 'location.href="item_master.html"' : ''}">
+                    <div>
+                        <div style="font-weight:600; color:${a.type==='critical'?'red':'orange'}">${a.title}</div>
+                        <div style="font-size:0.85rem; color:#666;">${a.sub}</div>
+                    </div>
+                    <span>${a.type==='critical'?'🛑':'⚠️'}</span>
+                </div>
+            `).join('') : '<div class="text-center" style="color:#999; padding:20px;">✨ All systems healthy</div>';
+
+            // Recent Transactions
+            const recent = vouchers.sort((a,b) => (b.id || 0) - (a.id || 0)).slice(0, 10);
+            document.getElementById('recentTxn').innerHTML = recent.length ? recent.map(v => {
+                const pName = globalLedgerMap[v.party_id]?.name || 'Cash/Other';
+                const isCredit = v.type === 'Sales' || v.type === 'Receipt';
+                return `
+                    <div style="display:flex; justify-content:space-between; padding:12px 0; border-bottom:1px solid #f0f0f0;">
+                        <div>
+                            <div style="font-weight:600;">${pName}</div>
+                            <div style="font-size:0.85rem; color:#999;">${v.voucher_no} • ${v.date}</div>
+                        </div>
+                        <div style="font-weight:bold; color:${isCredit ? 'var(--success-color)' : 'var(--danger-color)'}">
+                            ${isCredit ? '+' : '-'} ${fmt(v.amount || 0)}
+                        </div>
+                    </div>`;
+            }).join('') : '<div class="text-center" style="color:#999; padding:20px;">No recent transactions</div>';
 
             renderCharts(vouchers, inTax, outTax);
         }
 
-        // --- FIXED: UNIVERSAL SEARCH LOGIC ---
         function searchVouchers() {
             const query = document.getElementById('univSearch').value.toLowerCase().trim();
             const table = document.getElementById('searchTable');
             const tbody = document.getElementById('searchBody');
             const noRes = document.getElementById('noResult');
 
-            if (!query) { table.style.display = 'none'; noRes.style.display = 'none'; return; }
+            if (!query) {
+                table.style.display = 'none';
+                noRes.style.display = 'none';
+                return;
+            }
 
             const results = globalVouchers.filter(v => {
-                const partyName = globalLedgerMap[v.party_id]?.name || '';
-                return v.voucher_no.toLowerCase().includes(query) || 
-                       v.date.includes(query) || 
-                       v.amount.toString().includes(query) ||
-                       partyName.toLowerCase().includes(query); // Added Party Name Search
-            });
+                const party = globalLedgerMap[v.party_id]?.name?.toLowerCase() || '';
+                return v.voucher_no.toLowerCase().includes(query) ||
+                       v.date.includes(query) ||
+                       (v.amount || 0).toString().includes(query) ||
+                       party.includes(query);
+            }).sort((a,b) => (b.id || 0) - (a.id || 0));
 
             tbody.innerHTML = '';
-            
-            if (results.length > 0) {
+            if (results.length) {
                 table.style.display = 'block';
                 noRes.style.display = 'none';
-                results.sort((a,b) => b.id - a.id).forEach(v => {
-                    const tr = document.createElement('tr');
-                    const pName = globalLedgerMap[v.party_id]?.name || "Cash / Unknown";
-                    let targetPage = v.type === 'Sales' ? 'sales_invoice.html' : (v.type === 'Purchase' ? 'purchase_invoice.html' : 'vouchers.html');
-                    
-                    tr.innerHTML = `<td>${v.date}</td><td><b>${pName}</b></td><td><span class="badge ${v.type==='Sales'?'badge-success':'badge-pending'}">${v.type}</span></td><td>${v.voucher_no}</td><td>${fmt(v.amount)}</td><td><button class="btn btn-primary" style="padding:2px 8px; font-size:0.8rem;" onclick="window.location.href='${targetPage}?id=${v.id}'">Open</button></td>`;
-                    tbody.appendChild(tr);
+                results.forEach(v => {
+                    const party = globalLedgerMap[v.party_id]?.name || 'Cash';
+                    const page = v.type === 'Sales' ? 'sales_invoice.html' : 
+                                v.type === 'Purchase' ? 'purchase_invoice.html' : 'vouchers.html';
+                    tbody.innerHTML += `<tr>
+                        <td>${v.date}</td>
+                        <td><b>${party}</b></td>
+                        <td><span class="badge ${v.type==='Sales'?'badge-success':'badge-pending'}">${v.type}</span></td>
+                        <td>${v.voucher_no}</td>
+                        <td>${fmt(v.amount || 0)}</td>
+                        <td><button class="btn btn-primary" style="padding:4px 10px; font-size:0.8rem;" onclick="location.href='${page}?id=${v.id}'">Open</button></td>
+                    </tr>`;
                 });
             } else {
                 table.style.display = 'none';
@@ -373,109 +390,136 @@
             }
         }
 
-        // --- HELPERS ---
         async function refreshDashboard() {
             const btn = document.getElementById('refreshBtn');
-            const spin = document.getElementById('spinIcon');
+            const icon = document.getElementById('spinIcon');
             btn.disabled = true;
-            spin.classList.add('fa-spin');
+            icon.classList.add('fa-spin');
             await runAnalytics();
-            // FIXED: Smoother removal
-            setTimeout(() => { spin.classList.remove('fa-spin'); btn.disabled = false; }, 500);
+            icon.classList.remove('fa-spin');
+            btn.disabled = false;
+            showToast();
         }
 
         function renderCharts(vouchers, inTax, outTax) {
-             // Sales Chart Logic
-             const months = [], dataMap = {}, today = new Date();
-             for (let i = 5; i >= 0; i--) {
-                 const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
-                 const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-                 months.push(d.toLocaleString('default', { month: 'short' }));
-                 dataMap[key] = 0;
-             }
-             vouchers.forEach(v => {
-                 if (v.type === 'Sales') {
-                     const vDate = new Date(v.date);
-                     const key = `${vDate.getFullYear()}-${String(vDate.getMonth() + 1).padStart(2, '0')}`;
-                     if (dataMap[key] !== undefined) dataMap[key] += v.amount || 0;
-                 }
-             });
-             const chartData = Object.values(dataMap);
- 
-             if (window.salesChartInstance) window.salesChartInstance.destroy();
-             const ctx1 = document.getElementById('salesChart').getContext('2d');
-             window.salesChartInstance = new Chart(ctx1, {
-                 type: 'line',
-                 data: {
-                     labels: months,
-                     datasets: [{ label: 'Revenue', data: chartData, borderColor: '#0d47a1', backgroundColor: 'rgba(13, 71, 161, 0.1)', fill: true, tension: 0.4 }]
-                 },
-                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-             });
- 
-             // FIXED: GST Chart Empty State
-             const gstCtx = document.getElementById('gstChart');
-             if(gstCtx) {
-                if (window.gstChartInstance) window.gstChartInstance.destroy();
-                
-                if (inTax > 0 || outTax > 0) {
-                     window.gstChartInstance = new Chart(gstCtx, {
-                         type: 'doughnut',
-                         data: { labels: ['Input Credit', 'Output Liability'], datasets: [{ data: [inTax, outTax], backgroundColor: ['#388e3c', '#d32f2f'], borderWidth: 0 }] },
-                         options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { display: false } } }
-                     });
-                } else {
-                    // Empty State Visualization
-                    const ctx = gstCtx.getContext('2d');
-                    ctx.clearRect(0, 0, gstCtx.width, gstCtx.height);
-                    ctx.font = '14px Inter';
-                    ctx.fillStyle = '#94a3b8';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillText('No GST Data', gstCtx.width/2, gstCtx.height/2);
+            // Sales Trend
+            const months = [], salesData = {};
+            const today = new Date();
+            for (let i = 5; i >= 0; i--) {
+                const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
+                const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+                months.push(d.toLocaleString('default', { month: 'short' }));
+                salesData[key] = 0;
+            }
+            vouchers.forEach(v => {
+                if (v.type === 'Sales' && v.date) {
+                    const key = v.date.substring(0,7);
+                    salesData[key] = (salesData[key] || 0) + (v.amount || 0);
                 }
-             }
-        }
+            });
 
-        function getAll(store) { return new Promise(resolve => { const req = store.getAll(); req.onsuccess = () => resolve(req.result); }); }
-        // FIXED: Formatting
-        function fmt(num) { return "₹" + (num || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
-    </script>
-    
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('sw.js').then(reg => console.log('Arth Book PWA Active')).catch(err => console.log('PWA Failed', err));
-        });
-      }
-    </script>
+            if (window.salesChart) window.salesChart.destroy();
+            window.salesChart = new Chart(document.getElementById('salesChart'), {
+                type: 'line',
+                data: {
+                    labels: months,
+                    datasets: [{
+                        label: 'Monthly Sales',
+                        data: months.map(m => {
+                            const key = today.getFullYear() + '-' + (today.getMonth() + 1 - months.indexOf(m)).toString().padStart(2,'0');
+                            return salesData[key] || 0;
+                        }),
+                        borderColor: '#0d47a1',
+                        backgroundColor: 'rgba(13,71,161,0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
 
-    <script>
-    // SELF-HEALING SECURITY SCRIPT
-    window.addEventListener('load', async () => {
-        await DB.init();
-        if(!window.Security) return;
-
-        const users = await DB.getAll('users');
-        let needsFix = false;
-
-        const tx = DB.db.transaction('users', 'readwrite');
-        
-        for (const u of users) {
-            // Check if password is NOT hashed (Length of SHA-256 is 64 chars)
-            if (u.password && u.password.length < 60) { 
-                console.log(`🔒 Securing user: ${u.username}...`);
-                u.password = await Security.hashPassword(u.password);
-                tx.objectStore('users').put(u);
-                needsFix = true;
+            // GST Doughnut
+            if (window.gstChart) window.gstChart.destroy();
+            const gstCanvas = document.getElementById('gstChart');
+            if (inTax + outTax === 0) {
+                const ctx = gstCanvas.getContext('2d');
+                ctx.clearRect(0, 0, gstCanvas.width, gstCanvas.height);
+                ctx.font = '16px Inter';
+                ctx.fillStyle = '#94a3b8';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('No GST Activity', gstCanvas.width/2, gstCanvas.height/2);
+            } else {
+                window.gstChart = new Chart(gstCanvas, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Input Credit', 'Output Liability'],
+                        datasets: [{ data: [inTax, outTax], backgroundColor: ['#10b981', '#ef4444'] }]
+                    },
+                    options: { responsive: true, cutout: '70%', plugins: { legend: { position: 'bottom' } } }
+                });
             }
         }
 
-        if(needsFix) {
-            console.log("✅ All passwords migrated to Iron Dome Security.");
-            alert("System Security Updated: Old passwords have been encrypted.");
+        function getAll(store) {
+            return new Promise(resolve => {
+                const req = store.getAll();
+                req.onsuccess = () => resolve(req.result);
+                req.onerror = () => resolve([]);
+            });
         }
-    });
+
+        function fmt(num) {
+            return '₹' + (num || 0).toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+        }
+
+        function showToast() {
+            const t = document.getElementById('toast');
+            t.style.display = 'block';
+            setTimeout(() => t.style.display = 'none', 2000);
+        }
+    </script>
+
+    <!-- PWA Service Worker -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(reg => console.log('SW Registered'))
+                    .catch(err => console.error('SW Registration Failed', err));
+            });
+        }
+    </script>
+
+    <!-- Self-Healing Password Migration -->
+    <script>
+        window.addEventListener('load', async () => {
+            try {
+                await DB.init();
+                if (!window.Security) return;
+
+                const users = await DB.getAll('users') || [];
+                let updated = false;
+
+                const tx = DB.db.transaction('users', 'readwrite');
+                const store = tx.objectStore('users');
+
+                for (const user of users) {
+                    if (user.password && user.password.length < 60) {
+                        console.log(`Migrating password for ${user.username}`);
+                        user.password = await Security.hashPassword(user.password);
+                        store.put(user);
+                        updated = true;
+                    }
+                }
+
+                if (updated) {
+                    alert('🔒 Security Update: Legacy passwords upgraded to encrypted format.');
+                }
+            } catch (e) {
+                console.error('Self-healing failed:', e);
+            }
+        });
     </script>
 </body>
 </html>

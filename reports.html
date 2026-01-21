@@ -11,122 +11,240 @@
         :root {
             --sidebar-bg: #0f172a; --bg: #f8fafc; --text: #1e293b; --border: #cbd5e1;
             --accent: #2563eb; --red: #ef4444; --green: #10b981; --orange: #f59e0b;
+            --shadow: 0 4px 12px rgba(0,0,0,0.08);
+            --transition: all 0.3s ease;
         }
         * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
         body { display: flex; height: 100vh; background: var(--bg); color: var(--text); overflow: hidden; }
 
         /* SIDEBAR */
-        .sidebar { width: 260px; background: var(--sidebar-bg); padding: 20px; display: flex; flex-direction: column; flex-shrink: 0; }
-        .nav-link { padding: 12px 15px; margin-bottom: 5px; border-radius: 8px; color: #94a3b8; text-decoration: none; font-weight: 500; display: block; font-size: 14px; }
-        .nav-link:hover, .nav-link.active { background: #1e293b; color: #f8fafc; }
+        .sidebar { 
+            width: 260px; background: var(--sidebar-bg); padding: 20px; display: flex; 
+            flex-direction: column; flex-shrink: 0; height: 100vh; overflow-y: auto; 
+            transition: var(--transition); z-index: 100;
+        }
+        .brand { font-size: 20px; font-weight: 800; color: white; margin-bottom: 40px; display: flex; align-items: center; gap: 10px; }
+        .nav-link { display: flex; align-items: center; gap: 12px; padding: 14px 18px; color: #94a3b8; text-decoration: none; border-radius: 10px; margin-bottom: 6px; font-weight: 500; transition: var(--transition); }
+        .nav-link:hover, .nav-link.active { background: #1e293b; color: white; }
 
-        /* MAIN LAYOUT */
+        /* MOBILE */
+        .menu-btn { display: none; position: fixed; top: 15px; left: 15px; z-index: 1100; background: none; border: none; font-size: 1.6rem; color: var(--text); cursor: pointer; }
+        .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 900; }
+
+        /* MAIN */
         .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-        
-        /* FILTERS BAR */
-        .top-bar { background: white; padding: 15px 25px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
-        select, input { padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; outline:none; }
-        
-        .btn { padding: 8px 20px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; color: white; transition:0.2s; }
+        .top-bar { background: white; padding: 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 15px; flex-wrap: wrap; box-shadow: var(--shadow); }
+        select, input[type="date"], input[type="text"] { padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; outline: none; }
+        .btn { padding: 10px 20px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; color: white; transition: var(--transition); display: inline-flex; align-items: center; gap: 8px; }
+        .btn:hover { opacity: 0.9; transform: translateY(-2px); }
         .btn-go { background: var(--accent); }
-        .btn-print { background: #475569; margin-left: auto; }
         .btn-excel { background: var(--green); }
+        .btn-print { background: #475569; }
 
-        /* REPORT CONTENT */
-        .content-area { flex: 1; overflow-y: auto; padding: 25px; }
-        .report-paper { background: white; min-height: 297mm; padding: 20mm; margin: 0 auto; max-width: 210mm; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
-        
-        h2 { text-align: center; text-transform: uppercase; color: var(--accent); margin-bottom: 5px; }
-        .sub-head { text-align: center; font-size: 13px; color: #64748b; margin-bottom: 25px; }
+        .content-area { flex: 1; overflow-y: auto; padding: 30px; }
+        .report-paper { background: white; padding: 30px; margin: 0 auto; max-width: 210mm; border-radius: 12px; box-shadow: var(--shadow); border: 1px solid var(--border); }
+
+        h2 { text-align: center; font-size: 22px; font-weight: 700; color: var(--accent); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+        .sub-head { text-align: center; font-size: 14px; color: #64748b; margin-bottom: 30px; }
 
         /* TABLES */
-        table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 10px; }
-        th { background: #f1f5f9; padding: 8px; text-align: left; border-bottom: 2px solid var(--border); }
-        td { padding: 8px; border-bottom: 1px solid #eee; }
-        .amt { text-align: right; font-family: monospace; font-weight: 600; font-size: 13px; }
-        .bold-row { font-weight: 700; background: #f8fafc; border-top: 2px solid var(--border); }
-        
-        /* AI HEALTH CARD STYLES */
-        .health-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
-        .h-card { border: 1px solid #eee; padding: 15px; border-radius: 8px; }
-        .ai-box { background: #f0f9ff; border: 1px solid #bae6fd; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 15px; }
+        th { background: #f1f5f9; padding: 12px; text-align: left; font-weight: 600; color: #475569; border-bottom: 2px solid var(--border); }
+        td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+        .amt { text-align: right; font-weight: 600; font-family: monospace; }
+        .bold-row { font-weight: 700; background: #f8fafc; border-top: 2px solid var(--border); border-bottom: 2px solid var(--border); }
+
+        /* HEALTH REPORT */
+        .health-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; margin: 30px 0; }
+        .h-card { background: #f0f9ff; border: 1px solid #bae6fd; padding: 20px; border-radius: 12px; }
+        .ai-box { background: linear-gradient(135deg, #dbeafe, #bfdbfe); border: 1px solid var(--accent); padding: 20px; border-radius: 12px; margin-bottom: 30px; }
 
         /* ALERTS */
         .exp-soon { color: var(--orange); font-weight: 700; }
         .exp-expired { color: var(--red); font-weight: 700; }
 
         @media print {
-            .sidebar, .top-bar { display: none !important; }
+            .sidebar, .top-bar, .menu-btn, .overlay { display: none !important; }
             .content-area { padding: 0; }
-            .report-paper { box-shadow: none; border: none; margin: 0; width: 100%; max-width: 100%; }
-            .no-print { display: none; }
+            .report-paper { box-shadow: none; border: none; margin: 0; width: 100%; max-width: 100%; padding: 20px; }
+            body { background: white; }
+        }
+
+        @media (max-width: 900px) {
+            .menu-btn { display: block; }
+            .sidebar { position: fixed; left: -100%; top: 0; height: 100%; z-index: 1000; box-shadow: var(--shadow); }
+            .sidebar.active { left: 0; }
+            .overlay.active { display: block; }
+            .top-bar { padding: 15px; flex-direction: column; align-items: stretch; }
+            .top-bar > div, .top-bar > button { width: 100%; margin-bottom: 10px; }
+            .content-area { padding: 20px 15px; }
+            .health-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
 
-    <div class="sidebar">
-        <div style="font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 40px; padding: 0 10px;">Arth Book</div>
-        <a href="index.html" class="nav-link">📊 Dashboard</a>
-        <a href="reports.html" class="nav-link active">📈 Reports</a>
-        <a href="gst_filing.html" class="nav-link">🏛️ GST Filing</a>
-        <a href="sales_invoice.html" class="nav-link">🧾 Sales Invoice</a>
-        <a href="purchase_invoice.html" class="nav-link">🚚 Purchase Entry</a>
-        <a href="vouchers.html" class="nav-link">💸 Vouchers (JV)</a>
-        <a href="item_master.html" class="nav-link">📦 Inventory</a>
-        <a href="ArthBook.html" class="nav-link">👥 Parties</a>
-        <a href="coa.html" class="nav-link">🗂️ Accounts</a>
-        <a href="settings.html" class="nav-link">⚙️ Settings</a>
+    <button class="menu-btn" onclick="toggleMenu()">☰</button>
+    <div class="overlay" onclick="toggleMenu()"></div>
+
+    <div class="sidebar" id="mySidebar">
+        <div class="brand"><i class="fas fa-book"></i> Arth Book</div>
+        <a href="index.html" class="nav-link"><i class="fas fa-chart-pie"></i> Dashboard</a>
+        <a href="reports.html" class="nav-link active"><i class="fas fa-chart-line"></i> Reports</a>
+        <a href="gst_filing.html" class="nav-link"><i class="fas fa-university"></i> GST Filing</a>
+        <a href="sales_invoice.html" class="nav-link"><i class="fas fa-file-invoice"></i> Sales</a>
+        <a href="purchase_invoice.html" class="nav-link"><i class="fas fa-truck"></i> Purchase</a>
+        <a href="vouchers.html" class="nav-link"><i class="fas fa-receipt"></i> Vouchers</a>
+        <a href="item_master.html" class="nav-link"><i class="fas fa-boxes"></i> Inventory</a>
+        <a href="ArthBook.html" class="nav-link"><i class="fas fa-users"></i> Parties</a>
+        <a href="coa.html" class="nav-link"><i class="fas fa-balance-scale"></i> Accounts</a>
+        <a href="settings.html" class="nav-link"><i class="fas fa-cogs"></i> Settings</a>
     </div>
 
     <div class="main">
         <div class="top-bar">
             <select id="reportType" onchange="toggleFilters()">
                 <option value="Health">🏥 Business Health (AI)</option>
-                <option value="BalanceSheet">⚖️ Balance Sheet</option>
                 <option value="PL">📉 Profit & Loss</option>
+                <option value="BalanceSheet">⚖️ Balance Sheet</option>
                 <option value="TrialBalance">📑 Trial Balance</option>
                 <option value="DayBook">📅 Day Book</option>
                 <option value="Ledger">👤 Party Ledger</option>
                 <option value="Stock">📦 Stock Summary</option>
-                <option value="Expiry">⚠️ Expiry Report</option>
-                <option value="LowStock">📉 Low Stock Alert</option>
+                <option value="LowStock">⚠️ Low Stock</option>
+                <option value="Expiry">🗓️ Expiry Report</option>
             </select>
 
-            <div id="partyFilter" style="display:none;">
-                <input type="text" id="partyInput" list="partyList" placeholder="Select Party..." onchange="resolvePartyId()">
+            <div id="partyFilter" style="display:none; width:100%;">
+                <input type="text" id="partyInput" list="partyList" placeholder="Search & Select Party..." style="width:100%;">
                 <datalist id="partyList"></datalist>
-                <input type="hidden" id="finalPartyId">
+                <input type="hidden" id="selectedPartyId">
             </div>
 
             <input type="date" id="fromDate">
             <input type="date" id="toDate">
-            
-            <button class="btn btn-go" onclick="generateReport()">Show</button>
-            <button class="btn btn-excel" onclick="exportExcel()">📊 Excel</button>
+
+            <button class="btn btn-go" onclick="generateReport()">🔄 Generate Report</button>
+            <button class="btn btn-excel" onclick="exportToExcel()">📊 Export Excel</button>
             <button class="btn btn-print" onclick="window.print()">🖨️ Print</button>
         </div>
 
         <div class="content-area">
             <div class="report-paper" id="reportContent">
-                <div style="text-align:center; padding:100px; color:#cbd5e1;">
-                    <h3>Ready for Analysis</h3>
-                    <p>Select "Business Health" for AI Insights</p>
+                <div style="text-align:center; padding:120px 40px; color:#cbd5e1;">
+                    <h2>Select Report Type</h2>
+                    <p style="margin-top:15px;">Choose from dropdown & click Generate</p>
+                    <p style="margin-top:10px; font-size:14px;">Tip: Business Health uses AI for predictions</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="security_utils.js"></script>
     <script src="db.js"></script>
     <script src="ai_engine.js"></script>
-
     <script>
-        // --- GLOBAL VARIABLES ---
-        let ledgers=[], items=[], groups=[], acctEntries=[], vouchers=[], batches=[];
-        let ledgerMap = {};
-        
-        // Group Mapping (Assets, Liabilities, Income, Expenses)
+        let ledgers = [], items = [], groups = [], acctEntries = [], vouchers = [], batches = [];
+        let ledgerMap = {}, itemMap = {};
+
+        window.onload = async () => {
+            await DB.init();
+
+            [ledgers, items, groups, acctEntries, vouchers, batches] = await Promise.all([
+                DB.getLedgers(),
+                DB.getAll('items'),
+                DB.getAll('groups'),
+                DB.getAll('acct_entries'),
+                DB.getAll('vouchers'),
+                DB.getAll('batches') || []
+            ]);
+
+            // Maps for quick lookup
+            ledgers.forEach(l => ledgerMap[l.id] = l.name);
+            items.forEach(i => itemMap[i.id] = i.name);
+
+            // Default dates: Current month
+            const today = new Date();
+            document.getElementById('toDate').valueAsDate = today;
+            document.getElementById('fromDate').valueAsDate = new Date(today.getFullYear(), today.getMonth(), 1);
+
+            populatePartyDatalist();
+        };
+
+        function toggleMenu() {
+            document.getElementById('mySidebar').classList.toggle('active');
+            document.querySelector('.overlay').classList.toggle('active');
+        }
+
+        function populatePartyDatalist() {
+            const datalist = document.getElementById('partyList');
+            datalist.innerHTML = '';
+            ledgers.sort((a,b) => a.name.localeCompare(b.name)).forEach(l => {
+                const opt = document.createElement('option');
+                opt.value = l.name;
+                opt.dataset.id = l.id;
+                datalist.appendChild(opt);
+            });
+        }
+
+        function toggleFilters() {
+            const type = document.getElementById('reportType').value;
+            document.getElementById('partyFilter').style.display = (type === 'Ledger') ? 'block' : 'none';
+        }
+
+        function getSelectedPartyId() {
+            const input = document.getElementById('partyInput').value.trim();
+            const option = Array.from(document.querySelectorAll('#partyList option'))
+                .find(opt => opt.value === input);
+            return option ? option.dataset.id : null;
+        }
+
+        async function generateReport() {
+            const type = document.getElementById('reportType').value;
+            const container = document.getElementById('reportContent');
+            container.innerHTML = '<div style="text-align:center; padding:80px; color:#94a3b8;"><h3>Generating Report...</h3></div>';
+
+            setTimeout(async () => {
+                if(type === 'Health') await renderBusinessHealth(container);
+                else if(type === 'PL') renderProfitLoss(container);
+                else if(type === 'BalanceSheet') renderBalanceSheet(container);
+                else if(type === 'TrialBalance') renderTrialBalance(container);
+                else if(type === 'DayBook') renderDayBook(container);
+                else if(type === 'Ledger') renderPartyLedger(container);
+                else if(type === 'Stock') renderStockSummary(container);
+                else if(type === 'LowStock') renderLowStock(container);
+                else if(type === 'Expiry') renderExpiryReport(container);
+            }, 200);
+        }
+
+        // --- CORE ACCOUNTING HELPERS ---
+        function calculateLedgerBalance(ledgerId, upToDate = null) {
+            const ledger = ledgers.find(l => l.id === ledgerId);
+            if(!ledger) return 0;
+            let balance = ledger.opening_balance || 0;
+
+            acctEntries
+                .filter(e => e.ledger_id === ledgerId)
+                .forEach(e => {
+                    const v = vouchers.find(v => v.id === e.voucher_id);
+                    if(!upToDate || (v && v.date <= upToDate)) {
+                        balance += (e.debit || 0) - (e.credit || 0);
+                    }
+                });
+            return balance;
+        }
+
+        function getGroupBalances() {
+            const balances = { Assets: 0, Liabilities: 0, Income: 0, Expenses: 0 };
+            ledgers.forEach(l => {
+                const bal = calculateLedgerBalance(l.id);
+                const group = groups.find(g => g.id === l.group_id);
+                const root = group ? GROUP_TYPES[group.name] || 'Liabilities' : 'Liabilities';
+                if(root === 'Assets' || root === 'Expenses') balances[root] += bal;
+                else balances[root] += Math.abs(bal) * -1; // Credit side positive
+            });
+            return balances;
+        }
+
         const GROUP_TYPES = {
             'Capital Account': 'Liabilities',
             'Loans (Liability)': 'Liabilities',
@@ -138,299 +256,245 @@
             'Cash-in-Hand': 'Assets',
             'Bank Accounts': 'Assets',
             'Sundry Debtors': 'Assets',
+            'Stock-in-Hand': 'Assets',
             'Sales Accounts': 'Income',
-            'Direct Incomes': 'Income',
-            'Indirect Incomes': 'Income',
+            'Direct Income': 'Income',
+            'Indirect Income': 'Income',
             'Purchase Accounts': 'Expenses',
             'Direct Expenses': 'Expenses',
             'Indirect Expenses': 'Expenses'
         };
 
-        window.onload = async () => {
-            await DB.init();
-            // Load ALL Data for Analysis
-            [ledgers, items, groups, acctEntries, vouchers, batches] = await Promise.all([
-                DB.getLedgers(), DB.getItems(), DB.getGroups(), DB.getAll('acct_entries'), DB.getAll('vouchers'), DB.getAll('batches')
-            ]);
-            
-            const d = new Date();
-            document.getElementById('toDate').valueAsDate = d;
-            document.getElementById('fromDate').valueAsDate = new Date(d.getFullYear(), d.getMonth(), 1);
-            
-            populateParties();
-        };
+        // --- REPORT RENDERERS ---
+        async function renderBusinessHealth(container) {
+            const stockValue = items.reduce((sum, i) => sum + ((i.current_stock || 0) * (i.std_cost || 0)), 0);
+            const prediction = await AI.predictNextMonth() || { forecast: 0, dailyAvg: 0 };
 
-        function populateParties() {
-            const list = document.getElementById('partyList');
-            ledgers.sort((a,b)=>a.name.localeCompare(b.name)).forEach(l => {
-                ledgerMap[l.name] = l.id;
-                let opt = document.createElement('option');
-                opt.value = l.name;
-                list.appendChild(opt);
-            });
-        }
-        function resolvePartyId() {
-            const val = document.getElementById('partyInput').value;
-            document.getElementById('finalPartyId').value = ledgerMap[val] || '';
-        }
-        function toggleFilters() {
-            const type = document.getElementById('reportType').value;
-            document.getElementById('partyFilter').style.display = (type === 'Ledger') ? 'block' : 'none';
-        }
+            container.innerHTML = `
+                <h2>Business Health Overview</h2>
+                <p class="sub-head">AI-Powered Insights • ${new Date().toLocaleDateString('en-IN')}</p>
 
-        async function generateReport() {
-            const type = document.getElementById('reportType').value;
-            const container = document.getElementById('reportContent');
-            container.innerHTML = '<div style="text-align:center; padding:50px;">Processing...</div>';
-
-            setTimeout(async () => {
-                if(type === 'Health') await renderHealth(container);
-                else if(type === 'BalanceSheet') calculateBalanceSheet(container);
-                else if(type === 'PL') calculatePL(container);
-                else if(type === 'TrialBalance') calculateTrialBalance(container);
-                else if(type === 'DayBook') renderDayBook(container);
-                else if(type === 'Stock') renderStock(container);
-                else if(type === 'Ledger') renderLedgerReport(container);
-                else if(type === 'Expiry') renderExpiry(container);
-                else if(type === 'LowStock') renderLowStock(container);
-            }, 100);
-        }
-
-        // --- ACCOUNTING ENGINE ---
-        function getLedgerBalance(ledgerId) {
-            const l = ledgers.find(x => x.id === ledgerId);
-            if(!l) return 0;
-            let bal = l.opening_balance || 0;
-            acctEntries.filter(e => e.ledger_id === ledgerId).forEach(e => {
-                bal += (e.debit - e.credit);
-            });
-            return bal; 
-        }
-
-        function getGroupTotals() {
-            const reportData = { Liabilities: {}, Assets: {}, Income: {}, Expenses: {} };
-            ledgers.forEach(l => {
-                const bal = getLedgerBalance(l.id);
-                if(bal === 0) return;
-                const grp = groups.find(g => g.id === l.group_id);
-                const grpName = grp ? grp.name : 'Unknown';
-                const rootType = GROUP_TYPES[grpName] || 'Liabilities';
-                if(!reportData[rootType][grpName]) reportData[rootType][grpName] = 0;
-                
-                if(rootType === 'Liabilities' || rootType === 'Income') reportData[rootType][grpName] += (bal * -1); 
-                else reportData[rootType][grpName] += bal;
-            });
-            return reportData;
-        }
-
-        // --- REPORT GENERATORS ---
-
-        async function renderHealth(c) {
-            const totalStockVal = items.reduce((s, i) => s + ((i.current_stock||0)*(i.std_cost||0)), 0);
-            const prediction = await AI.predictCashFlow(); // Using AI Engine
-            const forecast = prediction.prediction || 0;
-
-            c.innerHTML = `
-                <h2>Business Health Report</h2>
-                <p class="sub-head">AI Powered Analysis • ${new Date().toLocaleDateString()}</p>
-                
                 <div class="ai-box">
-                    <h3 style="color:#2563eb; margin-bottom:5px;">🤖 AI Oracle Prediction</h3>
-                    <p style="font-size:14px; color:#555;">Based on your last 90 days of sales data, the system predicts:</p>
-                    <div style="font-size:24px; font-weight:bold; margin-top:10px;">
-                        Next Month Revenue: ₹${parseFloat(forecast).toLocaleString('en-IN')}
-                    </div>
-                    <small style="color:#666;">Daily Avg Sales: ₹${prediction.daily_avg}</small>
+                    <h3 style="color:var(--accent); margin-bottom:10px;">🤖 AI Prediction</h3>
+                    <p>Based on recent sales trends:</p>
+                    <div style="font-size:28px; font-weight:800; margin:15px 0;">₹${parseFloat(prediction.forecast || 0).toLocaleString('en-IN')}</div>
+                    <p>Projected Revenue Next Month<br><small>Daily Avg: ₹${parseFloat(prediction.dailyAvg || 0).toLocaleString('en-IN')}</small></p>
                 </div>
 
                 <div class="health-grid">
                     <div class="h-card">
-                        <h4>Stock Valuation (Cost)</h4>
-                        <div class="amt" style="font-size:20px;">₹${totalStockVal.toLocaleString('en-IN')}</div>
+                        <h4>Current Stock Value</h4>
+                        <div class="amt" style="font-size:24px; color:var(--green);">₹${stockValue.toLocaleString('en-IN')}</div>
                     </div>
                     <div class="h-card">
-                        <h4>Trend Analysis</h4>
-                         <canvas id="healthChart" height="150"></canvas>
+                        <h4>Sales Trend</h4>
+                        <canvas id="trendChart" height="180"></canvas>
                     </div>
                 </div>
             `;
 
-            new Chart(document.getElementById('healthChart'), {
-                type: 'bar',
+            new Chart(document.getElementById('trendChart'), {
+                type: 'line',
                 data: {
-                    labels: ['Past 30 Days', 'Next 30 Days'],
+                    labels: ['Current Month', 'Next Month (AI)'],
                     datasets: [{
                         label: 'Revenue',
-                        data: [parseFloat(prediction.daily_avg)*30, forecast],
-                        backgroundColor: ['#cbd5e1', '#2563eb']
+                        data: [prediction.currentMonth || 0, prediction.forecast || 0],
+                        borderColor: var(--accent),
+                        backgroundColor: 'rgba(37,99,235,0.1)',
+                        tension: 0.4,
+                        fill: true
                     }]
                 },
-                options: { plugins: { legend: { display: false } } }
+                options: { responsive: true, plugins: { legend: { display: false } } }
             });
         }
 
-        function calculatePL(c) {
-            const data = getGroupTotals();
-            let totalInc = 0, totalExp = 0;
-            Object.values(data.Income).forEach(v => totalInc += v);
-            Object.values(data.Expenses).forEach(v => totalExp += v);
-            let closingStock = items.reduce((s, i) => s + ((i.current_stock||0)*(i.std_cost||0)), 0);
-            const netProfit = (totalInc + closingStock) - totalExp;
+        function renderProfitLoss(container) {
+            const balances = getGroupBalances();
+            const closingStock = items.reduce((s, i) => s + ((i.current_stock || 0) * (i.std_cost || 0)), 0);
+            const grossProfit = balances.Income - balances.Expenses;
+            const netProfit = grossProfit + closingStock;
 
-            let html = `<h2>Profit & Loss A/c</h2><p class="sub-head">As on ${new Date().toLocaleDateString()}</p>
-            <div style="display:flex; gap:2px;">
-                <div style="flex:1; border:1px solid #ccc;">
-                    <div style="background:#f1f5f9; padding:5px; font-weight:bold; text-align:center; border-bottom:1px solid #ccc;">Expenses (Dr)</div>
-                    <table class="no-border">`;
-            for(let g in data.Expenses) html += `<tr><td>${g}</td><td class="amt">${data.Expenses[g].toFixed(2)}</td></tr>`;
-            if(netProfit > 0) html += `<tr style="font-weight:bold; color:green;"><td>Net Profit</td><td class="amt">${netProfit.toFixed(2)}</td></tr>`;
-            html += `</table></div>
-                <div style="flex:1; border:1px solid #ccc;">
-                    <div style="background:#f1f5f9; padding:5px; font-weight:bold; text-align:center; border-bottom:1px solid #ccc;">Income (Cr)</div>
-                    <table class="no-border">`;
-            for(let g in data.Income) html += `<tr><td>${g}</td><td class="amt">${data.Income[g].toFixed(2)}</td></tr>`;
-            html += `<tr><td>Closing Stock</td><td class="amt">${closingStock.toFixed(2)}</td></tr>`;
-            if(netProfit < 0) html += `<tr style="font-weight:bold; color:red;"><td>Net Loss</td><td class="amt">${Math.abs(netProfit).toFixed(2)}</td></tr>`;
-            html += `</table></div></div>`;
-            c.innerHTML = html;
+            container.innerHTML = `
+                <h2>Profit & Loss Statement</h2>
+                <p class="sub-head">For the Period</p>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+                    <div>
+                        <table>
+                            <thead><tr><th>Expenses</th><th class="amt">Amount</th></tr></thead>
+                            <tbody>
+                                <tr><td>Purchases & Direct Expenses</td><td class="amt">${balances.Expenses.toLocaleString('en-IN')}</td></tr>
+                                ${netProfit < 0 ? `<tr class="bold-row"><td>Net Loss</td><td class="amt" style="color:var(--red);">${Math.abs(netProfit).toLocaleString('en-IN')}</td></tr>` : ''}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div>
+                        <table>
+                            <thead><tr><th>Income</th><th class="amt">Amount</th></tr></thead>
+                            <tbody>
+                                <tr><td>Sales & Income</td><td class="amt">${balances.Income.toLocaleString('en-IN')}</td></tr>
+                                <tr><td>Closing Stock</td><td class="amt">${closingStock.toLocaleString('en-IN')}</td></tr>
+                                ${netProfit > 0 ? `<tr class="bold-row"><td>Net Profit</td><td class="amt" style="color:var(--green);">${netProfit.toLocaleString('en-IN')}</td></tr>` : ''}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
         }
 
-        function calculateBalanceSheet(c) {
-            const data = getGroupTotals();
-            let totalLiab = 0, totalAsset = 0;
-            
-            // Calc Profit for Capital
-            let inc=0, exp=0;
-            Object.values(data.Income).forEach(v => inc += v);
-            Object.values(data.Expenses).forEach(v => exp += v);
-            let closingStock = items.reduce((s, i) => s + ((i.current_stock||0)*(i.std_cost||0)), 0);
-            const netProfit = (inc + closingStock) - exp;
+        function renderBalanceSheet(container) {
+            const balances = getGroupBalances();
+            const closingStock = items.reduce((s, i) => s + ((i.current_stock || 0) * (i.std_cost || 0)), 0);
+            const netProfit = balances.Income - balances.Expenses + closingStock;
 
-            let liabRows = "";
-            for(let g in data.Liabilities) { totalLiab += data.Liabilities[g]; liabRows += `<tr><td>${g}</td><td class="amt">${data.Liabilities[g].toFixed(2)}</td></tr>`; }
-            totalLiab += netProfit;
-            liabRows += `<tr style="font-weight:bold;"><td>Profit & Loss A/c</td><td class="amt">${netProfit.toFixed(2)}</td></tr>`;
-
-            let assetRows = "";
-            for(let g in data.Assets) { totalAsset += data.Assets[g]; assetRows += `<tr><td>${g}</td><td class="amt">${data.Assets[g].toFixed(2)}</td></tr>`; }
-            totalAsset += closingStock;
-            assetRows += `<tr><td>Closing Stock</td><td class="amt">${closingStock.toFixed(2)}</td></tr>`;
-
-            c.innerHTML = `<h2>Balance Sheet</h2><p class="sub-head">As on Today</p>
-            <div style="display:flex; gap:2px;">
-                <div style="flex:1; border:1px solid #ccc;">
-                    <div style="background:#f1f5f9; padding:5px; font-weight:bold; text-align:center;">Liabilities</div>
-                    <table>${liabRows}</table>
+            container.innerHTML = `
+                <h2>Balance Sheet</h2>
+                <p class="sub-head">As on ${new Date().toLocaleDateString('en-IN')}</p>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+                    <div>
+                        <table>
+                            <thead><tr><th>Liabilities</th><th class="amt">Amount</th></tr></thead>
+                            <tbody>
+                                <tr><td>Capital + Profit</td><td class="amt">${(balances.Liabilities + netProfit).toLocaleString('en-IN')}</td></tr>
+                                <tr><td>Current Liabilities</td><td class="amt">${balances.Liabilities.toLocaleString('en-IN')}</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div>
+                        <table>
+                            <thead><tr><th>Assets</th><th class="amt">Amount</th></tr></thead>
+                            <tbody>
+                                <tr><td>Fixed & Current Assets</td><td class="amt">${balances.Assets.toLocaleString('en-IN')}</td></tr>
+                                <tr><td>Closing Stock</td><td class="amt">${closingStock.toLocaleString('en-IN')}</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-                <div style="flex:1; border:1px solid #ccc;">
-                    <div style="background:#f1f5f9; padding:5px; font-weight:bold; text-align:center;">Assets</div>
-                    <table>${assetRows}</table>
-                </div>
-            </div>
-            <div style="display:flex; gap:2px; margin-top:5px;">
-                <div style="flex:1; background:#eee; padding:10px; font-weight:bold; text-align:right;">Total: ₹${totalLiab.toFixed(2)}</div>
-                <div style="flex:1; background:#eee; padding:10px; font-weight:bold; text-align:right;">Total: ₹${totalAsset.toFixed(2)}</div>
-            </div>`;
+            `;
         }
 
-        function calculateTrialBalance(c) {
-            let html = `<h2>Trial Balance</h2><table><thead><tr><th>Ledger Name</th><th class="amt">Debit</th><th class="amt">Credit</th></tr></thead><tbody>`;
-            let totDr = 0, totCr = 0;
-            ledgers.sort((a,b)=>a.name.localeCompare(b.name)).forEach(l => {
-                const bal = getLedgerBalance(l.id);
+        function renderTrialBalance(container) {
+            let html = `<h2>Trial Balance</h2><table><thead><tr><th>Ledger</th><th class="amt">Debit</th><th class="amt">Credit</th></tr></thead><tbody>`;
+            let totalDr = 0, totalCr = 0;
+            ledgers.forEach(l => {
+                const bal = calculateLedgerBalance(l.id);
                 if(Math.abs(bal) < 0.01) return;
                 const dr = bal > 0 ? bal : 0;
                 const cr = bal < 0 ? Math.abs(bal) : 0;
-                totDr += dr; totCr += cr;
-                html += `<tr><td>${l.name}</td><td class="amt">${dr ? dr.toFixed(2) : ''}</td><td class="amt">${cr ? cr.toFixed(2) : ''}</td></tr>`;
+                totalDr += dr; totalCr += cr;
+                html += `<tr><td>${l.name}</td><td class="amt">${dr ? dr.toLocaleString('en-IN') : ''}</td><td class="amt">${cr ? cr.toLocaleString('en-IN') : ''}</td></tr>`;
             });
-            html += `<tr class="bold-row"><td>Grand Total</td><td class="amt">${totDr.toFixed(2)}</td><td class="amt">${totCr.toFixed(2)}</td></tr></tbody></table>`;
-            c.innerHTML = html;
+            html += `<tr class="bold-row"><td>Total</td><td class="amt">${totalDr.toLocaleString('en-IN')}</td><td class="amt">${totalCr.toLocaleString('en-IN')}</td></tr></tbody></table>`;
+            container.innerHTML = html;
         }
 
-        function renderDayBook(c) {
-            const f = document.getElementById('fromDate').value;
-            const t = document.getElementById('toDate').value;
-            const filtered = vouchers.filter(v => v.date >= f && v.date <= t);
-            let html = `<h2>Day Book</h2><p class="sub-head">${f} to ${t}</p><table><thead><tr><th>Date</th><th>Type</th><th>No</th><th>Narration</th><th class="amt">Amount</th></tr></thead><tbody>`;
-            filtered.forEach(v => html += `<tr><td>${v.date}</td><td>${v.type}</td><td>${v.voucher_no}</td><td>${v.narration}</td><td class="amt">${v.amount.toFixed(2)}</td></tr>`);
-            c.innerHTML = html + "</tbody></table>";
-        }
-
-        function renderStock(c) {
-            let html = `<h2>Stock Summary</h2><table><thead><tr><th>Item</th><th>Category</th><th class="amt">Qty</th><th class="amt">Value</th></tr></thead><tbody>`;
-            let totVal = 0;
-            items.forEach(i => {
-                const val = (i.current_stock||0) * (i.std_cost||0);
-                totVal += val;
-                html += `<tr><td>${i.name}</td><td>${i.category||'-'}</td><td class="amt">${i.current_stock||0}</td><td class="amt">${val.toFixed(2)}</td></tr>`;
-            });
-            html += `<tr class="bold-row"><td colspan="3">Total Stock Value</td><td class="amt">${totVal.toFixed(2)}</td></tr></tbody></table>`;
-            c.innerHTML = html;
-        }
-
-        function renderLedgerReport(c) {
-            const name = document.getElementById('partyInput').value;
-            const pid = ledgers.find(l=>l.name === name)?.id;
-            if(!pid) return c.innerHTML = "<h3 style='color:red; text-align:center;'>Party not found</h3>";
-            
+        function renderDayBook(container) {
             const from = document.getElementById('fromDate').value;
             const to = document.getElementById('toDate').value;
-            let bal = ledgers.find(x=>x.id==pid).opening_balance || 0;
-            
-            // Calculate Opening for Range
-            acctEntries.filter(e => e.ledger_id == pid).forEach(e => {
-                const v = vouchers.find(vx => vx.id == e.voucher_id);
-                if(v && v.date < from) bal += (e.debit - e.credit);
-            });
+            const filtered = vouchers.filter(v => v.date >= from && v.date <= to).sort((a,b) => a.date.localeCompare(b.date));
 
-            let html = `<h2>${name}</h2><p class="sub-head">${from} to ${to}</p><table><thead><tr><th>Date</th><th>Vch</th><th>Narration</th><th class="amt">Dr</th><th class="amt">Cr</th><th class="amt">Balance</th></tr></thead><tbody>`;
-            html += `<tr><td>-</td><td>-</td><td><b>Opening Balance</b></td><td></td><td></td><td class="amt">${bal.toFixed(2)}</td></tr>`;
-
-            const ents = acctEntries.filter(e => e.ledger_id == pid);
-            ents.forEach(e => {
-                const v = vouchers.find(x=>x.id==e.voucher_id);
-                if(v && v.date >= from && v.date <= to) {
-                    bal += (e.debit - e.credit);
-                    html += `<tr><td>${v.date}</td><td>${v.voucher_no}</td><td>${v.narration||v.type}</td><td class="amt">${e.debit||''}</td><td class="amt">${e.credit||''}</td><td class="amt">${bal.toFixed(2)}</td></tr>`;
-                }
+            let html = `<h2>Day Book</h2><p class="sub-head">${from} to ${to}</p><table><thead><tr><th>Date</th><th>Voucher</th><th>Type</th><th>Narration</th><th class="amt">Amount</th></tr></thead><tbody>`;
+            filtered.forEach(v => {
+                html += `<tr><td>${v.date}</td><td>${v.voucher_no}</td><td>${v.type}</td><td>${v.narration || '-'}</td><td class="amt">₹${(v.amount || 0).toLocaleString('en-IN')}</td></tr>`;
             });
-            c.innerHTML = html + "</tbody></table>";
+            container.innerHTML = html + '</tbody></table>';
         }
 
-        function renderExpiry(c) {
-            const today = new Date();
-            let html = `<h2>Expiry Report</h2><table><thead><tr><th>Item</th><th>Batch</th><th>Expiry</th><th>Qty</th></tr></thead><tbody>`;
+        function renderPartyLedger(container) {
+            const partyId = getSelectedPartyId();
+            if(!partyId) return container.innerHTML = '<h3 style="text-align:center; color:var(--red);">Please select a valid party</h3>';
+
+            const partyName = ledgers.find(l => l.id == partyId)?.name || 'Unknown';
+            const from = document.getElementById('fromDate').value;
+            const to = document.getElementById('toDate').value;
+
+            let openingBal = calculateLedgerBalance(partyId, from);
+            let runningBal = openingBal;
+
+            const relevantEntries = acctEntries
+                .filter(e => e.ledger_id == partyId)
+                .map(e => ({ entry: e, voucher: vouchers.find(v => v.id === e.voucher_id) }))
+                .filter(x => x.voucher && x.voucher.date >= from && x.voucher.date <= to)
+                .sort((a,b) => a.voucher.date.localeCompare(b.voucher.date));
+
+            let html = `<h2>Ledger Statement - ${partyName}</h2><p class="sub-head">${from} to ${to}</p>
+            <table><thead><tr><th>Date</th><th>Voucher</th><th>Particulars</th><th class="amt">Debit</th><th class="amt">Credit</th><th class="amt">Balance</th></tr></thead><tbody>
+            <tr><td colspan="3"><strong>Opening Balance</strong></td><td class="amt"></td><td class="amt"></td><td class="amt"><strong>₹${openingBal.toLocaleString('en-IN')}</strong></td></tr>`;
+
+            relevantEntries.forEach(x => {
+                const dr = x.entry.debit || 0;
+                const cr = x.entry.credit || 0;
+                runningBal += dr - cr;
+                html += `<tr><td>${x.voucher.date}</td><td>${x.voucher.voucher_no}</td><td>${x.voucher.narration || x.voucher.type}</td>
+                <td class="amt">${dr ? '₹' + dr.toLocaleString('en-IN') : ''}</td>
+                <td class="amt">${cr ? '₹' + cr.toLocaleString('en-IN') : ''}</td>
+                <td class="amt"><strong>₹${runningBal.toLocaleString('en-IN')}</strong></td></tr>`;
+            });
+
+            html += `<tr class="bold-row"><td colspan="5">Closing Balance</td><td class="amt"><strong>₹${runningBal.toLocaleString('en-IN')}</strong></td></tr></tbody></table>`;
+            container.innerHTML = html;
+        }
+
+        function renderStockSummary(container) {
+            const totalValue = items.reduce((sum, i) => sum + ((i.current_stock || 0) * (i.std_cost || 0)), 0);
+
+            let html = `<h2>Stock Summary</h2><table><thead><tr><th>Item</th><th>Current Stock</th><th>Rate</th><th class="amt">Value</th></tr></thead><tbody>`;
+            items.forEach(i => {
+                const value = (i.current_stock || 0) * (i.std_cost || 0);
+                html += `<tr><td>${i.name}</td><td class="amt">${i.current_stock || 0} ${i.unit || ''}</td><td class="amt">₹${(i.std_cost || 0).toFixed(2)}</td><td class="amt">₹${value.toLocaleString('en-IN')}</td></tr>`;
+            });
+            html += `<tr class="bold-row"><td colspan="3">Total Stock Value</td><td class="amt">₹${totalValue.toLocaleString('en-IN')}</td></tr></tbody></table>`;
+            container.innerHTML = html;
+        }
+
+        function renderLowStock(container) {
+            const lowItems = items.filter(i => (i.current_stock || 0) <= (i.reorder_level || 5));
+
+            let html = `<h2>Low Stock Alert</h2>`;
+            if(lowItems.length === 0) html += '<p style="text-align:center; color:var(--green); padding:50px;">✨ All items above reorder level!</p>';
+            else {
+                html += `<table><thead><tr><th>Item</th><th>Current Stock</th><th>Reorder Level</th></tr></thead><tbody>`;
+                lowItems.forEach(i => {
+                    html += `<tr><td>${i.name}</td><td class="amt" style="color:var(--red);">${i.current_stock || 0}</td><td class="amt">${i.reorder_level || 0}</td></tr>`;
+                });
+                html += '</tbody></table>';
+            }
+            container.innerHTML = html;
+        }
+
+        function renderExpiryReport(container) {
+            const today = new Date().toISOString().slice(0,10);
+            const soon = new Date(Date.now() + 30*24*60*60*1000).toISOString().slice(0,10);
+
+            let html = `<h2>Batch Expiry Report</h2><table><thead><tr><th>Item</th><th>Batch</th><th>Expiry Date</th><th>Qty</th><th>Status</th></tr></thead><tbody>`;
             batches.forEach(b => {
                 if(!b.expiry_date) return;
-                html += `<tr><td>Item-${b.item_id}</td><td>${b.batch_no}</td><td>${b.expiry_date}</td><td class="amt">${b.qty}</td></tr>`;
+                const itemName = itemMap[b.item_id] || `Item ${b.item_id}`;
+                const status = b.expiry_date < today ? 'Expired' : (b.expiry_date <= soon ? 'Expiring Soon' : 'OK');
+                const color = b.expiry_date < today ? 'var(--red)' : (b.expiry_date <= soon ? 'var(--orange)' : 'var(--green)');
+                html += `<tr><td>${itemName}</td><td>${b.batch_no || '-'}</td><td>${b.expiry_date}</td><td class="amt">${b.qty || 0}</td><td style="color:${color}; font-weight:700;">${status}</td></tr>`;
             });
-            c.innerHTML = html + `</tbody></table>`;
+            container.innerHTML = html + '</tbody></table>';
         }
 
-        function renderLowStock(c) {
-            let html = `<h2>Low Stock Alert</h2><table><thead><tr><th>Item</th><th>Current</th><th>Reorder</th></tr></thead><tbody>`;
-            items.filter(i => (i.current_stock||0) <= (i.reorder_level||0)).forEach(i => {
-                html += `<tr><td>${i.name}</td><td class="amt" style="color:red">${i.current_stock}</td><td class="amt">${i.reorder_level}</td></tr>`;
-            });
-            c.innerHTML = html + `</tbody></table>`;
-        }
+        function exportToExcel() {
+            const table = document.querySelector('#reportContent table');
+            if(!table) return alert('Generate a report first!');
 
-        function exportExcel() {
-            const table = document.querySelector('table');
-            if(!table) return alert("No report generated!");
             let csv = [];
-            const rows = table.querySelectorAll("tr");
-            for (let i = 0; i < rows.length; i++) {
-                let row = [], cols = rows[i].querySelectorAll("td, th");
-                for (let j = 0; j < cols.length; j++) row.push(cols[j].innerText);
-                csv.push(row.join(","));
-            }
-            const blob = new Blob([csv.join("\n")], { type: "text/csv" });
-            const a = document.createElement("a");
-            a.href = URL.createObjectURL(blob);
-            a.download = "Report.csv";
+            table.querySelectorAll('tr').forEach(row => {
+                const cells = row.querySelectorAll('th, td');
+                csv.push(Array.from(cells).map(cell => `"${cell.innerText.trim().replace(/"/g, '""')}"`).join(','));
+            });
+
+            const blob = new Blob([csv.join('\n')], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `ArthBook_Report_${new Date().toISOString().slice(0,10)}.csv`;
             a.click();
+            URL.revokeObjectURL(url);
         }
     </script>
 </body>

@@ -1,98 +1,176 @@
 /* FILENAME: security_utils.js
-   PURPOSE: Arth Book Security Core (Native Crypto)
-   FEATURES: Device Locking, SHA-256 Hashing, License Validation
-   DEPENDENCIES: None (Uses Native Browser API)
+   PURPOSE: Arth Book Security Core (Native Web Crypto API)
+   FEATURES: 
+     - Secure SHA-256 Password Hashing
+     - Robust Device Fingerprint (Machine ID)
+     - Device-Bound Activation (Simple Offline License)
+     - Proper AES-GCM Encryption/Decryption (for Ghost Mode & Sensitive Data)
+   VERSION: 2.0 (Upgraded: Proper AES encryption, stronger device ID, better activation)
+   DEPENDENCIES: None (Pure Browser Crypto API)
 */
 
 class ArthSecurity {
     constructor() {
-        this.storageKey = "arth_book_license";
-        this.machineKey = "arth_device_id";
+        this.machineKey = 'arth_device_id';
+        this.licenseKey = 'arth_license_data';
+        this.salt = 'ArthBookSalt2026'; // Fixed salt for consistency (change per version)
     }
 
-    // --- 1. PASSWORD HASHING (SHA-256) ---
-    // Converts "123" -> "a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3"
+    // --- 1. SECURE PASSWORD HASHING (PBKDF2 + SHA-256) ---
+    // Stronger than plain SHA-256
     async hashPassword(plainText) {
-        const msgBuffer = new TextEncoder().encode(plainText);
-        const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
-        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-        return hashHex;
+        const encoder = new TextEncoder();
+        const data = encoder.encode(plainText);
+        const saltBuffer = encoder.encode(this.salt + plainText); // Salted
+
+        const key = await crypto.subtle.importKey(
+            'raw',
+            data,
+            { name: 'PBKDF2' },
+            false,
+            ['deriveBits']
+        );
+
+        const derivedBits = await crypto.subtle.deriveBits(
+            {
+                name: 'PBKDF2',
+                salt: saltBuffer,
+                iterations: 100000,
+                hash: 'SHA-256'
+            },
+            key,
+            256
+        );
+
+        const hashArray = Array.from(new Uint8Array(derivedBits));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
     }
 
-    // --- 2. DEVICE FINGERPRINTING (The Lock) ---
-    // Generates a unique ID based on hardware traits
+    // --- 2. DEVICE FINGERPRINT (Unique Machine ID) ---
+    // More traits for better uniqueness
     async getMachineID() {
-        let storedID = localStorage.getItem(this.machineKey);
-        if (storedID) return storedID;
+        let stored = localStorage.getItem(this.machineKey);
+        if (stored) return stored;
 
-        // Collect Hardware Traits
+        // Collect comprehensive traits
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        ctx.textBaseline = 'top';
+        ctx.font = '14px Arial';
+        ctx.fillText('ArthBook Fingerprint', 2, 2);
+        const canvasData = canvas.toDataURL();
+
         const traits = [
             navigator.userAgent,
-            navigator.language,
-            screen.colorDepth,
-            screen.width + 'x' + screen.height,
-            navigator.hardwareConcurrency || '2', // CPU Cores
-            new Date().getTimezoneOffset()
-        ].join('||');
+            navigator.language || navigator.languages[0],
+            navigator.platform,
+            navigator.hardwareConcurrency || 2,
+            navigator.deviceMemory || 4,
+            screen.width + 'x' + screen.height + 'x' + screen.colorDepth,
+            new Date().getTimezoneOffset(),
+            !!navigator.webdriver,
+            canvasData
+        ].join('|||');
 
-        // Hash the traits to create a short ID
+        // Hash traits
         const hash = await this.hashPassword(traits);
-        const shortID = `DEV-${hash.substring(0, 12).toUpperCase()}`;
-        
-        // Lock it to this browser
-        localStorage.setItem(this.machineKey, shortID);
-        return shortID;
+        const deviceID = `DEV-${hash.substring(0, 16).toUpperCase()}`;
+
+        localStorage.setItem(this.machineKey, deviceID);
+        return deviceID;
     }
 
-    // --- 3. LICENSE MANAGEMENT ---
-    
-    // Checks if the software is activated
-    isActivated() {
-        const license = localStorage.getItem(this.storageKey);
-        // In real world, verify signature. Here checking existence for simple lock.
-        return !!license; 
-    }
-
-    // Call this when user enters the key you gave them
-    async activateLicense(key) {
+    // --- 3. DEVICE-BOUND ACTIVATION ---
+    // Key must be generated offline using: hash(machineID + developer_secret)
+    // Simple validation: Key must contain machineID prefix
+    async validateActivation(providedKey) {
         const machineID = await this.getMachineID();
-        // Simple logic: Key must contain the MachineID reversed or specific pattern
-        // FOR PROD: You would generate this key using your own separate "KeyGen" tool
-        // Here, we simulate a valid key check
-        
-        if (key && key.length > 5) {
-            localStorage.setItem(this.storageKey, key);
+        const stored = localStorage.getItem(this.licenseKey);
+
+        // If already activated with valid key
+        if (stored) {
+            const { key, device } = JSON.parse(stored);
+            if (key === providedKey && device === machineID) return true;
+        }
+
+        // New activation
+        if (providedKey && providedKey.includes(machineID)) {
+            localStorage.setItem(this.licenseKey, JSON.stringify({ key: providedKey, device: machineID }));
             return true;
         }
+
         return false;
     }
 
-    // --- 4. DATA ENCRYPTION HOOK (For Ghost Mode) ---
-    // Simple XOR cipher for local data (Fast & Offline)
-    encryptData(data) {
-        const str = JSON.stringify(data);
-        let result = '';
-        for (let i = 0; i < str.length; i++) {
-            result += String.fromCharCode(str.charCodeAt(i) ^ 123); // Simple XOR Key
-        }
-        return btoa(result); // Base64 Encode
+    isActivated() {
+        return !!localStorage.getItem(this.licenseKey);
     }
 
-    decryptData(cipherText) {
+    // Optional: Clear activation (for reset)
+    deactivate() {
+        localStorage.removeItem(this.licenseKey);
+    }
+
+    // --- 4. PROPER AES-GCM ENCRYPTION (For Ghost Mode) ---
+    // Key derived from Machine ID (device-bound)
+    async _getCryptoKey() {
+        const machineID = await this.getMachineID();
+        const encoder = new TextEncoder();
+        const keyData = encoder.encode(machineID + this.salt);
+
+        return await crypto.subtle.importKey(
+            'raw',
+            keyData,
+            { name: 'AES-GCM' },
+            false,
+            ['encrypt', 'decrypt']
+        );
+    }
+
+    async encryptData(plainObject) {
         try {
-            const str = atob(cipherText);
-            let result = '';
-            for (let i = 0; i < str.length; i++) {
-                result += String.fromCharCode(str.charCodeAt(i) ^ 123);
-            }
-            return JSON.parse(result);
+            const key = await this._getCryptoKey();
+            const iv = crypto.getRandomValues(new Uint8Array(12)); // 96-bit IV
+            const data = new TextEncoder().encode(JSON.stringify(plainObject));
+
+            const encrypted = await crypto.subtle.encrypt(
+                { name: 'AES-GCM', iv },
+                key,
+                data
+            );
+
+            const result = new Uint8Array(iv.byteLength + encrypted.byteLength);
+            result.set(iv, 0);
+            result.set(new Uint8Array(encrypted), iv.byteLength);
+
+            return btoa(String.fromCharCode(...result));
         } catch (e) {
-            console.error("Decryption Failed", e);
+            console.error('Encryption failed:', e);
+            return null;
+        }
+    }
+
+    async decryptData(cipherText) {
+        try {
+            const key = await this._getCryptoKey();
+            const data = Uint8Array.from(atob(cipherText), c => c.charCodeAt(0));
+
+            const iv = data.slice(0, 12);
+            const encrypted = data.slice(12);
+
+            const decrypted = await crypto.subtle.decrypt(
+                { name: 'AES-GCM', iv },
+                key,
+                encrypted
+            );
+
+            return JSON.parse(new TextDecoder().decode(decrypted));
+        } catch (e) {
+            console.error('Decryption failed:', e);
             return null;
         }
     }
 }
 
-// Global Instance
+// Global Instance (Used across app)
 const Security = new ArthSecurity();
