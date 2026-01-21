@@ -1,0 +1,381 @@
+{
+  "groups": [
+    {
+      "name": "Capital Account",
+      "nature": "Liability",
+      "id": 1
+    },
+    {
+      "name": "Current Assets",
+      "nature": "Asset",
+      "id": 2
+    },
+    {
+      "name": "Cash-in-Hand",
+      "nature": "Asset",
+      "parent": "Current Assets",
+      "id": 3
+    },
+    {
+      "name": "Bank Accounts",
+      "nature": "Asset",
+      "parent": "Current Assets",
+      "id": 4
+    },
+    {
+      "name": "Sundry Debtors",
+      "nature": "Asset",
+      "parent": "Current Assets",
+      "id": 5
+    },
+    {
+      "name": "Current Liabilities",
+      "nature": "Liability",
+      "id": 6
+    },
+    {
+      "name": "Sundry Creditors",
+      "nature": "Liability",
+      "parent": "Current Liabilities",
+      "id": 7
+    },
+    {
+      "name": "Duties & Taxes",
+      "nature": "Liability",
+      "id": 8
+    },
+    {
+      "name": "Sales Accounts",
+      "nature": "Income",
+      "id": 9
+    },
+    {
+      "name": "Purchase Accounts",
+      "nature": "Expense",
+      "id": 10
+    },
+    {
+      "name": "Direct Expenses",
+      "nature": "Expense",
+      "id": 11
+    },
+    {
+      "name": "Indirect Expenses",
+      "nature": "Expense",
+      "id": 12
+    }
+  ],
+  "ledgers": [
+    {
+      "name": "Cash A/c",
+      "group_id": 3,
+      "opening_balance": 0,
+      "id": 1
+    },
+    {
+      "name": "Local Sales",
+      "group_id": 9,
+      "opening_balance": 0,
+      "id": 2
+    },
+    {
+      "name": "Local Purchase",
+      "group_id": 10,
+      "opening_balance": 0,
+      "id": 3
+    },
+    {
+      "name": "Input GST",
+      "group_id": 8,
+      "opening_balance": 0,
+      "id": 4
+    },
+    {
+      "name": "Output GST",
+      "group_id": 8,
+      "opening_balance": 0,
+      "id": 5
+    },
+    {
+      "name": "anil",
+      "group_id": 7,
+      "phone": "",
+      "reg_type": "Regular",
+      "gstin": null,
+      "state_code": null,
+      "address": null,
+      "credit_limit": 0,
+      "credit_days": 0,
+      "opening_balance": 0,
+      "op_date": "2026-01-21",
+      "id": 6
+    },
+    {
+      "name": "manish",
+      "group_id": 5,
+      "phone": "",
+      "reg_type": "Regular",
+      "gstin": null,
+      "state_code": null,
+      "address": null,
+      "credit_limit": 0,
+      "credit_days": 0,
+      "opening_balance": 0,
+      "op_date": "2026-01-21",
+      "id": 7
+    }
+  ],
+  "items": [
+    {
+      "name": "maggi",
+      "sku": "218969517",
+      "category": null,
+      "unit": "Pcs",
+      "gst_rate": 12,
+      "hsn": null,
+      "std_cost": 10,
+      "std_price": 12,
+      "op_qty": 0,
+      "reorder_level": 5,
+      "track_expiry": "No",
+      "expiry_date": null,
+      "current_stock": 48,
+      "id": 1
+    }
+  ],
+  "vouchers": [
+    {
+      "voucher_no": "PUR-1768997287138",
+      "date": "2026-01-21",
+      "type": "Purchase",
+      "party_id": 6,
+      "amount": 1120,
+      "id": 1
+    },
+    {
+      "voucher_no": "INV-2026-0001",
+      "date": "2026-01-21",
+      "type": "Sales",
+      "party_id": 7,
+      "amount": 672,
+      "payment_mode": "Udhar",
+      "narration": "POS Sale",
+      "id": 2
+    },
+    {
+      "voucher_no": "INV-2026-0002",
+      "date": "2026-01-21",
+      "type": "Sales",
+      "party_id": 7,
+      "amount": 13,
+      "payment_mode": "Cash",
+      "narration": "POS Sale",
+      "id": 3
+    },
+    {
+      "voucher_no": "INV-2026-0003",
+      "date": "2026-01-21",
+      "type": "Sales",
+      "party_id": 7,
+      "amount": 13,
+      "payment_mode": "Cash",
+      "narration": "POS Sale",
+      "id": 4
+    }
+  ],
+  "voucher_items": [
+    {
+      "voucher_id": 1,
+      "item_id": 1,
+      "qty": 100,
+      "rate": 10,
+      "id": 1
+    },
+    {
+      "item_id": 1,
+      "qty": 50,
+      "rate": 12,
+      "amount": 600,
+      "voucher_id": 2,
+      "id": 2
+    },
+    {
+      "item_id": 1,
+      "qty": 1,
+      "rate": 12,
+      "amount": 12,
+      "name": "maggi",
+      "gst": 12,
+      "unit": "Pcs",
+      "voucher_id": 3,
+      "id": 3
+    },
+    {
+      "item_id": 1,
+      "qty": 1,
+      "rate": 12,
+      "amount": 12,
+      "name": "maggi",
+      "gst": 12,
+      "unit": "Pcs",
+      "voucher_id": 4,
+      "id": 4
+    }
+  ],
+  "acct_entries": [
+    {
+      "voucher_id": 1,
+      "ledger_id": 6,
+      "credit": 1120,
+      "debit": 0,
+      "id": 1
+    },
+    {
+      "voucher_id": 1,
+      "ledger_id": 3,
+      "credit": 0,
+      "debit": 1000,
+      "id": 2
+    },
+    {
+      "voucher_id": 1,
+      "ledger_id": 4,
+      "credit": 0,
+      "debit": 120,
+      "id": 3
+    },
+    {
+      "ledger_id": 7,
+      "debit": 672,
+      "credit": 0,
+      "voucher_id": 2,
+      "id": 4
+    },
+    {
+      "ledger_id": 2,
+      "debit": 0,
+      "credit": 600,
+      "voucher_id": 2,
+      "id": 5
+    },
+    {
+      "ledger_id": 5,
+      "debit": 0,
+      "credit": 72,
+      "voucher_id": 2,
+      "id": 6
+    },
+    {
+      "ledger_id": 7,
+      "debit": 13,
+      "credit": 0,
+      "voucher_id": 3,
+      "id": 7
+    },
+    {
+      "ledger_id": 2,
+      "debit": 0,
+      "credit": 12,
+      "voucher_id": 3,
+      "id": 8
+    },
+    {
+      "ledger_id": 5,
+      "debit": 0,
+      "credit": 1.44,
+      "voucher_id": 3,
+      "id": 9
+    },
+    {
+      "ledger_id": 7,
+      "debit": 13,
+      "credit": 0,
+      "voucher_id": 4,
+      "id": 10
+    },
+    {
+      "ledger_id": 2,
+      "debit": 0,
+      "credit": 12,
+      "voucher_id": 4,
+      "id": 11
+    },
+    {
+      "ledger_id": 5,
+      "debit": 0,
+      "credit": 1.44,
+      "voucher_id": 4,
+      "id": 12
+    }
+  ],
+  "settings": [
+    {
+      "company_name": "kasumal services",
+      "gstin": "54654564654654654564",
+      "phone": "46454564654654654564654",
+      "email": "admin",
+      "address": "Fort kasumbi, tanwara road",
+      "website": "",
+      "bank_name": "asas",
+      "bank_account": "asasas",
+      "bank_ifsc": "asas",
+      "upi_id": "asasa",
+      "terms": "asasas",
+      "id": "global",
+      "auto_backup_enabled": true,
+      "github_token": "",
+      "github_repo": "kasumalgarh/gajsa"
+    }
+  ],
+  "users": [
+    {
+      "username": "admin",
+      "password": "123",
+      "role": "admin",
+      "created_at": "2026-01-21T12:05:56.971Z"
+    },
+    {
+      "username": "gajsa",
+      "password": "1221",
+      "role": "admin"
+    }
+  ],
+  "audit_chain": [
+    {
+      "timestamp": "2026-01-21T12:05:56.971Z",
+      "module": "System",
+      "action": "Genesis",
+      "description": "Database Initialized v24",
+      "prev_hash": "0",
+      "current_hash": "genesis",
+      "id": 1
+    },
+    {
+      "timestamp": "2026-01-21T12:06:35.144Z",
+      "module": "Inventory",
+      "action": "Settings",
+      "description": "Settings Saved",
+      "user": "admin",
+      "current_hash": "hash_1768997195144",
+      "id": 2
+    },
+    {
+      "timestamp": "2026-01-21T12:07:05.296Z",
+      "module": "Inventory",
+      "action": "Item",
+      "description": "Item Created",
+      "user": "admin",
+      "current_hash": "hash_1768997225296",
+      "id": 3
+    },
+    {
+      "timestamp": "2026-01-21T12:52:14.925Z",
+      "module": "Auth",
+      "action": "Login Success",
+      "description": "User: admin",
+      "user": "admin",
+      "current_hash": "hash_1768999934926",
+      "id": 4
+    }
+  ]
+}
