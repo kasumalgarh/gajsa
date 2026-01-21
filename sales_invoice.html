@@ -74,6 +74,12 @@
         .pay-btn.selected { background:var(--green); color:white; border-color:var(--green); }
         .action-btns { display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; margin-top:20px; }
         
+        /* HISTORY MODAL */
+        .history-modal { background: white; width: 90%; max-width: 800px; padding: 20px; border-radius: 12px; max-height: 80vh; display: flex; flex-direction: column; }
+        .history-list { overflow-y: auto; flex: 1; border: 1px solid var(--border); margin-top: 10px; }
+        .history-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; align-items: center; }
+        .history-item:hover { background: #f8fafc; }
+
         /* MOBILE & RESPONSIVE */
         .menu-btn { display: none; font-size: 24px; cursor: pointer; background: none; border: none; margin-right: 10px; }
         .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 90; }
@@ -129,6 +135,7 @@
             </div>
             
             <div style="display:flex; gap:5px; align-items:center;">
+                <button class="btn" style="background:#64748b;" onclick="openHistory()">📜 History</button>
                 <button class="btn" style="background:#f59e0b;" onclick="holdBill()">⏸️ Hold</button>
                 <button class="btn" style="background:#0ea5e9;" onclick="recallBill()">▶️ Recall</button>
                 <div style="font-weight:bold; color:var(--accent); margin-left:10px;" id="invNo">INV-...</div>
@@ -207,31 +214,43 @@
         </div>
     </div>
 
+    <div class="modal-overlay" id="historyModal">
+        <div class="history-modal">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h3>📜 Invoice History</h3>
+                <input type="text" id="histSearch" placeholder="Search..." onkeyup="renderHistory(this.value)" style="padding:5px;">
+            </div>
+            <div class="history-list" id="historyList"></div>
+            <button class="btn" style="width:100%; margin-top:10px; background:#64748b;" onclick="document.getElementById('historyModal').style.display='none'">Close</button>
+        </div>
+    </div>
+
     <div id="printArea"></div>
 
     <script src="db.js"></script>
     <script>
-        let items=[], ledgers=[], groups=[], cart=[], settings={};
+        let items=[], ledgers=[], groups=[], cart=[], allVouchers=[], voucherItems=[];
         let selectedMode = 'Cash';
 
         window.onload = async () => {
             await DB.init();
             
             // --- SELF REPAIR: Check & Create System Ledgers ---
-            // This ensures Local Sales & Output GST exist to prevent errors
             await DB._ensureSystemLedgers();
 
-            const [itemsData, ledgersData, groupsData, settingsData] = await Promise.all([
+            const [itemsData, ledgersData, groupsData, vData, viData] = await Promise.all([
                 DB.getAll('items'),
                 DB.getAll('ledgers'),
                 DB.getAll('groups'),
-                DB.getAll('settings')
+                DB.getAll('vouchers'),
+                DB.getAll('voucher_items')
             ]);
 
             items = itemsData || [];
             ledgers = ledgersData || [];
             groups = groupsData || [];
-            settings = settingsData[0] || {}; 
+            allVouchers = vData || [];
+            voucherItems = viData || [];
 
             renderItems(items);
             loadCustomers();
@@ -349,7 +368,6 @@
         async function saveBill(action) {
             if(cart.length===0) return alert("Cart is empty!");
 
-            // Recalculate totals accurately
             let sub = 0, tax = 0;
             cart.forEach(c => {
                 const base = c.qty * c.rate;
@@ -374,7 +392,9 @@
             };
 
             const entries = cart.map(c => ({
-                item_id: c.id, qty: c.qty, rate: c.rate, amount: (c.qty*c.rate)
+                item_id: c.id, qty: c.qty, rate: c.rate, amount: (c.qty*c.rate), 
+                // Store extra info for easy reprint
+                name: c.name, gst: c.gst, unit: c.unit
             }));
 
             // --- ACCOUNTING ENTRIES ---
@@ -385,40 +405,26 @@
             if(!debitLedgerId) {
                 const cashLedger = ledgers.find(l => l.name === "Cash-in-Hand");
                 debitLedgerId = cashLedger ? cashLedger.id : 0;
-                if(!debitLedgerId) return alert("Error: Cash-in-Hand ledger not found! (Try reloading)");
             }
             acct.push({ ledger_id: debitLedgerId, debit: grand, credit: 0 });
 
-            // 2. Credit: Sales Account (only taxable amount)
+            // 2. Credit: Sales Account
             const salesLedger = ledgers.find(l => l.name === "Local Sales" || l.name.includes("Sales"));
-            const salesId = salesLedger ? salesLedger.id : 0;
-            if(!salesId) return alert("Error: Sales ledger not found! (Try reloading)");
-            acct.push({ ledger_id: salesId, debit: 0, credit: sub });
+            acct.push({ ledger_id: salesLedger ? salesLedger.id : 0, debit: 0, credit: sub });
 
-            // 3. Credit: GST Output Ledger (if tax exists)
+            // 3. Credit: GST Output
             if(tax > 0) {
-                const gstLedger = ledgers.find(l => 
-                    l.name.toLowerCase().includes("output gst") || 
-                    l.name.toLowerCase().includes("gst payable") ||
-                    l.name.toLowerCase().includes("cgst") || 
-                    l.name.toLowerCase().includes("sgst") ||
-                    l.name.toLowerCase().includes("igst")
-                );
-                // Fallback if specific tax ledger not found, find group Duties
-                if(!gstLedger) return alert("Error: Output GST ledger not found! (Try reloading)");
-                acct.push({ ledger_id: gstLedger.id, debit: 0, credit: tax });
+                const gstLedger = ledgers.find(l => l.name.includes("Output GST"));
+                if(gstLedger) acct.push({ ledger_id: gstLedger.id, debit: 0, credit: tax });
             }
 
             try {
                 const tx = DB.db.transaction(['vouchers', 'voucher_items', 'acct_entries', 'items'], 'readwrite');
                 
-                // Save Master
                 const vReq = tx.objectStore('vouchers').add(saleData);
                 
                 vReq.onsuccess = (e) => {
                     const vid = e.target.result;
-                    
-                    // Save Items & Update Stock
                     const viStore = tx.objectStore('voucher_items');
                     const iStore = tx.objectStore('items');
                     
@@ -426,7 +432,6 @@
                         item.voucher_id = vid;
                         viStore.add(item);
                         
-                        // Deduct Stock
                         const getI = iStore.get(item.item_id);
                         getI.onsuccess = (ev) => {
                             const idata = ev.target.result;
@@ -437,35 +442,87 @@
                         };
                     });
 
-                    // Save Accounting
                     const acStore = tx.objectStore('acct_entries');
-                    acct.forEach(a => {
-                        a.voucher_id = vid;
-                        acStore.add(a);
-                    });
+                    acct.forEach(a => { a.voucher_id = vid; acStore.add(a); });
                 };
 
                 tx.oncomplete = () => {
                     closeModal();
-                    if(action === 'print') {
-                        printBill(saleData, cart, pid, sub, tax, grand);
-                    } else if(action === 'whatsapp') {
-                        shareOnWhatsApp(saleData, cart, pid, sub, tax, grand);
-                    } else {
-                        alert("Bill Saved Successfully!");
-                    }
-                    location.reload();
+                    if(action === 'print') printBill(saleData, cart, pid, sub, tax, grand);
+                    else if(action === 'whatsapp') shareOnWhatsApp(saleData, cart, pid, sub, tax, grand);
+                    else alert("Bill Saved Successfully!");
+                    
+                    setTimeout(() => location.reload(), 1000);
                 };
                 
-            } catch(e) { 
-                console.error(e);
-                alert("Save Failed: " + e.message); 
-            }
+            } catch(e) { console.error(e); alert("Save Failed: " + e.message); }
+        }
+
+        // --- HISTORY & REPRINT ---
+        async function openHistory() {
+            allVouchers = await DB.getAll('vouchers'); // Refresh
+            renderHistory();
+            document.getElementById('historyModal').style.display = 'flex';
+        }
+
+        function renderHistory(query = '') {
+            const list = document.getElementById('historyList');
+            list.innerHTML = '';
+            
+            const sales = allVouchers.filter(v => v.type === 'Sales').sort((a,b) => b.id - a.id);
+            const filtered = sales.filter(v => 
+                v.voucher_no.toLowerCase().includes(query.toLowerCase()) || 
+                v.date.includes(query)
+            );
+
+            filtered.forEach(v => {
+                const party = ledgers.find(l => l.id == v.party_id)?.name || 'Walk-in';
+                const div = document.createElement('div');
+                div.className = 'history-item';
+                div.innerHTML = `
+                    <div>
+                        <b>${v.voucher_no}</b> <span style="font-size:12px; color:#666;">(${v.date})</span><br>
+                        ${party} - ₹${v.amount}
+                    </div>
+                    <button class="btn" style="padding:5px 10px; font-size:12px;" onclick="reprintBill(${v.id})">🖨️ Print</button>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        async function reprintBill(vid) {
+            const voucher = allVouchers.find(v => v.id === vid);
+            if(!voucher) return alert("Voucher not found!");
+
+            // Fetch items
+            const allItems = await DB.getAll('voucher_items');
+            const billItems = allItems.filter(vi => vi.voucher_id === vid);
+            
+            // Map item details back
+            const cartItems = billItems.map(vi => {
+                const product = items.find(i => i.id === vi.item_id);
+                return {
+                    name: product ? product.name : 'Item',
+                    qty: vi.qty,
+                    rate: vi.rate,
+                    unit: product ? product.unit : 'Pcs',
+                    gst: product ? product.gst_rate : 0
+                };
+            });
+
+            // Calculate totals
+            let sub = 0, tax = 0;
+            cartItems.forEach(c => {
+                const base = c.qty * c.rate;
+                sub += base; // Approx for reprint display
+                tax += base * (c.gst/100);
+            });
+
+            printBill(voucher, cartItems, voucher.party_id, sub, tax, voucher.amount);
         }
 
         // --- UTILS ---
         async function generateInvNo() {
-            const allVouchers = await DB.getAll('vouchers');
             const currentYear = new Date().getFullYear();
             const thisYearSales = allVouchers.filter(v => v.type === 'Sales' && v.date && v.date.startsWith(currentYear));
             
@@ -479,7 +536,6 @@
                     }
                 }
             });
-            
             const newInv = `INV-${currentYear}-${String(maxNo + 1).padStart(4, '0')}`;
             document.getElementById('invNo').innerText = newInv;
         }
@@ -487,24 +543,16 @@
         function loadCustomers() {
             const sel = document.getElementById('custSelect');
             sel.innerHTML = '<option value="">Walk-in Customer (Cash)</option>';
-            
             const debtorGroup = groups.find(g => g.name === "Sundry Debtors");
             const debtorGroupId = debtorGroup ? debtorGroup.id : -1;
-
-            ledgers
-                .filter(l => l.group_id === debtorGroupId || l.name.toLowerCase().includes("customer")) 
+            ledgers.filter(l => l.group_id === debtorGroupId || l.name.toLowerCase().includes("customer")) 
                 .sort((a,b) => a.name.localeCompare(b.name))
-                .forEach(l => { 
-                    sel.innerHTML += `<option value="${l.id}">${l.name}</option>`;
-                });
+                .forEach(l => { sel.innerHTML += `<option value="${l.id}">${l.name}</option>`; });
         }
 
         function loadPartyInfo() {
             const pid = document.getElementById('custSelect').value;
-            if(!pid) { 
-                document.getElementById('partyStats').innerHTML = ''; 
-                return; 
-            }
+            if(!pid) { document.getElementById('partyStats').innerHTML = ''; return; }
             const p = ledgers.find(l => l.id == pid);
             if(!p) return;
             let bal = p.opening_balance || 0;
@@ -514,8 +562,7 @@
         function holdBill() {
             if(cart.length === 0) return alert("Nothing to hold!");
             localStorage.setItem('heldBill_POS', JSON.stringify({ 
-                cart, 
-                cust: document.getElementById('custSelect').value,
+                cart, cust: document.getElementById('custSelect').value,
                 note: document.getElementById('billNote').value,
                 date: document.getElementById('billDate').value
             }));
@@ -538,21 +585,14 @@
         async function quickAddCust() {
             const name = prompt("Customer Name:");
             if(!name) return;
-            const mobile = prompt("Mobile (for WhatsApp):") || "";
+            const mobile = prompt("Mobile:");
             const debtorGrp = groups.find(g => g.name === "Sundry Debtors");
             if(!debtorGrp) return alert("Sundry Debtors group not found!");
             
             const tx = DB.db.transaction('ledgers', 'readwrite');
-            const store = tx.objectStore('ledgers');
-            store.add({
-                name: name.trim(), 
-                phone: mobile, 
-                group_id: debtorGrp.id, 
-                opening_balance: 0, 
-                gstin: "", 
-                address: "Local"
+            tx.objectStore('ledgers').add({
+                name: name.trim(), phone: mobile, group_id: debtorGrp.id, opening_balance: 0, gstin: "", address: "Local"
             });
-            
             tx.oncomplete = async () => {
                 ledgers = await DB.getAll('ledgers');
                 loadCustomers();
@@ -574,7 +614,7 @@
                         <td>${sr++}</td>
                         <td>${c.name}</td>
                         <td style="text-align:center;">${c.qty} ${c.unit}</td>
-                        <td class="right">₹${c.rate.toFixed(2)}</td>
+                        <td class="right">₹${parseFloat(c.rate).toFixed(2)}</td>
                         <td class="right">₹${base.toFixed(2)}</td>
                         <td class="right">₹${taxAmt.toFixed(2)}</td>
                     </tr>`;
@@ -591,23 +631,15 @@
                     </table>
                     <table class="print-table">
                         <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Item</th>
-                                <th>Qty</th>
-                                <th>Rate</th>
-                                <th>Amount</th>
-                                <th>GST</th>
-                            </tr>
+                            <tr><th>#</th><th>Item</th><th>Qty</th><th>Rate</th><th>Amount</th><th>GST</th></tr>
                         </thead>
                         <tbody>${rows}</tbody>
                     </table>
                     <table class="print-table no-print-border" style="margin-top:10px;">
                         <tr><td>Subtotal:</td><td class="right">₹${sub.toFixed(2)}</td></tr>
                         <tr><td>Tax:</td><td class="right">₹${tax.toFixed(2)}</td></tr>
-                        <tr><td><strong>Grand Total:</strong></td><td class="right"><strong>₹${grand.toFixed(2)}</strong></td></tr>
+                        <tr><td><strong>Grand Total:</strong></td><td class="right"><strong>₹${parseFloat(grand).toFixed(2)}</strong></td></tr>
                     </table>
-                    ${data.narration ? `<p style="margin-top:10px;"><strong>Note:</strong> ${data.narration}</p>` : ''}
                     <p style="text-align:center; margin-top:20px; font-size:10pt;">Thank You! Visit Again 🚀</p>
                 </div>
             `;
@@ -618,27 +650,12 @@
 
         function shareOnWhatsApp(data, cartItems, pid, sub, tax, grand) {
             const party = ledgers.find(l => l.id == pid) || { name: "Walk-in Customer", phone: "" };
-            if(!party.phone) return alert("Customer mobile number missing for WhatsApp!");
+            if(!party.phone) return alert("Customer mobile number missing!");
             
-            let msg = `*Arth Book - Tax Invoice*%0A`;
-            msg += `Invoice: *${data.voucher_no}*%0ADate: ${data.date}%0ACustomer: ${party.name}%0A%0A`;
-            msg += `Item                  Qty   Amount%0A`;
-            msg += `--------------------------------%0A`;
-            cartItems.forEach(c => {
-                const amt = (c.qty * c.rate).toFixed(2);
-                const name = c.name.substring(0,20).padEnd(20);
-                msg += `${name} ${c.qty.toString().padEnd(4)} ₹${amt}%0A`;
-            });
-            msg += `--------------------------------%0A`;
-            msg += `Subtotal: ₹${sub.toFixed(2)}%0ATax: ₹${tax.toFixed(2)}%0A`;
-            msg += `*Total: ₹${grand.toFixed(2)}*%0A`;
-            msg += `Payment: ${data.payment_mode}%0A`;
-            msg += `%0AThank You! 🚀`;
-            
+            let msg = `*Arth Book Invoice*%0AInv: ${data.voucher_no}%0AAmt: ₹${grand}%0A%0AThanks!`;
             window.open(`https://wa.me/91${party.phone}?text=${msg}`, '_blank');
         }
 
-        // Keyboard shortcuts
         document.addEventListener('keydown', e => { 
             if(e.ctrlKey && e.key==='Enter') openPaymentModal(); 
             if(e.key==='F2') { e.preventDefault(); document.getElementById('searchBar').focus(); }

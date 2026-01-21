@@ -12,82 +12,43 @@
 
     <style>
         :root {
-            --primary-color: #0f172a;
-            --accent-color: #2563eb;
-            --bg-color: #f1f5f9;
-            --card-bg: #ffffff;
-            --text-color: #1e293b;
-            --success-color: #10b981;
-            --warning-color: #f59e0b;
-            --danger-color: #ef4444;
-            --border-color: #e2e8f0;
+            --primary-color: #0f172a; --accent-color: #2563eb; --bg-color: #f1f5f9;
+            --card-bg: #ffffff; --text-color: #1e293b; --success-color: #10b981;
+            --warning-color: #f59e0b; --danger-color: #ef4444; --border-color: #e2e8f0;
             --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
-
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background-color: var(--bg-color); color: var(--text-color); display: flex; height: 100vh; overflow: hidden; }
 
-        /* HEADER */
-        header {
-            display: none; /* Hidden on desktop, shown on mobile logic if needed, but handled by main layout */
-        }
-
         /* SIDEBAR */
-        .sidebar {
-            width: 260px; background: var(--primary-color); color: #94a3b8;
-            display: flex; flex-direction: column; height: 100vh;
-            flex-shrink: 0; overflow-y: auto; transition: 0.3s; z-index: 100;
-        }
-        .brand-logo { 
-            padding: 20px; font-size: 20px; font-weight: 800; color: white; 
-            display: flex; align-items: center; gap: 10px; margin-bottom: 20px;
-        }
+        .sidebar { width: 260px; background: var(--primary-color); color: #94a3b8; display: flex; flex-direction: column; height: 100vh; flex-shrink: 0; overflow-y: auto; transition: 0.3s; z-index: 100; }
+        .brand-logo { padding: 20px; font-size: 20px; font-weight: 800; color: white; display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
         .nav-links { list-style: none; padding: 0 10px; }
         .nav-links li { margin-bottom: 5px; }
-        .nav-links a {
-            display: flex; align-items: center; gap: 12px; padding: 12px 15px;
-            color: inherit; text-decoration: none; border-radius: 8px;
-            font-weight: 500; transition: 0.2s;
-        }
+        .nav-links a { display: flex; align-items: center; gap: 12px; padding: 12px 15px; color: inherit; text-decoration: none; border-radius: 8px; font-weight: 500; transition: 0.2s; }
         .nav-links a:hover, .nav-links a.active { background: #1e293b; color: white; }
-        .nav-links i { width: 20px; text-align: center; }
 
         /* MAIN CONTENT */
         main { flex: 1; padding: 25px; overflow-y: auto; display: flex; flex-direction: column; }
 
-        /* CARDS & GRID */
-        .dashboard-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 20px; margin-bottom: 20px;
-        }
-        .card {
-            background: var(--card-bg); border-radius: 12px; padding: 20px;
-            box-shadow: var(--shadow); border: 1px solid var(--border-color);
-            position: relative;
-        }
+        /* CARDS */
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 20px; }
+        .card { background: var(--card-bg); border-radius: 12px; padding: 20px; box-shadow: var(--shadow); border: 1px solid var(--border-color); position: relative; }
         .card h3 { font-size: 14px; color: #64748b; font-weight: 600; text-transform: uppercase; margin-bottom: 10px; }
         .value { font-size: 28px; font-weight: 800; color: var(--text-color); margin-bottom: 5px; }
 
-        /* COLORED EDGES */
         .green-edge { border-left: 5px solid var(--success-color); }
         .gold-edge { border-left: 5px solid var(--warning-color); }
         .blue-edge { border-left: 5px solid var(--accent-color); }
         .red-edge { border-left: 5px solid var(--danger-color); }
 
-        /* UTILS */
-        .btn {
-            padding: 10px 20px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer;
-            display: inline-flex; align-items: center; gap: 8px; transition: 0.2s;
-        }
+        .btn { padding: 10px 20px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; }
         .btn-primary { background: var(--accent-color); color: white; }
-        .btn-warning { background: var(--danger-color); color: white; } /* Logout red */
         .btn:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn-warning { background: var(--danger-color); color: white; }
 
-        input {
-            padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; outline: none;
-        }
-        input:focus { border-color: var(--accent-color); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
-
+        input { padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; }
+        
         /* TABLE */
         .table-container { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 10px; }
@@ -95,31 +56,21 @@
         td { padding: 12px; border-bottom: 1px solid var(--border-color); }
         
         /* FAB */
-        .fab-add {
-            position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px;
-            background: var(--accent-color); color: white; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 24px; box-shadow: 0 10px 25px rgba(37,99,235,0.4);
-            transition: 0.3s; z-index: 500; text-decoration: none;
-        }
+        .fab-add { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; background: var(--accent-color); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 10px 25px rgba(37,99,235,0.4); transition: 0.3s; z-index: 500; text-decoration: none; }
         .fab-add:hover { transform: scale(1.1) rotate(90deg); }
 
-        /* MOBILE */
+        /* RESPONSIVE */
+        .menu-toggle { display: none; }
+        header { display: none; }
+        
         @media (max-width: 768px) {
             .sidebar { position: fixed; left: -100%; top: 0; height: 100%; width: 260px; }
             .sidebar.active { left: 0; }
             header { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: white; border-bottom: 1px solid var(--border-color); }
             main { padding: 15px; }
-            .user-menu { display: none; } /* Hide user menu on mobile or move it */
-            .menu-toggle { font-size: 24px; cursor: pointer; color: var(--primary-color); margin-right: 15px; }
-            /* Mobile Header Fix */
-            .brand-logo { display: none; } /* Hide sidebar logo on mobile, show header one */
-            .sidebar.active .brand-logo { display: flex; }
+            .brand-logo { display: none; }
+            .menu-toggle { display: block; font-size: 24px; cursor: pointer; color: var(--primary-color); margin-right: 15px; }
         }
-        
-        /* Show menu button only on mobile */
-        .menu-toggle { display: none; }
-        @media (max-width: 768px) { .menu-toggle { display: block; } }
     </style>
 </head>
 <body>
@@ -204,9 +155,9 @@
 
         <div class="dashboard-grid">
             <div class="card green-edge">
-                <h3>Gross Profit</h3>
+                <h3>Gross Profit (GP)</h3>
                 <div class="value" id="grossProfit">₹0</div>
-                <div style="font-size: 0.85rem; color: #64748b;">Sales - Cost of Goods</div>
+                <div style="font-size: 0.85rem; color: #64748b;">(Sales - Cost of Goods)</div>
             </div>
             
             <div class="card gold-edge">
@@ -280,32 +231,24 @@
     <script src="tally_bridge.js" onerror="console.log('Tally Bridge optional')"></script>
 
     <script>
-        // Global Vars
         let globalVouchers = [];
         let globalLedgerMap = {};
 
-        // UI Init
         document.getElementById('todayDate').innerText = new Date().toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
 
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('active');
         }
 
-        // AUTH & INIT
         window.addEventListener('load', async () => {
             if (window.Security) {
                 const devID = await Security.getMachineID();
                 document.getElementById('displayMachineID').innerText = devID;
             }
-
-            // Check if already logged in (db.js handles default admin)
             if (sessionStorage.getItem('user_session')) {
                 await DB.init(); 
                 document.getElementById('loginOverlay').style.display = 'none';
                 initDashboard();
-            } else {
-                // Auto-login for single user experience (optional, or force login)
-                // For now, show login screen.
             }
         });
 
@@ -313,29 +256,15 @@
             e.preventDefault();
             const u = document.getElementById('username').value.trim();
             const p = document.getElementById('password').value;
-
             await DB.init();
-
             try {
-                // Try plain first (legacy), then hashed
-                try {
-                    await DB.login(u, p);
-                } catch {
-                    if (window.Security) {
-                        const hashed = await Security.hashPassword(p);
-                        await DB.login(u, hashed);
-                    } else {
-                        throw new Error("Security module missing");
-                    }
+                try { await DB.login(u, p); } catch {
+                    if (window.Security) { const hashed = await Security.hashPassword(p); await DB.login(u, hashed); } else { throw new Error("Security module missing"); }
                 }
-
-                sessionStorage.setItem('user_session', JSON.stringify({ username: u, role: 'admin' })); // Force role locally if needed
+                sessionStorage.setItem('user_session', JSON.stringify({ username: u, role: 'admin' }));
                 document.getElementById('loginOverlay').style.display = 'none';
                 initDashboard();
-            } catch (err) {
-                console.error(err);
-                alert('Invalid credentials!');
-            }
+            } catch (err) { console.error(err); alert('Invalid credentials!'); }
         }
 
         function logout() {
@@ -345,13 +274,9 @@
             }
         }
 
-        // DASHBOARD CORE
-        async function initDashboard() {
-            await runAnalytics();
-        }
+        async function initDashboard() { await runAnalytics(); }
 
         async function runAnalytics() {
-            // Using DB helper directly is cleaner
             const vouchers = await DB.getAll('vouchers');
             const items = await DB.getAll('items');
             const ledgers = await DB.getAll('ledgers');
@@ -367,17 +292,39 @@
                 balances[e.ledger_id] = (balances[e.ledger_id] || 0) + (e.debit || 0) - (e.credit || 0);
             });
 
-            // Gross Profit
-            let totalSales = 0, totalPur = 0;
-            vouchers.forEach(v => {
-                if (v.type === 'Sales') totalSales += v.amount || 0;
-                if (v.type === 'Purchase') totalPur += v.amount || 0;
-            });
+            // --- CORRECT PROFIT CALCULATION (Tax Exclusive) ---
+            const salesGrp = groups.find(g => g.name === 'Sales Accounts');
+            const purGrp = groups.find(g => g.name === 'Purchase Accounts');
+            
+            let netSales = 0, netPurchase = 0;
 
-            const openingStockVal = items.reduce((sum, i) => sum + ((i.op_qty || 0) * (i.std_cost || 0)), 0);
+            if(salesGrp && purGrp) {
+                // Good Way: Use Accounting Entries (Already Tax Exclusive)
+                entries.forEach(e => {
+                    const l = ledgers.find(led => led.id === e.ledger_id);
+                    if(l) {
+                        if(l.group_id === salesGrp.id) netSales += (e.credit - e.debit);
+                        if(l.group_id === purGrp.id) netPurchase += (e.debit - e.credit);
+                    }
+                });
+            } else {
+                // Fallback (Bad Way): Tax Inclusive
+                vouchers.forEach(v => {
+                    if (v.type === 'Sales') netSales += v.amount || 0;
+                    if (v.type === 'Purchase') netPurchase += v.amount || 0;
+                });
+            }
+
+            // Calculate Stock Value (At Purchase Rate/Std Cost)
             const closingStockVal = items.reduce((sum, i) => sum + ((i.current_stock || 0) * (i.std_cost || 0)), 0);
-            const cogs = openingStockVal + totalPur - closingStockVal;
-            const profit = totalSales - cogs;
+            
+            // Simplified GP Formula for Trading:
+            // GP = Sales - (Purchase - Closing Stock Change)
+            // Assuming Opening Stock was 0 or handled in Purchase flow.
+            // Cost of Goods Sold (COGS) = Total Purchase - Closing Stock Value
+            const cogs = Math.max(0, netPurchase - closingStockVal);
+            
+            const profit = netSales - cogs;
 
             const pEl = document.getElementById('grossProfit');
             pEl.innerText = fmt(profit);
@@ -525,7 +472,6 @@
         }
 
         function renderCharts(vouchers, inTax, outTax) {
-            // Sales Trend
             const months = [], salesData = {};
             const today = new Date();
             for (let i = 5; i >= 0; i--) {
@@ -541,7 +487,6 @@
                 }
             });
 
-            // FIXED: Safe destroy
             if (window.salesChart instanceof Chart) window.salesChart.destroy();
             
             window.salesChart = new Chart(document.getElementById('salesChart'), {
@@ -563,15 +508,12 @@
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
             });
 
-            // GST Doughnut
             if (window.gstChart instanceof Chart) window.gstChart.destroy();
             
             const gstCanvas = document.getElementById('gstChart');
             if (inTax + outTax === 0) {
-                // Manually draw text if empty
                 const ctx = gstCanvas.getContext('2d');
                 ctx.clearRect(0, 0, gstCanvas.width, gstCanvas.height);
-                // Chart.js won't render if data is 0, handled by simple placeholder text
             } else {
                 window.gstChart = new Chart(gstCanvas, {
                     type: 'doughnut',
@@ -594,7 +536,6 @@
             setTimeout(() => t.style.display = 'none', 2000);
         }
 
-        // SW Register
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('./sw.js').catch(() => {});
         }
