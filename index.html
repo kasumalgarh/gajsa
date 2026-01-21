@@ -52,8 +52,8 @@
         /* TABLE */
         .table-container { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 10px; }
-        th { text-align: left; padding: 12px; background: #f8fafc; color: #64748b; border-bottom: 2px solid var(--border-color); }
-        td { padding: 12px; border-bottom: 1px solid var(--border-color); }
+        th { text-align: left; padding: 12px; background: #f8fafc; color: #64748b; border-bottom: 2px solid var(--border-color); white-space: nowrap; }
+        td { padding: 12px; border-bottom: 1px solid var(--border-color); white-space: nowrap; }
         
         /* FAB */
         .fab-add { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; background: var(--accent-color); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 10px 25px rgba(37,99,235,0.4); transition: 0.3s; z-index: 500; text-decoration: none; }
@@ -63,13 +63,25 @@
         .menu-toggle { display: none; }
         header { display: none; }
         
+        /* --- MOBILE FIXES --- */
         @media (max-width: 768px) {
-            .sidebar { position: fixed; left: -100%; top: 0; height: 100%; width: 260px; }
+            .sidebar { position: fixed; left: -100%; top: 0; height: 100%; width: 260px; box-shadow: 5px 0 15px rgba(0,0,0,0.2); }
             .sidebar.active { left: 0; }
             header { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: white; border-bottom: 1px solid var(--border-color); }
             main { padding: 15px; }
             .brand-logo { display: none; }
             .menu-toggle { display: block; font-size: 24px; cursor: pointer; color: var(--primary-color); margin-right: 15px; }
+
+            /* Force Grids to be Single Column on Mobile */
+            .dashboard-grid { grid-template-columns: 1fr !important; }
+
+            /* Search Bar Fix */
+            .search-row { flex-direction: column; width: 100%; }
+            #univSearch { width: 100% !important; margin-bottom: 10px; }
+            .search-row button { width: 100%; justify-content: center; }
+
+            /* Header Title Fix */
+            h2 { font-size: 1.2rem; }
         }
     </style>
 </head>
@@ -140,7 +152,7 @@
         </div>
 
         <div class="card" style="margin-bottom: 20px; padding: 20px;">
-            <div style="display: flex; gap: 10px; flex-wrap:wrap;">
+            <div class="search-row" style="display: flex; gap: 10px;">
                 <input type="text" id="univSearch" placeholder="🔍 Search Bill No, Party Name, Amount..." style="flex:1; min-width:250px;" onkeyup="if(event.key==='Enter') searchVouchers()">
                 <button class="btn btn-primary" onclick="searchVouchers()">Find</button>
             </div>
