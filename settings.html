@@ -4,638 +4,315 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
-    <title>Settings - Arth Book</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Control Center - Arth Book</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css"> 
 
     <style>
-        :root {
-            --sidebar-bg: #0f172a;
-            --sidebar-active: #1e293b;
-            --accent: #2563eb;
-            --bg-body: #f1f5f9;
-            --card-bg: #ffffff;
-            --text-main: #1e293b;
-            --text-muted: #64748b;
-            --border: #e2e8f0;
-            --green: #10b981;
-            --red: #ef4444;
-            --orange: #f59e0b;
-            --shadow: 0 4px 12px rgba(0,0,0,0.08);
-            --transition: all 0.3s ease;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-        body { display: flex; height: 100vh; background: var(--bg-body); color: var(--text-main); overflow: hidden; }
+        /* Local overrides for Settings Layout */
+        body { display: flex; background: var(--bg-color); height: 100vh; overflow: hidden; }
+        .main-setting { flex: 1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; }
+        
+        .setting-header { margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; }
+        .setting-header h1 { font-size: 24px; color: var(--primary-color); margin: 0; }
 
-        /* SIDEBAR */
-        .sidebar { 
-            width: 260px; background: var(--sidebar-bg); color: #94a3b8; 
-            padding: 20px; display: flex; flex-direction: column; flex-shrink: 0;
-            height: 100vh; overflow-y: auto; transition: var(--transition); z-index: 100;
-        }
-        .brand { font-size: 20px; font-weight: 800; color: white; margin-bottom: 40px; display: flex; align-items: center; gap: 10px; }
-        .nav-link { display: flex; align-items: center; gap: 12px; padding: 14px 18px; color: inherit; text-decoration: none; border-radius: 10px; margin-bottom: 6px; font-weight: 500; transition: var(--transition); }
-        .nav-link:hover, .nav-link.active { background: var(--sidebar-active); color: white; }
+        .tabs { display: flex; gap: 20px; border-bottom: 2px solid var(--border-color); margin-bottom: 20px; }
+        .tab { padding: 12px 20px; cursor: pointer; font-weight: 600; color: #64748b; border-bottom: 3px solid transparent; transition: 0.3s; }
+        .tab:hover { color: var(--primary-color); }
+        .tab.active { color: var(--primary-color); border-bottom-color: var(--accent-color); }
 
-        /* MOBILE MENU */
-        .menu-btn { display: none; position: fixed; top: 15px; left: 15px; z-index: 1100; background: none; border: none; font-size: 1.6rem; color: var(--text-main); cursor: pointer; }
-        .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 900; }
-
-        /* MAIN */
-        .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-        .tabs-header { background: var(--card-bg); padding: 20px 30px; border-bottom: 1px solid var(--border); display: flex; gap: 25px; overflow-x: auto; flex-wrap: nowrap; }
-        .tab-btn { border: none; background: none; padding: 12px 0; font-weight: 600; color: var(--text-muted); cursor: pointer; position: relative; white-space: nowrap; }
-        .tab-btn.active { color: var(--accent); }
-        .tab-btn.active::after { content: ''; position: absolute; bottom: -1px; left: 0; width: 100%; height: 3px; background: var(--accent); border-radius: 3px; }
-
-        .content-area { flex: 1; overflow-y: auto; padding: 30px; }
-
-        /* CARDS */
-        .card { background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border); padding: 30px; margin-bottom: 30px; box-shadow: var(--shadow); }
-        .card h3 { font-size: 18px; font-weight: 700; margin-bottom: 25px; padding-bottom: 12px; border-bottom: 1px solid var(--border); color: var(--text-main); }
-
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; }
-        .form-group input, .form-group select, .form-group textarea { 
-            width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; 
-            font-size: 14px; background: white; transition: var(--transition);
-        }
-        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { 
-            border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,0.15); outline: none; 
-        }
-
-        .sec-head { grid-column: 1 / -1; font-size: 15px; font-weight: 700; color: var(--accent); margin: 20px 0 10px; padding-bottom: 8px; border-bottom: 1px dashed var(--border); }
-
-        /* BUTTONS */
-        .btn { padding: 12px 24px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: var(--transition); }
-        .btn:hover { opacity: 0.9; transform: translateY(-2px); box-shadow: var(--shadow); }
-        .btn-primary { background: var(--accent); color: white; }
-        .btn-success { background: var(--green); color: white; }
-        .btn-danger { background: var(--red); color: white; }
-        .btn-warn { background: var(--orange); color: white; }
-
-        /* SWITCH */
-        .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; inset: 0; background: #cbd5e1; border-radius: 28px; transition: var(--transition); }
-        .slider:before { position: absolute; content: ""; height: 22px; width: 22px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: var(--transition); }
-        input:checked + .slider { background: var(--accent); }
-        input:checked + .slider:before { transform: translateX(22px); }
-
-        /* TABLE */
-        table { width: 100%; border-collapse: collapse; font-size: 14px; }
-        th { background: #f8fafc; padding: 14px; text-align: left; font-weight: 600; color: var(--text-muted); border-bottom: 2px solid var(--border); }
-        td { padding: 12px 14px; border-bottom: 1px solid var(--border); }
-
-        /* TAB ANIMATION */
-        .tab-content { display: none; animation: fadeIn 0.4s ease; }
+        .tab-content { display: none; animation: fadeIn 0.3s ease; }
         .tab-content.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* MOBILE */
-        @media (max-width: 900px) {
-            .menu-btn { display: block; }
-            .sidebar { position: fixed; left: -100%; top: 0; height: 100%; z-index: 1000; box-shadow: var(--shadow); }
-            .sidebar.active { left: 0; }
-            .overlay.active { display: block; }
-            .main { padding: 20px 15px; }
-            .tabs-header { padding: 15px; gap: 15px; }
-            .form-grid { grid-template-columns: 1fr; }
-            .content-area { padding: 20px 15px; }
-        }
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: var(--shadow-sm); margin-bottom: 20px; border: 1px solid var(--border-color); }
+        .card h3 { margin-top: 0; color: var(--primary-color); border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 20px; }
+
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .form-group label { display: block; font-size: 13px; font-weight: 700; color: #475569; margin-bottom: 8px; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 6px; font-family: 'Inter'; }
+        
+        /* Toggle Switch */
+        .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e1; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--success-color); }
+        input:checked + .slider:before { transform: translateX(24px); }
+
+        .status-badge { padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+        .status-ok { background: #dcfce7; color: #166534; }
+        .status-fail { background: #fee2e2; color: #991b1b; }
+
+        .btn-primary { background: var(--primary-color); color: white; padding: 12px 25px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; }
+        .btn-danger { background: var(--danger-color); color: white; padding: 12px 25px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <button class="menu-btn" onclick="toggleMenu()">☰</button>
-    <div class="overlay" onclick="toggleMenu()"></div>
-
-    <div class="sidebar" id="mySidebar">
-        <div class="brand"><i class="fas fa-book"></i> Arth Book</div>
-        <a href="index.html" class="nav-link"><i class="fas fa-chart-pie"></i> Dashboard</a>
-        <a href="sales_invoice.html" class="nav-link"><i class="fas fa-cash-register"></i> Sales POS</a>
-        <a href="purchase_invoice.html" class="nav-link"><i class="fas fa-truck"></i> Purchase</a>
-        <a href="vouchers.html" class="nav-link"><i class="fas fa-receipt"></i> Vouchers</a>
-        <a href="item_master.html" class="nav-link"><i class="fas fa-boxes"></i> Inventory</a>
-        <a href="ArthBook.html" class="nav-link"><i class="fas fa-users"></i> Parties</a>
-        <a href="coa.html" class="nav-link"><i class="fas fa-balance-scale"></i> Accounts</a>
-        <a href="reports.html" class="nav-link"><i class="fas fa-chart-line"></i> Reports</a>
-        <a href="settings.html" class="nav-link active"><i class="fas fa-cogs"></i> Settings</a>
+    <div class="sidebar">
+        <div class="brand-logo" style="text-align:center; padding:20px; color:white; font-weight:800; font-size:20px;">
+            <i class="fas fa-cogs"></i> Settings
+        </div>
+        <a href="index.html" class="nav-link"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+        <a href="#" class="nav-link active"><i class="fas fa-sliders-h"></i> General</a>
+        <div style="margin-top:auto; padding:20px; color:#64748b; font-size:12px; text-align:center;">
+            Arth Book v2.5<br>Secure Build
+        </div>
     </div>
 
-    <div class="main">
-        <div class="tabs-header">
-            <button class="tab-btn active" onclick="showTab('company')">🏢 Company</button>
-            <button class="tab-btn" onclick="showTab('config')">⚙️ Config</button>
-            <button class="tab-btn" onclick="showTab('users')">👥 Users</button>
-            <button class="tab-btn" onclick="showTab('tools')">🔌 Tools</button>
-            <button class="tab-btn" onclick="showTab('logs')">📜 Logs</button>
-            <button class="tab-btn" onclick="showTab('backup')">💾 Backup</button><button class="btn" style="background: var(--orange); color: white; width: 100%; margin-top: 10px;" onclick="forceSyncNow()">
-    🔄 Sync Now (Cloud & Local)
-</button>
+    <div class="main-setting">
+        <div class="setting-header">
+            <h1>System Configuration</h1>
+            <button class="btn-primary" onclick="saveSettings()">💾 Save All Changes</button>
         </div>
 
-        <div class="content-area">
-            <div id="company" class="tab-content active">
-                <div class="card">
-                    <h3>Business Profile</h3>
-                    <div class="form-grid">
-                        <div class="sec-head">Basic Information</div>
-                        <div class="form-group"><label>Company Name</label><input type="text" id="compName"></div>
-                        <div class="form-group"><label>GSTIN</label><input type="text" id="compGST" placeholder="e.g. 27ABCDE1234F1Z5"></div>
-                        <div class="form-group"><label>Phone</label><input type="text" id="compPhone"></div>
-                        <div class="form-group"><label>Email</label><input type="email" id="compEmail"></div>
-                        <div class="form-group"><label>Website</label><input type="text" id="compWeb"></div>
+        <div class="tabs">
+            <div class="tab active" onclick="showTab('company')">🏢 Company Profile</div>
+            <div class="tab" onclick="showTab('cloud')">☁️ Cloud Backup</div>
+            <div class="tab" onclick="showTab('gst')">📡 GST & API</div>
+            <div class="tab" onclick="showTab('data')">🗄️ Data Tools</div>
+        </div>
 
-                        <div class="sec-head">Address</div>
-                        <div class="form-group" style="grid-column: 1 / -1;"><label>Full Address</label><textarea id="compAddr" rows="3"></textarea></div>
-
-                        <div class="sec-head">Bank Details (for Invoices)</div>
-                        <div class="form-group"><label>Bank Name</label><input type="text" id="bankName"></div>
-                        <div class="form-group"><label>Account Number</label><input type="text" id="bankAcc"></div>
-                        <div class="form-group"><label>IFSC Code</label><input type="text" id="bankIFSC"></div>
-                        <div class="form-group"><label>UPI ID</label><input type="text" id="bankUPI"></div>
-
-                        <div class="sec-head">Invoice Footer</div>
-                        <div class="form-group" style="grid-column: 1 / -1;"><label>Terms & Conditions</label><textarea id="compTerms" rows="3" placeholder="Goods once sold will not be returned..."></textarea></div>
+        <div id="company" class="tab-content active">
+            <div class="card">
+                <h3>Bill Header Details</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Business Name</label>
+                        <input type="text" id="compName" placeholder="e.g. Laxmi Traders">
                     </div>
-                    <button class="btn btn-primary" onclick="saveCompany()">💾 Save Profile</button>
+                    <div class="form-group">
+                        <label>GSTIN</label>
+                        <input type="text" id="compGST" placeholder="15 Digit GSTIN">
+                    </div>
+                    <div class="form-group">
+                        <label>Address</label>
+                        <textarea id="compAddr" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Phone / Mobile</label>
+                        <input type="text" id="compPhone">
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="compEmail">
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <h3>Bank Details (For Bill Print)</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Bank Name</label>
+                        <input type="text" id="bankName">
+                    </div>
+                    <div class="form-group">
+                        <label>Account Number</label>
+                        <input type="text" id="bankAcc">
+                    </div>
+                    <div class="form-group">
+                        <label>IFSC Code</label>
+                        <input type="text" id="bankIFSC">
+                    </div>
+                    <div class="form-group">
+                        <label>UPI ID (For QR Code)</label>
+                        <input type="text" id="upiId" placeholder="e.g. 9876543210@ybl">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="cloud" class="tab-content">
+            <div class="card" style="border-left: 5px solid var(--accent-color);">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <h3>Auto-Sync Engine</h3>
+                        <p style="color:#64748b; font-size:13px; margin-top:-15px;">Automatically backup data to GitHub/Drive on every save.</p>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="autoBackup">
+                        <span class="slider"></span>
+                    </label>
                 </div>
             </div>
 
-            <div id="config" class="tab-content">
-                <div class="card">
-                    <h3>System Configuration</h3>
-                    <div class="form-group" style="max-width:400px;">
-                        <label>Default Print Format</label>
-                        <select id="printFormat">
-                            <option value="A4">A4 Invoice (Laser Printer)</option>
-                            <option value="THERMAL80">80mm Thermal (POS)</option>
-                            <option value="THERMAL58">58mm Thermal</option>
+            <div class="card">
+                <h3>GitHub Connection (Private Repo)</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>GitHub Personal Access Token</label>
+                        <input type="password" id="ghToken" placeholder="ghp_xxxxxxxxxxxx">
+                    </div>
+                    <div class="form-group">
+                        <label>Repository Path (username/repo)</label>
+                        <input type="text" id="ghRepo" placeholder="kasumalgarh/arthbook-data">
+                    </div>
+                </div>
+                <div style="margin-top:20px;">
+                    <button class="btn-primary" onclick="testCloudConnection()">🔄 Test Connection</button>
+                    <span id="cloudStatus" class="status-badge status-fail" style="display:none; margin-left:10px;">Disconnected</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="gst" class="tab-content">
+            <div class="card">
+                <h3>e-Invoicing Credentials (GSP)</h3>
+                <p style="font-size:12px; color:#64748b; margin-bottom:20px;">Required for generating IRN and e-Way Bills directly.</p>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>API Environment</label>
+                        <select id="apiEnv">
+                            <option value="sandbox">Sandbox (Testing)</option>
+                            <option value="production">Production (Live)</option>
                         </select>
                     </div>
-
-                    <div style="margin-top:40px; background:#f0f9ff; padding:20px; border-radius:12px; border:1px solid #bae6fd;">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <div>
-                                <strong style="font-size:16px;">👻 Ghost Mode (Iron Dome)</strong><br>
-                                <span style="color:var(--text-muted);">Hides sensitive financial data on dashboard & encrypts local storage.</span>
-                            </div>
-                            <label class="switch">
-                                <input type="checkbox" id="ghostSwitch" onchange="toggleGhostMode()">
-                                <span class="slider"></span>
-                            </label>
-                        </div>
+                    <div class="form-group">
+                        <label>GSP Client ID</label>
+                        <input type="text" id="gspId">
                     </div>
-
-                    <button class="btn btn-primary" style="margin-top:30px;" onclick="saveConfig()">✅ Apply Settings</button>
-                </div>
-            </div>
-
-            <div id="users" class="tab-content">
-                <div class="card">
-                    <h3>Add New User</h3>
-                    <div class="form-grid">
-                        <div class="form-group"><label>Username</label><input type="text" id="newUser"></div>
-                        <div class="form-group"><label>Password</label><input type="password" id="newPass"></div>
-                        <div class="form-group"><label>Role</label>
-                            <select id="newRole">
-                                <option value="operator">Operator (Limited)</option>
-                                <option value="admin">Admin (Full Access)</option>
-                            </select>
-                        </div>
+                    <div class="form-group">
+                        <label>GSP Client Secret</label>
+                        <input type="password" id="gspSecret">
                     </div>
-                    <button class="btn btn-success" onclick="addUser()">➕ Create User</button>
-                </div>
-
-                <div class="card">
-                    <h3>Current Users</h3>
-                    <table id="usersTable">
-                        <thead><tr><th>Username</th><th>Role</th><th>Last Login</th><th>Action</th></tr></thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div id="tools" class="tab-content">
-                <div class="card">
-                    <h3>Data Export & Integration</h3>
-                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(250px,1fr)); gap:20px;">
-                        <div style="border:1px dashed var(--border); padding:20px; border-radius:12px; text-align:center;">
-                            <h4>Tally Prime XML</h4>
-                            <input type="date" id="tallyFrom"><input type="date" id="tallyTo">
-                            <button class="btn btn-warn" style="margin-top:10px;" onclick="exportToTally()">📤 Export to Tally</button>
-                        </div>
-                        <div style="border:1px dashed var(--border); padding:20px; border-radius:12px; text-align:center;">
-                            <h4>Excel Reports</h4>
-                            <p style="color:var(--text-muted); margin-bottom:15px;">Use Reports tab for detailed exports</p>
-                            <button class="btn btn-success" onclick="location.href='reports.html'">📊 Go to Reports</button>
-                        </div>
+                    <div class="form-group">
+                        <label>GST Portal Username</label>
+                        <input type="text" id="gstUser">
                     </div>
                 </div>
             </div>
+        </div>
 
-            <div id="logs" class="tab-content">
-                <div class="card">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                        <h3>Audit Logs</h3>
-                        <button class="btn btn-primary" onclick="loadLogs()">🔄 Refresh</button>
-                    </div>
-                    <div style="max-height:500px; overflow-y:auto; border:1px solid var(--border); border-radius:8px;">
-                        <table id="logsTable">
-                            <thead><tr><th>Timestamp</th><th>User</th><th>Action</th><th>Details</th></tr></thead>
-                            <tbody></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <div id="backup" class="tab-content">
-                <div class="card" style="border-top: 4px solid var(--accent);">
-                    <h3>☁️ Cloud & Local Backup Settings</h3>
-                    <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 20px;">डेटा को सुरक्षित रखने के लिए GitHub और पेनड्राइव बैकअप सेट करें।</p>
-
-                    <div class="form-grid">
-                        <div style="grid-column: 1 / -1;">
-                             <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid var(--border);">
-                                <input type="checkbox" id="auto_backup_enabled" style="width: 20px; height: 20px;">
-                                <strong>Enable Auto Backup (Every 30 Mins)</strong>
-                            </label>
-                        </div>
-
-                        <div class="form-group">
-                            <label>GitHub Personal Access Token</label>
-                            <input type="password" id="github_token" placeholder="ghp_xxxxxxxxxxxx">
-                        </div>
-                        <div class="form-group">
-                            <label>GitHub Repository Path</label>
-                            <input type="text" id="github_repo" placeholder="username/repository-name">
-                        </div>
-                    </div>
-                    
-                    <div style="margin-top: 20px; padding-top: 20px; border-top: 1px dashed var(--border);">
-                        <label style="font-weight: 600; margin-bottom: 8px; display: block;">Local Backup (Pendrive/PC Folder)</label>
-                        <div style="display: flex; gap: 10px; align-items: center;">
-                            <button class="btn" id="btnSelectFolder" style="background: #64748b; color: white;">
-                                📁 Select Backup Folder
-                            </button>
-                            <div id="folderStatus" style="font-size: 14px; color: #10b981; font-weight: 600; display: none;">
-                                ✅ Folder Connected!
-                            </div>
-                        </div>
-                    </div>
-
-                    <button class="btn btn-primary" onclick="saveBackupSettings()" style="margin-top: 20px;">
-                        💾 Save Backup Configuration
+        <div id="data" class="tab-content">
+            <div class="card">
+                <h3>Export Data</h3>
+                <div style="display:flex; gap:15px;">
+                    <button class="btn-primary" style="background:#16a34a;" onclick="TallyExport.exportToTally('2025-01-01', '2026-12-31')">
+                        <i class="fas fa-file-excel"></i> Export to Tally XML
+                    </button>
+                    <button class="btn-primary" onclick="DB.exportBackup()">
+                        <i class="fas fa-download"></i> Download Full Backup (JSON)
                     </button>
                 </div>
+            </div>
 
-                <div class="card">
-                    <h3>Manual Backup & Restore</h3>
-                    <div style="background:#f0fdf4; padding:20px; border-radius:12px; border:1px solid #86efac; margin-bottom:30px;">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <div>
-                                <strong>Browser Auto Download</strong><br>
-                                <span style="color:var(--text-muted);">Downloads backup file to Downloads folder every hour</span>
-                            </div>
-                            <label class="switch">
-                                <input type="checkbox" id="autoBackupSwitch" onchange="toggleAutoBackup()">
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="form-grid">
-                        <div style="text-align:center; padding:20px; border:1px dashed var(--border); border-radius:12px;">
-                            <h4>Download JSON File</h4>
-                            <button class="btn btn-primary" onclick="manualBackup()" style="margin-top: 10px;">📥 Download Now</button>
-                        </div>
-                        <div style="text-align:center; padding:20px; border:1px dashed var(--border); border-radius:12px;">
-                            <h4>Restore from JSON</h4>
-                            <input type="file" id="restoreInput" accept=".json" style="display:none;" onchange="restoreBackup(this)">
-                            <button class="btn btn-warn" onclick="document.getElementById('restoreInput').click()" style="margin-top: 10px;">📤 Upload JSON</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card" style="border-left:5px solid var(--red);">
-                    <h3 style="color:var(--red);">Danger Zone</h3>
-                    <p style="margin-bottom:20px;">This will erase all data permanently.</p>
-                    <button class="btn btn-danger" onclick="factoryReset()">🗑️ Factory Reset</button>
-                </div>
+            <div class="card" style="border-color: var(--danger-color);">
+                <h3 style="color:var(--danger-color);">Danger Zone</h3>
+                <p style="font-size:13px; color:#ef4444;">Once you delete data, there is no going back. Please be certain.</p>
+                <button class="btn-danger" onclick="factoryReset()">
+                    <i class="fas fa-trash"></i> Factory Reset (Wipe All Data)
+                </button>
             </div>
         </div>
     </div>
 
     <script src="db.js"></script>
-    <script src="security_utils.js" onerror="console.log('Security Utils missing')"></script> 
-    <script src="tally_bridge.js" onerror="console.log('Tally Bridge missing')"></script>
-
+    <script src="auth.js"></script>
+    <script src="tally_bridge.js"></script>
     <script>
-        let autoBackupTimer;
+        function showTab(id) {
+            document.querySelectorAll('.tab-content').forEach(d => d.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            event.target.classList.add('active');
+        }
 
         window.onload = async () => {
             await DB.init();
+            const s = await DB.getSettings();
+            
+            // Populate Fields
+            document.getElementById('compName').value = s.company_name || '';
+            document.getElementById('compGST').value = s.gstin || '';
+            document.getElementById('compAddr').value = s.address || '';
+            document.getElementById('compPhone').value = s.phone || '';
+            document.getElementById('compEmail').value = s.email || '';
+            
+            document.getElementById('bankName').value = s.bank_name || '';
+            document.getElementById('bankAcc').value = s.bank_account || '';
+            document.getElementById('bankIFSC').value = s.bank_ifsc || '';
+            document.getElementById('upiId').value = s.upi_id || '';
 
-            // --- REPAIR 1: Fix Admin Access if missing ---
-            let session = sessionStorage.getItem('user_session');
-            if(!session) {
-                // Auto-login as Admin after Reset
-                const adminUser = { username: 'admin', role: 'admin' };
-                sessionStorage.setItem('user_session', JSON.stringify(adminUser));
-                session = JSON.stringify(adminUser);
-            }
+            document.getElementById('autoBackup').checked = s.auto_backup_enabled || false;
+            document.getElementById('ghToken').value = s.github_token || '';
+            document.getElementById('ghRepo').value = s.github_repo || '';
 
-            // --- REPAIR 2: Fix Missing DB Functions (Monkey Patch) ---
-            if (!DB.getSettings) {
-                DB.getSettings = async function() { return this.getOne('settings', 'global') || {}; };
-            }
-            if (!DB.saveSettings) {
-                DB.saveSettings = async function(data) { data.id = 'global'; return this._put('settings', data, 'Settings Saved'); };
-            }
-            if (!DB.exportBackup) {
-                DB.exportBackup = async function() {
-                    const backup = {};
-                    const stores = ['vouchers', 'ledgers', 'items', 'users', 'settings', 'acct_entries', 'voucher_items'];
-                    for(let s of stores) backup[s] = await this.getAll(s);
-                    const blob = new Blob([JSON.stringify(backup)], {type: "application/json"});
-                    const a = document.createElement('a');
-                    a.href = URL.createObjectURL(blob);
-                    a.download = `ArthBook_Backup_${new Date().toISOString().slice(0,10)}.json`;
-                    a.click();
-                };
-            }
+            document.getElementById('apiEnv').value = s.api_env || 'sandbox';
+            document.getElementById('gspId').value = s.gsp_id || '';
+            document.getElementById('gspSecret').value = s.gsp_secret || '';
+            document.getElementById('gstUser').value = s.gst_user || '';
+        };
 
-            // Admin Check
-            const user = JSON.parse(session);
-            if(user.role !== 'admin') {
-                document.querySelector('.content-area').innerHTML = '<div class="card" style="text-align:center; padding:50px;"><h3>⛔ Admin Access Required</h3></div>';
+        async function saveSettings() {
+            const settings = {
+                company_name: document.getElementById('compName').value,
+                gstin: document.getElementById('compGST').value,
+                address: document.getElementById('compAddr').value,
+                phone: document.getElementById('compPhone').value,
+                email: document.getElementById('compEmail').value,
+                
+                bank_name: document.getElementById('bankName').value,
+                bank_account: document.getElementById('bankAcc').value,
+                bank_ifsc: document.getElementById('bankIFSC').value,
+                upi_id: document.getElementById('upiId').value,
+
+                auto_backup_enabled: document.getElementById('autoBackup').checked,
+                github_token: document.getElementById('ghToken').value,
+                github_repo: document.getElementById('ghRepo').value,
+
+                api_env: document.getElementById('apiEnv').value,
+                gsp_id: document.getElementById('gspId').value,
+                gsp_secret: document.getElementById('gspSecret').value,
+                gst_user: document.getElementById('gstUser').value
+            };
+
+            await DB.saveSettings(settings);
+            alert("✅ Settings Saved Successfully!");
+            
+            // Trigger a sync if enabled
+            if(settings.auto_backup_enabled && settings.github_token) {
+                testCloudConnection();
+            }
+        }
+
+        async function testCloudConnection() {
+            const token = document.getElementById('ghToken').value;
+            const repo = document.getElementById('ghRepo').value;
+            const status = document.getElementById('cloudStatus');
+            
+            status.style.display = 'inline-block';
+            status.innerText = "Testing...";
+            status.className = "status-badge";
+            
+            if(!token || !repo) {
+                status.innerText = "Missing Info";
+                status.classList.add('status-fail');
                 return;
             }
 
-            // Load All Data
-            loadCompanySettings();
-            loadConfig();
-            loadUsers();
-            loadLogs();
-            loadBackupSettings(); // Loaded here now
-
-            // Auto Backup State
-            const autoBackup = localStorage.getItem('arthbook_auto_backup') === 'true';
-            document.getElementById('autoBackupSwitch').checked = autoBackup;
-            if(autoBackup) startAutoBackup();
-        };
-
-        function toggleMenu() {
-            document.getElementById('mySidebar').classList.toggle('active');
-            document.querySelector('.overlay').classList.toggle('active');
-        }
-
-        function showTab(id) {
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            document.querySelector(`button[onclick="showTab('${id}')"]`).classList.add('active');
-        }
-
-        // Company Profile
-        async function loadCompanySettings() {
-            const settings = await DB.getSettings();
-            if(!settings) return;
-
-            document.getElementById('compName').value = settings.company_name || '';
-            document.getElementById('compGST').value = settings.gstin || '';
-            document.getElementById('compPhone').value = settings.phone || '';
-            document.getElementById('compEmail').value = settings.email || '';
-            document.getElementById('compAddr').value = settings.address || '';
-            document.getElementById('compWeb').value = settings.website || '';
-            document.getElementById('bankName').value = settings.bank_name || '';
-            document.getElementById('bankAcc').value = settings.bank_account || '';
-            document.getElementById('bankIFSC').value = settings.bank_ifsc || '';
-            document.getElementById('bankUPI').value = settings.upi_id || '';
-            document.getElementById('compTerms').value = settings.terms || '';
-        }
-
-        async function saveCompany() {
-            const data = {
-                company_name: document.getElementById('compName').value.trim(),
-                gstin: document.getElementById('compGST').value.trim(),
-                phone: document.getElementById('compPhone').value.trim(),
-                email: document.getElementById('compEmail').value.trim(),
-                address: document.getElementById('compAddr').value.trim(),
-                website: document.getElementById('compWeb').value.trim(),
-                bank_name: document.getElementById('bankName').value.trim(),
-                bank_account: document.getElementById('bankAcc').value.trim(),
-                bank_ifsc: document.getElementById('bankIFSC').value.trim(),
-                upi_id: document.getElementById('bankUPI').value.trim(),
-                terms: document.getElementById('compTerms').value.trim()
-            };
-
-            await DB.saveSettings(data);
-            alert('✅ Company profile saved successfully!');
-        }
-
-        // Config
-        async function loadConfig() {
-            const settings = await DB.getSettings();
-            if(settings.print_format) document.getElementById('printFormat').value = settings.print_format;
-            if(settings.ghost_mode) document.getElementById('ghostSwitch').checked = true;
-        }
-
-        async function saveConfig() {
-            const data = {
-                print_format: document.getElementById('printFormat').value,
-                ghost_mode: document.getElementById('ghostSwitch').checked
-            };
-            await DB.saveSettings(data);
-            alert('✅ Configuration updated!');
-        }
-
-        function toggleGhostMode() {
-            alert(document.getElementById('ghostSwitch').checked ? '👻 Ghost Mode Activated' : 'Ghost Mode Disabled');
-        }
-
-        // Users
-        async function loadUsers() {
-            const users = await DB.getAll('users');
-            const tbody = document.getElementById('usersTable').querySelector('tbody');
-            tbody.innerHTML = '';
-            users.forEach(u => {
-                tbody.innerHTML += `
-                    <tr>
-                        <td><strong>${u.username}</strong></td>
-                        <td><span style="padding:4px 10px; border-radius:6px; background:${u.role==='admin'?'#fee2e2':'#e0e7ff'}; color:${u.role==='admin'?'#991b1b':'#1e40af'};">${u.role}</span></td>
-                        <td>${u.last_login ? new Date(u.last_login).toLocaleString() : 'Never'}</td>
-                        <td>${u.username !== 'admin' ? `<button class="btn btn-danger" style="padding:6px 12px; font-size:12px;" onclick="deleteUser('${u.username}')">Delete</button>` : '-'}</td>
-                    </tr>`;
-            });
-        }
-
-        async function addUser() {
-            const username = document.getElementById('newUser').value.trim();
-            const password = document.getElementById('newPass').value;
-            if(!username || !password) return alert('Fill username and password');
-
-            // Simple hash fallback if Security util missing
-            const hashed = window.Security ? await Security.hashPassword(password) : password;
-            try {
-                await DB.db.transaction('users', 'readwrite').objectStore('users').add({
-                    username, password: hashed, role: document.getElementById('newRole').value
-                });
-                alert('User created!');
-                document.getElementById('newUser').value = '';
-                document.getElementById('newPass').value = '';
-                loadUsers();
-            } catch(e) {
-                alert('Username already exists!');
+            const ok = await DB.syncToGithub(token, repo, 'connection_test.txt', 'Arth Book Connection OK');
+            if(ok) {
+                status.innerText = "Connected ✅";
+                status.classList.add('status-ok');
+            } else {
+                status.innerText = "Connection Failed ❌";
+                status.classList.add('status-fail');
             }
-        }
-
-        async function deleteUser(username) {
-            if(!confirm(`Delete user ${username}?`)) return;
-            await DB.db.transaction('users', 'readwrite').objectStore('users').delete(username);
-            loadUsers();
-        }
-
-        // Tally Export
-        function exportToTally() {
-            if (typeof TallyExport === 'undefined') return alert('Tally Bridge not loaded');
-            const from = document.getElementById('tallyFrom').value || '2020-01-01';
-            const to = document.getElementById('tallyTo').value || new Date().toISOString().slice(0,10);
-            TallyExport.exportToTally(from, to);
-        }
-
-        // Logs
-        async function loadLogs() {
-            // Safe check for logs/audit chain
-            const logs = (await DB.getAll('audit_chain')) || (await DB.getAll('logs')) || [];
-            logs.sort((a,b) => (new Date(b.timestamp) - new Date(a.timestamp)));
-            const tbody = document.getElementById('logsTable').querySelector('tbody');
-            tbody.innerHTML = logs.length ? '' : '<tr><td colspan="4" style="text-align:center; color:#999;">No logs yet</td></tr>';
-            logs.slice(0,100).forEach(l => {
-                tbody.innerHTML += `<tr><td>${new Date(l.timestamp).toLocaleString()}</td><td>${l.user}</td><td>${l.action}</td><td>${l.description || l.details}</td></tr>`;
-            });
-        }
-
-        // --- BACKUP LOGIC (Consolidated) ---
-
-        // 1. Load Backup Settings (GitHub/Pendrive config)
-        async function loadBackupSettings() {
-            // Fetch from 'settings' store with id 'global'
-            // DB.getSettings() is already defined above as a helper
-            const settings = await DB.getSettings();
-            
-            // Checkboxes and Inputs
-            if(document.getElementById('auto_backup_enabled')) {
-                document.getElementById('auto_backup_enabled').checked = settings.auto_backup_enabled || false;
-            }
-            if(document.getElementById('github_token')) {
-                document.getElementById('github_token').value = settings.github_token || '';
-            }
-            if(document.getElementById('github_repo')) {
-                document.getElementById('github_repo').value = settings.github_repo || '';
-            }
-        }
-
-        // 2. Save Backup Settings
-        async function saveBackupSettings() {
-            const currentSettings = await DB.getSettings();
-            
-            const newConfig = {
-                ...currentSettings, // Keep existing settings like company info
-                id: 'global',
-                auto_backup_enabled: document.getElementById('auto_backup_enabled').checked,
-                github_token: document.getElementById('github_token').value.trim(),
-                github_repo: document.getElementById('github_repo').value.trim()
-            };
-
-            const tx = DB.db.transaction('settings', 'readwrite');
-            await tx.objectStore('settings').put(newConfig);
-            alert("✅ Backup Settings Saved!");
-        }
-
-        // 3. Select Folder (Pendrive)
-        if(document.getElementById('btnSelectFolder')) {
-            document.getElementById('btnSelectFolder').onclick = async () => {
-                try {
-                    window.localDirHandle = await window.showDirectoryPicker();
-                    document.getElementById('folderStatus').style.display = 'block';
-                    alert("Folder Selected! अब सॉफ्टवेयर इसमें बैकअप ले सकेगा।");
-                } catch (err) {
-                    console.error("Folder selection cancelled");
-                }
-            };
-        }
-
-        // 4. Browser Auto Backup (Existing Logic)
-        function toggleAutoBackup() {
-            const enabled = document.getElementById('autoBackupSwitch').checked;
-            localStorage.setItem('arthbook_auto_backup', enabled);
-            enabled ? startAutoBackup() : clearInterval(autoBackupTimer);
-            alert(enabled ? 'Auto backup enabled (hourly)' : 'Auto backup disabled');
-        }
-
-        function startAutoBackup() {
-            clearInterval(autoBackupTimer);
-            autoBackupTimer = setInterval(() => manualBackup(true), 3600000); // hourly
-        }
-
-        async function manualBackup(silent = false) {
-            await DB.exportBackup();
-            if(!silent) alert('Backup downloaded!');
-        }
-
-        function restoreBackup(input) {
-            if(!input.files[0]) return;
-            if(!confirm('Restore will overwrite all data. Continue?')) return;
-
-            const reader = new FileReader();
-            reader.onload = async (e) => {
-                try {
-                    const data = JSON.parse(e.target.result);
-                    // Import logic here if needed
-                    alert('Restore functionality ready. (Reloading to apply if implemented)');
-                    location.reload();
-                } catch(err) {
-                    alert('Invalid backup file');
-                }
-            };
-            reader.readAsText(input.files[0]);
         }
 
         function factoryReset() {
-            if(!confirm('PERMANENTLY DELETE ALL DATA? This cannot be undone!')) return;
-            indexedDB.deleteDatabase('ArthBook_DB');
-            localStorage.clear();
-            sessionStorage.clear();
-            alert('Reset complete. Reloading...');
-            location.reload();
+            if(confirm("⚠️ CRITICAL WARNING: This will delete ALL data (Customers, Stock, Bills). Are you sure?")) {
+                const req = indexedDB.deleteDatabase('ArthBook_DB');
+                req.onsuccess = () => {
+                    localStorage.clear();
+                    sessionStorage.clear();
+                    alert("System Reset Complete. Refreshing...");
+                    window.location.href = "login.html";
+                };
+            }
         }
-        async function forceSyncNow() {
-    alert("सिंक शुरू हो रहा है, कृपया 5 सेकंड रुकें...");
-    const settings = await DB.getAll('settings');
-    const config = settings.find(s => s.id === 'global') || {};
-    const data = await DB.getFullBackup();
-
-    // GitHub Sync
-    if (config.github_token && config.github_repo) {
-        const ok = await DB.syncToGithub(config.github_token, config.github_repo, 'cloud_backup.json', data);
-        if(ok) {
-            window.dispatchEvent(new CustomEvent('backup-status', { detail: 'success' }));
-            alert("✅ Cloud Sync Successful! अब आइकन हरा हो जाएगा।");
-        } else {
-            window.dispatchEvent(new CustomEvent('backup-status', { detail: 'error' }));
-            alert("❌ Cloud Sync Failed! कृपया अपना Token और Repo Path चेक करें।");
-        }
-    }
-
-    // Local Sync
-    if (window.localDirHandle) {
-        await DB.syncToLocal(window.localDirHandle, data);
-        window.dispatchEvent(new CustomEvent('backup-status', { detail: 'local_ok' }));
-    }
-}
     </script>
 </body>
 </html>
