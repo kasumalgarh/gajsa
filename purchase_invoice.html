@@ -5,195 +5,173 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Purchase Entry - Arth Book</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css"> 
     <style>
-        :root { --primary: #064e3b; --accent: #10b981; --bg: #f0fdf4; --text: #064e3b; --border: #d1fae5; --sidebar-bg: #0f172a; }
-        * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
-        body { display: flex; height: 100vh; background: var(--bg); color: var(--text); overflow: hidden; }
-
-        /* --- SIDEBAR --- */
-        .sidebar { 
-            width: 260px; background: #0f172a; padding: 20px; display: flex; 
-            flex-direction: column; flex-shrink: 0; height: 100vh; overflow-y: auto; 
-        }
-        .nav-link { padding: 12px; margin-bottom: 5px; border-radius: 8px; color: #94a3b8; text-decoration: none; font-weight: 500; display: block; }
-        .nav-link:hover, .nav-link.active { background: #1e293b; color: white; }
-
-        /* --- MAIN --- */
-        .main { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; }
-        .toolbar { background: white; padding: 10px 15px; margin-bottom: 20px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .container { background: white; max-width: 1000px; margin: 0 auto; padding: 25px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid var(--border); }
+        /* Specific Overrides for Purchase Page */
+        body { background: #f8fafc; }
+        .main-content { padding: 20px; overflow-y: auto; flex: 1; }
         
-        .grid-header { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-        input, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; font-size: 13px; }
-        label { font-size: 12px; font-weight: 700; color: #64748b; display: block; margin-bottom: 5px; }
-        
-        .table-wrap { overflow-x: auto; margin-bottom: 20px; border: 1px solid var(--border); border-radius: 6px; }
-        table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        th { background: var(--primary); color: white; padding: 10px; text-align: left; }
-        td { border-bottom: 1px solid #e2e8f0; padding: 5px; }
-        
-        .btn { padding: 10px 20px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; color: white; }
-        .btn-add { background: #ecfdf5; color: var(--primary); border: 1px dashed var(--primary); width: 100%; margin-bottom: 20px; }
-        .btn-save { background: var(--primary); }
+        .toolbar { background: white; padding: 15px 20px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .toolbar h2 { margin: 0; color: var(--primary-color); font-size: 1.25rem; }
 
-        .totals { display: flex; justify-content: flex-end; gap: 30px; font-size: 14px; font-weight: 600; padding-top: 15px; border-top: 2px solid var(--border); }
+        .container { background: white; max-width: 1100px; margin: 0 auto; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }
         
-        /* RECENT PURCHASES */
-        .recent-box { margin-top:30px; background:white; padding:15px; border-radius:8px; border:1px solid var(--border); }
-        .recent-table { width:100%; border-collapse:collapse; font-size:13px; }
-        .recent-table th { background:#f1f5f9; padding:10px; text-align:left; color:#333; border-bottom: 2px solid #ddd; }
-        .recent-table td { padding:10px; border-bottom:1px solid #eee; }
-        .btn-del { background: #fee2e2; color: #ef4444; padding: 5px 10px; font-size: 12px; border-radius: 4px; cursor: pointer; border: 1px solid #fecaca; margin-right:5px; }
-        .btn-print { background: #e0f2fe; color: #0369a1; padding: 5px 10px; font-size: 12px; border-radius: 4px; cursor: pointer; border: 1px solid #bae6fd; }
+        .grid-header { display: grid; grid-template-columns: 1fr 1fr 2fr; gap: 20px; margin-bottom: 25px; }
+        .form-group label { font-size: 0.85rem; font-weight: 600; color: #64748b; display: block; margin-bottom: 6px; text-transform: uppercase; }
+        .form-group input, .form-group select { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem; outline: none; transition: 0.2s; }
+        .form-group input:focus, .form-group select:focus { border-color: var(--accent-color); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
 
-        /* --- PRINT CSS (A4 TALLY) --- */
-        @media print { 
-            @page { size: A4; margin: 5mm; }
-            body * { visibility: hidden; } 
-            #printArea, #printArea * { visibility: visible; } 
-            #printArea { position: absolute; left: 0; top: 0; width: 100%; font-family: 'Times New Roman', serif; color: black; background: white; padding: 5px; } 
-            
-            .a4-container { border: 1px solid #000; width: 100%; height: 98vh; display: flex; flex-direction: column; }
-            .a4-header { text-align: center; border-bottom: 1px solid #000; padding: 10px; background: #f9f9f9 !important; -webkit-print-color-adjust: exact; }
-            .a4-info { display: flex; border-bottom: 1px solid #000; }
-            .a4-box { flex: 1; padding: 10px; border-right: 1px solid #000; font-size: 10pt; }
-            .a4-box:last-child { border-right: none; }
-            .a4-table { width: 100%; border-collapse: collapse; font-size: 10pt; flex: 1; }
-            .a4-table th, .a4-table td { border: 1px solid #000; padding: 5px; }
-            .a4-footer { border-top: 1px solid #000; display: flex; font-size: 10pt; height: 200px; }
-            .a4-foot-left { flex: 1; padding: 10px; border-right: 1px solid #000; }
-            .a4-foot-right { width: 40%; padding: 10px; }
-            .sign-box { margin-top: 50px; text-align: right; font-weight: bold; }
+        .table-wrap { overflow-x: auto; margin-bottom: 20px; border: 1px solid #e2e8f0; border-radius: 8px; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+        th { background: #f1f5f9; color: #475569; padding: 12px 15px; text-align: left; font-weight: 600; border-bottom: 2px solid #e2e8f0; }
+        td { padding: 10px 15px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+        
+        /* Input in Table */
+        td input, td select { padding: 8px; border: 1px solid #e2e8f0; border-radius: 4px; width: 100%; }
+        td input:focus { border-color: var(--accent-color); }
+
+        .btn { padding: 10px 20px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-add { background: #eff6ff; color: var(--accent-color); border: 1px dashed var(--accent-color); width: 100%; justify-content: center; margin-bottom: 20px; }
+        .btn-add:hover { background: #dbeafe; }
+        .btn-save { background: var(--success-color); color: white; }
+        .btn-save:hover { opacity: 0.9; transform: translateY(-1px); }
+
+        .totals { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; padding-top: 20px; border-top: 2px dashed #e2e8f0; }
+        .total-row { display: flex; gap: 20px; font-size: 0.9rem; color: #64748b; }
+        .grand-total { font-size: 1.5rem; font-weight: 800; color: var(--primary-color); margin-top: 5px; }
+
+        /* Recent List */
+        .recent-section { margin-top: 40px; }
+        .recent-section h3 { color: #475569; font-size: 1.1rem; margin-bottom: 15px; }
+        .recent-table th { background: #fff; border-bottom: 2px solid #e2e8f0; }
+        .status-badge { background: #dcfce7; color: #166534; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
+
+        /* Print Override */
+        @media print {
+            .sidebar, .toolbar, .btn-add, .recent-section, .no-print { display: none !important; }
+            .container { box-shadow: none; border: none; max-width: 100%; padding: 0; }
+            body { background: white; }
         }
     </style>
 </head>
 <body>
 
-    <div class="sidebar">
-        <div style="color:white; font-size:20px; font-weight:800; margin-bottom:30px;">🚀 Arth Book</div>
-        <a href="index.html" class="nav-link">📊 Dashboard</a>
-        <a href="reports.html" class="nav-link">📈 Reports</a>
-        <a href="gst_filing.html" class="nav-link">🏛️ GST Filing</a>
-        <a href="sales_invoice.html" class="nav-link">🧾 Sales Invoice</a>
-        <a href="purchase_invoice.html" class="nav-link active">🚚 Purchase Entry</a>
-        <a href="vouchers.html" class="nav-link">💸 Vouchers (JV)</a>
-        <a href="item_master.html" class="nav-link">📦 Inventory</a>
-        <a href="settings.html" class="nav-link">⚙️ Settings</a>
+    <div class="sidebar no-print">
+        <div class="brand-logo" style="padding:20px; color:white; font-weight:800; font-size:20px;">
+            <i class="fas fa-truck"></i> Purchase
+        </div>
+        <a href="index.html" class="nav-link"><i class="fas fa-arrow-left"></i> Dashboard</a>
+        <a href="vouchers.html" class="nav-link"><i class="fas fa-list"></i> All Vouchers</a>
+        <a href="item_master.html" class="nav-link"><i class="fas fa-boxes"></i> Inventory</a>
     </div>
 
-    <div class="main">
-        <div class="toolbar">
-            <h2 style="font-size:18px;">Purchase Entry</h2>
-            <button class="btn btn-save" onclick="savePurchase()">💾 Save & Print A4</button>
+    <div class="main-content">
+        <div class="toolbar no-print">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <div style="width:40px; height:40px; background:#e0f2fe; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#0284c7;">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                </div>
+                <div>
+                    <h2 style="font-size:16px;">New Purchase Entry</h2>
+                    <div style="font-size:12px; color:#64748b;">Stock will increase automatically</div>
+                </div>
+            </div>
+            <button class="btn btn-save" onclick="savePurchase()">
+                <i class="fas fa-save"></i> Save & Print
+            </button>
         </div>
 
         <div class="container">
             <div class="grid-header">
-                <div><label>Invoice No</label><input type="text" id="invNo" placeholder="Bill Number"></div>
-                <div><label>Date</label><input type="date" id="invDate"></div>
-                <div><label>Supplier (Party)</label><select id="partySelect"></select></div>
+                <div class="form-group">
+                    <label>Invoice No (Bill No)</label>
+                    <input type="text" id="invNo" placeholder="e.g. 1024">
+                </div>
+                <div class="form-group">
+                    <label>Date</label>
+                    <input type="date" id="invDate">
+                </div>
+                <div class="form-group">
+                    <label>Supplier (Party)</label>
+                    <select id="partySelect"></select>
+                </div>
             </div>
 
             <div class="table-wrap">
                 <table id="itemTable">
                     <thead>
                         <tr>
-                            <th width="40%">Item</th>
+                            <th width="40%">Item / Product</th>
                             <th width="15%">Qty</th>
-                            <th width="15%">Purchase Rate</th>
-                            <th width="10%">GST %</th>
-                            <th width="15%">Total</th>
+                            <th width="15%">Rate (Pur)</th>
+                            <th width="10%">Tax %</th>
+                            <th width="15%" style="text-align:right;">Total</th>
                             <th width="5%"></th>
                         </tr>
                     </thead>
                     <tbody id="rows"></tbody>
                 </table>
             </div>
-            <button class="btn btn-add" onclick="addRow()">+ Add Item</button>
+            
+            <button class="btn btn-add" onclick="addRow()">
+                <i class="fas fa-plus"></i> Add Line Item
+            </button>
 
             <div class="totals">
-                <div>Taxable: <span id="lblTaxable">0.00</span></div>
-                <div>Input GST: <span id="lblTax">0.00</span></div>
-                <div style="font-size:18px; color:var(--primary);">Total: <span id="lblTotal">0.00</span></div>
+                <div class="total-row"><span>Taxable Amount:</span> <span id="lblTaxable">0.00</span></div>
+                <div class="total-row"><span>Input GST:</span> <span id="lblTax">0.00</span></div>
+                <div class="grand-total">₹ <span id="lblTotal">0.00</span></div>
             </div>
         </div>
 
-        <div class="recent-box">
-            <h3>Recent Purchase Invoices</h3>
-            <table class="recent-table">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Inv No</th>
-                        <th>Supplier</th>
-                        <th>Amount</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody id="recentList"></tbody>
-            </table>
+        <div class="recent-section no-print">
+            <h3>Recent Purchases</h3>
+            <div class="table-wrap" style="background:white;">
+                <table class="recent-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Inv No</th>
+                            <th>Supplier</th>
+                            <th>Amount</th>
+                            <th style="text-align:right;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recentList">
+                        </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
-    <div id="printArea"></div>
+    <div id="printArea" style="display:none;"></div>
 
     <script src="db.js"></script>
     <script>
-        let items = [], ledgers = [], companySettings = {};
+        let items = [], ledgers = [], settings = {};
 
         window.onload = async () => {
             await DB.init();
-            await DB._ensureSystemLedgers(); // Ensure Purchase and Tax ledgers exist
-            await loadData();
-            document.getElementById('invDate').valueAsDate = new Date();
-            addRow();
-        };
-
-        async function loadData() {
-            [items, ledgers, settingsData] = await Promise.all([
-                DB.getAll('items'), 
+            
+            // Load Data
+            [items, ledgers, settings] = await Promise.all([
+                DB.getAll('items'),
                 DB.getAll('ledgers'),
-                DB.getAll('settings')
+                DB.getSettings()
             ]);
-            
-            companySettings = settingsData.find(s => s.id === 'global') || {};
 
+            // Populate Supplier Dropdown (Creditors - Group 12)
             const sel = document.getElementById('partySelect');
-            sel.innerHTML = '<option value="">Select Supplier</option>';
-            
-            // Sundry Creditors (Suppliers)
-            const groups = await DB.getAll('groups');
-            const creditorGrp = groups.find(g => g.name === "Sundry Creditors");
-            
-            ledgers.filter(l => l.group_id === (creditorGrp ? creditorGrp.id : -1))
-                   .sort((a,b) => a.name.localeCompare(b.name))
-                   .forEach(l => { sel.innerHTML += `<option value="${l.id}">${l.name}</option>`; });
-
-            loadRecentList();
-        }
-
-        async function loadRecentList() {
-            const vouchers = await DB.getAll('vouchers');
-            const tbody = document.getElementById('recentList');
-            tbody.innerHTML = '';
-            
-            const purchases = vouchers.filter(v => v.type === 'Purchase').sort((a,b) => b.id - a.id);
-
-            purchases.slice(0, 10).forEach(v => {
-                const party = ledgers.find(l => l.id == v.party_id)?.name || 'Walk-in';
-                tbody.innerHTML += `
-                    <tr>
-                        <td>${v.date}</td>
-                        <td>${v.voucher_no}</td>
-                        <td>${party}</td>
-                        <td>₹${v.amount.toFixed(2)}</td>
-                        <td>
-                            <button class="btn-print" onclick="reprintA4(${v.id})">🖨️ A4</button>
-                            <button class="btn-del" onclick="deleteVoucher(${v.id})">🗑️</button>
-                        </td>
-                    </tr>`;
+            sel.innerHTML = '<option value="">Select Supplier...</option>';
+            ledgers.filter(l => l.group_id === 12).forEach(l => {
+                sel.innerHTML += `<option value="${l.id}">${l.name}</option>`;
             });
-        }
+
+            document.getElementById('invDate').valueAsDate = new Date();
+            loadRecentList();
+            addRow(); // Default row
+        };
 
         function addRow() {
             const tr = document.createElement('tr');
@@ -201,16 +179,21 @@
                 <td>
                     <select class="item-sel" onchange="fillRow(this)">
                         <option value="">Select Item</option>
-                        ${items.map(i => `<option value="${i.id}" data-rate="${i.std_cost}" data-gst="${i.gst_rate}" data-hsn="${i.hsn||''}" data-unit="${i.unit||'Pcs'}">${i.name}</option>`).join('')}
+                        ${items.map(i => `<option value="${i.id}" data-rate="${i.std_cost}" data-gst="${i.gst_rate}">${i.name}</option>`).join('')}
                     </select>
                 </td>
                 <td><input type="number" class="qty" value="1" onchange="calc(this)"></td>
                 <td><input type="number" class="rate" value="0" onchange="calc(this)"></td>
-                <td><input type="number" class="gst" value="0" readonly></td>
-                <td><input type="text" class="amt" value="0.00" readonly style="font-weight:bold; text-align:right;"></td>
-                <td style="text-align:center;"><button onclick="this.closest('tr').remove(); calcTotal()" style="color:red; border:none; background:none; cursor:pointer;">×</button></td>
+                <td><input type="number" class="gst" value="0" readonly style="background:#f1f5f9;"></td>
+                <td><input type="text" class="amt" value="0.00" readonly style="background:#f1f5f9; text-align:right; font-weight:bold;"></td>
+                <td style="text-align:center;"><i class="fas fa-times" onclick="removeRow(this)" style="color:#ef4444; cursor:pointer;"></i></td>
             `;
             document.getElementById('rows').appendChild(tr);
+        }
+
+        function removeRow(btn) {
+            btn.closest('tr').remove();
+            calcTotal();
         }
 
         function fillRow(el) {
@@ -250,197 +233,99 @@
         async function savePurchase() {
             const pid = document.getElementById('partySelect').value;
             const date = document.getElementById('invDate').value;
-            const invNo = document.getElementById('invNo').value || 'PUR-' + Date.now();
+            const invNo = document.getElementById('invNo').value;
             
+            if(!invNo) return alert("Enter Bill Number");
             if(!pid) return alert("Select Supplier");
-            
-            const cartItems = [];
-            document.querySelectorAll('#rows tr').forEach(tr => {
-                const itemID = parseInt(tr.querySelector('.item-sel').value);
-                if(itemID) {
-                    const opt = tr.querySelector('.item-sel').selectedOptions[0];
-                    cartItems.push({
-                        item_id: itemID,
-                        name: opt.text,
-                        qty: parseFloat(tr.querySelector('.qty').value),
-                        rate: parseFloat(tr.querySelector('.rate').value),
-                        gst: parseFloat(opt.dataset.gst),
-                        hsn: opt.dataset.hsn,
-                        unit: opt.dataset.unit
-                    });
-                }
-            });
-
-            if(cartItems.length === 0) return alert("Add at least one item!");
 
             const taxable = parseFloat(document.getElementById('lblTaxable').innerText);
             const taxTotal = parseFloat(document.getElementById('lblTax').innerText);
             const grand = parseFloat(document.getElementById('lblTotal').innerText);
 
+            if(grand <= 0) return alert("Total cannot be zero");
+
+            // 1. Prepare Voucher
             const voucher = {
                 voucher_no: invNo,
                 date: date,
                 type: 'Purchase',
                 party_id: parseInt(pid),
-                amount: grand
+                amount: grand,
+                narration: `Purchase Invoice #${invNo}`
             };
 
-            const tx = DB.db.transaction(['vouchers', 'voucher_items', 'acct_entries', 'items'], 'readwrite');
+            // 2. Prepare Entries (Accounting + Inventory)
+            const entries = [];
             
-            tx.objectStore('vouchers').add(voucher).onsuccess = (e) => {
-                const vid = e.target.result;
-                const acStore = tx.objectStore('acct_entries');
-                const viStore = tx.objectStore('voucher_items');
-                const iStore = tx.objectStore('items');
+            // Credit Supplier
+            entries.push({ ledger_id: parseInt(pid), credit: grand, debit: 0 });
 
-                // 1. Credit Party (Sundry Creditor)
-                acStore.add({ voucher_id: vid, ledger_id: parseInt(pid), credit: grand, debit: 0 });
+            // Debit Purchase Ledger
+            const purL = ledgers.find(l => l.name === 'Local Purchase');
+            if(purL) entries.push({ ledger_id: purL.id, debit: taxable, credit: 0 });
 
-                // 2. Debit Local Purchase Ledger
-                const purchLedger = ledgers.find(l => l.name === 'Local Purchase');
-                if(purchLedger) acStore.add({ voucher_id: vid, ledger_id: purchLedger.id, credit: 0, debit: taxable });
+            // Debit Tax Ledger
+            if(taxTotal > 0) {
+                const taxL = ledgers.find(l => l.name === 'Input GST'); // Simplified
+                if(taxL) entries.push({ ledger_id: taxL.id, debit: taxTotal, credit: 0 });
+                // Note: Ideally split CGST/SGST based on logic, but keeping simple for now
+            }
 
-                // 3. Debit Input GST
-                const taxLedger = ledgers.find(l => l.name === 'Input GST');
-                if(taxLedger && taxTotal > 0) acStore.add({ voucher_id: vid, ledger_id: taxLedger.id, credit: 0, debit: taxTotal });
-
-                // 4. Save Items & Add Stock
-                cartItems.forEach(ci => {
-                    viStore.add({ voucher_id: vid, item_id: ci.item_id, qty: ci.qty, rate: ci.rate });
-                    
-                    const getI = iStore.get(ci.item_id);
-                    getI.onsuccess = (ev) => {
-                        const d = ev.target.result;
-                        if(d) {
-                            d.current_stock = (parseFloat(d.current_stock) || 0) + ci.qty;
-                            d.std_cost = ci.rate; // Update last purchase cost
-                            iStore.put(d);
-                        }
-                    };
+            // Inventory Meta Data
+            document.querySelectorAll('#rows tr').forEach(tr => {
+                const itemId = parseInt(tr.querySelector('.item-sel').value);
+                const qty = parseFloat(tr.querySelector('.qty').value);
+                const rate = parseFloat(tr.querySelector('.rate').value);
+                const amt = parseFloat(tr.querySelector('.amt').value);
+                
+                // We add a dummy entry to link item movement (Stock Increase)
+                // In DB 3.8, saveVoucherTransaction looks for meta_data.item_id to update stock
+                entries.push({
+                    ledger_id: purL ? purL.id : 0, // Associate with purchase
+                    debit: 0, credit: 0, // Zero val entry just for stock tracking
+                    meta_data: { item_id: itemId, qty: qty, rate: rate }
                 });
-            };
+            });
 
-            tx.oncomplete = () => {
-                printA4Invoice(voucher, cartItems, pid, taxable, taxTotal, grand);
-                setTimeout(() => location.reload(), 1000);
-            };
+            try {
+                await DB.saveVoucherTransaction(voucher, entries);
+                alert("✅ Purchase Saved! Stock Updated.");
+                location.reload();
+            } catch(e) {
+                alert("Error: " + e.message);
+            }
         }
 
-        async function reprintA4(vid) {
+        async function loadRecentList() {
             const vouchers = await DB.getAll('vouchers');
-            const v = vouchers.find(v => v.id === vid);
-            if(!v) return;
-
-            const [vItems, allItems] = await Promise.all([DB.getAll('voucher_items'), DB.getAll('items')]);
-            const billItems = vItems.filter(vi => vi.voucher_id === vid).map(vi => {
-                const product = allItems.find(i => i.id === vi.item_id);
-                return {
-                    name: product?.name || 'Item',
-                    qty: vi.qty,
-                    rate: vi.rate,
-                    gst: product?.gst_rate || 0,
-                    hsn: product?.hsn || '-',
-                    unit: product?.unit || 'Pcs'
-                };
-            });
-
-            let sub = 0, tax = 0;
-            billItems.forEach(ci => {
-                const base = ci.qty * ci.rate;
-                sub += base;
-                tax += base * (ci.gst/100);
-            });
-
-            printA4Invoice(v, billItems, v.party_id, sub, tax, v.amount);
-        }
-
-        function printA4Invoice(data, cartItems, pid, sub, tax, grand) {
-            const party = ledgers.find(l => l.id == pid) || { name: "Cash Supplier", address: "", gstin: "" };
-            const cName = companySettings.company_name || 'My Business';
-            const cAddr = companySettings.address || '';
-            const cGst = companySettings.gstin || '';
-
-            let rows = '';
-            cartItems.forEach((c, idx) => {
-                const amt = c.qty * c.rate;
-                rows += `<tr>
-                    <td style="text-align:center;">${idx+1}</td>
-                    <td>${c.name}</td>
-                    <td style="text-align:center;">${c.hsn || '-'}</td>
-                    <td style="text-align:center;">${c.qty} ${c.unit}</td>
-                    <td style="text-align:right;">${c.rate.toFixed(2)}</td>
-                    <td style="text-align:right;">${amt.toFixed(2)}</td>
-                </tr>`;
-            });
-
-            // Fill extra rows
-            for(let i=0; i<(12-cartItems.length); i++) rows += '<tr><td style="color:white">.</td><td></td><td></td><td></td><td></td><td></td></tr>';
-
-            const html = `
-                <div class="a4-container">
-                    <div class="a4-header">
-                        <h2 style="text-decoration:underline;">PURCHASE INVOICE</h2>
-                        <h3 style="margin-top:5px;">${cName}</h3>
-                        <p style="font-size:9pt;">${cAddr}<br>GSTIN: ${cGst}</p>
-                    </div>
-                    <div class="a4-info">
-                        <div class="a4-box">
-                            <b>Supplier Details:</b><br>
-                            <strong>${party.name}</strong><br>
-                            ${party.address || 'Local'}<br>
-                            GSTIN: ${party.gstin || 'N/A'}
-                        </div>
-                        <div class="a4-box">
-                            <b>Invoice No:</b> ${data.voucher_no}<br>
-                            <b>Date:</b> ${data.date}<br>
-                            <b>Type:</b> Tax Purchase
-                        </div>
-                    </div>
-                    <table class="a4-table">
-                        <thead>
-                            <tr style="background:#f2f2f2;">
-                                <th>Sl</th><th>Item Description</th><th>HSN</th><th>Qty</th><th>Rate</th><th>Basic Amt</th>
-                            </tr>
-                        </thead>
-                        <tbody>${rows}</tbody>
-                    </table>
-                    <div class="a4-footer">
-                        <div class="a4-foot-left">
-                            <b>Tax Analysis:</b><br>
-                            CGST (9%): ₹${(tax/2).toFixed(2)}<br>
-                            SGST (9%): ₹${(tax/2).toFixed(2)}<br><br>
-                            <b>Total Tax: ₹${tax.toFixed(2)}</b>
-                        </div>
-                        <div class="a4-foot-right">
-                            <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-                                <span>Taxable Value:</span><span>₹${sub.toFixed(2)}</span>
-                            </div>
-                            <div style="display:flex; justify-content:space-between; margin-bottom:10px; border-bottom:1px solid #000; padding-bottom:5px;">
-                                <span>Total GST:</span><span>₹${tax.toFixed(2)}</span>
-                            </div>
-                            <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:12pt;">
-                                <span>Net Payable:</span><span>₹${grand.toFixed(2)}</span>
-                            </div>
-                            <div class="sign-box">Authorised Signatory</div>
-                        </div>
-                    </div>
-                </div>
-            `;
-            document.getElementById('printArea').innerHTML = html;
-            window.print();
-        }
-
-        async function deleteVoucher(id) {
-            if(!confirm("Delete this invoice? Stock will NOT be reversed.")) return;
-            const tx = DB.db.transaction(['vouchers', 'acct_entries', 'voucher_items'], 'readwrite');
-            tx.objectStore('vouchers').delete(id);
+            const tbody = document.getElementById('recentList');
             
-            // Clean acct entries
-            const acStore = tx.objectStore('acct_entries');
-            const idx = acStore.index('voucher_id');
-            idx.getAllKeys(id).onsuccess = (e) => e.target.result.forEach(k => acStore.delete(k));
+            const purchases = vouchers.filter(v => v.type === 'Purchase').sort((a,b) => b.id - a.id);
+            
+            tbody.innerHTML = purchases.slice(0, 5).map(v => {
+                const party = ledgers.find(l => l.id == v.party_id)?.name || 'Unknown';
+                return `
+                    <tr>
+                        <td>${v.date}</td>
+                        <td><span style="font-weight:600;">${v.voucher_no}</span></td>
+                        <td>${party}</td>
+                        <td style="font-family:monospace;">₹${v.amount.toFixed(2)}</td>
+                        <td style="text-align:right;">
+                            <button class="btn" style="padding:5px 10px; background:#fee2e2; color:#ef4444; font-size:12px;" onclick="deleteBill(${v.id})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
 
-            tx.oncomplete = () => location.reload();
+        async function deleteBill(id) {
+            if(confirm("Are you sure? This will REVERSE the stock added.")) {
+                await DB.deleteVoucher(id);
+                loadRecentList();
+                // Optionally reload to refresh stock in dropdowns
+            }
         }
     </script>
 </body>
