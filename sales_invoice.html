@@ -7,70 +7,77 @@
     <title>Smart POS - Arth Book</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
         :root { --primary: #1e293b; --accent: #2563eb; --border: #cbd5e1; --bg: #f1f5f9; --green: #10b981; --red: #ef4444; --sidebar-bg: #0f172a; }
         * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
         body { background: var(--bg); color: var(--primary); height: 100vh; display:flex; overflow:hidden; }
 
-        /* --- SIDEBAR --- */
+        /* --- SIDEBAR (Fixed Navigation) --- */
         .sidebar { 
             width: 60px; background: var(--sidebar-bg); padding: 20px 0; display: flex; 
             flex-direction: column; align-items: center; flex-shrink: 0; height: 100vh; z-index: 100;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
         }
-        .sidebar a { color: #94a3b8; font-size: 20px; margin-bottom: 25px; transition: 0.2s; text-decoration: none; }
-        .sidebar a:hover, .sidebar a.active { color: white; transform: scale(1.1); }
+        .sidebar a { color: #94a3b8; font-size: 20px; margin-bottom: 25px; transition: 0.2s; text-decoration: none; display: flex; justify-content: center; width: 100%; }
+        .sidebar a:hover, .sidebar a.active { color: white; transform: scale(1.1); border-left: 3px solid var(--accent); }
 
         /* --- MAIN CONTENT --- */
         .main-content { flex: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden; padding: 10px; }
 
         /* TOOLBAR */
         .toolbar { flex-shrink:0; background:white; padding:10px 15px; display:flex; justify-content:space-between; align-items:center; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.05); margin-bottom:10px; }
-        .search-grp { display:flex; gap:10px; flex:1; min-width: 200px; position: relative; }
+        .search-grp { display:flex; gap:10px; flex:1; min-width: 200px; position: relative; margin-right: 20px; }
         input, select { padding:10px; border:1px solid var(--border); border-radius:6px; outline:none; font-size:14px; }
         
         .pos-layout { display:flex; gap:10px; flex:1; overflow:hidden; }
 
-        /* LEFT: ITEMS */
+        /* LEFT: ITEMS GRID */
         .item-list-area { flex:1.5; background:white; border-radius:8px; border:1px solid var(--border); display:flex; flex-direction:column; overflow:hidden; }
         .vs-viewport { flex:1; overflow-y:auto; padding:10px; display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; align-content: flex-start; }
         
         .product-card { 
             border: 1px solid #eee; padding: 10px; cursor: pointer; border-radius: 8px; background: #fff;
-            display: flex; flex-direction: column; justify-content: space-between; height: 90px; transition: 0.2s;
+            display: flex; flex-direction: column; justify-content: space-between; height: 100px; transition: 0.2s;
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
-        .product-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+        .product-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .product-card.low-stock { border: 1px solid var(--red); background: #fef2f2; }
         
-        .p-name { font-weight: 600; font-size: 13px; line-height: 1.3; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-        .p-price { font-weight: bold; color: var(--accent); margin-top: auto; }
+        .p-name { font-weight: 600; font-size: 13px; line-height: 1.3; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; margin-bottom: 5px; }
+        .p-price { font-weight: bold; color: var(--accent); margin-top: auto; font-size: 14px; }
         .p-stock { font-size: 10px; color: #64748b; display: flex; justify-content: space-between; margin-top: 5px; }
 
         /* RIGHT: CART */
-        .cart-area { flex:2; background:white; border-radius:8px; border:1px solid var(--border); display:flex; flex-direction:column; }
+        .cart-area { flex:1; min-width: 350px; background:white; border-radius:8px; border:1px solid var(--border); display:flex; flex-direction:column; }
         
-        .party-panel { padding: 12px; background: #f8fafc; border-bottom: 1px solid var(--border); display:grid; grid-template-columns: 1fr 150px; gap:10px; align-items: center; }
+        .party-panel { padding: 12px; background: #f8fafc; border-bottom: 1px solid var(--border); display:flex; gap:10px; align-items: center; }
+        .party-panel select { flex: 1; }
         
-        .cart-header { display: grid; grid-template-columns: 30px 3fr 1fr 1fr 1fr 30px; gap: 5px; background: #f1f5f9; padding: 10px; font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase; }
+        .cart-header { display: grid; grid-template-columns: 30px 2fr 1fr 1fr 1fr 30px; gap: 5px; background: #f1f5f9; padding: 10px; font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase; }
         .cart-body { flex:1; overflow-y:auto; }
-        .cart-row { display: grid; grid-template-columns: 30px 3fr 1fr 1fr 1fr 30px; gap: 5px; border-bottom: 1px solid #f1f5f9; padding: 10px; align-items: center; font-size: 13px; }
-        .cart-row input { width: 100%; padding: 5px; text-align: center; }
+        .cart-row { display: grid; grid-template-columns: 30px 2fr 1fr 1fr 1fr 30px; gap: 5px; border-bottom: 1px solid #f1f5f9; padding: 10px; align-items: center; font-size: 13px; }
+        .cart-row:nth-child(even) { background: #fafafa; }
+        .cart-row input { width: 100%; padding: 5px; text-align: center; border: 1px solid #eee; }
+        .cart-row input:focus { border-color: var(--accent); }
 
         .cart-footer { padding: 15px; background: #fff; border-top: 2px solid var(--border); }
         .totals-grid { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 15px; }
         .big-total { font-size: 28px; font-weight: 800; color: var(--accent); line-height: 1; }
         
         .btn { padding: 12px; border-radius: 6px; border: none; font-weight: 700; cursor: pointer; color: white; transition: 0.2s; }
-        .btn-pay { background: var(--green); width: 100%; font-size: 16px; display: flex; justify-content: center; align-items: center; gap: 10px; }
-        .btn-pay:hover { opacity: 0.9; }
+        .btn-pay { background: var(--green); width: 100%; font-size: 16px; display: flex; justify-content: center; align-items: center; gap: 10px; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2); }
+        .btn-pay:hover { opacity: 0.9; transform: translateY(-1px); }
 
         /* MODAL */
         .modal-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.6); display:none; justify-content:center; align-items:center; z-index:200; backdrop-filter: blur(2px); }
-        .modal { background:white; width:95%; max-width:500px; padding:25px; border-radius:12px; box-shadow:0 20px 25px rgba(0,0,0,0.2); }
+        .modal { background:white; width:95%; max-width:500px; padding:25px; border-radius:12px; box-shadow:0 20px 25px rgba(0,0,0,0.2); animation: slideIn 0.2s ease-out; }
+        @keyframes slideIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         
         .pay-options { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 20px 0; }
-        .p-opt { padding: 15px; border: 1px solid var(--border); border-radius: 8px; text-align: center; cursor: pointer; font-weight: 600; }
+        .p-opt { padding: 15px; border: 2px solid var(--border); border-radius: 8px; text-align: center; cursor: pointer; font-weight: 600; color: #64748b; transition: 0.2s; }
+        .p-opt:hover { border-color: var(--accent); }
         .p-opt.selected { border-color: var(--green); background: #ecfdf5; color: var(--green); }
 
         .gst-btn { background: #6366f1; color: white; padding: 10px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; margin-top: 10px; width: 100%; display: flex; justify-content: center; gap: 8px; }
@@ -88,8 +95,8 @@
 
     <div class="sidebar">
         <a href="index.html" title="Dashboard"><i class="fas fa-home"></i></a>
-        <a href="sales_invoice.html" class="active" title="Sales"><i class="fas fa-file-invoice"></i></a>
-        <a href="vouchers.html" title="Vouchers"><i class="fas fa-receipt"></i></a>
+        <a href="sales_invoice.html" class="active" title="POS / Sales"><i class="fas fa-cash-register"></i></a>
+        <a href="vouchers.html" title="All Bills"><i class="fas fa-receipt"></i></a>
         <a href="item_master.html" title="Inventory"><i class="fas fa-boxes"></i></a>
         <a href="settings.html" title="Settings"><i class="fas fa-cogs"></i></a>
     </div>
@@ -100,7 +107,7 @@
                 <i class="fas fa-search" style="position:absolute; left:12px; top:12px; color:#94a3b8;"></i>
                 <input type="text" id="searchBar" placeholder="Search Item or Scan Barcode (F2)" style="padding-left:35px; width:100%;" onkeyup="handleSearch(this.value)">
             </div>
-            <div style="font-weight:700; color:var(--accent);" id="invNo">Loading...</div>
+            <div style="font-weight:700; color:var(--accent); font-size:18px;" id="invNo">Loading...</div>
         </div>
 
         <div class="pos-layout">
@@ -114,7 +121,7 @@
                     <select id="custSelect">
                         <option value="">Walk-in Customer</option>
                     </select>
-                    <input type="date" id="billDate">
+                    <input type="date" id="billDate" style="width: 130px;">
                 </div>
 
                 <div class="cart-header">
@@ -122,8 +129,8 @@
                 </div>
                 <div class="cart-body" id="cartBody">
                     <div style="text-align:center; padding:50px; color:#94a3b8;">
-                        <i class="fas fa-shopping-basket" style="font-size:30px; margin-bottom:10px;"></i><br>
-                        Cart is Empty
+                        <i class="fas fa-shopping-cart" style="font-size:30px; margin-bottom:10px; opacity:0.5;"></i><br>
+                        Start Scanning...
                     </div>
                 </div>
 
@@ -136,9 +143,9 @@
                         <div class="big-total">₹ <span id="lblGrand">0.00</span></div>
                     </div>
                     <button class="btn btn-pay" onclick="openPaymentModal()">
-                        <span>PAY & PRINT</span> <i class="fas fa-arrow-right"></i>
+                        <span>CHECKOUT</span> <i class="fas fa-chevron-right"></i>
                     </button>
-                    <div style="text-align:center; margin-top:5px; font-size:11px; color:#94a3b8;">Shortcuts: F2 (Search) • Ctrl+Enter (Pay)</div>
+                    <div style="text-align:center; margin-top:8px; font-size:11px; color:#94a3b8;">Shortcuts: F2 (Search) • Ctrl+Enter (Pay)</div>
                 </div>
             </div>
         </div>
@@ -147,29 +154,35 @@
     <div class="modal-overlay" id="payModal">
         <div class="modal">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                <h2>Confirm Payment</h2>
-                <button onclick="closeModal()" style="background:none; border:none; font-size:20px; cursor:pointer;">&times;</button>
+                <h2 style="margin:0; color:var(--primary);">Confirm Payment</h2>
+                <button onclick="closeModal()" style="background:none; border:none; font-size:24px; cursor:pointer; color:#94a3b8;">&times;</button>
             </div>
             
-            <div style="text-align:center; margin-bottom:20px;">
-                <div style="font-size:14px; color:#64748b;">Total Payable</div>
-                <div style="font-size:36px; font-weight:800; color:var(--primary);" id="modalTotal">₹0</div>
+            <div style="text-align:center; margin-bottom:20px; padding: 20px; background: #f8fafc; border-radius: 12px;">
+                <div style="font-size:14px; color:#64748b; margin-bottom: 5px;">Total Payable Amount</div>
+                <div style="font-size:40px; font-weight:800; color:var(--accent); line-height:1;" id="modalTotal">₹0</div>
             </div>
 
-            <label style="font-size:12px; font-weight:bold;">Payment Mode</label>
+            <label style="font-size:12px; font-weight:bold; color:#64748b; text-transform:uppercase;">Payment Mode</label>
             <div class="pay-options">
-                <div class="p-opt selected" onclick="setMode('Cash', this)">💵 Cash</div>
-                <div class="p-opt" onclick="setMode('Online', this)">📱 UPI/Card</div>
-                <div class="p-opt" onclick="setMode('Udhar', this)">📕 Credit</div>
+                <div class="p-opt selected" onclick="setMode('Cash', this)">
+                    <i class="fas fa-money-bill-wave" style="display:block; font-size:20px; margin-bottom:5px;"></i> Cash
+                </div>
+                <div class="p-opt" onclick="setMode('Online', this)">
+                    <i class="fas fa-qrcode" style="display:block; font-size:20px; margin-bottom:5px;"></i> UPI/Card
+                </div>
+                <div class="p-opt" onclick="setMode('Udhar', this)">
+                    <i class="fas fa-book" style="display:block; font-size:20px; margin-bottom:5px;"></i> Credit
+                </div>
             </div>
 
             <button class="gst-btn" onclick="generateIRN()">
-                <i class="fas fa-globe"></i> Generate e-Invoice (IRN)
+                <i class="fas fa-file-code"></i> Generate e-Invoice (Beta)
             </button>
 
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:20px;">
-                <button class="btn" style="background:#64748b;" onclick="saveBill(false)">💾 Save Only</button>
-                <button class="btn" style="background:var(--green);" onclick="saveBill(true)">🖨️ Save & Print</button>
+                <button class="btn" style="background:#64748b;" onclick="saveBill(false)">Save Only</button>
+                <button class="btn" style="background:var(--green);" onclick="saveBill(true)">Print & Save</button>
             </div>
         </div>
     </div>
@@ -188,12 +201,12 @@
             const [iData, lData, sData] = await Promise.all([
                 DB.getAll('items'),
                 DB.getAll('ledgers'),
-                DB.getAll('settings')
+                DB.getSettings()
             ]);
             
             items = iData || [];
             ledgers = lData || [];
-            settings = sData.find(s => s.id === 'global') || {};
+            settings = sData || {}; 
             
             renderItems(items);
             loadCustomers();
@@ -269,7 +282,7 @@
             body.innerHTML = '';
             
             if(cart.length === 0) {
-                body.innerHTML = '<div style="text-align:center; padding:50px; color:#94a3b8;">Empty Cart</div>';
+                body.innerHTML = '<div style="text-align:center; padding:50px; color:#94a3b8;"><i class="fas fa-shopping-cart" style="font-size:30px; margin-bottom:10px; opacity:0.5;"></i><br>Start Scanning...</div>';
                 updateTotals(0,0);
                 return;
             }
@@ -285,11 +298,11 @@
                 div.className = 'cart-row';
                 div.innerHTML = `
                     <div>${idx+1}</div>
-                    <div style="white-space:nowrap; overflow:hidden;">${c.name}</div>
+                    <div style="white-space:nowrap; overflow:hidden; font-weight:500;">${c.name}</div>
                     <input type="number" value="${c.qty}" onchange="updateQty(${idx}, this.value, ${c.id})">
                     <input type="number" value="${c.rate}" onchange="updateRate(${idx}, this.value)">
-                    <div style="text-align:right;">${(base+taxAmt).toFixed(2)}</div>
-                    <div style="color:red; cursor:pointer; text-align:center;" onclick="removeCart(${idx})">×</div>
+                    <div style="text-align:right; font-weight:600;">${(base+taxAmt).toFixed(2)}</div>
+                    <div style="color:red; cursor:pointer; text-align:center;" onclick="removeCart(${idx})">&times;</div>
                 `;
                 body.appendChild(div);
             });
@@ -360,7 +373,7 @@
                 party_id: parseInt(pid) || 0, // 0 for cash
                 amount: grand,
                 payment_mode: selectedMode,
-                narration: "POS Sale"
+                narration: "POS Sale - " + selectedMode
             };
 
             const entries = [];
@@ -370,69 +383,74 @@
                     item_id: c.id,
                     qty: c.qty,
                     rate: c.rate,
-                    amount: c.qty * c.rate
+                    amount: c.qty * c.rate,
+                    meta_data: { item_id: c.id, qty: c.qty, rate: c.rate } // Crucial for stock
                 });
             });
 
-            // --- ZERO STOCK BLOCK LOGIC IS HANDLED IN addToCart --- 
-            // Here we just save
+            // Ledger Entries (Simplified for POS)
+            // 1. Debit Cash/Bank/Party
+            // 2. Credit Sales
+            // (DB.saveVoucherTransaction will handle basic saving, but we need to ensure stock reduction triggers)
+            // Since our db.js has specific logic for 'meta_data' in entries to trigger stock, we are good.
+            
             try {
-                // Using our new Power Engine
-                // Note: DB.saveVoucherTransaction handles ledger entries, we need to handle Item Stock here manually for now 
-                // or update db.js to handle stock. For safety, we do it here.
+                // Construct proper accounting entries
+                const accEntries = [];
                 
-                const tx = DB.db.transaction(['vouchers', 'voucher_items', 'acct_entries', 'items'], 'readwrite');
-                const vStore = tx.objectStore('vouchers');
+                // 1. Debit (Money Coming In)
+                let debitLedgerId = 0;
+                if(selectedMode === 'Cash') {
+                    const l = ledgers.find(x => x.name === 'Cash');
+                    debitLedgerId = l ? l.id : 0;
+                } else if(selectedMode === 'Udhar') {
+                    debitLedgerId = parseInt(pid);
+                } else {
+                    const l = ledgers.find(x => x.name === 'Bank Accounts' || x.group_id === 15); // Fallback
+                    debitLedgerId = l ? l.id : 0;
+                }
                 
-                vStore.add(voucher).onsuccess = (e) => {
-                    const vid = e.target.result;
-                    const viStore = tx.objectStore('voucher_items');
-                    const iStore = tx.objectStore('items');
+                if(debitLedgerId) accEntries.push({ ledger_id: debitLedgerId, debit: grand, credit: 0 });
+
+                // 2. Credit (Sales)
+                const salesLedger = ledgers.find(l => l.name === 'Local Sales');
+                if(salesLedger) {
+                    // We attach item meta data to the Sales Entry so DB knows to reduce stock
+                    // Ideally we should have 1 entry per item line for detailed tracking, but summarizing is also fine.
+                    // For stock logic to work in db.js 3.8, it iterates entries and checks meta_data.item_id.
+                    // So we must add entries for EACH item.
                     
                     cart.forEach(c => {
-                        viStore.add({ voucher_id: vid, item_id: c.id, qty: c.qty, rate: c.rate });
-                        // Deduct Stock
-                        const req = iStore.get(c.id);
-                        req.onsuccess = (ev) => {
-                            const item = ev.target.result;
-                            if(item) {
-                                item.current_stock -= c.qty;
-                                iStore.put(item);
-                            }
-                        };
+                        accEntries.push({ 
+                            ledger_id: salesLedger.id, 
+                            debit: 0, 
+                            credit: c.qty * c.rate, // Excl tax approx for now or Incl based on logic
+                            meta_data: { item_id: c.id, qty: c.qty, rate: c.rate }
+                        });
                     });
-                    
-                    // Simple Acct Entries (Cash Sale)
-                    const acStore = tx.objectStore('acct_entries');
-                    const cashId = ledgers.find(l=>l.name==='Cash A/c')?.id || 1;
-                    const salesId = ledgers.find(l=>l.name==='Local Sales')?.id || 2;
-                    
-                    acStore.add({ voucher_id: vid, ledger_id: cashId, debit: grand, credit: 0 });
-                    acStore.add({ voucher_id: vid, ledger_id: salesId, debit: 0, credit: grand }); // Simplified without tax split for now
-                };
+                }
 
-                tx.oncomplete = () => {
-                    if(shouldPrint) printReceipt(voucher, cart, grand);
-                    else {
-                        alert("✅ Saved!");
-                        location.reload();
-                    }
-                };
+                await DB.saveVoucherTransaction(voucher, accEntries);
+                
+                if(shouldPrint) {
+                    printReceipt(voucher, cart, grand);
+                } else {
+                    alert("✅ Sale Saved Successfully!");
+                    location.reload();
+                }
 
-            } catch(e) { alert(e.message); }
+            } catch(e) { alert("Error: " + e.message); }
         }
 
-        // --- 4. PRINTING WITH UPI QR ---
+        // --- 4. PRINTING ---
         function printReceipt(v, items, total) {
             const company = settings.company_name || "My Store";
             const upi = settings.upi_id || "";
             
-            // Generate QR Data: upi://pay?pa=UPI_ID&pn=NAME&am=AMOUNT&tn=INV_NO
+            // Render QR
             let qrCodeHtml = "";
             if(upi) {
-                const qrData = `upi://pay?pa=${upi}&pn=${encodeURIComponent(company)}&am=${total}&tn=${v.voucher_no}`;
-                // We use a placeholder div, QRCode lib renders into it
-                qrCodeHtml = `<div id="qr-code-render" style="display:flex; justify-content:center; margin-top:10px;"></div>`;
+                qrCodeHtml = `<div id="qr-code-render" style="display:flex; justify-content:center; margin:10px 0;"></div>`;
             }
 
             const rows = items.map(i => `
@@ -443,24 +461,28 @@
             `).join('');
 
             const html = `
-                <div style="width: 80mm; font-family: monospace; padding: 10px;">
+                <div style="width: 78mm; font-family: 'Courier New', monospace; padding: 5px;">
                     <div style="text-align:center;">
-                        <h2 style="margin:0;">${company}</h2>
-                        <div>${v.voucher_no}</div>
-                        <div>${v.date}</div>
+                        <h2 style="margin:0; font-size:1.2rem;">${company}</h2>
+                        <div style="font-size:0.8rem;">${settings.address || ''}</div>
+                        <div style="font-size:0.8rem;">Ph: ${settings.phone || ''}</div>
+                        <hr style="border-top: 1px dashed #000; margin: 10px 0;">
+                        <div style="display:flex; justify-content:space-between; font-size:0.8rem;">
+                            <span>Inv: ${v.voucher_no}</span>
+                            <span>${v.date}</span>
+                        </div>
+                        <hr style="border-top: 1px dashed #000; margin: 10px 0;">
                     </div>
-                    <hr style="border-top: 1px dashed #000;">
-                    <table style="width:100%;">
+                    <table style="width:100%; font-size:0.9rem; border-collapse:collapse;">
                         ${rows}
                     </table>
-                    <hr style="border-top: 1px dashed #000;">
-                    <div style="text-align:right; font-weight:bold; font-size:16px;">
+                    <hr style="border-top: 1px dashed #000; margin: 10px 0;">
+                    <div style="text-align:right; font-weight:bold; font-size:1.2rem;">
                         TOTAL: ₹${total.toFixed(2)}
                     </div>
                     ${qrCodeHtml}
-                    <div style="text-align:center; margin-top:10px;">
-                        ${upi ? '<small>Scan to Pay</small>' : ''}<br>
-                        Thank You!
+                    <div style="text-align:center; margin-top:10px; font-size:0.8rem;">
+                        Thank You! Visit Again.
                     </div>
                 </div>
             `;
@@ -470,12 +492,11 @@
 
             if(upi) {
                 new QRCode(document.getElementById("qr-code-render"), {
-                    text: `upi://pay?pa=${upi}&pn=${company}&am=${total}`,
+                    text: `upi://pay?pa=${upi}&pn=${encodeURIComponent(company)}&am=${total}&tn=${v.voucher_no}`,
                     width: 100, height: 100
                 });
             }
 
-            // Wait for QR render
             setTimeout(() => {
                 window.print();
                 location.reload();
@@ -485,7 +506,7 @@
         // --- UTILS ---
         function loadCustomers() {
             const sel = document.getElementById('custSelect');
-            ledgers.filter(l => l.group_id === 5).forEach(l => { // 5 = Debtors
+            ledgers.filter(l => l.group_id === 13).forEach(l => { // 13 = Debtors
                 sel.innerHTML += `<option value="${l.id}">${l.name}</option>`;
             });
         }
