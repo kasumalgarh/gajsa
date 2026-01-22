@@ -18,8 +18,6 @@
         .row-narr:focus { border-bottom: 1px solid var(--primary); }
 
         .qty-input, .rate-input { width: 100%; border: none; text-align: right; font-weight: 600; font-size: 13px; }
-        
-        /* POINT 2: Stock Error Style */
         .qty-input.error { color: red; border-bottom: 2px solid red; background: #fff0f0; } 
 
         .extra-fields { display: none; gap: 10px; padding: 5px 10px; background: rgba(0,0,0,0.02); border-bottom: 1px solid var(--border); }
@@ -30,23 +28,17 @@
         .det-row { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 12px; }
         .det-row input, .det-row select { width: 60%; padding: 4px; border: 1px solid #ccc; }
 
-        /* POINT 6: Undo Toast */
         #toast { visibility: hidden; min-width: 250px; margin-left: -125px; background-color: #1e293b; color: #fff; text-align: center; border-radius: 4px; padding: 16px; position: fixed; z-index: 3000; left: 50%; bottom: 80px; font-size: 14px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
         #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 4.5s; }
         @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 80px; opacity: 1;} }
         @keyframes fadeout { from {bottom: 80px; opacity: 1;} to {bottom: 0; opacity: 0;} }
 
-        /* --- FIX: INVENTORY ROW LAYOUT --- */
-        /* This overrides style.css for Item rows to give space to Qty/Rate */
+        /* INVENTORY ROW LAYOUT */
         .entry-row.inventory-row {
-            /* 60px Label | 2fr Item Name | 160px Qty-Rate | 140px Amount | 40px Del */
             grid-template-columns: 60px 2fr 160px 140px 40px !important;
         }
-
-        /* Mobile Adjustment for Inventory Rows */
         @media (max-width: 768px) {
             .entry-row.inventory-row {
-                /* On mobile, we keep the card layout, CSS handles wrapping */
                 grid-template-columns: 60px 1fr 40px !important;
             }
         }
@@ -130,8 +122,8 @@
     <script src="db.js"></script>
     <script>
         let currentMode = 'Payment', allLedgers = [], allItems = [], rowDataMeta = {}, currentRowIndex = -1, isInventoryMode = false;
-        let lastSavedId = null; // Point 6: Undo
-        let isViewMode = false; // Point 8: View
+        let lastSavedId = null; 
+        let isViewMode = false; 
 
         const THEMES = { 'Contra':'#f8fafc', 'Payment':'#fffbeb', 'Receipt':'#f0fdf4', 'Journal':'#eff6ff', 'Credit Note':'#fff1f2', 'Debit Note':'#ecfeff', 'Sales':'#eff6ff', 'Purchase':'#fffbeb' };
 
@@ -140,14 +132,12 @@
             allLedgers = await DB.getAll('ledgers');
             allItems = await DB.getAll('items');
             
-            document.getElementById('ledgerList').innerHTML = allLedgers.map(l => `<option value="${l.name}">`).join('');
+            updateLedgerList(allLedgers);
             document.getElementById('itemList').innerHTML = allItems.map(i => `<option value="${i.name}">`).join('');
             
-            // Populate F10 Menu
             const f10HTML = `<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;"><div><b>Accounting</b><br><div class="v-list-item" onclick="setMode('Payment')">Payment F5</div><div class="v-list-item" onclick="setMode('Receipt')">Receipt F6</div><div class="v-list-item" onclick="setMode('Contra')">Contra F4</div><div class="v-list-item" onclick="setMode('Journal')">Journal F7</div></div><div><b>Inventory</b><br><div class="v-list-item" onclick="setMode('Sales')">Sales F8</div><div class="v-list-item" onclick="setMode('Purchase')">Purchase F9</div></div></div>`;
             document.getElementById('f10List').innerHTML = f10HTML;
 
-            // Point 8: View Mode Check
             const urlParams = new URLSearchParams(window.location.search);
             const viewId = urlParams.get('id');
             const modeParam = urlParams.get('mode');
@@ -160,9 +150,13 @@
             if(viewId) await loadVoucherForView(viewId, modeParam === 'view');
             else document.getElementById('vDate').focus();
 
-            // Point 3: CN/DN Auto Fill
             document.getElementById('origInvNo').addEventListener('blur', autoFillFromOriginal);
         };
+
+        // --- NEW: Smart Filtering Function ---
+        function updateLedgerList(ledgers) {
+            document.getElementById('ledgerList').innerHTML = ledgers.map(l => `<option value="${l.name}">`).join('');
+        }
 
         async function setMode(mode) {
             currentMode = mode;
@@ -184,17 +178,27 @@
             document.getElementById('gridRows').innerHTML = '';
             rowDataMeta = {};
 
+            // --- SMART FILTERING LOGIC ---
+            // Sales: Show Debtors(13), Cash(14), Bank(15)
+            // Purchase: Show Creditors(12), Cash(14), Bank(15)
+            let filteredLedgers = allLedgers;
+            if(mode === 'Sales') {
+                filteredLedgers = allLedgers.filter(l => [13, 14, 15].includes(l.group_id));
+            } else if(mode === 'Purchase') {
+                filteredLedgers = allLedgers.filter(l => [12, 14, 15].includes(l.group_id));
+            }
+            updateLedgerList(filteredLedgers);
+
             if(!isViewMode) {
                 if(isInventoryMode) {
-                    addRow('Party'); // Add Party Row
-                    addRow('Item');  // FIX: Auto-add first Item Row
+                    addRow('Party'); 
+                    addRow('Item');  
                 } else { 
                     addRow(mode==='Receipt'?'Cr':'Dr'); 
                     addRow(mode==='Receipt'?'Dr':'Cr'); 
                 }
             }
 
-            // FIX 2: Force focus on Date after rows are added
             setTimeout(() => document.getElementById('vDate').focus(), 100);
         }
 
@@ -202,8 +206,6 @@
         function addRow(type='Dr', data=null) {
             const idx = document.querySelectorAll('.entry-row').length;
             const div = document.createElement('div');
-            
-            // Default Class
             div.className = 'entry-row'; 
             div.dataset.index = idx;
 
@@ -214,10 +216,7 @@
             const aVal = data ? (data.amount || '') : '';
 
             if(isInventoryMode && idx > 0) { // ITEM ROW
-                
-                // FIX: Add 'inventory-row' class to change column layout
                 div.classList.add('inventory-row');
-
                 div.innerHTML = `
                     <div style="grid-column:1; padding-top:12px; font-weight:bold; color:#64748b;">Item</div>
                     <div class="c-ledger">
@@ -248,33 +247,78 @@
             if(!data && idx > 0) setTimeout(() => div.querySelector('input').focus(), 50);
         }
 
-        // --- POINT 1: GST AUTO CALC ---
+        // --- NEW: SMART GST CALCULATION (Reads item tax rate) ---
         function calculateGST() {
             if(!isInventoryMode) return;
-            let taxable = 0;
+            
+            let taxMap = {}; // Will store { '18': 1000, '5': 500 } (Tax Rate -> Taxable Amount)
+            let totalTaxable = 0;
+
             document.querySelectorAll('.r-item').forEach(i => {
                 const row = i.closest('.entry-row');
-                taxable += parseFloat(row.querySelector('.amt-input').value) || 0;
+                const iName = row.querySelector('.r-item').value;
+                const amt = parseFloat(row.querySelector('.amt-input').value) || 0;
+                
+                if(iName && amt > 0) {
+                    const item = allItems.find(x => x.name === iName);
+                    const rate = item ? (item.gst_rate || 0) : 0; // Default 0 if not set
+                    
+                    if(rate > 0) {
+                        if(!taxMap[rate]) taxMap[rate] = 0;
+                        taxMap[rate] += amt;
+                    }
+                    totalTaxable += amt;
+                }
             });
 
-            if(taxable > 0) {
-                // Determine Tax Ledgers (Hardcoded 18% for demo)
-                const taxes = currentMode==='Sales' ? ['Output CGST', 'Output SGST'] : ['Input CGST', 'Input SGST'];
-                taxes.forEach(taxName => {
-                    const amt = (taxable * 0.09).toFixed(2); // 9% each
-                    let found = false;
-                    document.querySelectorAll('.r-ledger').forEach(l => {
-                        if(l.value === taxName) {
-                            found = true;
-                            l.closest('.entry-row').querySelector('.amt-input').value = amt;
-                        }
-                    });
-                    if(!found) addRow(currentMode==='Sales'?'Cr':'Dr', { ledger: taxName, amount: amt });
+            if(totalTaxable > 0) {
+                // Determine Ledger Names based on Mode
+                const isSales = currentMode === 'Sales';
+                const cgstName = isSales ? 'Output CGST' : 'Input CGST';
+                const sgstName = isSales ? 'Output SGST' : 'Input SGST';
+
+                let totalCGST = 0;
+                let totalSGST = 0;
+
+                // Calculate Tax for each rate bucket
+                Object.keys(taxMap).forEach(rate => {
+                    const taxable = taxMap[rate];
+                    const taxAmt = taxable * (parseFloat(rate) / 100);
+                    totalCGST += taxAmt / 2;
+                    totalSGST += taxAmt / 2;
                 });
+
+                // Update or Add Tax Rows
+                updateOrAddTaxRow(cgstName, totalCGST.toFixed(2));
+                updateOrAddTaxRow(sgstName, totalSGST.toFixed(2));
             }
         }
 
-        // --- POINT 2: STOCK CHECK ---
+        function updateOrAddTaxRow(ledgerName, amount) {
+            if(parseFloat(amount) <= 0) return;
+            
+            let found = false;
+            document.querySelectorAll('.r-ledger').forEach(l => {
+                if(l.value === ledgerName) {
+                    found = true;
+                    l.closest('.entry-row').querySelector('.amt-input').value = amount;
+                }
+            });
+            
+            if(!found) {
+                // Add new tax row at the bottom
+                // Logic: Sales -> Tax is Cr (Liability), Purchase -> Tax is Dr (Asset)
+                // BUT in simple voucher entry, we often just list them.
+                // Standard: Sales Voucher -> Party Dr, Sales Cr, Tax Cr.
+                // Purchase Voucher -> Party Cr, Purchase Dr, Tax Dr.
+                
+                // Since this function is called by 'calcTotals', we need to be careful not to infinite loop.
+                // We add the row, but we don't trigger recursion.
+                const type = currentMode === 'Sales' ? 'Cr' : 'Dr'; 
+                addRow(type, { ledger: ledgerName, amount: amount });
+            }
+        }
+
         async function checkStock(input) {
             if(currentMode !== 'Sales') return;
             const row = input.closest('.entry-row');
@@ -297,11 +341,12 @@
             const q = parseFloat(row.querySelector('.qty-input').value) || 0;
             const r = parseFloat(row.querySelector('.rate-input').value) || 0;
             row.querySelector('.amt-input').value = (q * r).toFixed(2);
-            calcTotals(); // Trigger GST
+            calcTotals(); 
         }
 
         function calcTotals() {
-            if(isInventoryMode) calculateGST();
+            if(isInventoryMode) calculateGST(); // Now uses Smart Logic
+            
             let dr=0, cr=0;
             document.querySelectorAll('.entry-row').forEach(row => {
                 const amt = parseFloat(row.querySelector('.amt-input').value) || 0;
@@ -320,23 +365,19 @@
             document.getElementById('diffAlert').style.display = diff > 0.05 ? 'block' : 'none';
         }
 
-        // --- POINT 3: CN/DN AUTO FILL ---
         async function autoFillFromOriginal() {
             const vNo = this.value;
             if(!vNo) return;
             const v = await DB.getVoucherByNo(vNo);
             if(v) {
                 document.getElementById('origInvDate').value = v.date;
-                // Fetch Items (Simplification: In real app, loop fetchEntries)
                 const entries = await DB.getEntriesByVoucherId(v.id);
-                document.getElementById('gridRows').innerHTML = ''; // Clear
+                document.getElementById('gridRows').innerHTML = ''; 
                 
-                // Add Party Row (First)
                 const party = entries.find(e => !e.meta_data || !JSON.parse(e.meta_data).item_id);
                 const partyL = allLedgers.find(l => l.id === party?.ledger_id);
-                if(partyL) addRow('Dr', { ledger: partyL.name }); // Assumption for structure
+                if(partyL) addRow('Dr', { ledger: partyL.name }); 
 
-                // Add Items
                 entries.forEach(e => {
                     if(e.meta_data) {
                         const meta = JSON.parse(e.meta_data);
@@ -350,19 +391,16 @@
             }
         }
 
-        // --- POINT 5: DUPLICATE ROW (Alt+2) ---
         function duplicateRow() {
             const activeRow = document.activeElement.closest('.entry-row');
             if(activeRow) {
                 const clone = activeRow.cloneNode(true);
-                // Clear IDs to avoid conflict
                 clone.querySelectorAll('input').forEach(i => i.value = activeRow.querySelector(`.${i.className.split(' ')[0]}`).value); 
                 document.getElementById('gridRows').insertBefore(clone, activeRow.nextSibling);
                 calcTotals();
             }
         }
 
-        // --- POINT 6 & 7: SAVE & UNDO ---
         async function saveVoucher() {
             const btn = document.getElementById('btnSave');
             btn.innerHTML = "Saving... ⏳"; btn.disabled = true;
@@ -372,7 +410,6 @@
                 alert("Mismatch!"); btn.innerHTML = "SAVE"; btn.disabled = false; return;
             }
 
-            // POINT 2: BLOCK ON LOW STOCK
             let stockError = false;
             if(currentMode === 'Sales') {
                 document.querySelectorAll('.qty-input').forEach(q => {
@@ -404,6 +441,7 @@
                     if(!item) { alert("Item Invalid"); btn.disabled=false; return; }
                     meta.item_id = item.id;
                     meta.qty = row.querySelector('.qty-input').value;
+                    meta.rate = row.querySelector('.rate-input').value; // Save rate too
                     
                     const defL = allLedgers.find(l => l.name === (currentMode==='Sales'?'Local Sales':'Local Purchase'));
                     ledgerId = defL ? defL.id : (allLedgers[0] ? allLedgers[0].id : 0); 
@@ -413,7 +451,7 @@
                 } else {
                     const lName = row.querySelector('.r-ledger').value;
                     const l = allLedgers.find(l=>l.name===lName);
-                    if(!l) { alert("Ledger Invalid"); btn.disabled=false; return; }
+                    if(!l) { alert(`Ledger '${lName}' not found or auto-created yet. Go to Accounts > Create.`); btn.disabled=false; return; }
                     ledgerId = l.id;
                     const type = row.querySelector('.r-type').value;
                     const amt = parseFloat(row.querySelector('.amt-input').value);
@@ -425,19 +463,15 @@
             try {
                 await DB.saveVoucherTransaction(vData, entries);
                 
-                // Set Undo ID
                 const saved = await DB.getVoucherByNo(vData.voucher_no);
                 lastSavedId = saved.id;
                 
-                // Show Toast
                 const toast = document.getElementById("toast");
                 toast.className = "show";
                 setTimeout(()=>{ toast.className = toast.className.replace("show", ""); }, 5000);
 
-                // Point 4: Print/Share
                 if(confirm("✅ Saved! Print?")) window.print();
 
-                // Reset
                 document.getElementById('gridRows').innerHTML = '';
                 setMode(currentMode);
             } catch(e) { alert(e.message); }
@@ -453,10 +487,8 @@
             }
         }
 
-        // --- POINT 8: VIEW MODE ---
         async function loadVoucherForView(id, readOnly) {
             isViewMode = true;
-            // Fetch voucher logic here (Simple version)
             const v = await DB.getOne('vouchers', parseInt(id));
             if(!v) return;
             
@@ -467,10 +499,8 @@
             const entries = await DB.getEntriesByVoucherId(v.id);
             document.getElementById('gridRows').innerHTML = '';
             
-            // Re-populate Grid logic (simplified for view)
             entries.forEach(e => {
                 const l = allLedgers.find(al => al.id === e.ledger_id);
-                // Basic render for view
                 if(l) addRow(e.debit > 0 ? 'Dr':'Cr', { ledger: l.name, amount: e.debit || e.credit });
             });
 
@@ -478,14 +508,12 @@
             document.querySelectorAll('input, select, button').forEach(e => e.disabled = true);
         }
 
-        // Shortcuts
         document.addEventListener('keydown', (e) => {
             if(e.altKey && e.key === '2') { e.preventDefault(); duplicateRow(); }
             if(e.ctrlKey && e.key === 'z') { e.preventDefault(); undoLastSave(); }
             if(e.altKey && e.key === 's') saveVoucher();
         });
 
-        // Helpers
         function delRow(icon) { icon.closest('.entry-row').remove(); calcTotals(); }
         let debounceTimer;
         function fetchBal(input, idx) {
@@ -506,8 +534,8 @@
             const ledger = allLedgers.find(l => l.name === name);
             if(!ledger) return;
             currentRowIndex = idx;
-            if(ledger.group_id === 4) showPopup(input, 'bankPopup');
-            else if([5,7].includes(ledger.group_id)) showPopup(input, 'billPopup');
+            if(ledger.group_id === 15) showPopup(input, 'bankPopup'); 
+            else if([12,13].includes(ledger.group_id)) showPopup(input, 'billPopup'); 
         }
         function showPopup(target, id) {
             const p = document.getElementById(id);
@@ -529,14 +557,13 @@
             popup.style.display = 'none';
             document.querySelectorAll('.entry-row')[currentRowIndex].querySelector('.amt-input').focus();
         }
-        function handleItemInput(input) { /* Placeholder */ }
+        function handleItemInput(input) { }
         function handleTypeChange(sel) { filterLedgers(sel.closest('.entry-row').querySelector('.r-ledger')); }
         function handleAmtFocus(input) { if(input.value==='') { calcTotals(); const diff=parseFloat(document.getElementById('lblDiff').innerText); if(diff>0) input.value=diff.toFixed(2); } }
         function toggleCalc() { document.getElementById('calcModal').style.display = document.getElementById('calcModal').style.display==='block'?'none':'block'; }
         function cIn(v) { document.getElementById('cDisp').value += v; }
         function cCalc() { try { const v = eval(document.getElementById('cDisp').value); const active = document.activeElement; if(active && active.classList.contains('amt-input')) { active.value = parseFloat(v).toFixed(2); calcTotals(); toggleCalc(); } } catch(e) {} }
         
-        // Draggable Calc
         const cHeader = document.getElementById('calcHeader');
         const cModal = document.getElementById('calcModal');
         let isDragging = false, offsetX, offsetY;

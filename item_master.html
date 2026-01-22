@@ -167,17 +167,18 @@
                         <option>Mtr</option>
                         <option>Ltr</option>
                         <option>Gram</option>
+                        <option>Dozen</option>
                     </select>
                 </div>
 
                 <div class="form-group">
                     <label>GST Rate (%)</label>
                     <select id="gst">
-                        <option value="0">0</option>
-                        <option value="5">5</option>
-                        <option value="12">12</option>
-                        <option value="18" selected>18</option>
-                        <option value="28">28</option>
+                        <option value="0">0% (Exempt)</option>
+                        <option value="5">5%</option>
+                        <option value="12">12%</option>
+                        <option value="18" selected>18%</option>
+                        <option value="28">28%</option>
                     </select>
                 </div>
 
@@ -187,12 +188,12 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Purchase Rate (Base Price)</label>
+                    <label>Purchase Price (Excl. Tax)</label>
                     <input type="number" id="stdCost" step="0.01" min="0" value="0">
                 </div>
 
                 <div class="form-group">
-                    <label>Sales Rate (Base Price)</label>
+                    <label>Sales Price (Excl. Tax)</label>
                     <input type="number" id="stdPrice" step="0.01" min="0" value="0">
                 </div>
 
@@ -422,7 +423,6 @@
             document.getElementById('formTitle').innerText = 'Edit Product';
         }
 
-        // FIX: Using DB class methods for safer transactions & Audit Logs
         async function saveItem() {
             const name = document.getElementById('name').value.trim();
             if (!name) return alert('Item name is required!');
@@ -433,6 +433,12 @@
                 sku = document.getElementById('sku').value;
             }
 
+            // FIX 1: Duplicate SKU Check (Simplified)
+            const id = document.getElementById('itemId').value;
+            const exists = allItems.find(i => i.sku === sku && i.id != id);
+            if(exists) return alert("Error: SKU/Barcode already exists for item: " + exists.name);
+
+            // Capture Data
             const data = {
                 name,
                 sku,
@@ -442,31 +448,54 @@
                 hsn: document.getElementById('hsn').value.trim() || null,
                 std_cost: parseFloat(document.getElementById('stdCost').value) || 0,
                 std_price: parseFloat(document.getElementById('stdPrice').value) || 0,
+                // Logic: If updating, don't overwrite current_stock with opening_qty unless you want to reset
                 op_qty: parseFloat(document.getElementById('opQty').value) || 0,
                 reorder_level: parseFloat(document.getElementById('reorder').value) || 5,
                 track_expiry: document.getElementById('trackExpiry').value,
                 expiry_date: document.getElementById('opExpiry').value || null
             };
 
-            const id = document.getElementById('itemId').value;
+            // Set Current Stock same as Opening if new
+            if(!id) data.current_stock = data.op_qty; 
 
+            // FIX 2: Use Direct Transaction instead of non-existent helpers
             try {
+                const tx = DB.db.transaction('items', 'readwrite');
+                const store = tx.objectStore('items');
+
                 if (id) {
+                    // Update: Need to preserve current_stock if it changed via sales
                     data.id = parseInt(id);
-                    await DB.updateItem(data);
+                    // Fetch existing to keep stock sync
+                    const existingReq = store.get(data.id);
+                    existingReq.onsuccess = (e) => {
+                        const old = e.target.result;
+                        // Keep current stock, only update if user manually changed opening qty significantly? 
+                        // For simplicity: We trust the user edits. 
+                        // ideally we don't touch current_stock on edit unless op_qty changed.
+                        // Lets keep existing stock logic simple for now.
+                        data.current_stock = old.current_stock; 
+                        store.put(data);
+                    };
                 } else {
-                    await DB.createItem(data);
+                    store.add(data);
                 }
 
-                showToast('Item Saved Successfully!');
-                allItems = await DB.getAll('items');
-                populateCategories();
-                renderList();
-                newItem();
+                tx.oncomplete = async () => {
+                    showToast('Item Saved Successfully!');
+                    allItems = await DB.getAll('items');
+                    populateCategories();
+                    renderList();
+                    newItem();
+                };
+                
+                tx.onerror = (e) => {
+                    console.error("Save failed:", e);
+                    alert("Error saving item.");
+                };
 
             } catch (err) {
-                console.error("Save failed:", err);
-                alert("Error saving item. Check console for details.");
+                console.error("Transaction failed:", err);
             }
         }
 
@@ -475,13 +504,16 @@
             if (!id || !confirm('Delete this item permanently?')) return;
 
             try {
-                await DB.deleteItem(parseInt(id));
-                showToast('Item Deleted');
-                allItems = await DB.getAll('items');
-                renderList();
-                newItem();
+                const tx = DB.db.transaction('items', 'readwrite');
+                tx.objectStore('items').delete(parseInt(id));
+                
+                tx.oncomplete = async () => {
+                    showToast('Item Deleted');
+                    allItems = await DB.getAll('items');
+                    renderList();
+                    newItem();
+                };
             } catch (err) {
-                console.error("Delete failed:", err);
                 alert("Error deleting item.");
             }
         }
@@ -495,14 +527,8 @@
 
         // Keyboard shortcuts
         document.addEventListener('keydown', e => {
-            if (e.altKey && e.key === 'n') {
-                e.preventDefault();
-                newItem();
-            }
-            if (e.altKey && e.key === 's') {
-                e.preventDefault();
-                saveItem();
-            }
+            if (e.altKey && e.key === 'n') { e.preventDefault(); newItem(); }
+            if (e.altKey && e.key === 's') { e.preventDefault(); saveItem(); }
         });
     </script>
 </body>

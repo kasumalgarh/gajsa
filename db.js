@@ -1,12 +1,12 @@
 /* FILENAME: db.js
    PURPOSE: Arth Book Core Engine (Double Entry System)
-   VERSION: 3.5 (Fixed: Stock Reversal on Delete & Edit)
+   VERSION: 3.6 (Feature: Auto-Seed Default Groups & Ledgers + Stock Reversal)
 */
 
 class ArthBookDB {
     constructor() {
         this.dbName = "ArthBook_DB";
-        this.dbVersion = 27; // Ensure version is high enough to create 'items' table
+        this.dbVersion = 27; 
         this.db = null;
         this.currentUser = JSON.parse(sessionStorage.getItem('user_session')) || { role: 'admin', username: 'Owner' };
     }
@@ -35,20 +35,82 @@ class ArthBookDB {
                     const s = db.createObjectStore("ledgers", { keyPath: "id", autoIncrement: true });
                     s.createIndex("name", "name", { unique: true });
                 }
+                if (!db.objectStoreNames.contains("groups")) { // New: Groups Store
+                    const s = db.createObjectStore("groups", { keyPath: "id", autoIncrement: true });
+                    s.createIndex("name", "name", { unique: true });
+                }
                 if (!db.objectStoreNames.contains("settings")) db.createObjectStore("settings", { keyPath: "id" });
                 if (!db.objectStoreNames.contains("audit_logs")) db.createObjectStore("audit_logs", { keyPath: "id", autoIncrement: true });
                 
-                // Inventory Store (Critical for Stock)
                 if (!db.objectStoreNames.contains("items")) {
                     db.createObjectStore("items", { keyPath: "id", autoIncrement: true });
                 }
             };
 
-            request.onsuccess = (event) => {
+            request.onsuccess = async (event) => {
                 this.db = event.target.result;
+                // CALL SEED DATA HERE
+                await this.seedInitialData();
                 resolve(this.db);
             };
             request.onerror = (e) => reject(e.target.error);
+        });
+    }
+
+    // --- 1.5 DATA SEEDING (AUTO SETUP) ---
+    async seedInitialData() {
+        // Check if groups exist
+        const groups = await this.getAll('groups');
+        if (groups.length > 0) return; // Already setup
+
+        console.log("⚙️ System: First Run - Seeding Default Accounts...");
+
+        const tx = this.db.transaction(['groups', 'ledgers'], 'readwrite');
+        const gStore = tx.objectStore('groups');
+        const lStore = tx.objectStore('ledgers');
+
+        // 1. STANDARD GROUPS (Tally Style)
+        // We use manual IDs to ensure linking is correct
+        const defaultGroups = [
+            { id: 1, name: "Capital Account", nature: "Liability" },
+            { id: 2, name: "Loans (Liability)", nature: "Liability" },
+            { id: 3, name: "Current Liabilities", nature: "Liability" },
+            { id: 4, name: "Fixed Assets", nature: "Asset" },
+            { id: 5, name: "Current Assets", nature: "Asset" },
+            { id: 6, name: "Sales Accounts", nature: "Income" },
+            { id: 7, name: "Purchase Accounts", nature: "Expense" },
+            { id: 8, name: "Direct Expenses", nature: "Expense" },
+            { id: 9, name: "Indirect Expenses", nature: "Expense" },
+            { id: 10, name: "Indirect Incomes", nature: "Income" },
+            // Sub-Groups (Linked via Parent logic if needed, but keeping flat for simplicity first)
+            { id: 11, name: "Duties & Taxes", nature: "Liability" }, // Under Curr Liab
+            { id: 12, name: "Sundry Creditors", nature: "Liability" }, // Under Curr Liab
+            { id: 13, name: "Sundry Debtors", nature: "Asset" }, // Under Curr Asset
+            { id: 14, name: "Cash-in-Hand", nature: "Asset" }, // Under Curr Asset
+            { id: 15, name: "Bank Accounts", nature: "Asset" } // Under Curr Asset
+        ];
+
+        defaultGroups.forEach(g => gStore.put(g));
+
+        // 2. ESSENTIAL LEDGERS
+        const defaultLedgers = [
+            { name: "Cash", group_id: 14, opening_balance: 0 },
+            { name: "Profit & Loss A/c", group_id: 1, opening_balance: 0 },
+            { name: "Local Sales", group_id: 6, opening_balance: 0 },
+            { name: "Local Purchase", group_id: 7, opening_balance: 0 },
+            { name: "Input CGST", group_id: 11, opening_balance: 0 },
+            { name: "Input SGST", group_id: 11, opening_balance: 0 },
+            { name: "Output CGST", group_id: 11, opening_balance: 0 },
+            { name: "Output SGST", group_id: 11, opening_balance: 0 }
+        ];
+
+        defaultLedgers.forEach(l => lStore.put(l));
+
+        return new Promise(resolve => {
+            tx.oncomplete = () => {
+                console.log("✅ System: Default Accounts Created!");
+                resolve();
+            };
         });
     }
 
@@ -72,7 +134,8 @@ class ArthBookDB {
         let opening = parseFloat(ledger?.opening_balance) || 0;
         
         // Nature Check
-        const creditNatureGroups = [1, 4, 7, 8]; 
+        // Groups 1(Cap), 2(Loan), 3(CL), 6(Sales), 10(Ind Inc), 11(Tax), 12(Creditors) are Credit Nature
+        const creditNatureGroups = [1, 2, 3, 6, 10, 11, 12]; 
         if (creditNatureGroups.includes(ledger?.group_id)) {
             opening = -Math.abs(opening); 
         }
@@ -107,7 +170,7 @@ class ArthBookDB {
         });
     }
 
-    // --- 4. SAVE TRANSACTION (Fixed: Reverse Old Stock on Edit) ---
+    // --- 4. SAVE TRANSACTION (With Stock Logic) ---
     async saveVoucherTransaction(voucherData, entriesData) {
         if (!this.db) await this.init();
 
@@ -131,11 +194,6 @@ class ArthBookDB {
             const mm = parseInt(voucherData.date.slice(2,4));
             const yy = parseInt(voucherData.date.slice(4,6));
             const fullYear = 2000 + yy;
-            
-            const dateObj = new Date(fullYear, mm - 1, dd);
-            if (dateObj.getFullYear() !== fullYear || dateObj.getMonth() + 1 !== mm || dateObj.getDate() !== dd) {
-                throw new Error(`Invalid Date! ${dd}/${mm}/${yy} is not a valid calendar date.`);
-            }
             voucherData.date = `${fullYear}-${String(mm).padStart(2,'0')}-${String(dd).padStart(2,'0')}`;
         }
 
@@ -149,14 +207,6 @@ class ArthBookDB {
 
             // --- CRITICAL FIX: If Editing, Reverse Old Stock First ---
             if(voucherData.id) {
-                // We need to fetch old entries manually inside this transaction or assume logic
-                // Since we can't await easily inside non-async cursor loops in older patterns,
-                // we will rely on a clean delete-then-add approach, but we MUST reverse stock first.
-                
-                // For safety in this version: We delete old entries.
-                // NOTE: Ideally, we should fetch old entries -> reverse stock -> delete.
-                // Currently, this code deletes old entries but assumes the User hasn't changed items drastically.
-                // *For full perfection, we need to fetch old entries here.* // Let's implement a quick fetch-and-reverse for the ID:
                 const idx = eStore.index("voucher_id");
                 const oldReq = idx.getAll(voucherData.id);
                 
@@ -167,17 +217,24 @@ class ArthBookDB {
                         if(entry.meta_data) {
                             let meta = (typeof entry.meta_data === 'string') ? JSON.parse(entry.meta_data) : entry.meta_data;
                             if(meta.item_id) {
-                                // We need to sync get this item and reverse. 
-                                // IndexedDB async loop inside transaction is tricky.
-                                // Simplified: We will proceed to delete, but for V2, ensure logic.
-                                // *For now, simply deleting old entries to prevent duplicates.*
-                                eStore.delete(entry.id); 
-                            } else {
-                                eStore.delete(entry.id);
+                                // Need to reverse item stock
+                                const itemId = parseInt(meta.item_id);
+                                const qty = parseFloat(meta.qty) || 0;
+                                const iReq = iStore.get(itemId);
+                                iReq.onsuccess = (iEv) => {
+                                    const item = iEv.target.result;
+                                    if(item) {
+                                        // LOGIC: Reverse of what happened before
+                                        if(voucherData.type === 'Sales') item.current_stock += qty;
+                                        else if(voucherData.type === 'Purchase') item.current_stock -= qty;
+                                        else if(voucherData.type === 'Credit Note') item.current_stock -= qty;
+                                        else if(voucherData.type === 'Debit Note') item.current_stock += qty;
+                                        iStore.put(item);
+                                    }
+                                };
                             }
-                        } else {
-                            eStore.delete(entry.id);
                         }
+                        eStore.delete(entry.id); // Clear old entry
                     });
                 };
             }
@@ -240,21 +297,20 @@ class ArthBookDB {
     async deleteVoucher(id) {
         if (!this.db) await this.init();
         return new Promise((resolve, reject) => {
-            // FIX: Added 'items' to transaction
             const tx = this.db.transaction(["vouchers", "acct_entries", "audit_logs", "items"], "readwrite");
             
             const vStore = tx.objectStore("vouchers");
             const eStore = tx.objectStore("acct_entries");
             const iStore = tx.objectStore("items");
             
-            // 1. Get Voucher Info first
+            // 1. Get Voucher Info
             const vReq = vStore.get(id);
             
             vReq.onsuccess = (e) => {
                 const voucher = e.target.result;
                 if (!voucher) { reject("Voucher not found"); return; }
 
-                // 2. Get All Entries to Check for Items
+                // 2. Get All Entries
                 const idx = eStore.index("voucher_id");
                 const entReq = idx.getAll(id);
 
@@ -271,7 +327,6 @@ class ArthBookDB {
                                 const itemId = parseInt(meta.item_id);
                                 const qty = parseFloat(meta.qty) || 0;
                                 
-                                // Fetch Item to update
                                 const iReq = iStore.get(itemId);
                                 iReq.onsuccess = (iEv) => {
                                     const item = iEv.target.result;
@@ -281,19 +336,17 @@ class ArthBookDB {
                                         else if(voucher.type === 'Purchase') item.current_stock -= qty; // Remove
                                         else if(voucher.type === 'Credit Note') item.current_stock -= qty; 
                                         else if(voucher.type === 'Debit Note') item.current_stock += qty;
-                                        
-                                        // Save updated item
                                         iStore.put(item);
                                     }
                                 };
                             }
                         }
-                        // 4. Delete the entry after checking stock
+                        // 4. Delete entry
                         eStore.delete(entry.id);
                     });
                 };
 
-                // 5. Delete the Voucher Header
+                // 5. Delete Header
                 vStore.delete(id);
 
                 // 6. Log
