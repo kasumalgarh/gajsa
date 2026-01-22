@@ -236,42 +236,58 @@
     </div>
 
     <script src="db.js"></script>
-    <script>
-        let items = [], ledgers = [], settings = {};
+   <script src="db.js"></script>
+    <script>let items = [], ledgers = [], settings = {}, groups = [];
 
         window.onload = async () => {
             await DB.init();
             
-            // Load Data
-            [items, ledgers, settings] = await Promise.all([
-                DB.getAll('items'),
-                DB.getAll('ledgers'),
-                DB.getSettings()
-            ]);
+            // 1. Load All Data safely
+            try {
+                [items, ledgers, settings, groups] = await Promise.all([
+                    DB.getAll('items'),
+                    DB.getAll('ledgers'),
+                    DB.getAll('settings'),
+                    DB.getAll('groups')
+                ]);
+            } catch(e) { console.error("Data load error", e); }
 
-            // Populate Supplier Dropdown (Creditors - Group 12)
+            // 2. Populate Supplier Dropdown (SMART FILTER)
             const sel = document.getElementById('partySelect');
-            sel.innerHTML = '<option value="">Select Supplier...</option>';
-            ledgers.filter(l => l.group_id === 12).forEach(l => {
-                sel.innerHTML += `<option value="${l.id}">${l.name}</option>`;
-            });
+            sel.innerHTML = '<option value="">Select Supplier / Party</option>';
+            
+            // A. Find correct Group IDs by Name
+            const targetNames = ['Sundry Creditors', 'Cash-in-Hand', 'Bank Accounts'];
+            const allowedGroupIds = groups
+                .filter(g => targetNames.includes(g.name))
+                .map(g => g.id);
+
+            // B. Filter Ledgers based on allowed IDs
+            const validParties = ledgers.filter(l => allowedGroupIds.includes(l.group_id));
+
+            // C. Show in Dropdown
+            if(validParties.length > 0) {
+                validParties.sort((a,b) => a.name.localeCompare(b.name));
+                validParties.forEach(l => {
+                    const gName = groups.find(g => g.id === l.group_id)?.name || '';
+                    sel.innerHTML += `<option value="${l.id}">${l.name} (${gName})</option>`;
+                });
+            } else {
+                sel.innerHTML = '<option value="">No Suppliers Found (Create in Parties)</option>';
+            }
 
             document.getElementById('invDate').valueAsDate = new Date();
             loadRecentList();
             addRow(); // Default row
         };
 
-        // Mobile Sidebar Logic
-        document.querySelectorAll('.nav-links a').forEach(link => {
-            link.addEventListener('click', () => {
-                if (window.innerWidth <= 1024) document.getElementById('sidebar').classList.remove('active');
-            });
-        });
-        document.querySelector('.main-content').addEventListener('click', (e) => {
-            if (e.target.closest('.menu-btn')) return;
-            if (window.innerWidth <= 1024) document.getElementById('sidebar').classList.remove('active');
-        });
+        // Mobile Sidebar Logic (Keep Sidebar hidden on small screens)
+        function toggleMenu() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.querySelector('.overlay').classList.toggle('active');
+        }
 
+        // ROW MANAGEMENT
         function addRow() {
             const tr = document.createElement('tr');
             tr.innerHTML = `
@@ -281,18 +297,29 @@
                         ${items.map(i => `<option value="${i.id}" data-rate="${i.std_cost}" data-gst="${i.gst_rate}">${i.name}</option>`).join('')}
                     </select>
                 </td>
-                <td><input type="number" class="qty" value="1" onchange="calc(this)"></td>
-                <td><input type="number" class="rate" value="0" onchange="calc(this)"></td>
+                <td><input type="number" class="qty" value="1" min="1" onchange="calc(this)"></td>
+                <td><input type="number" class="rate" value="0" min="0" onchange="calc(this)"></td>
                 <td><input type="number" class="gst" value="0" readonly style="background:#f1f5f9;"></td>
                 <td><input type="text" class="amt" value="0.00" readonly style="background:#f1f5f9; text-align:right; font-weight:bold;"></td>
-                <td style="text-align:center;"><i class="fas fa-trash-alt" onclick="removeRow(this)" style="color:var(--danger); cursor:pointer;"></i></td>
+                <td style="text-align:center;"><i class="fas fa-trash-alt" onclick="removeRow(this)" style="color:var(--danger-color); cursor:pointer;"></i></td>
             `;
             document.getElementById('rows').appendChild(tr);
         }
 
         function removeRow(btn) {
-            if(document.querySelectorAll('#rows tr').length > 1) {
+            const rows = document.querySelectorAll('#rows tr');
+            if(rows.length > 1) {
                 btn.closest('tr').remove();
+                calcTotal();
+            } else {
+                // If only 1 row, just clear values
+                const tr = rows[0];
+                tr.querySelector('.item-sel').value = "";
+                tr.querySelector('.qty').value = 1;
+                tr.querySelector('.rate').value = 0;
+                tr.querySelector('.gst').value = 0;
+                tr.querySelector('.amt').value = "0.00";
+                tr.dataset.basic = 0; tr.dataset.tax = 0;
                 calcTotal();
             }
         }
@@ -300,9 +327,11 @@
         function fillRow(el) {
             const opt = el.selectedOptions[0];
             const tr = el.closest('tr');
-            tr.querySelector('.rate').value = opt.dataset.rate || 0;
-            tr.querySelector('.gst').value = opt.dataset.gst || 0;
-            calc(el);
+            if(opt.value) {
+                tr.querySelector('.rate').value = opt.dataset.rate || 0;
+                tr.querySelector('.gst').value = opt.dataset.gst || 0;
+                calc(el);
+            }
         }
 
         function calc(el) {
@@ -334,9 +363,9 @@
         async function savePurchase() {
             const pid = document.getElementById('partySelect').value;
             const date = document.getElementById('invDate').value;
-            const invNo = document.getElementById('invNo').value;
+            const invNo = document.getElementById('invNo').value.trim();
             
-            if(!invNo) return alert("Enter Bill Number");
+            if(!invNo) return alert("Enter Bill Number (Invoice No)");
             if(!pid) return alert("Select Supplier");
 
             const taxable = parseFloat(document.getElementById('lblTaxable').innerText);
@@ -345,7 +374,7 @@
 
             if(grand <= 0) return alert("Total cannot be zero");
 
-            // 1. Prepare Voucher
+            // 1. Prepare Voucher Object
             const voucher = {
                 voucher_no: invNo,
                 date: date,
@@ -355,42 +384,57 @@
                 narration: `Purchase Invoice #${invNo}`
             };
 
-            // 2. Prepare Entries (Accounting + Inventory)
+            // 2. Prepare Accounting Entries
             const entries = [];
             
-            // Credit Supplier
+            // A. Credit the Supplier (We owe them money)
             entries.push({ ledger_id: parseInt(pid), credit: grand, debit: 0 });
 
-            // Debit Purchase Ledger
-            const purL = ledgers.find(l => l.name === 'Local Purchase');
-            if(purL) entries.push({ ledger_id: purL.id, debit: taxable, credit: 0 });
+            // B. Debit Purchase Account (Expense)
+            // Logic: Find 'Local Purchase' ledger OR any ledger under 'Purchase Accounts' group
+            let purL = ledgers.find(l => l.name === 'Local Purchase');
+            if(!purL) {
+                const purGroupId = groups.find(g => g.name === 'Purchase Accounts')?.id;
+                if(purGroupId) purL = ledgers.find(l => l.group_id === purGroupId);
+            }
+            const purId = purL ? purL.id : 0; // 0 is fallback if setup is broken
+            
+            entries.push({ ledger_id: purId, debit: taxable, credit: 0 });
 
-            // Debit Tax Ledger
+            // C. Debit Tax Account (Input GST)
             if(taxTotal > 0) {
-                const taxL = ledgers.find(l => l.name === 'Input GST'); // Simplified
+                let taxL = ledgers.find(l => l.name === 'Input GST');
+                if(!taxL) {
+                     const taxGroupId = groups.find(g => g.name === 'Duties & Taxes')?.id;
+                     if(taxGroupId) taxL = ledgers.find(l => l.group_id === taxGroupId);
+                }
                 if(taxL) entries.push({ ledger_id: taxL.id, debit: taxTotal, credit: 0 });
             }
 
-            // Inventory Meta Data
+            // 3. Prepare Inventory Meta Data (For Stock Update)
+            // We create dummy entries to carry stock movement data for DB.js to process
             document.querySelectorAll('#rows tr').forEach(tr => {
-                const itemId = parseInt(tr.querySelector('.item-sel').value);
-                const qty = parseFloat(tr.querySelector('.qty').value);
-                const rate = parseFloat(tr.querySelector('.rate').value);
-                
-                // We add a dummy entry to link item movement (Stock Increase)
-                entries.push({
-                    ledger_id: purL ? purL.id : 0, 
-                    debit: 0, credit: 0, 
-                    meta_data: { item_id: itemId, qty: qty, rate: rate }
-                });
+                const itemId = tr.querySelector('.item-sel').value;
+                if(itemId) {
+                    const qty = parseFloat(tr.querySelector('.qty').value);
+                    const rate = parseFloat(tr.querySelector('.rate').value);
+                    
+                    entries.push({
+                        ledger_id: purId, 
+                        debit: 0, credit: 0, // Zero value, just carrying info
+                        meta_data: { item_id: parseInt(itemId), qty: qty, rate: rate }
+                    });
+                }
             });
 
             try {
+                // DB.js handles transaction & stock update automatically
                 await DB.saveVoucherTransaction(voucher, entries);
-                alert("✅ Purchase Saved! Stock Updated.");
+                alert("✅ Purchase Saved Successfully! Stock Updated.");
                 location.reload();
             } catch(e) {
-                alert("Error: " + e.message);
+                console.error(e);
+                alert("Error saving: " + e.message);
             }
         }
 
@@ -398,18 +442,24 @@
             const vouchers = await DB.getAll('vouchers');
             const tbody = document.getElementById('recentList');
             
+            // Filter Purchases & Sort by Date Descending
             const purchases = vouchers.filter(v => v.type === 'Purchase').sort((a,b) => b.id - a.id);
             
+            if(purchases.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center" style="padding:20px; color:#94a3b8;">No recent purchases</td></tr>';
+                return;
+            }
+
             tbody.innerHTML = purchases.slice(0, 5).map(v => {
-                const party = ledgers.find(l => l.id == v.party_id)?.name || 'Unknown';
+                const party = ledgers.find(l => l.id == v.party_id)?.name || 'Unknown Party';
                 return `
                     <tr>
                         <td>${v.date}</td>
-                        <td><span style="font-weight:600; color:var(--primary);">${v.voucher_no}</span></td>
+                        <td><span style="font-weight:600; color:var(--primary-color);">${v.voucher_no}</span></td>
                         <td>${party}</td>
                         <td style="font-family:monospace; font-weight:600;">₹${v.amount.toFixed(2)}</td>
-                        <td style="text-align:right;">
-                            <button class="btn" style="padding:6px 10px; background:#fee2e2; color:#ef4444; font-size:12px;" onclick="deleteBill(${v.id})">
+                        <td class="text-right">
+                            <button class="btn" style="padding:6px 10px; background:#fee2e2; color:#ef4444; font-size:12px; border-radius:4px; border:none; cursor:pointer;" onclick="deleteBill(${v.id})">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </td>
@@ -419,11 +469,14 @@
         }
 
         async function deleteBill(id) {
-            if(confirm("Are you sure? This will REVERSE the stock added.")) {
-                await DB.deleteVoucher(id);
-                loadRecentList();
+            if(confirm("⚠️ Warning: Deleting this bill will REDUCE the stock that was added. Continue?")) {
+                try {
+                    await DB.deleteVoucher(id);
+                    loadRecentList();
+                } catch(e) {
+                    alert("Delete Failed: " + e);
+                }
             }
-        }
-    </script>
+        } </script>
 </body>
 </html>
