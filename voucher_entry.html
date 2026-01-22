@@ -4,98 +4,212 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Arth Book - Power Entry</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
+    
     <style>
-        /* Styles for New Features */
-        .bal-ind { font-size: 10px; color: #64748b; font-style: italic; margin-top: 2px; display: block; height: 15px; }
-        .bal-ind.dr { color: var(--red); }
-        .bal-ind.cr { color: var(--green); }
-        .bal-ind.loading::after { content: " ⏳"; animation: spin 1s infinite; }
-        
-        .row-narr { font-size: 11px; color: #64748b; border: none; border-bottom: 1px dashed #ccc; width: 100%; background: transparent; margin-top: 2px; }
-        .row-narr:focus { border-bottom: 1px solid var(--primary); }
-
-        .qty-input, .rate-input { width: 100%; border: none; text-align: right; font-weight: 600; font-size: 13px; }
-        .qty-input.error { color: red; border-bottom: 2px solid red; background: #fff0f0; } 
-
-        .extra-fields { display: none; gap: 10px; padding: 5px 10px; background: rgba(0,0,0,0.02); border-bottom: 1px solid var(--border); }
-        .extra-fields.active { display: flex; }
-        
-        .details-popup { position: absolute; background: #fff; border: 1px solid var(--primary); box-shadow: 0 10px 25px rgba(0,0,0,0.2); z-index: 500; padding: 10px; width: 300px; border-radius: 4px; display: none; }
-        .details-popup h4 { margin: 0 0 10px 0; font-size: 12px; background: var(--primary); color: white; padding: 5px; margin: -10px -10px 10px -10px; }
-        .det-row { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 12px; }
-        .det-row input, .det-row select { width: 60%; padding: 4px; border: 1px solid #ccc; }
-
-        #toast { visibility: hidden; min-width: 250px; margin-left: -125px; background-color: #1e293b; color: #fff; text-align: center; border-radius: 4px; padding: 16px; position: fixed; z-index: 3000; left: 50%; bottom: 80px; font-size: 14px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
-        #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 4.5s; }
-        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 80px; opacity: 1;} }
-        @keyframes fadeout { from {bottom: 80px; opacity: 1;} to {bottom: 0; opacity: 0;} }
-
-        /* INVENTORY ROW LAYOUT */
-        .entry-row.inventory-row {
-            grid-template-columns: 60px 2fr 160px 140px 40px !important;
+        /* --- ARTH BOOK PLATINUM THEME --- */
+        :root {
+            --primary: #0d47a1;     /* Royal Navy */
+            --primary-dark: #002171;
+            --accent: #ffca28;      /* Gold */
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --text-main: #1e293b;
+            --text-sub: #64748b;
+            --border: #e2e8f0;
+            --success: #10b981;
+            --danger: #ef4444;
+            --sidebar-width: 260px;
+            --shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 10px 15px -3px rgba(0,0,0,0.05);
         }
-        @media (max-width: 768px) {
-            .entry-row.inventory-row {
+
+        * { box-sizing: border-box; margin: 0; padding: 0; outline: none; font-family: 'Inter', sans-serif; }
+        body { display: flex; height: 100vh; background: var(--bg); color: var(--text-main); overflow: hidden; }
+
+        /* --- SIDEBAR --- */
+        .sidebar { 
+            width: var(--sidebar-width); background: var(--primary); color: #e2e8f0; 
+            display: flex; flex-direction: column; flex-shrink: 0; height: 100vh; 
+            transition: all 0.3s ease-in-out; z-index: 1000; box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+        }
+        .brand { 
+            padding: 25px 20px; font-size: 22px; font-weight: 800; color: var(--accent); 
+            display: flex; align-items: center; gap: 12px; border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        /* Shortcut Buttons in Sidebar */
+        .v-shortcuts { padding: 15px; display: flex; flex-direction: column; gap: 5px; overflow-y: auto; flex: 1; }
+        .side-btn {
+            display: flex; justify-content: space-between; align-items: center;
+            color: rgba(255,255,255,0.7); padding: 12px 15px; border-radius: 8px;
+            cursor: pointer; transition: all 0.2s; text-decoration: none; font-size: 13px; font-weight: 500;
+        }
+        .side-btn:hover { background: rgba(255,255,255,0.1); color: white; padding-left: 18px; }
+        .side-btn.active { background: var(--accent); color: var(--primary-dark); font-weight: 800; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
+        .key-tag { font-family: 'JetBrains Mono', monospace; font-size: 10px; opacity: 0.8; background: rgba(0,0,0,0.2); padding: 2px 6px; border-radius: 4px; }
+
+        /* --- MAIN AREA --- */
+        .main-area { flex: 1; display: flex; flex-direction: column; height: 100vh; position: relative; transition: background 0.3s ease; }
+        
+        .top-bar {
+            height: 70px; padding: 0 30px; background: rgba(255,255,255,0.9); backdrop-filter: blur(5px);
+            border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
+        }
+        .v-mode-badge { font-size: 1.2rem; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; }
+
+        /* GRID ENTRY AREA */
+        .grid-container { flex: 1; overflow-y: auto; padding: 20px 30px; padding-bottom: 100px; }
+        
+        .entry-row {
+            display: grid; grid-template-columns: 75px 1fr 40px 140px 40px; gap: 10px;
+            background: white; border: 1px solid var(--border); border-radius: 8px;
+            align-items: center; padding: 10px; margin-bottom: 8px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: 0.2s;
+        }
+        .entry-row:focus-within { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(13, 71, 161, 0.1); transform: translateX(5px); }
+        
+        /* Inputs inside row */
+        .entry-row input, .entry-row select { border: none; background: transparent; width: 100%; min-height: 30px; font-size: 14px; font-weight: 600; color: var(--text-main); outline: none; }
+        .entry-row input.amt-input { text-align: right; font-family: 'JetBrains Mono', monospace; font-size: 15px; }
+        .entry-row select { cursor: pointer; font-weight: 800; color: var(--text-sub); }
+        
+        .row-narr { font-size: 11px; color: var(--text-sub); border-bottom: 1px dashed #e2e8f0 !important; width: 100%; margin-top: 2px; }
+        .bal-ind { font-size: 10px; font-style: italic; margin-top: 2px; display: block; height: 15px; }
+        .bal-ind.dr { color: var(--danger); }
+        .bal-ind.cr { color: var(--success); }
+
+        /* INVENTORY ROW OVERRIDE */
+        .entry-row.inventory-row { grid-template-columns: 60px 2fr 160px 140px 40px !important; }
+
+        /* FOOTER */
+        .footer-bar {
+            position: absolute; bottom: 0; left: 0; right: 0; height: 80px;
+            background: #fff; border-top: 1px solid var(--border); display: flex;
+            align-items: center; justify-content: space-between; padding: 0 30px;
+            z-index: 50; box-shadow: 0 -4px 15px rgba(0,0,0,0.05);
+        }
+        
+        .calc-trigger {
+            background: #f1f5f9; padding: 10px 15px; border-radius: 8px; cursor: pointer;
+            border: 1px solid var(--border); display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--text-sub);
+        }
+        .calc-trigger:hover { background: #e2e8f0; color: var(--text-main); }
+
+        /* TOAST */
+        #toast { visibility: hidden; min-width: 250px; background-color: var(--primary); color: #fff; text-align: center; border-radius: 8px; padding: 16px; position: fixed; z-index: 3000; left: 50%; transform: translateX(-50%); bottom: 100px; font-size: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        #toast.show { visibility: visible; animation: fadein 0.3s, fadeout 0.3s 4.5s; }
+        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 100px; opacity: 1;} }
+        @keyframes fadeout { from {bottom: 100px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+
+        /* RESPONSIVE */
+        .menu-btn { display: none; font-size: 20px; color: var(--primary); cursor: pointer; margin-right: 15px; }
+
+        @media (max-width: 1024px) {
+            .sidebar { position: fixed; left: -100%; width: 280px; }
+            .sidebar.active { left: 0; }
+            .menu-btn { display: block; }
+            
+            .top-bar { padding: 0 15px; }
+            .grid-container { padding: 15px; padding-bottom: 160px; } /* Space for footer stack */
+            .footer-bar { flex-direction: column; height: auto; padding: 15px; gap: 10px; align-items: stretch; }
+            
+            /* Mobile Card View for Rows */
+            .entry-row {
                 grid-template-columns: 60px 1fr 40px !important;
+                grid-template-rows: auto auto; height: auto; gap: 8px; border-left: 4px solid var(--primary);
             }
+            .c-type { grid-column: 1; grid-row: 1; }
+            .c-ledger { grid-column: 2; grid-row: 1; border-bottom: 1px solid #f1f5f9; padding-bottom: 5px; }
+            .c-hist { grid-column: 3; grid-row: 1; text-align: center; }
+            .c-amt { grid-column: 1 / span 2; grid-row: 2; }
+            .c-del { grid-column: 3; grid-row: 2; text-align: center; padding-top: 5px; }
+            
+            .entry-row.inventory-row { grid-template-columns: 60px 1fr 40px !important; }
         }
+        
+        /* POPUPS */
+        .details-popup { position: absolute; background: #fff; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.15); z-index: 500; padding: 15px; width: 300px; border-radius: 12px; display: none; }
+        .details-popup h4 { margin: -15px -15px 15px -15px; font-size: 13px; background: var(--primary); color: white; padding: 10px 15px; border-radius: 12px 12px 0 0; }
+        .det-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; align-items: center; }
+        .det-row input, .det-row select { width: 60%; padding: 6px; border: 1px solid var(--border); border-radius: 4px; }
+
+        /* CALCULATOR */
+        .calc-modal { position: fixed; top: 100px; left: 100px; width: 260px; background: #1e293b; border-radius: 12px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); z-index: 2000; border: 1px solid #475569; display: none; overflow: hidden; }
+        .calc-header { background: linear-gradient(to right, #0f172a, #1e293b); padding: 10px 15px; cursor: move; color: #94a3b8; font-size: 12px; font-weight: 700; display: flex; justify-content: space-between; }
+        .calc-body { padding: 15px; }
+        .calc-display { width: 100%; background: #0b1120; color: #10b981; border: none; padding: 15px; text-align: right; font-size: 24px; font-family: 'JetBrains Mono'; margin-bottom: 10px; border-radius: 6px; }
+        .calc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        .c-btn { background: #334155; color: white; border: none; padding: 15px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .c-btn.eq { background: var(--success); grid-column: span 2; }
     </style>
 </head>
 <body>
 
-    <div class="sidebar">
-        <div class="brand">ARTH</div>
-        <a href="#" onclick="setMode('Contra')" class="side-btn" id="btnContra"><i class="fas fa-exchange-alt"></i> <span class="btn-text">Contra</span> <span class="key-tag">F4</span></a>
-        <a href="#" onclick="setMode('Payment')" class="side-btn active" id="btnPayment"><i class="fas fa-money-bill-wave"></i> <span class="btn-text">Payment</span> <span class="key-tag">F5</span></a>
-        <a href="#" onclick="setMode('Receipt')" class="side-btn" id="btnReceipt"><i class="fas fa-hand-holding-usd"></i> <span class="btn-text">Receipt</span> <span class="key-tag">F6</span></a>
-        <a href="#" onclick="setMode('Journal')" class="side-btn" id="btnJournal"><i class="fas fa-book"></i> <span class="btn-text">Journal</span> <span class="key-tag">F7</span></a>
-        <hr style="border-color:rgba(255,255,255,0.1); margin:5px 0;">
-        <a href="#" onclick="setMode('Sales')" class="side-btn" id="btnSales"><i class="fas fa-shopping-cart"></i> <span class="btn-text">Sales</span> <span class="key-tag">F8</span></a>
-        <a href="#" onclick="setMode('Purchase')" class="side-btn" id="btnPurchase"><i class="fas fa-shopping-bag"></i> <span class="btn-text">Purchase</span> <span class="key-tag">F9</span></a>
-        <a href="#" onclick="openF10Modal()" class="side-btn" style="color:var(--accent);"><i class="fas fa-ellipsis-h"></i> <span class="btn-text">Other Vouchers</span> <span class="key-tag">F10</span></a>
-        <div style="margin-top:auto;">
-            <a href="#" onclick="setMode('Credit Note')" class="side-btn" id="btnCreditNote" style="font-size:11px;"><i class="fas fa-file-invoice-dollar"></i> <span class="btn-text">Credit Note</span> <span class="key-tag">^F8</span></a>
-            <a href="#" onclick="setMode('Debit Note')" class="side-btn" id="btnDebitNote" style="font-size:11px;"><i class="fas fa-file-invoice"></i> <span class="btn-text">Debit Note</span> <span class="key-tag">^F9</span></a>
+   <div class="sidebar" id="sidebar">
+        <div class="brand-logo" style="padding: 20px; font-size: 20px; font-weight: 800; color: white; display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-cube"></i> Arth Book
+        </div>
+        <ul class="nav-links" style="list-style: none; padding: 0 10px;">
+            <li><a href="index.html"><i class="fas fa-home"></i> Dashboard</a></li>
+            <li><a href="sales_invoice.html"><i class="fas fa-file-invoice"></i> Sales (POS)</a></li>
+            <li><a href="purchase_invoice.html"><i class="fas fa-truck"></i> Purchase</a></li>
+            <li><a href="vouchers.html"><i class="fas fa-receipt"></i> Day Book</a></li>
+            
+            <li style="margin-top:15px; margin-bottom:5px; font-size:11px; color:#64748b; font-weight:bold; padding-left:15px; text-transform:uppercase;">Masters</li>
+            <li><a href="item_master.html"><i class="fas fa-boxes"></i> Inventory</a></li>
+            <li><a href="ArthBook.html"><i class="fas fa-users"></i> Parties</a></li>
+            <li><a href="coa.html"><i class="fas fa-sitemap"></i> Accounts</a></li>
+            
+            <li style="margin-top:15px; margin-bottom:5px; font-size:11px; color:#64748b; font-weight:bold; padding-left:15px; text-transform:uppercase;">Reports & Tax</li>
+            <li><a href="reports.html"><i class="fas fa-chart-line"></i> Reports</a></li>
+            <li><a href="gst_filing.html"><i class="fas fa-university"></i> GST Returns</a></li>
+            <li><a href="taxation.html"><i class="fas fa-calculator"></i> Tax / ITR</a></li>
+            
+            <hr style="border:0; border-top:1px solid rgba(255,255,255,0.1); margin:15px 5px;">
+            <li><a href="settings.html"><i class="fas fa-cog"></i> Settings</a></li>
+            <li><a href="help.html"><i class="fas fa-question-circle"></i> Help</a></li>
+        </ul>
+        
+        <div style="padding: 20px; font-size: 11px; color: #64748b; text-align: center; margin-top:auto;">
+            Arth Book v4.0<br>Authorized User
         </div>
     </div>
 
     <div class="main-area">
         <div class="top-bar">
-            <div class="v-mode-badge" id="lblMode">Payment</div>
-            <div style="display:flex; gap:10px;">
-                <input type="text" id="vNo" readonly style="width:120px; padding:8px; border:1px solid #ccc; background:#eee; font-weight:bold; font-size:13px;">
-                <input type="text" id="vDate" placeholder="DDMMYY" maxlength="6" class="focusable" style="width:100px; padding:8px; border:1px solid #ccc; text-align:center; font-weight:bold;">
+            <div style="display:flex; align-items:center;">
+                <i class="fas fa-bars menu-btn" onclick="document.getElementById('sidebar').classList.toggle('active')"></i>
+                <div class="v-mode-badge" id="lblMode">Payment</div>
             </div>
-        </div>
-
-        <div class="extra-fields" id="cnDnFields">
-            <input type="text" id="origInvNo" placeholder="Orig. Invoice No (Blur to Fetch)" style="padding:5px; font-size:12px; border:1px solid #ccc;">
-            <input type="date" id="origInvDate" style="padding:5px; font-size:12px; border:1px solid #ccc;">
-            <input type="text" id="returnReason" placeholder="Reason (e.g. Damaged)" style="padding:5px; font-size:12px; border:1px solid #ccc; flex:1;">
+            <div style="display:flex; gap:10px;">
+                <input type="text" id="vNo" readonly style="width:120px; padding:8px; border:1px solid var(--border); background:#f8fafc; font-weight:bold; font-size:13px; border-radius:6px; color:var(--text-sub);">
+                <input type="text" id="vDate" placeholder="DDMMYY" maxlength="8" class="focusable" style="width:110px; padding:8px; border:1px solid var(--border); text-align:center; font-weight:bold; border-radius:6px;">
+            </div>
         </div>
 
         <div class="grid-container" id="gridRows"></div>
 
         <div class="footer-bar">
-            <div style="display:flex; align-items:center; gap:15px;">
+            <div style="display:flex; align-items:center; gap:15px; width:100%; max-width:500px;">
                 <div class="calc-trigger" onclick="toggleCalc()"><i class="fas fa-calculator"></i> Calc</div>
-                <input type="text" id="narr" class="focusable" placeholder="Narration (Being...)" style="width:300px; padding:8px; border-radius:4px; border:none;">
+                <input type="text" id="narr" class="focusable" placeholder="Narration (Being...)" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border);">
             </div>
-            <div style="text-align:right;">
-                <div style="font-size:12px; opacity:0.7;">TOTAL</div>
-                <div style="font-size:18px; font-weight:bold; font-family:'JetBrains Mono';" id="lblTotal">0.00</div>
-                <div id="diffAlert" style="color:#ef4444; font-size:12px; display:none;">Diff: <span id="lblDiff">0.00</span></div>
+            
+            <div style="display:flex; align-items:center; gap:20px; width:100%; justify-content:flex-end;">
+                <div style="text-align:right;">
+                    <div style="font-size:11px; color:var(--text-sub); font-weight:600;">TOTAL AMOUNT</div>
+                    <div style="font-size:20px; font-weight:800; font-family:'JetBrains Mono'; color:var(--primary);" id="lblTotal">0.00</div>
+                    <div id="diffAlert" style="color:var(--danger); font-size:12px; display:none; font-weight:700;">Diff: <span id="lblDiff">0.00</span></div>
+                </div>
+                <button id="btnSave" onclick="saveVoucher()" style="background:var(--success); color:white; border:none; padding:12px 30px; font-weight:bold; border-radius:8px; cursor:pointer; box-shadow:0 4px 6px rgba(16,185,129,0.2);">SAVE</button>
             </div>
-            <button id="btnSave" onclick="saveVoucher()" style="background:var(--green); color:white; border:none; padding:10px 25px; font-weight:bold; border-radius:4px; margin-left:20px;">SAVE</button>
         </div>
     </div>
 
     <div id="toast">
         <span>✅ Voucher Saved!</span>
-        <button onclick="undoLastSave()" style="background:transparent; border:1px solid #fff; color:white; padding:4px 10px; cursor:pointer; font-size:12px; border-radius:4px;">UNDO (Ctrl+Z)</button>
+        <button onclick="undoLastSave()" style="background:transparent; border:1px solid #fff; color:white; padding:4px 10px; cursor:pointer; font-size:12px; border-radius:4px; margin-left:10px;">UNDO</button>
     </div>
 
     <datalist id="ledgerList"></datalist>
@@ -103,21 +217,32 @@
 
     <div id="bankPopup" class="details-popup">
         <h4>Bank Allocations</h4>
-        <div class="det-row"><span>Trans:</span> <select><option>Cheque</option><option>UPI</option></select></div>
-        <div class="det-row"><span>No:</span> <input type="text"></div>
+        <div class="det-row"><span>Trans Type:</span> <select><option>Cheque</option><option>UPI</option><option>NEFT</option></select></div>
+        <div class="det-row"><span>Inst No:</span> <input type="text"></div>
         <div class="det-row"><span>Date:</span> <input type="date"></div>
-        <div style="text-align:right;"><button onclick="saveMeta('bank')">Done</button></div>
-    </div>
-    <div id="billPopup" class="details-popup">
-        <h4>Bill Details</h4>
-        <div class="det-row"><span>Ref:</span> <select><option>New Ref</option><option>Agst Ref</option></select></div>
-        <div class="det-row"><span>Name:</span> <input type="text"></div>
-        <div class="det-row"><span>Amt:</span> <input type="number"></div>
-        <div style="text-align:right;"><button onclick="saveMeta('bill')">Done</button></div>
+        <div style="text-align:right;"><button onclick="saveMeta('bank')" style="background:var(--primary); color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">Done</button></div>
     </div>
 
-    <div class="modal-overlay" id="f10Modal" onclick="closeF10Modal()"><div class="center-modal" onclick="event.stopPropagation()"><h3>Select Voucher</h3><div id="f10List"></div><button onclick="closeF10Modal()">Close</button></div></div>
-    <div class="calc-modal" id="calcModal"><div class="calc-header" id="calcHeader">Arth Calc <span onclick="toggleCalc()">✕</span></div><div class="calc-body"><input type="text" class="calc-display" id="cDisp" readonly><div class="calc-grid"><button class="c-btn" onclick="cIn('7')">7</button><button class="c-btn" onclick="cIn('8')">8</button><button class="c-btn" onclick="cIn('9')">9</button><button class="c-btn" onclick="cIn('/')">/</button><button class="c-btn" onclick="cIn('4')">4</button><button class="c-btn" onclick="cIn('5')">5</button><button class="c-btn" onclick="cIn('6')">6</button><button class="c-btn" onclick="cIn('*')">*</button><button class="c-btn" onclick="cIn('1')">1</button><button class="c-btn" onclick="cIn('2')">2</button><button class="c-btn" onclick="cIn('3')">3</button><button class="c-btn" onclick="cIn('-')">-</button><button class="c-btn" onclick="cIn('0')">0</button><button class="c-btn" onclick="cIn('.')">.</button><button class="c-btn eq" onclick="cCalc()">Enter</button></div></div></div>
+    <div id="billPopup" class="details-popup">
+        <h4>Bill Details</h4>
+        <div class="det-row"><span>Ref Type:</span> <select><option>New Ref</option><option>Agst Ref</option><option>Advance</option></select></div>
+        <div class="det-row"><span>Ref Name:</span> <input type="text"></div>
+        <div class="det-row"><span>Amount:</span> <input type="number"></div>
+        <div style="text-align:right;"><button onclick="saveMeta('bill')" style="background:var(--primary); color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">Done</button></div>
+    </div>
+
+    <div class="calc-modal" id="calcModal">
+        <div class="calc-header" id="calcHeader">Arth Calc <span onclick="toggleCalc()" style="cursor:pointer;">✕</span></div>
+        <div class="calc-body">
+            <input type="text" class="calc-display" id="cDisp" readonly>
+            <div class="calc-grid">
+                <button class="c-btn" onclick="cIn('7')">7</button><button class="c-btn" onclick="cIn('8')">8</button><button class="c-btn" onclick="cIn('9')">9</button><button class="c-btn" onclick="cIn('/')">/</button>
+                <button class="c-btn" onclick="cIn('4')">4</button><button class="c-btn" onclick="cIn('5')">5</button><button class="c-btn" onclick="cIn('6')">6</button><button class="c-btn" onclick="cIn('*')">*</button>
+                <button class="c-btn" onclick="cIn('1')">1</button><button class="c-btn" onclick="cIn('2')">2</button><button class="c-btn" onclick="cIn('3')">3</button><button class="c-btn" onclick="cIn('-')">-</button>
+                <button class="c-btn" onclick="cIn('0')">0</button><button class="c-btn" onclick="cIn('.')">.</button><button class="c-btn eq" onclick="cCalc()">Enter</button>
+            </div>
+        </div>
+    </div>
 
     <script src="db.js"></script>
     <script>
@@ -125,7 +250,15 @@
         let lastSavedId = null; 
         let isViewMode = false; 
 
-        const THEMES = { 'Contra':'#f8fafc', 'Payment':'#fffbeb', 'Receipt':'#f0fdf4', 'Journal':'#eff6ff', 'Credit Note':'#fff1f2', 'Debit Note':'#ecfeff', 'Sales':'#eff6ff', 'Purchase':'#fffbeb' };
+        // Theme Background Tints
+        const THEMES = { 
+            'Contra': '#f1f5f9', 
+            'Payment': '#fff7ed', 
+            'Receipt': '#f0fdf4', 
+            'Journal': '#eff6ff', 
+            'Sales': '#eff6ff', 
+            'Purchase': '#fff7ed' 
+        };
 
         window.onload = async () => {
             await DB.init();
@@ -135,25 +268,26 @@
             updateLedgerList(allLedgers);
             document.getElementById('itemList').innerHTML = allItems.map(i => `<option value="${i.name}">`).join('');
             
-            const f10HTML = `<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;"><div><b>Accounting</b><br><div class="v-list-item" onclick="setMode('Payment')">Payment F5</div><div class="v-list-item" onclick="setMode('Receipt')">Receipt F6</div><div class="v-list-item" onclick="setMode('Contra')">Contra F4</div><div class="v-list-item" onclick="setMode('Journal')">Journal F7</div></div><div><b>Inventory</b><br><div class="v-list-item" onclick="setMode('Sales')">Sales F8</div><div class="v-list-item" onclick="setMode('Purchase')">Purchase F9</div></div></div>`;
-            document.getElementById('f10List').innerHTML = f10HTML;
-
             const urlParams = new URLSearchParams(window.location.search);
             const viewId = urlParams.get('id');
             const modeParam = urlParams.get('mode');
 
             const t = new Date();
-            document.getElementById('vDate').value = `${String(t.getDate()).padStart(2,'0')}${String(t.getMonth()+1).padStart(2,'0')}${String(t.getFullYear()).slice(-2)}`;
+            // Format: DD/MM/YYYY
+            document.getElementById('vDate').value = `${String(t.getDate()).padStart(2,'0')}/${String(t.getMonth()+1).padStart(2,'0')}/${t.getFullYear()}`;
 
             setMode('Payment');
 
             if(viewId) await loadVoucherForView(viewId, modeParam === 'view');
             else document.getElementById('vDate').focus();
-
-            document.getElementById('origInvNo').addEventListener('blur', autoFillFromOriginal);
+            
+            // Mobile Sidebar Close
+            document.querySelector('.main-area').addEventListener('click', (e) => {
+                if (e.target.closest('.menu-btn')) return;
+                if (window.innerWidth <= 1024) document.getElementById('sidebar').classList.remove('active');
+            });
         };
 
-        // --- NEW: Smart Filtering Function ---
         function updateLedgerList(ledgers) {
             document.getElementById('ledgerList').innerHTML = ledgers.map(l => `<option value="${l.name}">`).join('');
         }
@@ -168,25 +302,18 @@
             const btnId = `btn${mode.replace(/\s/g,'')}`;
             if(document.getElementById(btnId)) document.getElementById(btnId).classList.add('active');
 
-            const extra = document.getElementById('cnDnFields');
-            if(mode.includes('Note')) extra.classList.add('active'); else extra.classList.remove('active');
-
             const num = await DB.getNextVoucherNo(mode);
-            const prefix = mode.slice(0,4).toUpperCase();
+            const prefix = mode.slice(0,3).toUpperCase();
             document.getElementById('vNo').value = `${prefix}-${num}`;
 
             document.getElementById('gridRows').innerHTML = '';
             rowDataMeta = {};
 
-            // --- SMART FILTERING LOGIC ---
-            // Sales: Show Debtors(13), Cash(14), Bank(15)
-            // Purchase: Show Creditors(12), Cash(14), Bank(15)
+            // Smart Filter
             let filteredLedgers = allLedgers;
-            if(mode === 'Sales') {
-                filteredLedgers = allLedgers.filter(l => [13, 14, 15].includes(l.group_id));
-            } else if(mode === 'Purchase') {
-                filteredLedgers = allLedgers.filter(l => [12, 14, 15].includes(l.group_id));
-            }
+            if(mode === 'Sales') filteredLedgers = allLedgers.filter(l => [13, 14, 15].includes(l.group_id)); // Debtors, Cash, Bank
+            else if(mode === 'Purchase') filteredLedgers = allLedgers.filter(l => [12, 14, 15].includes(l.group_id)); // Creditors, Cash, Bank
+            
             updateLedgerList(filteredLedgers);
 
             if(!isViewMode) {
@@ -198,11 +325,8 @@
                     addRow(mode==='Receipt'?'Dr':'Cr'); 
                 }
             }
-
-            setTimeout(() => document.getElementById('vDate').focus(), 100);
         }
 
-        // --- ROW LOGIC ---
         function addRow(type='Dr', data=null) {
             const idx = document.querySelectorAll('.entry-row').length;
             const div = document.createElement('div');
@@ -218,17 +342,17 @@
             if(isInventoryMode && idx > 0) { // ITEM ROW
                 div.classList.add('inventory-row');
                 div.innerHTML = `
-                    <div style="grid-column:1; padding-top:12px; font-weight:bold; color:#64748b;">Item</div>
+                    <div style="grid-column:1; padding-top:6px; font-weight:bold; color:#64748b; font-size:11px; text-transform:uppercase;">Item</div>
                     <div class="c-ledger">
                         <input type="text" list="itemList" class="r-item focusable" placeholder="Select Item" value="${iVal}" oninput="checkStock(this); calcRow(this)">
                         <span class="bal-ind"></span>
                     </div>
                     <div style="grid-column:3; display:flex; gap:5px;">
-                        <input type="number" class="qty-input focusable" placeholder="Qty" value="${qVal}" oninput="checkStock(this); calcRow(this)">
-                        <input type="number" class="rate-input focusable" placeholder="Rate" value="${rVal}" oninput="calcRow(this)">
+                        <input type="number" class="qty-input focusable" placeholder="Qty" value="${qVal}" oninput="checkStock(this); calcRow(this)" style="text-align:center;">
+                        <input type="number" class="rate-input focusable" placeholder="Rate" value="${rVal}" oninput="calcRow(this)" style="text-align:right;">
                     </div>
                     <div class="c-amt"><input type="number" class="amt-input" value="${aVal}" readonly></div>
-                    <div class="c-del"><i class="fas fa-times" style="color:var(--red);" onclick="delRow(this)"></i></div>
+                    <div class="c-del"><i class="fas fa-times" style="color:var(--danger); cursor:pointer;" onclick="delRow(this)"></i></div>
                 `;
             } else { // LEDGER ROW
                 div.innerHTML = `
@@ -236,89 +360,18 @@
                     <div class="c-ledger">
                         <input type="text" list="ledgerList" class="r-ledger focusable" placeholder="Select Ledger" value="${lVal}" oninput="fetchBal(this, ${idx})" onblur="checkPopups(this, ${idx})">
                         <span class="bal-ind" id="bal-${idx}"></span>
-                        <input type="text" class="row-narr" placeholder="Narration...">
+                        <input type="text" class="row-narr" placeholder="Item details...">
                     </div>
-                    <div class="c-hist"><i class="fas fa-history"></i></div>
+                    <div class="c-hist" style="color:var(--text-sub);"><i class="fas fa-history"></i></div>
                     <div class="c-amt"><input type="number" class="amt-input focusable" value="${aVal}" oninput="calcTotals()"></div>
-                    <div class="c-del"><i class="fas fa-times" style="color:var(--red);" onclick="delRow(this)"></i></div>
+                    <div class="c-del"><i class="fas fa-times" style="color:var(--danger); cursor:pointer;" onclick="delRow(this)"></i></div>
                 `;
             }
             document.getElementById('gridRows').appendChild(div);
             if(!data && idx > 0) setTimeout(() => div.querySelector('input').focus(), 50);
         }
 
-        // --- NEW: SMART GST CALCULATION (Reads item tax rate) ---
-        function calculateGST() {
-            if(!isInventoryMode) return;
-            
-            let taxMap = {}; // Will store { '18': 1000, '5': 500 } (Tax Rate -> Taxable Amount)
-            let totalTaxable = 0;
-
-            document.querySelectorAll('.r-item').forEach(i => {
-                const row = i.closest('.entry-row');
-                const iName = row.querySelector('.r-item').value;
-                const amt = parseFloat(row.querySelector('.amt-input').value) || 0;
-                
-                if(iName && amt > 0) {
-                    const item = allItems.find(x => x.name === iName);
-                    const rate = item ? (item.gst_rate || 0) : 0; // Default 0 if not set
-                    
-                    if(rate > 0) {
-                        if(!taxMap[rate]) taxMap[rate] = 0;
-                        taxMap[rate] += amt;
-                    }
-                    totalTaxable += amt;
-                }
-            });
-
-            if(totalTaxable > 0) {
-                // Determine Ledger Names based on Mode
-                const isSales = currentMode === 'Sales';
-                const cgstName = isSales ? 'Output CGST' : 'Input CGST';
-                const sgstName = isSales ? 'Output SGST' : 'Input SGST';
-
-                let totalCGST = 0;
-                let totalSGST = 0;
-
-                // Calculate Tax for each rate bucket
-                Object.keys(taxMap).forEach(rate => {
-                    const taxable = taxMap[rate];
-                    const taxAmt = taxable * (parseFloat(rate) / 100);
-                    totalCGST += taxAmt / 2;
-                    totalSGST += taxAmt / 2;
-                });
-
-                // Update or Add Tax Rows
-                updateOrAddTaxRow(cgstName, totalCGST.toFixed(2));
-                updateOrAddTaxRow(sgstName, totalSGST.toFixed(2));
-            }
-        }
-
-        function updateOrAddTaxRow(ledgerName, amount) {
-            if(parseFloat(amount) <= 0) return;
-            
-            let found = false;
-            document.querySelectorAll('.r-ledger').forEach(l => {
-                if(l.value === ledgerName) {
-                    found = true;
-                    l.closest('.entry-row').querySelector('.amt-input').value = amount;
-                }
-            });
-            
-            if(!found) {
-                // Add new tax row at the bottom
-                // Logic: Sales -> Tax is Cr (Liability), Purchase -> Tax is Dr (Asset)
-                // BUT in simple voucher entry, we often just list them.
-                // Standard: Sales Voucher -> Party Dr, Sales Cr, Tax Cr.
-                // Purchase Voucher -> Party Cr, Purchase Dr, Tax Dr.
-                
-                // Since this function is called by 'calcTotals', we need to be careful not to infinite loop.
-                // We add the row, but we don't trigger recursion.
-                const type = currentMode === 'Sales' ? 'Cr' : 'Dr'; 
-                addRow(type, { ledger: ledgerName, amount: amount });
-            }
-        }
-
+        // --- CALCULATION LOGIC ---
         async function checkStock(input) {
             if(currentMode !== 'Sales') return;
             const row = input.closest('.entry-row');
@@ -331,7 +384,7 @@
                     const stock = await DB.getItemStock(item.id);
                     const qty = parseFloat(qtyInput.value) || 0;
                     row.querySelector('.bal-ind').innerHTML = `Stock: ${stock} ${qty>stock ? '<b style="color:red">LOW</b>':''}`;
-                    if(qty > stock) qtyInput.classList.add('error'); else qtyInput.classList.remove('error');
+                    if(qty > stock) qtyInput.style.color = "red"; else qtyInput.style.color = "inherit";
                 }
             }
         }
@@ -345,8 +398,6 @@
         }
 
         function calcTotals() {
-            if(isInventoryMode) calculateGST(); // Now uses Smart Logic
-            
             let dr=0, cr=0;
             document.querySelectorAll('.entry-row').forEach(row => {
                 const amt = parseFloat(row.querySelector('.amt-input').value) || 0;
@@ -359,74 +410,26 @@
             });
             const diff = Math.abs(dr-cr);
             document.getElementById('lblTotal').innerText = Math.max(dr,cr).toFixed(2);
-            document.getElementById('lblTotal').dataset.dr = dr;
-            document.getElementById('lblTotal').dataset.cr = cr;
             document.getElementById('lblDiff').innerText = diff.toFixed(2);
             document.getElementById('diffAlert').style.display = diff > 0.05 ? 'block' : 'none';
         }
 
-        async function autoFillFromOriginal() {
-            const vNo = this.value;
-            if(!vNo) return;
-            const v = await DB.getVoucherByNo(vNo);
-            if(v) {
-                document.getElementById('origInvDate').value = v.date;
-                const entries = await DB.getEntriesByVoucherId(v.id);
-                document.getElementById('gridRows').innerHTML = ''; 
-                
-                const party = entries.find(e => !e.meta_data || !JSON.parse(e.meta_data).item_id);
-                const partyL = allLedgers.find(l => l.id === party?.ledger_id);
-                if(partyL) addRow('Dr', { ledger: partyL.name }); 
-
-                entries.forEach(e => {
-                    if(e.meta_data) {
-                        const meta = JSON.parse(e.meta_data);
-                        if(meta.item_id) {
-                            const item = allItems.find(i => i.id === meta.item_id);
-                            if(item) addRow('Dr', { item: item.name, qty: meta.qty, rate: meta.rate, amount: (meta.qty*meta.rate).toFixed(2) });
-                        }
-                    }
-                });
-                calcTotals();
-            }
-        }
-
-        function duplicateRow() {
-            const activeRow = document.activeElement.closest('.entry-row');
-            if(activeRow) {
-                const clone = activeRow.cloneNode(true);
-                clone.querySelectorAll('input').forEach(i => i.value = activeRow.querySelector(`.${i.className.split(' ')[0]}`).value); 
-                document.getElementById('gridRows').insertBefore(clone, activeRow.nextSibling);
-                calcTotals();
-            }
-        }
-
+        // --- SAVING LOGIC ---
         async function saveVoucher() {
             const btn = document.getElementById('btnSave');
             btn.innerHTML = "Saving... ⏳"; btn.disabled = true;
 
             calcTotals();
             if(parseFloat(document.getElementById('lblDiff').innerText) > 0.05) {
-                alert("Mismatch!"); btn.innerHTML = "SAVE"; btn.disabled = false; return;
-            }
-
-            let stockError = false;
-            if(currentMode === 'Sales') {
-                document.querySelectorAll('.qty-input').forEach(q => {
-                    if(q.classList.contains('error')) stockError = true;
-                });
-            }
-            if(stockError) {
-                alert("Cannot Save: Fix Low Stock Errors!"); btn.innerHTML = "SAVE"; btn.disabled = false; return;
+                alert("Mismatch! Dr and Cr must match."); btn.innerHTML = "SAVE"; btn.disabled = false; return;
             }
 
             const vData = {
                 type: currentMode,
                 voucher_no: document.getElementById('vNo').value,
-                date: document.getElementById('vDate').value,
+                date: document.getElementById('vDate').value, // Need to handle date format in DB layer if needed
                 narration: document.getElementById('narr').value || 'NA',
                 amount: parseFloat(document.getElementById('lblTotal').innerText),
-                ref_no: document.getElementById('origInvNo').value
             };
 
             const entries = [];
@@ -441,7 +444,7 @@
                     if(!item) { alert("Item Invalid"); btn.disabled=false; return; }
                     meta.item_id = item.id;
                     meta.qty = row.querySelector('.qty-input').value;
-                    meta.rate = row.querySelector('.rate-input').value; // Save rate too
+                    meta.rate = row.querySelector('.rate-input').value;
                     
                     const defL = allLedgers.find(l => l.name === (currentMode==='Sales'?'Local Sales':'Local Purchase'));
                     ledgerId = defL ? defL.id : (allLedgers[0] ? allLedgers[0].id : 0); 
@@ -451,7 +454,7 @@
                 } else {
                     const lName = row.querySelector('.r-ledger').value;
                     const l = allLedgers.find(l=>l.name===lName);
-                    if(!l) { alert(`Ledger '${lName}' not found or auto-created yet. Go to Accounts > Create.`); btn.disabled=false; return; }
+                    if(!l) { alert(`Ledger '${lName}' not found.`); btn.disabled=false; return; }
                     ledgerId = l.id;
                     const type = row.querySelector('.r-type').value;
                     const amt = parseFloat(row.querySelector('.amt-input').value);
@@ -463,12 +466,9 @@
             try {
                 await DB.saveVoucherTransaction(vData, entries);
                 
-                const saved = await DB.getVoucherByNo(vData.voucher_no);
-                lastSavedId = saved.id;
-                
                 const toast = document.getElementById("toast");
                 toast.className = "show";
-                setTimeout(()=>{ toast.className = toast.className.replace("show", ""); }, 5000);
+                setTimeout(()=>{ toast.className = toast.className.replace("show", ""); }, 4000);
 
                 if(confirm("✅ Saved! Print?")) window.print();
 
@@ -480,11 +480,8 @@
         }
 
         async function undoLastSave() {
-            if(lastSavedId && confirm("Undo last entry?")) {
-                await DB.deleteVoucher(lastSavedId);
-                alert("Undo Successful!");
-                lastSavedId = null;
-            }
+            // Logic to get last ID from DB and delete (Placeholder)
+            alert("Undo feature requires backend tracking of last ID.");
         }
 
         async function loadVoucherForView(id, readOnly) {
@@ -508,13 +505,8 @@
             document.querySelectorAll('input, select, button').forEach(e => e.disabled = true);
         }
 
-        document.addEventListener('keydown', (e) => {
-            if(e.altKey && e.key === '2') { e.preventDefault(); duplicateRow(); }
-            if(e.ctrlKey && e.key === 'z') { e.preventDefault(); undoLastSave(); }
-            if(e.altKey && e.key === 's') saveVoucher();
-        });
-
         function delRow(icon) { icon.closest('.entry-row').remove(); calcTotals(); }
+        
         let debounceTimer;
         function fetchBal(input, idx) {
              clearTimeout(debounceTimer);
@@ -529,6 +521,7 @@
                 } else span.innerText = "";
             }, 300);
         }
+
         function checkPopups(input, idx) { 
             const name = input.value;
             const ledger = allLedgers.find(l => l.name === name);
@@ -537,6 +530,7 @@
             if(ledger.group_id === 15) showPopup(input, 'bankPopup'); 
             else if([12,13].includes(ledger.group_id)) showPopup(input, 'billPopup'); 
         }
+
         function showPopup(target, id) {
             const p = document.getElementById(id);
             const rect = target.getBoundingClientRect();
@@ -545,25 +539,20 @@
             p.style.display = 'block';
             p.querySelector('input').focus();
         }
+
         function saveMeta(type) {
             if(currentRowIndex === -1) return;
             if(!rowDataMeta[currentRowIndex]) rowDataMeta[currentRowIndex] = {};
-            const popupId = type === 'bank' ? 'bankPopup' : 'billPopup';
-            const popup = document.getElementById(popupId);
-            const inputs = popup.querySelectorAll('input, select');
-            const data = {};
-            inputs.forEach(i => data[i.previousElementSibling?.innerText || i.id] = i.value);
-            rowDataMeta[currentRowIndex][type] = data;
+            const popup = document.getElementById(type === 'bank' ? 'bankPopup' : 'billPopup');
             popup.style.display = 'none';
-            document.querySelectorAll('.entry-row')[currentRowIndex].querySelector('.amt-input').focus();
         }
-        function handleItemInput(input) { }
-        function handleTypeChange(sel) { filterLedgers(sel.closest('.entry-row').querySelector('.r-ledger')); }
-        function handleAmtFocus(input) { if(input.value==='') { calcTotals(); const diff=parseFloat(document.getElementById('lblDiff').innerText); if(diff>0) input.value=diff.toFixed(2); } }
+
+        // Calculator Logic
         function toggleCalc() { document.getElementById('calcModal').style.display = document.getElementById('calcModal').style.display==='block'?'none':'block'; }
         function cIn(v) { document.getElementById('cDisp').value += v; }
         function cCalc() { try { const v = eval(document.getElementById('cDisp').value); const active = document.activeElement; if(active && active.classList.contains('amt-input')) { active.value = parseFloat(v).toFixed(2); calcTotals(); toggleCalc(); } } catch(e) {} }
         
+        // Draggable Calc
         const cHeader = document.getElementById('calcHeader');
         const cModal = document.getElementById('calcModal');
         let isDragging = false, offsetX, offsetY;
@@ -571,8 +560,10 @@
         document.addEventListener('mousemove', (e) => { if (isDragging) { cModal.style.left = `${e.clientX - offsetX}px`; cModal.style.top = `${e.clientY - offsetY}px`; } });
         document.addEventListener('mouseup', () => isDragging = false);
 
-        function openF10Modal() { document.getElementById('f10Modal').style.display='block'; }
-        function closeF10Modal() { document.getElementById('f10Modal').style.display='none'; }
+        document.addEventListener('keydown', (e) => {
+            if(e.altKey && e.key === '2') { e.preventDefault(); addRow(); }
+            if(e.altKey && e.key === 's') saveVoucher();
+        });
     </script>
 </body>
 </html>

@@ -5,82 +5,141 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <title>Smart POS - Arth Book</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        :root { --primary: #1e293b; --accent: #2563eb; --border: #cbd5e1; --bg: #f1f5f9; --green: #10b981; --red: #ef4444; --sidebar-bg: #0f172a; }
-        * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
-        body { background: var(--bg); color: var(--primary); height: 100vh; display:flex; overflow:hidden; }
-
-        /* --- SIDEBAR (Fixed Navigation) --- */
-        .sidebar { 
-            width: 60px; background: var(--sidebar-bg); padding: 20px 0; display: flex; 
-            flex-direction: column; align-items: center; flex-shrink: 0; height: 100vh; z-index: 100;
-            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        /* --- ARTH BOOK PLATINUM THEME (POS EDITION) --- */
+        :root { 
+            --primary: #0d47a1;     /* Royal Navy */
+            --primary-dark: #002171;
+            --accent: #ffca28;      /* Gold */
+            --bg: #f1f5f9; 
+            --surface: #ffffff;
+            --border: #e2e8f0; 
+            --text-main: #1e293b;
+            --green: #10b981; 
+            --red: #ef4444; 
+            --sidebar-width: 260px;
         }
-        .sidebar a { color: #94a3b8; font-size: 20px; margin-bottom: 25px; transition: 0.2s; text-decoration: none; display: flex; justify-content: center; width: 100%; }
-        .sidebar a:hover, .sidebar a.active { color: white; transform: scale(1.1); border-left: 3px solid var(--accent); }
+
+        * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
+        body { background: var(--bg); color: var(--text-main); height: 100vh; display:flex; overflow:hidden; }
+
+        /* --- SIDEBAR (Consistent with Dashboard) --- */
+        .sidebar { 
+            width: var(--sidebar-width); background: var(--primary); color: #e2e8f0; 
+            display: flex; flex-direction: column; flex-shrink: 0; height: 100vh; 
+            transition: all 0.3s ease-in-out; z-index: 1000; box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+        }
+        .brand { 
+            padding: 20px; font-size: 20px; font-weight: 800; color: var(--accent); 
+            display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .nav-links { list-style: none; padding: 15px 10px; flex: 1; overflow-y: auto; }
+        .nav-links a { 
+            display: flex; align-items: center; gap: 12px; padding: 12px 15px; 
+            color: rgba(255,255,255,0.7); text-decoration: none; border-radius: 8px; 
+            font-weight: 500; margin-bottom: 5px; transition: 0.2s; font-size: 14px;
+        }
+        .nav-links a:hover { background: rgba(255,255,255,0.1); color: white; padding-left: 20px; }
+        .nav-links a.active { background: var(--accent); color: var(--primary-dark); font-weight: 800; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .nav-links i { width: 20px; text-align: center; }
 
         /* --- MAIN CONTENT --- */
-        .main-content { flex: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden; padding: 10px; }
+        .main-content { flex: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden; padding: 10px; position: relative; }
 
         /* TOOLBAR */
-        .toolbar { flex-shrink:0; background:white; padding:10px 15px; display:flex; justify-content:space-between; align-items:center; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.05); margin-bottom:10px; }
-        .search-grp { display:flex; gap:10px; flex:1; min-width: 200px; position: relative; margin-right: 20px; }
-        input, select { padding:10px; border:1px solid var(--border); border-radius:6px; outline:none; font-size:14px; }
+        .toolbar { 
+            flex-shrink:0; background:var(--surface); padding:10px 15px; 
+            display:flex; justify-content:space-between; align-items:center; 
+            border-radius:12px; box-shadow:0 2px 5px rgba(0,0,0,0.05); margin-bottom:10px; border: 1px solid var(--border);
+        }
+        .menu-btn { display: none; font-size: 20px; color: var(--primary); cursor: pointer; margin-right: 15px; }
         
+        .search-grp { display:flex; gap:10px; flex:1; min-width: 200px; position: relative; margin-right: 20px; }
+        input, select { padding:10px; border:1px solid var(--border); border-radius:8px; outline:none; font-size:14px; transition: 0.2s; }
+        input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(13, 71, 161, 0.1); }
+        
+        /* POS LAYOUT (Split Screen) */
         .pos-layout { display:flex; gap:10px; flex:1; overflow:hidden; }
 
         /* LEFT: ITEMS GRID */
-        .item-list-area { flex:1.5; background:white; border-radius:8px; border:1px solid var(--border); display:flex; flex-direction:column; overflow:hidden; }
-        .vs-viewport { flex:1; overflow-y:auto; padding:10px; display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; align-content: flex-start; }
+        .item-list-area { 
+            flex:1.5; background:var(--surface); border-radius:12px; border:1px solid var(--border); 
+            display:flex; flex-direction:column; overflow:hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+        }
+        .vs-viewport { 
+            flex:1; overflow-y:auto; padding:15px; 
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); 
+            gap: 15px; align-content: flex-start; 
+        }
         
         .product-card { 
-            border: 1px solid #eee; padding: 10px; cursor: pointer; border-radius: 8px; background: #fff;
-            display: flex; flex-direction: column; justify-content: space-between; height: 100px; transition: 0.2s;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border: 1px solid var(--border); padding: 12px; cursor: pointer; border-radius: 12px; background: #fff;
+            display: flex; flex-direction: column; justify-content: space-between; height: 110px; transition: 0.2s;
+            position: relative; overflow: hidden;
         }
-        .product-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .product-card.low-stock { border: 1px solid var(--red); background: #fef2f2; }
-        
-        .p-name { font-weight: 600; font-size: 13px; line-height: 1.3; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; margin-bottom: 5px; }
-        .p-price { font-weight: bold; color: var(--accent); margin-top: auto; font-size: 14px; }
-        .p-stock { font-size: 10px; color: #64748b; display: flex; justify-content: space-between; margin-top: 5px; }
+        .product-card:hover { border-color: var(--accent); transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+        .product-card.low-stock { border-color: var(--red); background: #fef2f2; }
+        .product-card.low-stock::after { content:'Low Stock'; position:absolute; top:0; right:0; background:var(--red); color:white; font-size:9px; padding:2px 6px; border-bottom-left-radius:6px; }
+
+        .p-name { font-weight: 600; font-size: 13px; color: var(--text-main); line-height: 1.3; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; margin-bottom: 5px; }
+        .p-price { font-weight: 800; color: var(--primary); margin-top: auto; font-size: 15px; }
+        .p-stock { font-size: 11px; color: #64748b; display: flex; justify-content: space-between; margin-top: 5px; font-weight: 500; }
 
         /* RIGHT: CART */
-        .cart-area { flex:1; min-width: 350px; background:white; border-radius:8px; border:1px solid var(--border); display:flex; flex-direction:column; }
+        .cart-area { 
+            flex:1; min-width: 380px; background:var(--surface); border-radius:12px; 
+            border:1px solid var(--border); display:flex; flex-direction:column; 
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+        }
         
-        .party-panel { padding: 12px; background: #f8fafc; border-bottom: 1px solid var(--border); display:flex; gap:10px; align-items: center; }
-        .party-panel select { flex: 1; }
+        .party-panel { padding: 15px; background: #f8fafc; border-bottom: 1px solid var(--border); display:flex; gap:10px; align-items: center; border-radius: 12px 12px 0 0; }
+        .party-panel select { flex: 1; font-weight: 600; }
         
-        .cart-header { display: grid; grid-template-columns: 30px 2fr 1fr 1fr 1fr 30px; gap: 5px; background: #f1f5f9; padding: 10px; font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase; }
-        .cart-body { flex:1; overflow-y:auto; }
-        .cart-row { display: grid; grid-template-columns: 30px 2fr 1fr 1fr 1fr 30px; gap: 5px; border-bottom: 1px solid #f1f5f9; padding: 10px; align-items: center; font-size: 13px; }
-        .cart-row:nth-child(even) { background: #fafafa; }
-        .cart-row input { width: 100%; padding: 5px; text-align: center; border: 1px solid #eee; }
+        .cart-header { display: grid; grid-template-columns: 30px 2fr 1fr 1fr 1fr 30px; gap: 5px; background: var(--primary); padding: 12px 10px; font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; }
+        .cart-body { flex:1; overflow-y:auto; background: white; }
+        .cart-row { display: grid; grid-template-columns: 30px 2fr 1fr 1fr 1fr 30px; gap: 5px; border-bottom: 1px solid #f1f5f9; padding: 12px 10px; align-items: center; font-size: 13px; transition: 0.1s; }
+        .cart-row:hover { background: #f8fafc; }
+        .cart-row input { width: 100%; padding: 6px; text-align: center; border: 1px solid #e2e8f0; font-weight: 600; }
         .cart-row input:focus { border-color: var(--accent); }
 
-        .cart-footer { padding: 15px; background: #fff; border-top: 2px solid var(--border); }
+        .cart-footer { padding: 20px; background: #fff; border-top: 2px solid var(--border); border-radius: 0 0 12px 12px; }
         .totals-grid { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 15px; }
-        .big-total { font-size: 28px; font-weight: 800; color: var(--accent); line-height: 1; }
+        .big-total { font-size: 32px; font-weight: 800; color: var(--primary); line-height: 1; font-family: 'Inter', sans-serif; letter-spacing: -1px; }
         
-        .btn { padding: 12px; border-radius: 6px; border: none; font-weight: 700; cursor: pointer; color: white; transition: 0.2s; }
-        .btn-pay { background: var(--green); width: 100%; font-size: 16px; display: flex; justify-content: center; align-items: center; gap: 10px; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2); }
-        .btn-pay:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn { padding: 14px; border-radius: 8px; border: none; font-weight: 700; cursor: pointer; color: white; transition: 0.2s; letter-spacing: 0.5px; }
+        .btn-pay { background: var(--accent); color: var(--primary-dark); width: 100%; font-size: 16px; display: flex; justify-content: center; align-items: center; gap: 10px; box-shadow: 0 4px 15px rgba(255, 202, 40, 0.4); }
+        .btn-pay:hover { transform: translateY(-2px); filter: brightness(105%); }
 
         /* MODAL */
-        .modal-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.6); display:none; justify-content:center; align-items:center; z-index:200; backdrop-filter: blur(2px); }
-        .modal { background:white; width:95%; max-width:500px; padding:25px; border-radius:12px; box-shadow:0 20px 25px rgba(0,0,0,0.2); animation: slideIn 0.2s ease-out; }
+        .modal-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.6); display:none; justify-content:center; align-items:center; z-index:2000; backdrop-filter: blur(4px); }
+        .modal { background:white; width:95%; max-width:450px; padding:30px; border-radius:20px; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); animation: slideIn 0.2s ease-out; }
         @keyframes slideIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         
-        .pay-options { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 20px 0; }
-        .p-opt { padding: 15px; border: 2px solid var(--border); border-radius: 8px; text-align: center; cursor: pointer; font-weight: 600; color: #64748b; transition: 0.2s; }
-        .p-opt:hover { border-color: var(--accent); }
-        .p-opt.selected { border-color: var(--green); background: #ecfdf5; color: var(--green); }
+        .pay-options { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin: 25px 0; }
+        .p-opt { padding: 15px; border: 2px solid var(--border); border-radius: 12px; text-align: center; cursor: pointer; font-weight: 600; color: var(--text-main); transition: 0.2s; background: #f8fafc; }
+        .p-opt:hover { border-color: var(--primary); transform: translateY(-2px); }
+        .p-opt.selected { border-color: var(--accent); background: #fffbeb; color: var(--primary-dark); box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
 
-        .gst-btn { background: #6366f1; color: white; padding: 10px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; margin-top: 10px; width: 100%; display: flex; justify-content: center; gap: 8px; }
+        .gst-btn { background: #4f46e5; color: white; padding: 12px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; margin-top: 15px; width: 100%; display: flex; justify-content: center; gap: 8px; }
+
+        /* MOBILE RESPONSIVE */
+        @media (max-width: 1024px) {
+            .sidebar { position: fixed; left: -100%; width: 280px; height: 100vh; }
+            .sidebar.active { left: 0; }
+            .menu-btn { display: block; }
+            
+            .pos-layout { flex-direction: column; overflow-y: auto; } /* Stack Items & Cart */
+            .item-list-area { min-height: 350px; flex: none; } /* Items Grid takes fixed height */
+            .cart-area { flex: none; min-width: 100%; margin-bottom: 20px; } /* Cart below items */
+            .vs-viewport { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); } /* Smaller cards */
+            
+            .main-content { padding: 5px; }
+            .toolbar { border-radius: 8px; }
+        }
 
         /* PRINT */
         @media print {
@@ -93,21 +152,47 @@
 </head>
 <body>
 
-    <div class="sidebar">
-        <a href="index.html" title="Dashboard"><i class="fas fa-home"></i></a>
-        <a href="sales_invoice.html" class="active" title="POS / Sales"><i class="fas fa-cash-register"></i></a>
-        <a href="vouchers.html" title="All Bills"><i class="fas fa-receipt"></i></a>
-        <a href="item_master.html" title="Inventory"><i class="fas fa-boxes"></i></a>
-        <a href="settings.html" title="Settings"><i class="fas fa-cogs"></i></a>
+ <div class="sidebar" id="sidebar">
+        <div class="brand-logo" style="padding: 20px; font-size: 20px; font-weight: 800; color: white; display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-cube"></i> Arth Book
+        </div>
+        <ul class="nav-links" style="list-style: none; padding: 0 10px;">
+            <li><a href="index.html"><i class="fas fa-home"></i> Dashboard</a></li>
+            <li><a href="sales_invoice.html"><i class="fas fa-file-invoice"></i> Sales (POS)</a></li>
+            <li><a href="purchase_invoice.html"><i class="fas fa-truck"></i> Purchase</a></li>
+            <li><a href="vouchers.html"><i class="fas fa-receipt"></i> Day Book</a></li>
+            
+            <li style="margin-top:15px; margin-bottom:5px; font-size:11px; color:#64748b; font-weight:bold; padding-left:15px; text-transform:uppercase;">Masters</li>
+            <li><a href="item_master.html"><i class="fas fa-boxes"></i> Inventory</a></li>
+            <li><a href="ArthBook.html"><i class="fas fa-users"></i> Parties</a></li>
+            <li><a href="coa.html"><i class="fas fa-sitemap"></i> Accounts</a></li>
+            
+            <li style="margin-top:15px; margin-bottom:5px; font-size:11px; color:#64748b; font-weight:bold; padding-left:15px; text-transform:uppercase;">Reports & Tax</li>
+            <li><a href="reports.html"><i class="fas fa-chart-line"></i> Reports</a></li>
+            <li><a href="gst_filing.html"><i class="fas fa-university"></i> GST Returns</a></li>
+            <li><a href="taxation.html"><i class="fas fa-calculator"></i> Tax / ITR</a></li>
+            
+            <hr style="border:0; border-top:1px solid rgba(255,255,255,0.1); margin:15px 5px;">
+            <li><a href="settings.html"><i class="fas fa-cog"></i> Settings</a></li>
+            <li><a href="help.html"><i class="fas fa-question-circle"></i> Help</a></li>
+        </ul>
+        
+        <div style="padding: 20px; font-size: 11px; color: #64748b; text-align: center; margin-top:auto;">
+            Arth Book v4.0<br>Authorized User
+        </div>
     </div>
 
     <div class="main-content">
         <div class="toolbar">
-            <div class="search-grp">
-                <i class="fas fa-search" style="position:absolute; left:12px; top:12px; color:#94a3b8;"></i>
-                <input type="text" id="searchBar" placeholder="Search Item or Scan Barcode (F2)" style="padding-left:35px; width:100%;" onkeyup="handleSearch(this.value)">
+            <div style="display:flex; align-items:center; width:100%;">
+                <i class="fas fa-bars menu-btn" onclick="document.getElementById('sidebar').classList.toggle('active')"></i>
+                
+                <div class="search-grp">
+                    <i class="fas fa-search" style="position:absolute; left:12px; top:12px; color:#94a3b8;"></i>
+                    <input type="text" id="searchBar" placeholder="Search Item or Scan Barcode (F2)" style="padding-left:35px; width:100%;" onkeyup="handleSearch(this.value)">
+                </div>
             </div>
-            <div style="font-weight:700; color:var(--accent); font-size:18px;" id="invNo">Loading...</div>
+            <div style="font-weight:800; color:var(--primary); font-size:16px; white-space:nowrap;" id="invNo">Loading...</div>
         </div>
 
         <div class="pos-layout">
@@ -118,6 +203,7 @@
 
             <div class="cart-area">
                 <div class="party-panel">
+                    <i class="fas fa-user-circle" style="color:var(--primary); font-size:18px;"></i>
                     <select id="custSelect">
                         <option value="">Walk-in Customer</option>
                     </select>
@@ -130,15 +216,15 @@
                 <div class="cart-body" id="cartBody">
                     <div style="text-align:center; padding:50px; color:#94a3b8;">
                         <i class="fas fa-shopping-cart" style="font-size:30px; margin-bottom:10px; opacity:0.5;"></i><br>
-                        Start Scanning...
+                        Ready to Bill
                     </div>
                 </div>
 
                 <div class="cart-footer">
                     <div class="totals-grid">
                         <div>
-                            <div style="font-size:13px; color:#64748b;">Subtotal: <span id="lblSub">0.00</span></div>
-                            <div style="font-size:13px; color:#64748b;">Tax (GST): <span id="lblTax">0.00</span></div>
+                            <div style="font-size:13px; color:#64748b; font-weight:600;">Subtotal: <span id="lblSub">0.00</span></div>
+                            <div style="font-size:13px; color:#64748b; font-weight:600;">Tax (GST): <span id="lblTax">0.00</span></div>
                         </div>
                         <div class="big-total">₹ <span id="lblGrand">0.00</span></div>
                     </div>
@@ -158,9 +244,9 @@
                 <button onclick="closeModal()" style="background:none; border:none; font-size:24px; cursor:pointer; color:#94a3b8;">&times;</button>
             </div>
             
-            <div style="text-align:center; margin-bottom:20px; padding: 20px; background: #f8fafc; border-radius: 12px;">
+            <div style="text-align:center; margin-bottom:20px; padding: 20px; background: #f8fafc; border-radius: 12px; border:1px solid var(--border);">
                 <div style="font-size:14px; color:#64748b; margin-bottom: 5px;">Total Payable Amount</div>
-                <div style="font-size:40px; font-weight:800; color:var(--accent); line-height:1;" id="modalTotal">₹0</div>
+                <div style="font-size:40px; font-weight:800; color:var(--primary); line-height:1;" id="modalTotal">₹0</div>
             </div>
 
             <label style="font-size:12px; font-weight:bold; color:#64748b; text-transform:uppercase;">Payment Mode</label>
@@ -182,7 +268,7 @@
 
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:20px;">
                 <button class="btn" style="background:#64748b;" onclick="saveBill(false)">Save Only</button>
-                <button class="btn" style="background:var(--green);" onclick="saveBill(true)">Print & Save</button>
+                <button class="btn" style="background:var(--success);" onclick="saveBill(true)">Print & Save</button>
             </div>
         </div>
     </div>
@@ -214,6 +300,17 @@
             document.getElementById('billDate').valueAsDate = new Date();
         };
 
+        // Auto Close Sidebar on Mobile Logic
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth <= 1024) document.getElementById('sidebar').classList.remove('active');
+            });
+        });
+        document.querySelector('.main-content').addEventListener('click', (e) => {
+            if (e.target.closest('.menu-btn')) return;
+            if (window.innerWidth <= 1024) document.getElementById('sidebar').classList.remove('active');
+        });
+
         // --- 1. ITEM RENDER & SEARCH ---
         function renderItems(list) {
             const container = document.getElementById('itemContainer');
@@ -228,7 +325,7 @@
                     <div class="p-name">${i.name}</div>
                     <div class="p-stock">
                         <span>${i.sku || ''}</span>
-                        <span style="color:${low?'red':'green'}">${stock} ${i.unit||''}</span>
+                        <span style="color:${low?'var(--red)':'var(--green)'}">${stock} ${i.unit||''}</span>
                     </div>
                     <div class="p-price">₹${(i.std_price||0).toFixed(2)}</div>
                 `;
@@ -282,7 +379,7 @@
             body.innerHTML = '';
             
             if(cart.length === 0) {
-                body.innerHTML = '<div style="text-align:center; padding:50px; color:#94a3b8;"><i class="fas fa-shopping-cart" style="font-size:30px; margin-bottom:10px; opacity:0.5;"></i><br>Start Scanning...</div>';
+                body.innerHTML = '<div style="text-align:center; padding:50px; color:#94a3b8;"><i class="fas fa-shopping-cart" style="font-size:30px; margin-bottom:10px; opacity:0.5;"></i><br>Scan items to add</div>';
                 updateTotals(0,0);
                 return;
             }
@@ -298,11 +395,11 @@
                 div.className = 'cart-row';
                 div.innerHTML = `
                     <div>${idx+1}</div>
-                    <div style="white-space:nowrap; overflow:hidden; font-weight:500;">${c.name}</div>
+                    <div style="white-space:nowrap; overflow:hidden; font-weight:600; color:var(--text-main);">${c.name}</div>
                     <input type="number" value="${c.qty}" onchange="updateQty(${idx}, this.value, ${c.id})">
                     <input type="number" value="${c.rate}" onchange="updateRate(${idx}, this.value)">
                     <div style="text-align:right; font-weight:600;">${(base+taxAmt).toFixed(2)}</div>
-                    <div style="color:red; cursor:pointer; text-align:center;" onclick="removeCart(${idx})">&times;</div>
+                    <div style="color:var(--red); cursor:pointer; text-align:center;" onclick="removeCart(${idx})"><i class="fas fa-trash"></i></div>
                 `;
                 body.appendChild(div);
             });
@@ -388,12 +485,6 @@
                 });
             });
 
-            // Ledger Entries (Simplified for POS)
-            // 1. Debit Cash/Bank/Party
-            // 2. Credit Sales
-            // (DB.saveVoucherTransaction will handle basic saving, but we need to ensure stock reduction triggers)
-            // Since our db.js has specific logic for 'meta_data' in entries to trigger stock, we are good.
-            
             try {
                 // Construct proper accounting entries
                 const accEntries = [];
@@ -415,11 +506,6 @@
                 // 2. Credit (Sales)
                 const salesLedger = ledgers.find(l => l.name === 'Local Sales');
                 if(salesLedger) {
-                    // We attach item meta data to the Sales Entry so DB knows to reduce stock
-                    // Ideally we should have 1 entry per item line for detailed tracking, but summarizing is also fine.
-                    // For stock logic to work in db.js 3.8, it iterates entries and checks meta_data.item_id.
-                    // So we must add entries for EACH item.
-                    
                     cart.forEach(c => {
                         accEntries.push({ 
                             ledger_id: salesLedger.id, 

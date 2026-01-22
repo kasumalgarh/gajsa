@@ -51,14 +51,33 @@
 </head>
 <body>
 
-    <div class="sidebar">
-        <div class="brand-logo" style="text-align:center; padding:20px; color:white; font-weight:800; font-size:20px;">
-            <i class="fas fa-cogs"></i> Settings
+  <div class="sidebar" id="sidebar">
+        <div class="brand-logo" style="padding: 20px; font-size: 20px; font-weight: 800; color: white; display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-cube"></i> Arth Book
         </div>
-        <a href="index.html" class="nav-link"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
-        <a href="#" class="nav-link active"><i class="fas fa-sliders-h"></i> General</a>
-        <div style="margin-top:auto; padding:20px; color:#64748b; font-size:12px; text-align:center;">
-            Arth Book v2.5<br>Secure Build
+        <ul class="nav-links" style="list-style: none; padding: 0 10px;">
+            <li><a href="index.html"><i class="fas fa-home"></i> Dashboard</a></li>
+            <li><a href="sales_invoice.html"><i class="fas fa-file-invoice"></i> Sales (POS)</a></li>
+            <li><a href="purchase_invoice.html"><i class="fas fa-truck"></i> Purchase</a></li>
+            <li><a href="vouchers.html"><i class="fas fa-receipt"></i> Day Book</a></li>
+            
+            <li style="margin-top:15px; margin-bottom:5px; font-size:11px; color:#64748b; font-weight:bold; padding-left:15px; text-transform:uppercase;">Masters</li>
+            <li><a href="item_master.html"><i class="fas fa-boxes"></i> Inventory</a></li>
+            <li><a href="ArthBook.html"><i class="fas fa-users"></i> Parties</a></li>
+            <li><a href="coa.html"><i class="fas fa-sitemap"></i> Accounts</a></li>
+            
+            <li style="margin-top:15px; margin-bottom:5px; font-size:11px; color:#64748b; font-weight:bold; padding-left:15px; text-transform:uppercase;">Reports & Tax</li>
+            <li><a href="reports.html"><i class="fas fa-chart-line"></i> Reports</a></li>
+            <li><a href="gst_filing.html"><i class="fas fa-university"></i> GST Returns</a></li>
+            <li><a href="taxation.html"><i class="fas fa-calculator"></i> Tax / ITR</a></li>
+            
+            <hr style="border:0; border-top:1px solid rgba(255,255,255,0.1); margin:15px 5px;">
+            <li><a href="settings.html"><i class="fas fa-cog"></i> Settings</a></li>
+            <li><a href="help.html"><i class="fas fa-question-circle"></i> Help</a></li>
+        </ul>
+        
+        <div style="padding: 20px; font-size: 11px; color: #64748b; text-align: center; margin-top:auto;">
+            Arth Book v4.0<br>Authorized User
         </div>
     </div>
 
