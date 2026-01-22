@@ -181,7 +181,7 @@
                 <div class="report-box">
                     <h3>HSN-wise Summary</h3>
                     <table id="hsnTable">
-                        <thead><tr><th>HSN</th><th>Description</th><th>UQC</th><th>Quantity</th><th>Taxable Value</th><th>IGST</th><th>CGST</th><th>SGST</th></tr></thead>
+                        <thead><tr><th>HSN</th><th>Description</th><th>UQC</th><th>Qty</th><th>Taxable Value</th><th>IGST</th><th>CGST</th><th>SGST</th></tr></thead>
                         <tbody></tbody>
                     </table>
                 </div>
@@ -198,9 +198,15 @@
         window.onload = async () => {
             await DB.init();
             
-            // FIX: Using standardized DB methods compatible with v24
-            company = await DB.getOne('settings', 'global') || {}; 
-            myStateCode = company.state_code || '08';
+            // FIX 1: Fetch Settings correctly using db.js 3.8 structure
+            company = await DB.getSettings() || {}; 
+            
+            // Try to extract state code from GSTIN if state_code not explicitly saved
+            if(company.gstin && company.gstin.length >= 2) {
+                myStateCode = company.gstin.substring(0, 2);
+            } else if (company.state_code) {
+                myStateCode = company.state_code;
+            }
 
             const today = new Date();
             const monthStr = today.toISOString().slice(0,7);
@@ -226,78 +232,156 @@
             const start = `${year}-${month}-01`;
             const end = `${year}-${month}-31`;
 
-            const vouchers = await DB.getAll('vouchers');
-            // FIX: Using getAll instead of getLedgers
-            const ledgers = await DB.getAll('ledgers'); 
+            // FIX 2: Load Voucher Items & Products to get accurate tax rates
+            const [vouchers, ledgers, vItems, allProducts] = await Promise.all([
+                DB.getAll('vouchers'),
+                DB.getAll('ledgers'),
+                DB.getAll('voucher_items') || [],
+                DB.getAll('items') || []
+            ]);
 
             const sales = vouchers.filter(v => v.type === 'Sales' && v.date >= start && v.date <= end);
             const purchases = vouchers.filter(v => v.type === 'Purchase' && v.date >= start && v.date <= end);
 
             gstData = { b2b: [], b2cs: [], hsn: {}, outward: { taxable: 0, igst: 0, cgst: 0, sgst: 0 }, itc: { igst: 0, cgst: 0, sgst: 0 } };
 
-            // Process Sales (Output Tax)
+            // --- PROCESS SALES ---
             sales.forEach(v => {
                 const party = ledgers.find(l => l.id === v.party_id) || {};
-                const partyState = party.state_code || myStateCode;
+                // Extract Party State from GSTIN or Address
+                let partyState = myStateCode; // Default Local
+                if (party.gstin && party.gstin.length >= 2) partyState = party.gstin.substring(0,2);
+                else if (party.state_code) partyState = party.state_code;
+
                 const isInter = partyState !== myStateCode;
                 const isRegistered = party.gstin && party.gstin.length === 15;
 
-                let invTaxable = 0, invIGST = 0, invCGST = 0, invSGST = 0;
+                // Find items for this voucher to get exact tax rates
+                const itemsInBill = vItems.filter(vi => vi.voucher_id === v.id);
+                
+                // If no items found (e.g. direct accounting entry), assume 18% on total amount
+                if(itemsInBill.length === 0) {
+                    itemsInBill.push({
+                        rate: v.amount / 1.18, // Reverse calc assumption
+                        qty: 1,
+                        gst: 18,
+                        hsn: '9999', // General Service
+                        name: 'General Sales'
+                    });
+                }
 
-                // Simplified calculation (Tax inclusive reverse calc or simple logic)
-                const taxable = v.amount || 0; 
-                const rate = 18; 
-                const tax = taxable * (rate / 100);
+                itemsInBill.forEach(item => {
+                    // Logic to get Product Details (HSN, Name) from Item ID
+                    const prod = allProducts.find(p => p.id === item.item_id);
+                    const hsnCode = prod ? prod.hsn : (item.hsn || 'GENERAL');
+                    const uqc = prod ? prod.unit : 'OTH';
+                    
+                    // Tax Calculation
+                    // Assuming item.rate is Unit Price. If saved as tax inclusive, logic changes.
+                    // Standard practice: Rate is usually basic price.
+                    const basicAmt = (item.qty * item.rate);
+                    const taxRate = item.gst || prod?.gst_rate || 0; // Look in item entry first, then product master
+                    const taxAmt = basicAmt * (taxRate / 100);
 
-                if (isInter) invIGST = tax;
-                else { invCGST = tax / 2; invSGST = tax / 2; }
+                    let i_amt = 0, c_amt = 0, s_amt = 0;
+                    if(isInter) i_amt = taxAmt;
+                    else { c_amt = taxAmt/2; s_amt = taxAmt/2; }
 
-                invTaxable = taxable;
+                    // Accumulate Outward
+                    gstData.outward.taxable += basicAmt;
+                    gstData.outward.igst += i_amt;
+                    gstData.outward.cgst += c_amt;
+                    gstData.outward.sgst += s_amt;
 
-                gstData.outward.taxable += invTaxable;
-                gstData.outward.igst += invIGST;
-                gstData.outward.cgst += invCGST;
-                gstData.outward.sgst += invSGST;
+                    // HSN Summary Accumulation
+                    if(!gstData.hsn[hsnCode]) gstData.hsn[hsnCode] = { desc: prod?.name||'Item', uqc, qty:0, val:0, igst:0, cgst:0, sgst:0 };
+                    gstData.hsn[hsnCode].qty += item.qty;
+                    gstData.hsn[hsnCode].val += basicAmt;
+                    gstData.hsn[hsnCode].igst += i_amt;
+                    gstData.hsn[hsnCode].cgst += c_amt;
+                    gstData.hsn[hsnCode].sgst += s_amt;
+
+                    // B2B / B2CS logic (Per Item or Per Bill? Usually Per Bill, but we sum here for simplicity)
+                    // For accuracy, we should aggregate per bill first. 
+                    // To keep code simple, we will add to B2CS buckets item-wise.
+                    // For B2B, we need to show invoice level.
+                });
+
+                // --- Invoice Level Aggregation for B2B Table ---
+                // We re-calculate total bill values
+                let billTaxable = 0, billIGST = 0, billCGST = 0, billSGST = 0;
+                itemsInBill.forEach(item => {
+                    const prod = allProducts.find(p => p.id === item.item_id);
+                    const basic = item.qty * item.rate;
+                    const rt = item.gst || prod?.gst_rate || 0;
+                    const tax = basic * (rt/100);
+                    billTaxable += basic;
+                    if(isInter) billIGST += tax; else { billCGST += tax/2; billSGST += tax/2; }
+                });
+
+                const billTotal = billTaxable + billIGST + billCGST + billSGST;
 
                 if (isRegistered) {
                     gstData.b2b.push({
-                        gstin: party.gstin || 'N/A',
-                        name: party.name || 'Unknown',
+                        gstin: party.gstin,
+                        name: party.name,
                         invoice: v.voucher_no,
                         date: v.date,
-                        value: (invTaxable + tax).toFixed(2),
-                        taxable: invTaxable.toFixed(2),
-                        igst: invIGST.toFixed(2),
-                        cgst: invCGST.toFixed(2),
-                        sgst: invSGST.toFixed(2)
+                        value: billTotal.toFixed(2),
+                        taxable: billTaxable.toFixed(2),
+                        igst: billIGST.toFixed(2),
+                        cgst: billCGST.toFixed(2),
+                        sgst: billSGST.toFixed(2)
                     });
                 } else {
-                    const key = `${partyState}-${rate}`;
-                    if (!gstData.b2cs[key]) gstData.b2cs[key] = { state: partyState, rate, taxable: 0, igst: 0, cgst: 0, sgst: 0 };
-                    gstData.b2cs[key].taxable += invTaxable;
-                    gstData.b2cs[key].igst += invIGST;
-                    gstData.b2cs[key].cgst += invCGST;
-                    gstData.b2cs[key].sgst += invSGST;
+                    // Group B2CS by Rate
+                    itemsInBill.forEach(item => {
+                        const prod = allProducts.find(p => p.id === item.item_id);
+                        const basic = item.qty * item.rate;
+                        const rt = item.gst || prod?.gst_rate || 0;
+                        const tax = basic * (rt/100);
+                        
+                        const key = `${partyState}-${rt}`;
+                        if (!gstData.b2cs[key]) gstData.b2cs[key] = { state: partyState, rate: rt, taxable: 0, igst: 0, cgst: 0, sgst: 0 };
+                        
+                        gstData.b2cs[key].taxable += basic;
+                        if(isInter) gstData.b2cs[key].igst += tax;
+                        else { 
+                            gstData.b2cs[key].cgst += tax/2; 
+                            gstData.b2cs[key].sgst += tax/2; 
+                        }
+                    });
                 }
             });
 
-            // Process Purchases (ITC)
+            // --- PROCESS PURCHASES (ITC) ---
+            // Simplified Logic: Purchases are usually taken as straight Input Credit
             purchases.forEach(v => {
-                const party = ledgers.find(l => l.id === v.party_id) || {};
-                const partyState = party.state_code || myStateCode;
-                const isInter = partyState !== myStateCode;
-
-                const taxable = v.amount || 0;
-                const rate = 18;
-                const tax = taxable * (rate / 100);
-
-                let igst = 0, cgst = 0, sgst = 0;
-                if (isInter) igst = tax;
-                else { cgst = tax / 2; sgst = tax / 2; }
-
-                gstData.itc.igst += igst;
-                gstData.itc.cgst += cgst;
-                gstData.itc.sgst += sgst;
+                // If items exist, use them. Else flat 18%.
+                const itemsInBill = vItems.filter(vi => vi.voucher_id === v.id);
+                
+                if(itemsInBill.length > 0) {
+                    itemsInBill.forEach(item => {
+                        const prod = allProducts.find(p => p.id === item.item_id);
+                        const basic = item.qty * item.rate;
+                        const rt = item.gst || prod?.gst_rate || 0;
+                        const tax = basic * (rt/100);
+                        
+                        // Check Party State
+                        const party = ledgers.find(l => l.id === v.party_id) || {};
+                        let partyState = myStateCode;
+                        if (party.gstin && party.gstin.length >= 2) partyState = party.gstin.substring(0,2);
+                        else if (party.state_code) partyState = party.state_code;
+                        
+                        if(partyState !== myStateCode) gstData.itc.igst += tax;
+                        else { gstData.itc.cgst += tax/2; gstData.itc.sgst += tax/2; }
+                    });
+                } else {
+                    // Fallback for direct vouchers
+                    const tax = (v.amount || 0) * 0.18; // Rough estimate
+                    gstData.itc.cgst += tax/2;
+                    gstData.itc.sgst += tax/2; 
+                }
             });
 
             renderOverview();
@@ -311,9 +395,9 @@
             const input = gstData.itc.igst + gstData.itc.cgst + gstData.itc.sgst;
             const payable = Math.max(0, output - input);
 
-            document.getElementById('outputTax').innerText = '₹' + output.toLocaleString('en-IN');
-            document.getElementById('inputTax').innerText = '₹' + input.toLocaleString('en-IN');
-            document.getElementById('netPayable').innerText = '₹' + payable.toLocaleString('en-IN');
+            document.getElementById('outputTax').innerText = '₹' + output.toLocaleString('en-IN', {maximumFractionDigits:2});
+            document.getElementById('inputTax').innerText = '₹' + input.toLocaleString('en-IN', {maximumFractionDigits:2});
+            document.getElementById('netPayable').innerText = '₹' + payable.toLocaleString('en-IN', {maximumFractionDigits:2});
         }
 
         function renderGSTR1() {
@@ -351,7 +435,7 @@
             const itcBody = document.querySelector('#itcTable tbody');
             itcBody.innerHTML = `
                 <tr>
-                    <td>Eligible ITC</td>
+                    <td>Eligible ITC (From Purchases)</td>
                     <td class="amt">${gstData.itc.igst.toFixed(2)}</td>
                     <td class="amt">${gstData.itc.cgst.toFixed(2)}</td>
                     <td class="amt">${gstData.itc.sgst.toFixed(2)}</td>
@@ -362,7 +446,20 @@
 
         function renderHSN() {
             const body = document.querySelector('#hsnTable tbody');
-            body.innerHTML = '<tr><td colspan="8" style="text-align:center; color:var(--muted);">HSN data aggregation in progress (item-level required)</td></tr>';
+            const hsnRows = Object.entries(gstData.hsn).map(([hsn, data]) => `
+                <tr>
+                    <td>${hsn}</td>
+                    <td>${data.desc}</td>
+                    <td>${data.uqc}</td>
+                    <td class="amt">${data.qty}</td>
+                    <td class="amt">${data.val.toFixed(2)}</td>
+                    <td class="amt">${data.igst.toFixed(2)}</td>
+                    <td class="amt">${data.cgst.toFixed(2)}</td>
+                    <td class="amt">${data.sgst.toFixed(2)}</td>
+                </tr>
+            `).join('');
+            
+            body.innerHTML = hsnRows || '<tr><td colspan="8" style="text-align:center; color:var(--muted);">No HSN Data Available</td></tr>';
         }
 
         function downloadGSTR1() {
@@ -396,7 +493,20 @@
                     iamt: c.igst,
                     camt: c.cgst,
                     samt: c.sgst
-                }))
+                })),
+                hsn: {
+                    data: Object.entries(gstData.hsn).map(([hsn, d]) => ({
+                        num: 1,
+                        hsn_sc: hsn,
+                        desc: d.desc,
+                        uqc: d.uqc,
+                        qty: d.qty,
+                        txval: d.val,
+                        iamt: d.igst,
+                        camt: d.cgst,
+                        samt: d.sgst
+                    }))
+                }
             };
 
             const blob = new Blob([JSON.stringify(json, null, 2)], { type: 'application/json' });

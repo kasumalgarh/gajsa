@@ -63,6 +63,16 @@
         .btn-calc { background: var(--blue); width: 100%; margin-top: 20px; }
         .btn-json { background: var(--green); width: 100%; margin-top: 15px; }
         .btn-add-tds { background: var(--blue); }
+        .btn-print { background: #475569; width: 100%; margin-top: 10px; }
+
+        /* PRINT */
+        @media print {
+            .sidebar, .tabs, .header, .btn, .no-print { display: none !important; }
+            .main { padding: 0; overflow: visible; }
+            .itr-container { display: block; }
+            .itr-form, .itr-result { width: 100%; box-shadow: none; border: 1px solid #000; margin-bottom: 20px; }
+            body { height: auto; overflow: visible; background: white; }
+        }
 
         /* MOBILE */
         .menu-btn { display: none; position: absolute; top: 15px; left: 15px; font-size: 24px; cursor: pointer; background: none; border: none; z-index: 200; color: var(--text); }
@@ -85,7 +95,7 @@
     <div class="overlay" onclick="toggleMenu()"></div>
 
     <div class="sidebar" id="mySidebar">
-        <div style="font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 40px;">🚀 Arth Book</div> 
+        <div style="font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 40px; text-align:center;">🚀 Arth Book</div> 
         <a href="index.html" class="nav-link">📊 Dashboard</a>
         <a href="reports.html" class="nav-link">📈 Reports</a>
         <a href="gst_filing.html" class="nav-link">🏛️ GST Filing</a>
@@ -96,6 +106,7 @@
         <a href="ArthBook.html" class="nav-link">👥 Parties</a>
         <a href="coa.html" class="nav-link">🗂️ Accounts</a>
         <a href="settings.html" class="nav-link">⚙️ Settings</a>
+        <a href="taxation.html" class="nav-link active">💰 Taxation (ITR)</a>
     </div>
 
     <div class="main">
@@ -105,7 +116,6 @@
                 <select id="fySelect" onchange="loadFYData()" style="padding:10px; border-radius:8px; border:1px solid var(--border);">
                     <option value="2025-26">FY 2025-26 (AY 2026-27)</option>
                     <option value="2024-25">FY 2024-25 (AY 2025-26)</option>
-                    <option value="2023-24">FY 2023-24 (AY 2024-25)</option>
                 </select>
                 <button style="padding:8px 15px; background:var(--blue); color:white; border:none; border-radius:6px;" onclick="fetchBusinessIncome()">↻ Refresh P&L</button>
             </div>
@@ -122,23 +132,23 @@
                     <div class="form-section">
                         <div class="section-head">Income Heads</div>
                         <div class="form-row"><label>Gross Business Profit (from P&L)</label><input type="number" id="incBiz" readonly></div>
-                        <div class="form-row"><label>Salary Income</label><input type="number" id="incSal" value="0" onchange="calcTax()"></div>
-                        <div class="form-row"><label>House Property Income</label><input type="number" id="incHouse" value="0" onchange="calcTax()"></div>
-                        <div class="form-row"><label>Other Sources (Interest, etc.)</label><input type="number" id="incOther" value="0" onchange="calcTax()"></div>
+                        <div class="form-row"><label>Salary Income</label><input type="number" id="incSal" value="0" onchange="saveITRData()"></div>
+                        <div class="form-row"><label>House Property Income</label><input type="number" id="incHouse" value="0" onchange="saveITRData()"></div>
+                        <div class="form-row"><label>Other Sources (Interest, etc.)</label><input type="number" id="incOther" value="0" onchange="saveITRData()"></div>
                     </div>
 
                     <div class="form-section">
-                        <div class="section-head">Chapter VI-A Deductions (Old Regime Only)</div>
-                        <div class="form-row"><label>80C (Max ₹1.5 Lakh)</label><input type="number" id="ded80c" value="0" onchange="calcTax()"></div>
-                        <div class="form-row"><label>80D (Health Insurance)</label><input type="number" id="ded80d" value="0" onchange="calcTax()"></div>
-                        <div class="form-row"><label>Other Deductions (80G, etc.)</label><input type="number" id="dedOther" value="0" onchange="calcTax()"></div>
+                        <div class="section-head">Chapter VI-A Deductions (Old Regime)</div>
+                        <div class="form-row"><label>80C (Max ₹1.5 Lakh)</label><input type="number" id="ded80c" value="0" onchange="saveITRData()"></div>
+                        <div class="form-row"><label>80D (Health Insurance)</label><input type="number" id="ded80d" value="0" onchange="saveITRData()"></div>
+                        <div class="form-row"><label>Other Deductions</label><input type="number" id="dedOther" value="0" onchange="saveITRData()"></div>
                     </div>
 
                     <div class="form-section">
                         <div class="section-head">Taxes Already Paid</div>
-                        <div class="form-row"><label>TDS / TCS Deducted</label><input type="number" id="taxTds" value="0" onchange="calcTax()"></div>
-                        <div class="form-row"><label>Advance Tax Paid</label><input type="number" id="taxAdv" value="0" onchange="calcTax()"></div>
-                        <div class="form-row"><label>Self Assessment Tax</label><input type="number" id="taxSelf" value="0" onchange="calcTax()"></div>
+                        <div class="form-row"><label>TDS / TCS Deducted (Auto)</label><input type="number" id="taxTds" value="0" readonly style="background:#e0f2fe;"></div>
+                        <div class="form-row"><label>Advance Tax Paid</label><input type="number" id="taxAdv" value="0" onchange="saveITRData()"></div>
+                        <div class="form-row"><label>Self Assessment Tax</label><input type="number" id="taxSelf" value="0" onchange="saveITRData()"></div>
                     </div>
 
                     <button class="btn btn-calc" onclick="calcTax()">🔄 Recalculate Tax Liability</button>
@@ -162,7 +172,8 @@
                         </div>
                     </div>
 
-                    <button class="btn btn-json" onclick="downloadJSON()">📥 Export ITR JSON</button>
+                    <button class="btn btn-json" onclick="downloadJSON()">📥 Export JSON</button>
+                    <button class="btn btn-print" onclick="window.print()">🖨️ Print Report</button>
                 </div>
             </div>
         </div>
@@ -170,7 +181,7 @@
         <div id="tds" class="tab-content">
             <div class="tds-card">
                 <h3 style="margin-bottom:20px;">TDS / TCS Deduction Register</h3>
-                <div class="tds-inputs">
+                <div class="tds-inputs no-print">
                     <select id="tdsType">
                         <option value="TDS">TDS Deducted</option>
                         <option value="TCS">TCS Collected</option>
@@ -182,9 +193,9 @@
                         <option value="194H">194H - Commission (5%)</option>
                         <option value="194Q">194Q - Purchase >50L (0.1%)</option>
                     </select>
-                    <input type="text" id="tdsParty" placeholder="Party / Vendor Name">
+                    <input type="text" id="tdsParty" placeholder="Party Name">
                     <input type="number" id="tdsGross" placeholder="Gross Amount">
-                    <input type="number" id="tdsDeducted" placeholder="TDS/TCS Amount" readonly style="background:#f1f5f9;">
+                    <input type="number" id="tdsDeductedInput" placeholder="TDS Amount" readonly style="background:#f1f5f9;">
                     <button class="btn btn-add-tds" onclick="addTDSRecord()">+ Record</button>
                 </div>
 
@@ -192,7 +203,7 @@
                     <table>
                         <thead>
                             <tr>
-                                <th>Date</th><th>Type</th><th>Section</th><th>Party</th><th>Gross</th><th>TDS/TCS</th><th>Net Paid</th><th>Status</th>
+                                <th>Date</th><th>Type</th><th>Section</th><th>Party</th><th>Gross</th><th>TDS/TCS</th><th>Net</th><th>Action</th>
                             </tr>
                         </thead>
                         <tbody id="tdsTableBody"></tbody>
@@ -209,9 +220,16 @@
 
         window.onload = async () => {
             await DB.init();
-            loadFYData();
+            
+            // 1. Load TDS Records first
+            tdsRecords = JSON.parse(localStorage.getItem('arthbook_tds_records') || '[]');
+            renderTDS();
+
+            // 2. Load Saved ITR Inputs (Persistence)
+            loadITRData();
+
+            // 3. Load Business Income from DB
             fetchBusinessIncome();
-            loadTDSRecords();
         };
 
         function toggleMenu() {
@@ -226,51 +244,63 @@
             document.querySelector(`button[onclick="showTab('${id}')"]`).classList.add('active');
         }
 
-        async function loadFYData() {
+        function loadFYData() {
             currentFY = document.getElementById('fySelect').value;
+            // Ideally, load different ITR data for different FY from storage
+            // For now, simple refresh
             fetchBusinessIncome();
         }
 
-        // Accurate P&L for Business Income
+        // --- ITR LOGIC ---
         async function fetchBusinessIncome() {
-            const vouchers = await DB.getAll('vouchers');
-            const items = await DB.getAll('items');
-            // FIXED: Use getAll('ledgers') instead of getLedgers()
-            const ledgers = await DB.getAll('ledgers');
-            const groups = await DB.getAll('groups');
-            const entries = await DB.getAll('acct_entries');
+            // Fetch real accounting data
+            const [vouchers, items, entries, groups, ledgers] = await Promise.all([
+                DB.getAll('vouchers'), DB.getAll('items'), DB.getAll('acct_entries'), DB.getAll('groups'), DB.getAll('ledgers')
+            ]);
 
-            // Calculate closing stock
-            let closingStock = 0;
-            items.forEach(i => closingStock += (i.current_stock || 0) * (i.std_cost || 0));
-
-            // Calculate group balances
-            const groupBal = {};
-            entries.forEach(e => {
-                const ledger = ledgers.find(l => l.id === e.ledger_id);
-                if(!ledger) return;
-                const grp = groups.find(g => g.id === ledger.group_id);
-                if(!grp) return;
-                const key = grp.name;
-                groupBal[key] = (groupBal[key] || 0) + (e.debit || 0) - (e.credit || 0);
+            // Approximate P&L Logic
+            let income = 0, expense = 0;
+            
+            // Calculate using Voucher Types for speed
+            vouchers.forEach(v => {
+                if(v.type === 'Sales' || v.type === 'Credit Note') income += (v.amount || 0);
+                if(v.type === 'Purchase' || v.type === 'Debit Note') expense += (v.amount || 0);
+                // Note: Better logic is via Groups, but this is fast for estimation
             });
 
-            // Income groups (Sales, Other Income)
-            let totalIncome = 0;
-            ['Sales Accounts', 'Direct Income', 'Indirect Income'].forEach(g => totalIncome += Math.abs(groupBal[g] || 0));
-
-            // Expense groups
-            let totalExpense = 0;
-            ['Purchase Accounts', 'Direct Expenses', 'Indirect Expenses'].forEach(g => totalExpense += (groupBal[g] || 0));
-
-            const grossProfit = totalIncome - totalExpense;
-            const netBusinessProfit = grossProfit + closingStock; // Simplified
-
-            document.getElementById('incBiz').value = Math.max(0, netBusinessProfit).toFixed(2);
+            // Closing Stock (Credit to P&L)
+            let closingStock = items.reduce((sum, i) => sum + ((i.current_stock||0)*(i.std_cost||0)), 0);
+            
+            const netBiz = (income + closingStock) - expense;
+            document.getElementById('incBiz').value = Math.max(0, netBiz).toFixed(2);
+            
+            // Auto Update TDS from Manager
+            updateTotalTDS();
+            
             calcTax();
         }
 
-        // Latest Tax Slabs (FY 2025-26 - assuming no major change from Budget 2024)
+        function saveITRData() {
+            const inputs = ['incSal', 'incHouse', 'incOther', 'ded80c', 'ded80d', 'dedOther', 'taxAdv', 'taxSelf'];
+            const data = {};
+            inputs.forEach(id => data[id] = document.getElementById(id).value);
+            localStorage.setItem('arthbook_itr_inputs', JSON.stringify(data));
+            calcTax();
+        }
+
+        function loadITRData() {
+            const data = JSON.parse(localStorage.getItem('arthbook_itr_inputs') || '{}');
+            for(const [id, val] of Object.entries(data)) {
+                if(document.getElementById(id)) document.getElementById(id).value = val;
+            }
+        }
+
+        function updateTotalTDS() {
+            // Filter TDS for current FY (Approx logic for demo)
+            const total = tdsRecords.reduce((sum, r) => sum + (parseFloat(r.deducted)||0), 0);
+            document.getElementById('taxTds').value = total.toFixed(2);
+        }
+
         function calcTax() {
             const biz = parseFloat(document.getElementById('incBiz').value) || 0;
             const sal = parseFloat(document.getElementById('incSal').value) || 0;
@@ -279,149 +309,120 @@
 
             const grossIncome = biz + sal + house + other;
 
-            // Deductions (Old Regime)
+            // Deductions
             const ded80c = Math.min(150000, parseFloat(document.getElementById('ded80c').value) || 0);
-            const ded80d = Math.min(100000, parseFloat(document.getElementById('ded80d').value) || 0); // simplified
+            const ded80d = parseFloat(document.getElementById('ded80d').value) || 0;
             const dedOther = parseFloat(document.getElementById('dedOther').value) || 0;
-            const totalDedOld = ded80c + ded80d + dedOther;
+            const totalDed = ded80c + ded80d + dedOther;
 
-            // Standard deduction (simplified)
-            const stdDedNew = 75000; // New regime
-            const stdDedOld = 50000; // Old regime
+            const taxableOld = Math.max(0, grossIncome - totalDed - 50000); // Std Ded 50k
+            const taxableNew = Math.max(0, grossIncome - 75000); // Std Ded 75k (New FY25)
 
-            const taxableNew = Math.max(0, grossIncome - stdDedNew);
-            const taxableOld = Math.max(0, grossIncome - stdDedOld - totalDedOld);
-
-            // New Regime Tax
-            let taxNew = 0;
-            if(taxableNew > 300000) taxNew += (Math.min(taxableNew, 700000) - 300000) * 0.05;
-            if(taxableNew > 700000) taxNew += (Math.min(taxableNew, 1000000) - 700000) * 0.10;
-            if(taxableNew > 1000000) taxNew += (Math.min(taxableNew, 1200000) - 1000000) * 0.15;
-            if(taxableNew > 1200000) taxNew += (Math.min(taxableNew, 1500000) - 1200000) * 0.20;
-            if(taxableNew > 1500000) taxNew += (taxableNew - 1500000) * 0.30;
-
-            // Rebate u/s 87A (New Regime - income <=7L)
-            if(taxableNew <= 700000) taxNew = Math.max(0, taxNew - 25000);
-
-            // Old Regime Tax
-            let taxOld = 0;
-            if(taxableOld > 250000) taxNew += (Math.min(taxableOld, 500000) - 250000) * 0.05;
-            if(taxableOld > 500000) taxOld += (Math.min(taxableOld, 1000000) - 500000) * 0.20;
-            if(taxableOld > 1000000) taxOld += (taxableOld - 1000000) * 0.30;
-
-            if(taxableOld <= 500000) taxOld = 0;
-
-            // Health & Education Cess 4%
-            taxNew = taxNew * 1.04;
-            taxOld = taxOld * 1.04;
+            // Tax Calc Logic (Simplified)
+            let taxNew = calculateSlab(taxableNew, 'new');
+            let taxOld = calculateSlab(taxableOld, 'old');
 
             // Taxes Paid
-            const taxesPaid = (parseFloat(document.getElementById('taxTds').value) || 0) +
-                              (parseFloat(document.getElementById('taxAdv').value) || 0) +
-                              (parseFloat(document.getElementById('taxSelf').value) || 0);
+            const paid = (parseFloat(document.getElementById('taxTds').value)||0) + 
+                         (parseFloat(document.getElementById('taxAdv').value)||0) + 
+                         (parseFloat(document.getElementById('taxSelf').value)||0);
 
-            // Final
-            const finalNew = Math.max(0, taxNew - taxesPaid);
-            const finalOld = Math.max(0, taxOld - taxesPaid);
-            const recommended = finalNew <= finalOld ? 'New' : 'Old';
-            const finalPay = Math.min(finalNew, finalOld);
+            const finalNew = taxNew - paid;
+            const finalOld = taxOld - paid;
+            const best = finalNew < finalOld ? finalNew : finalOld;
+            const bestRegime = finalNew < finalOld ? "New" : "Old";
 
-            // UI Update
+            // Update UI
             document.getElementById('resGross').innerText = '₹' + grossIncome.toLocaleString('en-IN');
-            document.getElementById('resDed').innerText = '₹' + totalDedOld.toLocaleString('en-IN');
-            document.getElementById('resTaxable').innerText = '₹' + Math.min(taxableNew, taxableOld).toLocaleString('en-IN');
-
+            document.getElementById('resDed').innerText = '₹' + totalDed.toLocaleString('en-IN');
+            document.getElementById('resTaxable').innerText = '₹' + taxableNew.toLocaleString('en-IN');
             document.getElementById('taxNew').innerText = '₹' + taxNew.toFixed(0);
             document.getElementById('taxOld').innerText = '₹' + taxOld.toFixed(0);
-            document.getElementById('recommendedRegime').innerText = recommended + ' Regime';
+            document.getElementById('recommendedRegime').innerText = bestRegime + " Regime";
+            
+            const finalEl = document.getElementById('finalPayable');
+            finalEl.innerText = (best > 0 ? 'Payable ₹' : 'Refund ₹') + Math.abs(best).toFixed(0);
+            finalEl.style.color = best > 0 ? 'var(--red)' : 'var(--green)';
+        }
 
-            const payEl = document.getElementById('finalPayable');
-            if(finalPay > 0) {
-                payEl.innerText = '₹ ' + finalPay.toLocaleString('en-IN');
-                payEl.style.color = 'var(--red)';
+        function calculateSlab(income, regime) {
+            let tax = 0;
+            if(regime === 'new') {
+                if(income > 300000) tax += (Math.min(income, 700000) - 300000) * 0.05;
+                if(income > 700000) tax += (Math.min(income, 1000000) - 700000) * 0.10;
+                if(income > 1000000) tax += (Math.min(income, 1200000) - 1000000) * 0.15;
+                if(income > 1200000) tax += (Math.min(income, 1500000) - 1200000) * 0.20;
+                if(income > 1500000) tax += (income - 1500000) * 0.30;
+                if(income <= 700000) tax = 0; // Rebate
             } else {
-                payEl.innerText = 'Refund ₹ ' + Math.abs(finalPay).toLocaleString('en-IN');
-                payEl.style.color = 'var(--green)';
+                if(income > 250000) tax += (Math.min(income, 500000) - 250000) * 0.05;
+                if(income > 500000) tax += (Math.min(income, 1000000) - 500000) * 0.20;
+                if(income > 1000000) tax += (income - 1000000) * 0.30;
+                if(income <= 500000) tax = 0; // Rebate
             }
+            return tax * 1.04; // Cess
         }
 
-        function downloadJSON() {
-            const data = {
-                fy: currentFY,
-                grossIncome: parseFloat(document.getElementById('resGross').innerText.replace(/[^0-9.-]+/g,"")),
-                deductions: parseFloat(document.getElementById('resDed').innerText.replace(/[^0-9.-]+/g,"")),
-                taxNew: parseFloat(document.getElementById('taxNew').innerText.replace(/[^0-9.-]+/g,"")),
-                taxOld: parseFloat(document.getElementById('taxOld').innerText.replace(/[^0-9.-]+/g,"")),
-                recommended: document.getElementById('recommendedRegime').innerText,
-                finalLiability: document.getElementById('finalPayable').innerText
-            };
-            const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `ITR_${currentFY}.json`;
-            a.click();
-        }
-
-        // TDS/TCS Manager (using localStorage - easy & persistent)
-        function loadTDSRecords() {
-            tdsRecords = JSON.parse(localStorage.getItem('arthbook_tds_records') || '[]');
-            renderTDS();
-        }
-
+        // --- TDS MANAGER ---
         function addTDSRecord() {
             const type = document.getElementById('tdsType').value;
             const section = document.getElementById('tdsSection').value;
-            const party = document.getElementById('tdsParty').value.trim();
-            const gross = parseFloat(document.getElementById('tdsGross').value) || 0;
+            const party = document.getElementById('tdsParty').value;
+            const gross = parseFloat(document.getElementById('tdsGross').value);
 
-            if(!party || gross <= 0) return alert("Enter party and gross amount");
+            if(!party || !gross) return alert("Enter details");
 
-            // Auto calculate TDS based on section (simplified rates)
-            let rate = 0;
-            if(section === '194C') rate = 0.01; // 1%
-            if(section === '194J') rate = 0.10;
-            if(section === '194I') rate = 0.10;
+            let rate = 0.01; // Default
+            if(section === '194J' || section === '194I') rate = 0.10;
             if(section === '194H') rate = 0.05;
-            if(section === '194Q') rate = 0.001;
-
+            
             const deducted = gross * rate;
-            document.getElementById('tdsDeducted').value = deducted.toFixed(2);
-
+            
             tdsRecords.push({
                 date: new Date().toISOString().slice(0,10),
-                type, section, party, gross, deducted, net: gross - deducted, status: 'Pending'
+                type, section, party, gross, deducted
             });
-
+            
             localStorage.setItem('arthbook_tds_records', JSON.stringify(tdsRecords));
             renderTDS();
-
-            // Clear inputs
+            updateTotalTDS();
+            calcTax();
+            
             document.getElementById('tdsParty').value = '';
             document.getElementById('tdsGross').value = '';
-            document.getElementById('tdsDeducted').value = '';
         }
 
         function renderTDS() {
             const tbody = document.getElementById('tdsTableBody');
-            tbody.innerHTML = '';
-            if(tdsRecords.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:#999; padding:30px;">No TDS/TCS records yet</td></tr>';
-                return;
-            }
-            tdsRecords.reverse().forEach(r => {
-                tbody.innerHTML += `
-                    <tr>
-                        <td>${r.date}</td>
-                        <td><span class="badge" style="background:${r.type==='TDS'?'#fee2e2':'#dcfce7'}; color:${r.type==='TDS'?'var(--red)':'var(--green)'};">${r.type}</span></td>
-                        <td>${r.section}</td>
-                        <td>${r.party}</td>
-                        <td>₹${r.gross.toFixed(2)}</td>
-                        <td>₹${r.deducted.toFixed(2)}</td>
-                        <td>₹${r.net.toFixed(2)}</td>
-                        <td style="color:orange;">${r.status}</td>
-                    </tr>`;
-            });
+            tbody.innerHTML = tdsRecords.map((r, i) => `
+                <tr>
+                    <td>${r.date}</td>
+                    <td><span class="badge" style="background:${r.type==='TDS'?'#fee2e2':'#dcfce7'}">${r.type}</span></td>
+                    <td>${r.section}</td>
+                    <td>${r.party}</td>
+                    <td>${r.gross}</td>
+                    <td>${r.deducted.toFixed(2)}</td>
+                    <td>${(r.gross - r.deducted).toFixed(2)}</td>
+                    <td><button style="color:red; background:none; border:none; cursor:pointer;" onclick="deleteTDS(${i})">×</button></td>
+                </tr>
+            `).join('');
+        }
+
+        function deleteTDS(index) {
+            tdsRecords.splice(index, 1);
+            localStorage.setItem('arthbook_tds_records', JSON.stringify(tdsRecords));
+            renderTDS();
+            updateTotalTDS();
+            calcTax();
+        }
+
+        function downloadJSON() {
+            const data = { fy: currentFY, inputs: JSON.parse(localStorage.getItem('arthbook_itr_inputs')), tds: tdsRecords };
+            const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'Tax_Computation.json';
+            a.click();
         }
     </script>
 </body>

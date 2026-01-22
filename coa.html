@@ -12,7 +12,7 @@
         :root {
             --sidebar-bg: #0f172a;
             --sidebar-active: #1e293b;
-            --accent: #8b5cf6; /* Violet */
+            --accent: #8b5cf6; /* Violet Theme for COA */
             --bg: #f8fafc;
             --text: #1e293b;
             --muted: #64748b;
@@ -28,34 +28,29 @@
 
         /* SIDEBAR */
         .sidebar { 
-            width: 260px; background: var(--sidebar-bg); padding: 20px; display: flex; 
-            flex-direction: column; flex-shrink: 0; height: 100vh; overflow-y: auto; 
-            transition: var(--transition); z-index: 100;
+            width: 60px; background: var(--sidebar-bg); padding: 20px 0; display: flex; 
+            flex-direction: column; align-items: center; flex-shrink: 0; height: 100vh; z-index: 100;
         }
-        .brand { font-size: 20px; font-weight: 800; color: white; margin-bottom: 40px; display: flex; align-items: center; gap: 10px; }
-        .nav-link { display: flex; align-items: center; gap: 12px; padding: 14px 18px; color: #94a3b8; text-decoration: none; border-radius: 10px; margin-bottom: 6px; font-weight: 500; transition: var(--transition); }
-        .nav-link:hover, .nav-link.active { background: var(--sidebar-active); color: white; }
-
-        /* MOBILE MENU */
-        .menu-btn { display: none; position: fixed; top: 15px; left: 15px; z-index: 1100; background: none; border: none; font-size: 1.6rem; color: var(--text); cursor: pointer; }
-        .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 900; }
+        .sidebar a { color: #94a3b8; font-size: 20px; margin-bottom: 25px; transition: 0.2s; display: flex; justify-content: center; width: 100%; text-decoration: none; }
+        .sidebar a:hover, .sidebar a.active { color: white; border-left: 3px solid var(--accent); }
 
         /* MAIN */
         .main { flex: 1; display: flex; padding: 20px; gap: 20px; overflow: hidden; }
 
         /* LIST PANEL */
         .list-panel { width: 380px; background: white; border-radius: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; box-shadow: var(--shadow); }
-        .search-box { padding: 15px; border-bottom: 1px solid var(--border); background: #f8fafc; border-radius: 12px 12px 0 0; }
-        .search-box input { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; }
+        .search-box { padding: 15px; border-bottom: 1px solid var(--border); background: #f8fafc; border-radius: 12px 12px 0 0; position: relative; }
+        .search-box input { width: 100%; padding: 12px 12px 12px 35px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; outline:none; }
+        .search-box i { position: absolute; left: 25px; top: 25px; color: #94a3b8; }
 
         .list-content { flex: 1; overflow-y: auto; }
         .tree-item { padding: 14px 18px; border-bottom: 1px solid var(--border); cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: var(--transition); }
         .tree-item:hover { background: #f3e8ff; }
         .tree-item.active { background: #ede9fe; border-left: 5px solid var(--accent); }
 
-        .group-info strong { display: block; font-size: 15px; }
-        .group-info span { font-size: 12px; color: var(--muted); }
-        .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+        .group-info strong { display: block; font-size: 14px; }
+        .group-info span { font-size: 11px; color: var(--muted); }
+        .badge { padding: 3px 8px; border-radius: 12px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
 
         .badge-asset { background: #dbeafe; color: #1e40af; }
         .badge-liab { background: #fee2e2; color: #991b1b; }
@@ -63,18 +58,18 @@
         .badge-exp { background: #ffedd5; color: #9a3412; }
 
         /* FORM PANEL */
-        .form-panel { flex: 1; background: white; border-radius: 12px; border: 1px solid var(--border); padding: 30px; display: flex; flex-direction: column; box-shadow: var(--shadow); }
-        .form-header { font-size: 22px; font-weight: 700; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; }
+        .form-panel { flex: 1; background: white; border-radius: 12px; border: 1px solid var(--border); padding: 30px; display: flex; flex-direction: column; box-shadow: var(--shadow); overflow-y: auto; }
+        .form-header { font-size: 20px; font-weight: 700; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; }
 
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; }
         .form-group { }
-        label { display: block; font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
-        input, select { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; transition: var(--transition); }
+        label { display: block; font-size: 12px; font-weight: 700; color: var(--muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+        input, select { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; transition: var(--transition); outline: none; }
         input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(139,92,246,0.15); }
 
-        .helper-text { font-size: 12px; color: var(--muted); margin-top: 6px; }
+        .helper-text { font-size: 11px; color: var(--muted); margin-top: 6px; display: block; }
 
-        .actions { margin-top: auto; padding-top: 30px; display: flex; justify-content: space-between; align-items: center; }
+        .actions { margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
 
         .btn { padding: 12px 24px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: var(--transition); }
         .btn:hover { opacity: 0.9; transform: translateY(-2px); box-shadow: var(--shadow); }
@@ -100,27 +95,22 @@
 </head>
 <body>
 
-    <button class="menu-btn" onclick="toggleMenu()">☰</button>
-    <div class="overlay" onclick="toggleMenu()"></div>
-
-    <div class="sidebar" id="mySidebar">
-        <div class="brand"><i class="fas fa-book"></i> Arth Book</div>
-        <a href="index.html" class="nav-link"><i class="fas fa-chart-pie"></i> Dashboard</a>
-        <a href="reports.html" class="nav-link"><i class="fas fa-chart-line"></i> Reports</a>
-        <a href="gst_filing.html" class="nav-link"><i class="fas fa-university"></i> GST Filing</a>
-        <a href="sales_invoice.html" class="nav-link"><i class="fas fa-file-invoice"></i> Sales</a>
-        <a href="purchase_invoice.html" class="nav-link"><i class="fas fa-truck"></i> Purchase</a>
-        <a href="vouchers.html" class="nav-link"><i class="fas fa-receipt"></i> Vouchers</a>
-        <a href="item_master.html" class="nav-link"><i class="fas fa-boxes"></i> Inventory</a>
-        <a href="ArthBook.html" class="nav-link"><i class="fas fa-users"></i> Parties</a>
-        <a href="coa.html" class="nav-link active"><i class="fas fa-balance-scale"></i> Chart of Accounts</a>
-        <a href="settings.html" class="nav-link"><i class="fas fa-cogs"></i> Settings</a>
+    <div class="sidebar">
+        <a href="index.html" title="Dashboard"><i class="fas fa-home"></i></a>
+        <a href="sales_invoice.html" title="Sales"><i class="fas fa-file-invoice"></i></a>
+        <a href="purchase_invoice.html" title="Purchase"><i class="fas fa-truck"></i></a>
+        <a href="vouchers.html" title="Vouchers"><i class="fas fa-receipt"></i></a>
+        <a href="item_master.html" title="Inventory"><i class="fas fa-boxes"></i></a>
+        <a href="ArthBook.html" title="Parties"><i class="fas fa-users"></i></a>
+        <a href="coa.html" class="active" title="COA"><i class="fas fa-balance-scale"></i></a>
+        <a href="settings.html" title="Settings"><i class="fas fa-cogs"></i></a>
     </div>
 
     <div class="main">
         <div class="list-panel">
             <div class="search-box">
-                <input type="text" id="searchInput" placeholder="🔍 Search Groups & Ledgers..." onkeyup="renderList()">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Search Groups & Ledgers..." onkeyup="renderList()">
             </div>
             <div class="list-content" id="groupList"></div>
         </div>
@@ -131,7 +121,9 @@
                 <button class="btn btn-new" onclick="newEntity()">+ New Entry</button>
             </div>
             <input type="hidden" id="entityId">
-            <input type="hidden" id="currentStore" value="groups"> <div class="form-grid">
+            <input type="hidden" id="currentStore" value="groups"> 
+            
+            <div class="form-grid">
                 <div class="form-group">
                     <label>Account Type</label>
                     <select id="entityType" onchange="toggleFormFields()">
@@ -170,7 +162,7 @@
             </div>
 
             <div class="actions">
-                <button class="btn btn-save" onclick="saveEntity()">💾 Save</button>
+                <button class="btn btn-save" onclick="saveEntity()">💾 Save Changes</button>
                 <button class="btn btn-del" id="deleteBtn" style="display:none;" onclick="deleteEntity()">🗑️ Delete</button>
             </div>
         </div>
@@ -194,11 +186,6 @@
             allLedgers = await DB.getAll('ledgers') || [];
             populateParentSelect();
             renderList();
-        }
-
-        function toggleMenu() {
-            document.getElementById('mySidebar').classList.toggle('active');
-            document.querySelector('.overlay').classList.toggle('active');
         }
 
         function toggleFormFields() {
@@ -263,7 +250,6 @@
                     badgeClass = getBadgeClass(item.nature);
                     parentName = item.parent_id ? (allGroups.find(g => g.id == item.parent_id)?.name || 'Unknown') : 'Primary';
                 } else {
-                    // Ledger: Find parent group to determine nature
                     const parent = allGroups.find(g => g.id == item.group_id);
                     nature = parent ? parent.nature : 'Unknown';
                     badgeClass = getBadgeClass(nature);
@@ -274,19 +260,19 @@
                 div.className = 'tree-item';
                 div.onclick = () => loadEntity(item);
 
-                const icon = item.type === 'group' ? '<i class="fas fa-folder" style="color:#fbbf24; margin-right:8px;"></i>' : '<i class="fas fa-book" style="color:#8b5cf6; margin-right:8px;"></i>';
+                const icon = item.type === 'group' ? '<i class="fas fa-folder" style="color:#f59e0b; margin-right:10px;"></i>' : '<i class="fas fa-file-invoice" style="color:#8b5cf6; margin-right:10px;"></i>';
 
                 div.innerHTML = `
                     <div class="group-info" style="display:flex; align-items:center;">
                         ${icon}
                         <div>
                             <strong>${item.name}</strong>
-                            <span>Under: ${parentName}</span>
+                            <span>${parentName}</span>
                         </div>
                     </div>
                     <div style="text-align:right;">
                         <span class="badge ${badgeClass}">${nature}</span>
-                        ${item.type === 'ledger' ? `<br><span style="font-size:11px; color:#64748b;">₹ ${item.opening_balance || 0}</span>` : ''}
+                        ${item.type === 'ledger' ? `<br><span style="font-size:10px; color:#64748b;">Op: ${item.opening_balance}</span>` : ''}
                     </div>
                 `;
                 container.appendChild(div);
@@ -303,14 +289,12 @@
             document.getElementById('entityId').value = item.id;
             document.getElementById('entityName').value = item.name;
             document.getElementById('entityType').value = item.type;
-            
-            // Set Store logic
             document.getElementById('currentStore').value = item.type === 'group' ? 'groups' : 'ledgers';
 
             if (item.type === 'group') {
                 document.getElementById('parentGroup').value = item.parent_id || '';
                 document.getElementById('groupNature').value = item.nature;
-                document.getElementById('entityType').disabled = true; // Cannot change type once created
+                document.getElementById('entityType').disabled = true;
             } else {
                 document.getElementById('parentGroup').value = item.group_id || '';
                 document.getElementById('openingBal').value = item.opening_balance || 0;
@@ -319,18 +303,18 @@
 
             toggleFormFields();
 
-            // System Checks
+            // System Protection
             const systemNames = ['Capital Account', 'Current Assets', 'Current Liabilities', 'Duties & Taxes', 'Sales Accounts', 'Purchase Accounts', 'Direct Expenses', 'Indirect Expenses', 'Cash-in-Hand', 'Bank Accounts', 'Sundry Debtors', 'Sundry Creditors', 'Cash A/c', 'Local Sales', 'Local Purchase', 'Output GST', 'Input GST'];
             const isSystem = systemNames.includes(item.name);
 
             document.getElementById('entityName').disabled = isSystem;
             document.getElementById('groupNature').disabled = isSystem;
-            document.getElementById('parentGroup').disabled = isSystem;
+            // Allow changing parent for non-system items
+            document.getElementById('parentGroup').disabled = isSystem && item.type === 'group'; 
             document.getElementById('deleteBtn').style.display = isSystem ? 'none' : 'block';
 
-            document.getElementById('formTitle').innerText = isSystem ? 'View System Entry' : 'Edit Entry';
+            document.getElementById('formTitle').innerText = isSystem ? 'System Entry (Read Only)' : 'Edit Entry';
 
-            // Highlight active
             document.querySelectorAll('.tree-item').forEach(i => i.classList.remove('active'));
             event.currentTarget.classList.add('active');
         }
@@ -340,7 +324,8 @@
             document.getElementById('entityName').value = '';
             document.getElementById('parentGroup').value = '';
             document.getElementById('openingBal').value = '';
-            document.getElementById('entityType').value = 'ledger'; // Default to ledger for ease
+            document.getElementById('entityType').value = 'ledger';
+            
             document.getElementById('entityType').disabled = false;
             document.getElementById('entityName').disabled = false;
             document.getElementById('groupNature').disabled = false;
@@ -351,7 +336,6 @@
             
             toggleFormFields();
             document.getElementById('entityName').focus();
-
             document.querySelectorAll('.tree-item').forEach(item => item.classList.remove('active'));
         }
 
@@ -388,6 +372,11 @@
                 const tx = DB.db.transaction(storeName, 'readwrite');
                 const store = tx.objectStore(storeName);
                 
+                // Duplicate Name Check (Basic)
+                const existing = type==='group' ? allGroups : allLedgers;
+                const dup = existing.find(e => e.name.toLowerCase() === name.toLowerCase() && e.id != id);
+                if(dup) return alert("Name already exists!");
+
                 id ? store.put(data) : store.add(data);
 
                 tx.oncomplete = async () => {
@@ -396,21 +385,34 @@
                     newEntity();
                 };
             } catch (e) {
-                alert('Error: Name must be unique.');
+                alert('Error Saving');
                 console.error(e);
             }
         }
 
         async function deleteEntity() {
-            const id = document.getElementById('entityId').value;
+            const id = parseInt(document.getElementById('entityId').value);
             const type = document.getElementById('entityType').value;
             const storeName = type === 'group' ? 'groups' : 'ledgers';
 
-            if (!id || !confirm(`Delete this ${type}?`)) return;
+            if (!id || !confirm(`Delete this ${type}? This cannot be undone.`)) return;
+
+            // SAFETY CHECKS
+            if(type === 'group') {
+                // Check if group has ledgers
+                const hasLedgers = allLedgers.some(l => l.group_id === id);
+                const hasSubGroups = allGroups.some(g => g.parent_id === id);
+                if(hasLedgers || hasSubGroups) return alert("Cannot delete Group! It contains Ledgers or Sub-groups.");
+            } else {
+                // Check if ledger has transactions
+                const entries = await DB.getAll('acct_entries');
+                const used = entries.some(e => e.ledger_id === id);
+                if(used) return alert("Cannot delete Ledger! It has existing transactions.");
+            }
 
             try {
                 const tx = DB.db.transaction(storeName, 'readwrite');
-                await tx.objectStore(storeName).delete(parseInt(id));
+                await tx.objectStore(storeName).delete(id);
                 
                 tx.oncomplete = async () => {
                     showToast('Deleted');
