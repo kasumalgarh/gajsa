@@ -11,7 +11,6 @@
     <style>
         /* === VOUCHERS / DAY BOOK SPECIFIC STYLES === */
         
-        /* Layout overrides for List View */
         .main-area { background: #f8fafc; overflow-y: hidden; }
         .content-scroll { flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 80px; }
 
@@ -59,6 +58,10 @@
 
         .amount { font-family: 'JetBrains Mono', monospace; font-weight: 700; color: var(--text-main); text-align: right; }
         
+        /* VISUAL LOGIC: Money In vs Money Out */
+        .amt-in { color: #10b981; } /* Green */
+        .amt-out { color: #1e293b; } /* Standard Dark */
+
         .actions { white-space: nowrap; text-align: right; }
         .actions button {
             background: none; border: none; cursor: pointer; font-size: 16px;
@@ -74,7 +77,6 @@
             display: inline-block; min-width: 80px; text-align: center;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        /* Specific Colors */
         .badge-Payment { background: #f59e0b; color: #fff; }
         .badge-Receipt { background: #10b981; color: #fff; }
         .badge-Contra { background: #64748b; color: #fff; }
@@ -84,7 +86,6 @@
         .badge-CreditNote { background: #ef4444; color: #fff; }
         .badge-DebitNote { background: #8b5cf6; color: #fff; }
 
-        /* No Data */
         #noData {
             background: white; border-radius: 12px; padding: 60px 20px;
             text-align: center; margin-top: 20px; display: none;
@@ -92,12 +93,11 @@
         }
         #noData i { font-size: 64px; color: #cbd5e1; margin-bottom: 20px; }
 
-        /* Loading Spinner */
         #loading { text-align: center; padding: 40px; display: none; }
         .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--accent); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* Mobile Card View for Table */
+        /* Mobile Card View */
         @media (max-width: 768px) {
             .top-bar { height: auto; padding: 15px; }
             .tb-header { flex-direction: column; align-items: flex-start; gap: 10px; }
@@ -113,22 +113,18 @@
                 border-radius: 10px; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
                 position: relative; padding-bottom: 10px;
             }
-            
             td {
                 display: block; text-align: right; border: none; padding: 10px 15px;
                 position: relative; border-bottom: 1px solid #f1f5f9;
             }
             td:last-child { border-bottom: 0; }
-            
             td:before {
                 content: attr(data-label);
                 position: absolute; left: 15px; width: 45%;
                 font-weight: 700; text-align: left; color: #64748b; font-size: 12px; text-transform: uppercase;
             }
-            
-            td.amount { font-size: 18px; color: var(--primary); }
+            td.amount { font-size: 18px; }
             td.amount:before { content: "Amount"; top: 12px; }
-            
             td.actions { text-align: center; border-top: 1px dashed #e2e8f0; padding-top: 15px; }
             td.actions:before { display: none; }
         }
@@ -146,7 +142,6 @@
     </div>
 
     <div class="main-area">
-        
         <div class="top-bar">
             <div class="tb-header">
                 <h2>Day Book</h2>
@@ -211,7 +206,6 @@
         window.onload = async () => {
             await DB.init();
             
-            // Set Default Dates (Current Month)
             const date = new Date();
             const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
             const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
@@ -221,12 +215,10 @@
 
             renderVouchers();
 
-            // Event Listeners
             document.getElementById('typeFilter').addEventListener('change', renderVouchers);
             document.getElementById('dateFrom').addEventListener('change', renderVouchers);
             document.getElementById('dateTo').addEventListener('change', renderVouchers);
             
-            // Debounce for Search (Performance Fix)
             let timeout;
             document.getElementById('searchBox').addEventListener('keyup', (e) => {
                 clearTimeout(timeout);
@@ -235,22 +227,19 @@
         };
 
         async function renderVouchers() {
-            // Show Loading
             document.getElementById('loading').style.display = 'block';
             document.getElementById('tableWrap').style.display = 'none';
             document.getElementById('noData').style.display = 'none';
 
             const vData = await DB.getAll('vouchers');
             
-            // Filters
             const from = document.getElementById('dateFrom').value;
             const to = document.getElementById('dateTo').value;
             const type = document.getElementById('typeFilter').value;
             const search = document.getElementById('searchBox').value.toLowerCase();
 
-            // Filter Logic
             const filtered = vData.filter(v => {
-                const vDate = v.date; // ISO Format YYYY-MM-DD
+                const vDate = v.date; 
                 const matchDate = (!from || vDate >= from) && (!to || vDate <= to);
                 const matchType = type === 'All' || v.type === type;
                 const matchSearch = v.voucher_no.toLowerCase().includes(search) || 
@@ -260,10 +249,8 @@
                 return matchDate && matchType && matchSearch;
             });
 
-            // Sorting (Newest First)
             filtered.sort((a,b) => b.date.localeCompare(a.date) || b.id - a.id);
 
-            // Render
             const tbody = document.getElementById('voucherTable');
             const noData = document.getElementById('noData');
             const tableWrap = document.getElementById('tableWrap');
@@ -279,8 +266,13 @@
             tableWrap.style.display = 'block';
 
             filtered.forEach(v => {
-                const displayDate = v.date.split('-').reverse().join('-'); // YYYY-MM-DD -> DD-MM-YYYY
+                const displayDate = v.date.split('-').reverse().join('-'); 
                 const badgeClass = `badge-${v.type.replace(/\s/g, '')}` || 'badge-Contra';
+
+                // VISUAL LOGIC: Green for Money In (Receipt/Sales), Normal for Money Out
+                const isMoneyIn = ['Receipt', 'Sales', 'Credit Note'].includes(v.type);
+                const amtClass = isMoneyIn ? 'amt-in' : 'amt-out';
+                const sign = isMoneyIn ? '+' : '';
 
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
@@ -291,7 +283,7 @@
                         <div style="font-size:12px; color:#64748b; font-style:italic;">${v.narration || 'No Narration'}</div>
                     </td>
                     <td data-label="Type"><span class="vtype-badge ${badgeClass}">${v.type}</span></td>
-                    <td data-label="Amount" class="amount">₹${parseFloat(v.amount).toFixed(2)}</td>
+                    <td data-label="Amount" class="amount ${amtClass}">${sign}₹${parseFloat(v.amount).toFixed(2)}</td>
                     <td data-label="Action" class="actions">
                         <button onclick="editVoucher(${v.id})" title="Edit"><i class="fas fa-edit"></i></button>
                         <button class="del-btn" onclick="deleteVoucher(${v.id}, this)" title="Delete"><i class="fas fa-trash-alt"></i></button>
@@ -304,7 +296,6 @@
         async function deleteVoucher(id, btn) {
             if(confirm("Are you sure you want to delete this voucher? This cannot be undone.")) {
                 try {
-                    // UX: Show loading on button
                     const icon = btn.querySelector('i');
                     icon.className = "fas fa-spinner fa-spin";
                     
@@ -312,13 +303,13 @@
                     renderVouchers();
                 } catch(e) {
                     alert("Delete Failed: " + e);
-                    icon.className = "fas fa-trash-alt"; // Reset icon
+                    const icon = btn.querySelector('i'); // Fix ref
+                    icon.className = "fas fa-trash-alt"; 
                 }
             }
         }
 
         function editVoucher(id) {
-            // FIX: Pass explicit mode=edit so voucher_entry knows it's not just view-only
             window.location.href = `voucher_entry.html?id=${id}&mode=edit`;
         }
     </script>
