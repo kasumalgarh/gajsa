@@ -3,325 +3,298 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Arth Book - Pro Entry</title>
+    <title>Day Book & Vouchers - Arth Book</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
+
+    <style>
+        /* === VOUCHERS / DAY BOOK SPECIFIC STYLES (User Provided) === */
+        
+        /* Layout overrides for List View */
+        .main-area { background: #f8fafc; overflow-y: hidden; }
+        .content-scroll { flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 80px; }
+
+        /* Top Filters Bar */
+        .top-bar {
+            background: white;
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            display: flex; flex-direction: column; gap: 15px; height: auto;
+        }
+        .tb-header { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+        .top-bar h2 { margin: 0; font-size: 1.5rem; color: var(--primary); font-weight: 800; }
+        
+        .filters { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 5px; align-items: center; }
+        .filter-input, .search-box {
+            padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px;
+            font-size: 14px; min-width: 140px; outline: none;
+        }
+        .btn-refresh {
+            background: var(--accent); color: var(--primary-dark); border: none;
+            padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.2s;
+        }
+        .btn-refresh:hover { background: #ffd54f; }
+        
+        .btn-new {
+            background: var(--primary); color: white; border: none; padding: 10px 20px;
+            border-radius: 8px; cursor: pointer; font-weight: 700; display: flex; align-items: center; gap: 8px; text-decoration: none;
+        }
+        .btn-new:hover { background: var(--primary-dark); }
+
+        /* Table Styles */
+        .table-container {
+            background: white; border-radius: 10px; overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-top: 20px;
+        }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: var(--primary); color: white; padding: 14px 16px; font-weight: 600; text-align: left; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
+        td { padding: 14px 16px; border-bottom: 1px solid #e2e8f0; font-size: 14px; color: #334155; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover { background: #f8fafc; }
+
+        .amount { font-family: 'JetBrains Mono', monospace; font-weight: 700; color: var(--text-main); text-align: right; }
+        
+        .actions { white-space: nowrap; text-align: right; }
+        .actions button {
+            background: none; border: none; cursor: pointer; font-size: 16px;
+            margin: 0 8px; color: #94a3b8; transition: 0.2s;
+        }
+        .actions button:hover { color: var(--primary); transform: scale(1.2); }
+        .actions .del-btn:hover { color: var(--red); }
+
+        /* Badge Enhancements */
+        .vtype-badge {
+            padding: 4px 10px; border-radius: 20px; font-size: 11px;
+            font-weight: 700; color: white; text-transform: uppercase; letter-spacing: 0.5px;
+            display: inline-block; min-width: 80px; text-align: center;
+        }
+        /* Specific Colors */
+        .badge-Payment { background: #f59e0b; color: #fff; }
+        .badge-Receipt { background: #10b981; color: #fff; }
+        .badge-Contra { background: #64748b; color: #fff; }
+        .badge-Journal { background: #3b82f6; color: #fff; }
+        .badge-Sales { background: #0d47a1; color: #fff; }
+        .badge-Purchase { background: #d946ef; color: #fff; }
+
+        /* No Data */
+        #noData {
+            background: white; border-radius: 12px; padding: 60px 20px;
+            text-align: center; margin-top: 20px; display: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+        }
+        #noData i { font-size: 64px; color: #cbd5e1; margin-bottom: 20px; }
+
+        /* Mobile Card View for Table */
+        @media (max-width: 768px) {
+            .top-bar { height: auto; padding: 15px; }
+            .tb-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+            .filters { width: 100%; flex-direction: column; align-items: stretch; }
+            .btn-new { width: 100%; justify-content: center; }
+
+            .table-container { background: transparent; box-shadow: none; }
+            table { border: 0; }
+            thead { display: none; }
+            
+            tr {
+                display: block; margin-bottom: 15px; border: 1px solid var(--border);
+                border-radius: 10px; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+                position: relative; padding-bottom: 10px;
+            }
+            
+            td {
+                display: block; text-align: right; border: none; padding: 10px 15px;
+                position: relative; border-bottom: 1px solid #f1f5f9;
+            }
+            td:last-child { border-bottom: 0; }
+            
+            td:before {
+                content: attr(data-label);
+                position: absolute; left: 15px; width: 45%;
+                font-weight: 700; text-align: left; color: #64748b; font-size: 12px; text-transform: uppercase;
+            }
+            
+            td.amount { font-size: 18px; color: var(--primary); }
+            td.amount:before { content: "Amount"; top: 12px; }
+            
+            td.actions { text-align: center; border-top: 1px dashed #e2e8f0; padding-top: 15px; }
+            td.actions:before { display: none; }
+        }
+    </style>
 </head>
 <body>
 
     <div class="sidebar">
-        <div class="brand">ARTH</div>
-        <a href="#" onclick="setMode('Contra')" class="side-btn" id="btnContra">
-            <span class="btn-text">Contra</span> <span class="key-tag">F4</span> <i class="fas fa-wallet" style="display:none;"></i>
-        </a>
-        <a href="#" onclick="setMode('Payment')" class="side-btn active" id="btnPayment">
-            <span class="btn-text">Payment</span> <span class="key-tag">F5</span> <i class="fas fa-money-bill-wave" style="display:none;"></i>
-        </a>
-        <a href="#" onclick="setMode('Receipt')" class="side-btn" id="btnReceipt">
-            <span class="btn-text">Receipt</span> <span class="key-tag">F6</span> <i class="fas fa-hand-holding-usd" style="display:none;"></i>
-        </a>
-        <a href="#" onclick="setMode('Journal')" class="side-btn" id="btnJournal">
-            <span class="btn-text">Journal</span> <span class="key-tag">F7</span> <i class="fas fa-book" style="display:none;"></i>
-        </a>
-        <hr style="border-color:rgba(255,255,255,0.1); margin:10px 0;">
-        <a href="#" onclick="openF10Modal()" class="side-btn" style="color:var(--accent);">
-            <span class="btn-text">Other Vouchers</span> <span class="key-tag">F10</span> <i class="fas fa-list" style="display:none;"></i>
-        </a>
-        <a href="index.html" class="side-btn" style="margin-top:auto;">
-            <span class="btn-text">Quit</span> <span class="key-tag">Esc</span>
-        </a>
+        <div class="brand">ARTH BOOK</div>
+        <a href="index.html" class="side-btn"><i class="fas fa-home"></i> <span class="btn-text">Dashboard</span></a>
+        <a href="vouchers.html" class="side-btn active"><i class="fas fa-book"></i> <span class="btn-text">Day Book</span></a>
+        <a href="voucher_entry.html" class="side-btn" style="color:var(--accent);"><i class="fas fa-plus-circle"></i> <span class="btn-text">Entry Mode</span></a>
+        <a href="sales_invoice.html" class="side-btn"><i class="fas fa-file-invoice"></i> <span class="btn-text">Sales</span></a>
+        <a href="settings.html" class="side-btn"><i class="fas fa-cog"></i> <span class="btn-text">Settings</span></a>
     </div>
 
     <div class="main-area">
+        
         <div class="top-bar">
-            <div class="v-mode-badge" id="lblMode">Payment</div>
-            <div style="display:flex; gap:10px;">
-                <input type="text" id="vNo" readonly style="width:100px; padding:8px; border:1px solid #ccc; background:#eee; font-weight:bold;">
-                <input type="text" id="vDate" placeholder="DDMMYY" maxlength="6" class="focusable" style="width:100px; padding:8px; border:1px solid #ccc; text-align:center; font-weight:bold;">
+            <div class="tb-header">
+                <h2>Day Book</h2>
+                <a href="voucher_entry.html" class="btn-new">
+                    <i class="fas fa-plus"></i> New Entry
+                </a>
             </div>
-        </div>
-
-        <div class="grid-container" id="gridRows">
-            </div>
-
-        <div class="footer-bar">
-            <div style="display:flex; align-items:center; gap:15px;">
-                <div class="calc-trigger" onclick="toggleCalc()"><i class="fas fa-calculator"></i> Calc</div>
-                <input type="text" id="narr" class="focusable" placeholder="Narration (Being...)" style="width:300px; padding:8px; border-radius:4px; border:none;">
-            </div>
-            <div style="text-align:right;">
-                <div style="font-size:12px; opacity:0.7;">TOTAL</div>
-                <div style="font-size:18px; font-weight:bold; font-family:'JetBrains Mono';" id="lblTotal">0.00</div>
-                <div id="diffAlert" style="color:#ef4444; font-size:12px; display:none;">Diff: <span id="lblDiff">0.00</span></div>
-            </div>
-            <button onclick="saveVoucher()" style="background:var(--green); color:white; border:none; padding:10px 25px; font-weight:bold; border-radius:4px; margin-left:20px;">SAVE</button>
-        </div>
-    </div>
-
-    <div class="modal-overlay" id="f10Modal" onclick="closeF10Modal()">
-        <div class="center-modal" onclick="event.stopPropagation()">
-            <h3 style="margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:10px;">Select Voucher Type</h3>
-            <div style="max-height:300px; overflow-y:auto;">
-                <div style="font-weight:bold; color:#64748b; margin-top:10px;">Accounting</div>
-                <div class="v-list-item" onclick="setMode('Contra')"><span>Contra</span> <span>F4</span></div>
-                <div class="v-list-item" onclick="setMode('Payment')"><span>Payment</span> <span>F5</span></div>
-                <div class="v-list-item" onclick="setMode('Receipt')"><span>Receipt</span> <span>F6</span></div>
-                <div class="v-list-item" onclick="setMode('Journal')"><span>Journal</span> <span>F7</span></div>
-                <div class="v-list-item" onclick="alert('Credit Note Logic Pending')"><span>Credit Note</span> <span>Ctrl+F8</span></div>
-                <div class="v-list-item" onclick="alert('Debit Note Logic Pending')"><span>Debit Note</span> <span>Ctrl+F9</span></div>
+            
+            <div class="filters">
+                <input type="date" id="dateFrom" class="filter-input">
+                <input type="date" id="dateTo" class="filter-input">
                 
-                <div style="font-weight:bold; color:#64748b; margin-top:15px;">Inventory</div>
-                <div class="v-list-item" onclick="location.href='sales_invoice.html'"><span>Sales Invoice</span> <span>F8</span></div>
-                <div class="v-list-item" onclick="location.href='purchase_invoice.html'"><span>Purchase Invoice</span> <span>F9</span></div>
-                <div class="v-list-item"><span>Delivery Note</span> <span>Alt+F8</span></div>
-                <div class="v-list-item"><span>Receipt Note</span> <span>Alt+F9</span></div>
-            </div>
-            <button onclick="closeF10Modal()" style="width:100%; margin-top:10px; padding:10px; background:#f1f5f9; border:none;">Close</button>
-        </div>
-    </div>
+                <select id="typeFilter" class="filter-input">
+                    <option value="All">All Vouchers</option>
+                    <option value="Payment">Payment</option>
+                    <option value="Receipt">Receipt</option>
+                    <option value="Contra">Contra</option>
+                    <option value="Journal">Journal</option>
+                    <option value="Sales">Sales</option>
+                    <option value="Purchase">Purchase</option>
+                </select>
 
-    <div class="calc-modal" id="calcModal">
-        <div class="calc-header" id="calcHeader">
-            <span>Arth Calc</span> <span style="cursor:pointer;" onclick="toggleCalc()">✕</span>
-        </div>
-        <div class="calc-body">
-            <input type="text" class="calc-display" id="cDisp" readonly>
-            <div class="calc-grid">
-                <button class="c-btn" onclick="cIn('7')">7</button><button class="c-btn" onclick="cIn('8')">8</button><button class="c-btn" onclick="cIn('9')">9</button><button class="c-btn" onclick="cIn('/')">/</button>
-                <button class="c-btn" onclick="cIn('4')">4</button><button class="c-btn" onclick="cIn('5')">5</button><button class="c-btn" onclick="cIn('6')">6</button><button class="c-btn" onclick="cIn('*')">*</button>
-                <button class="c-btn" onclick="cIn('1')">1</button><button class="c-btn" onclick="cIn('2')">2</button><button class="c-btn" onclick="cIn('3')">3</button><button class="c-btn" onclick="cIn('-')">-</button>
-                <button class="c-btn" onclick="cIn('0')">0</button><button class="c-btn" onclick="cIn('.')">.</button><button class="c-btn eq" onclick="cCalc()">Enter</button>
+                <div style="position:relative; flex:1;">
+                    <i class="fas fa-search" style="position:absolute; left:12px; top:12px; color:#94a3b8;"></i>
+                    <input type="text" id="searchBox" class="search-box" style="width:100%; padding-left:35px;" placeholder="Search Voucher No, Amount...">
+                </div>
+
+                <button class="btn-refresh" onclick="renderVouchers()"><i class="fas fa-sync-alt"></i></button>
             </div>
         </div>
-    </div>
 
-    <datalist id="ledgerList"></datalist>
+        <div class="content-scroll">
+            <div id="noData">
+                <i class="fas fa-folder-open"></i>
+                <h3>No Vouchers Found</h3>
+                <p style="color:#64748b;">Try changing the date range or filters.</p>
+            </div>
+
+            <div class="table-container" id="tableWrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th width="15%">Date</th>
+                            <th width="15%">Voucher No</th>
+                            <th>Narration / Particulars</th>
+                            <th width="10%">Type</th>
+                            <th width="15%" style="text-align:right;">Amount</th>
+                            <th width="10%" style="text-align:center;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="voucherTable">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
     <script src="db.js"></script>
     <script>
-        let currentMode = 'Payment';
-        let allLedgers = [];
-        let activeAmtInput = null;
-
-        // Tally Colors
-        const THEMES = {
-            'Contra': '#f1f5f9', 'Payment': '#fefce8', 'Receipt': '#f0fdf4', 'Journal': '#eff6ff'
-        };
-
         window.onload = async () => {
             await DB.init();
-            allLedgers = await DB.getAll('ledgers');
             
-            // Set Date
-            const t = new Date();
-            document.getElementById('vDate').value = `${String(t.getDate()).padStart(2,'0')}${String(t.getMonth()+1).padStart(2,'0')}${String(t.getFullYear()).slice(-2)}`;
+            // Set Default Dates (Current Month)
+            const date = new Date();
+            const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
+            const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
             
-            setMode('Payment');
-            document.getElementById('vDate').focus();
+            document.getElementById('dateFrom').valueAsDate = firstDay;
+            document.getElementById('dateTo').valueAsDate = lastDay;
+
+            renderVouchers();
+
+            // Event Listeners
+            document.getElementById('typeFilter').addEventListener('change', renderVouchers);
+            document.getElementById('searchBox').addEventListener('keyup', renderVouchers);
+            document.getElementById('dateFrom').addEventListener('change', renderVouchers);
+            document.getElementById('dateTo').addEventListener('change', renderVouchers);
         };
 
-        // --- 1. CORE ENTER LOGIC (INDEX BASED) ---
-        // This is the "Magic" function that never fails
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                
-                // Get all focusable elements (Inputs & Selects)
-                const focusable = Array.from(document.querySelectorAll('.focusable, input:not([type="hidden"]):not([disabled]), select'));
-                const current = document.activeElement;
-                const index = focusable.indexOf(current);
-
-                // If currently on an Amount field, trigger calculation & auto-row logic first
-                if (current.classList.contains('amt-input')) {
-                    calcTotals();
-                    const diff = parseFloat(document.getElementById('lblDiff').innerText);
-                    
-                    // If Last Row & Difference exists -> Add Row
-                    const rows = document.querySelectorAll('.entry-row');
-                    if (current.closest('.entry-row') === rows[rows.length-1]) {
-                        if (diff > 0) {
-                            // Auto Add Logic
-                            const totDr = parseFloat(document.getElementById('lblTotal').dataset.dr || 0);
-                            const totCr = parseFloat(document.getElementById('lblTotal').dataset.cr || 0);
-                            const nextType = totDr < totCr ? 'Dr' : 'Cr';
-                            addRow(nextType);
-                            // Focus moves to new row automatically in addRow? No, let's move it manually below
-                            // We return here to let the next logic pick up the new field
-                        } else {
-                            // Go to Narration
-                            document.getElementById('narr').focus();
-                            return;
-                        }
-                    }
-                }
-
-                // Move to Next Index
-                if (index > -1 && index < focusable.length - 1) {
-                    // Re-query focusable because addRow might have added elements
-                    const newFocusable = Array.from(document.querySelectorAll('.focusable, input:not([type="hidden"]):not([disabled]), select'));
-                    newFocusable[index + 1].focus();
-                }
-            }
-
-            // Shortcuts
-            if(e.key === 'F4') setMode('Contra');
-            if(e.key === 'F5') setMode('Payment');
-            if(e.key === 'F6') setMode('Receipt');
-            if(e.key === 'F7') setMode('Journal');
-            if(e.key === 'F10') openF10Modal();
-        });
-
-        // --- 2. GRID & AUTO FILL ---
-        async function setMode(mode) {
-            currentMode = mode;
-            document.querySelector('.main-area').style.background = THEMES[mode] || '#fff';
-            document.getElementById('lblMode').innerText = mode;
+        async function renderVouchers() {
+            const vData = await DB.getAll('vouchers');
             
-            // Sidebar Highlight
-            document.querySelectorAll('.side-btn').forEach(b => b.classList.remove('active'));
-            if(document.getElementById(`btn${mode}`)) document.getElementById(`btn${mode}`).classList.add('active');
+            // Filters
+            const from = document.getElementById('dateFrom').value;
+            const to = document.getElementById('dateTo').value;
+            const type = document.getElementById('typeFilter').value;
+            const search = document.getElementById('searchBox').value.toLowerCase();
 
-            // Auto Number
-            const num = await DB.getNextVoucherNo(mode);
-            const prefix = mode === 'Receipt' ? 'RCPT' : mode === 'Payment' ? 'PYMT' : mode === 'Contra' ? 'CNTR' : 'JRNL';
-            document.getElementById('vNo').value = `${prefix}-${num}`;
-
-            // Reset
-            document.getElementById('gridRows').innerHTML = '';
-            closeF10Modal();
-
-            if(mode==='Payment') { addRow('Dr'); addRow('Cr'); }
-            else if(mode==='Receipt') { addRow('Cr'); addRow('Dr'); }
-            else { addRow('Dr'); addRow('Cr'); }
-        }
-
-        function addRow(type='Dr') {
-            const div = document.createElement('div');
-            div.className = 'entry-row';
-            div.innerHTML = `
-                <div class="c-type">
-                    <select class="r-type focusable" onchange="handleTypeChange(this)">
-                        <option value="Dr" ${type==='Dr'?'selected':''}>Dr</option>
-                        <option value="Cr" ${type==='Cr'?'selected':''}>Cr</option>
-                    </select>
-                </div>
-                <div class="c-ledger">
-                    <input type="text" list="ledgerList" class="r-ledger focusable" placeholder="Select Ledger" 
-                           onfocus="filterLedgers(this)">
-                </div>
-                <div class="c-hist">
-                    <i class="fas fa-history" style="color:#cbd5e1;"></i>
-                </div>
-                <div class="c-amt">
-                    <input type="number" class="amt-input focusable" placeholder="0.00" 
-                           onfocus="handleAmtFocus(this)" oninput="calcTotals()">
-                </div>
-                <div class="c-del">
-                    <i class="fas fa-times" style="color:var(--red); cursor:pointer;" onclick="this.closest('.entry-row').remove(); calcTotals();"></i>
-                </div>
-            `;
-            document.getElementById('gridRows').appendChild(div);
-        }
-
-        function filterLedgers(input) {
-            const row = input.closest('.entry-row');
-            const type = row.querySelector('.r-type').value;
-            // Filter Logic (Same as before: Cash/Bank check)
-            const isCashBank = (l) => [3,4].includes(l.group_id);
-            let list = allLedgers;
-
-            if (currentMode === 'Contra') list = allLedgers.filter(isCashBank);
-            else if (currentMode === 'Payment') {
-                if(type === 'Cr') list = allLedgers.filter(isCashBank);
-                else list = allLedgers.filter(l => !isCashBank(l));
-            }
-            else if (currentMode === 'Receipt') {
-                if(type === 'Dr') list = allLedgers.filter(isCashBank);
-                else list = allLedgers.filter(l => !isCashBank(l));
-            }
-
-            const dl = document.getElementById('ledgerList');
-            dl.innerHTML = list.map(l => `<option value="${l.name}">`).join('');
-        }
-
-        function handleAmtFocus(input) {
-            activeAmtInput = input;
-            // AUTO FILL LOGIC
-            if(input.value === '') {
-                calcTotals(); // Calc current state
-                const diff = parseFloat(document.getElementById('lblDiff').innerText);
-                if(diff > 0) {
-                    input.value = diff.toFixed(2);
-                    calcTotals(); // Re-calc to clear diff
-                }
-            }
-        }
-
-        function calcTotals() {
-            let dr=0, cr=0;
-            document.querySelectorAll('.entry-row').forEach(r => {
-                const type = r.querySelector('.r-type').value;
-                const amt = parseFloat(r.querySelector('.amt-input').value) || 0;
-                if(type === 'Dr') dr += amt; else cr += amt;
+            // Filter Logic
+            const filtered = vData.filter(v => {
+                const vDate = v.date; // ISO Format YYYY-MM-DD
+                const matchDate = (!from || vDate >= from) && (!to || vDate <= to);
+                const matchType = type === 'All' || v.type === type;
+                const matchSearch = v.voucher_no.toLowerCase().includes(search) || 
+                                    (v.narration && v.narration.toLowerCase().includes(search)) ||
+                                    v.amount.toString().includes(search);
+                
+                return matchDate && matchType && matchSearch;
             });
 
-            const max = Math.max(dr, cr);
-            const diff = Math.abs(dr - cr);
+            // Sorting (Newest First)
+            filtered.sort((a,b) => b.date.localeCompare(a.date) || b.id - a.id);
+
+            // Render
+            const tbody = document.getElementById('voucherTable');
+            const noData = document.getElementById('noData');
+            const tableWrap = document.getElementById('tableWrap');
             
-            document.getElementById('lblTotal').innerText = max.toFixed(2);
-            document.getElementById('lblTotal').dataset.dr = dr;
-            document.getElementById('lblTotal').dataset.cr = cr;
+            tbody.innerHTML = '';
 
-            document.getElementById('lblDiff').innerText = diff.toFixed(2);
-            document.getElementById('diffAlert').style.display = diff > 0.05 ? 'block' : 'none';
-        }
-
-        // --- 3. DRAGGABLE CALCULATOR ---
-        function toggleCalc() {
-            const m = document.getElementById('calcModal');
-            m.style.display = m.style.display === 'block' ? 'none' : 'block';
-            document.getElementById('cDisp').value = '';
-        }
-        function cIn(v) { document.getElementById('cDisp').value += v; }
-        function cCalc() {
-            try { 
-                const v = eval(document.getElementById('cDisp').value);
-                if(activeAmtInput) {
-                    activeAmtInput.value = parseFloat(v).toFixed(2);
-                    calcTotals();
-                    toggleCalc();
-                    activeAmtInput.focus();
-                }
-            } catch(e) {} 
-        }
-
-        // Drag Logic
-        const cHeader = document.getElementById('calcHeader');
-        const cModal = document.getElementById('calcModal');
-        let isDragging = false, offsetX, offsetY;
-
-        cHeader.addEventListener('mousedown', (e) => {
-            isDragging = true;
-            offsetX = e.clientX - cModal.offsetLeft;
-            offsetY = e.clientY - cModal.offsetTop;
-        });
-        document.addEventListener('mousemove', (e) => {
-            if (isDragging) {
-                cModal.style.left = `${e.clientX - offsetX}px`;
-                cModal.style.top = `${e.clientY - offsetY}px`;
+            if (filtered.length === 0) {
+                tableWrap.style.display = 'none';
+                noData.style.display = 'block';
+                return;
             }
-        });
-        document.addEventListener('mouseup', () => isDragging = false);
 
-        // --- 4. F10 MODAL ---
-        function openF10Modal() { document.getElementById('f10Modal').style.display = 'block'; }
-        function closeF10Modal() { document.getElementById('f10Modal').style.display = 'none'; }
-        
-        async function saveVoucher() {
-            // Save Logic Same as before
-            alert("Saved (Simulated)");
-            location.reload();
+            tableWrap.style.display = 'block';
+            noData.style.display = 'none';
+
+            filtered.forEach(v => {
+                const displayDate = v.date.split('-').reverse().join('-'); // YYYY-MM-DD -> DD-MM-YYYY
+                
+                // Color Logic for Badge
+                const badgeClass = `badge-${v.type.replace(/\s/g, '')}` || 'badge-Contra';
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td data-label="Date">${displayDate}</td>
+                    <td data-label="Voucher No" style="font-weight:600;">${v.voucher_no}</td>
+                    <td data-label="Narration">
+                        <div style="font-weight:600; color:var(--text-main);">${v.type}</div>
+                        <div style="font-size:12px; color:#64748b; font-style:italic;">${v.narration || 'No Narration'}</div>
+                    </td>
+                    <td data-label="Type"><span class="vtype-badge ${badgeClass}">${v.type}</span></td>
+                    <td data-label="Amount" class="amount">₹${parseFloat(v.amount).toFixed(2)}</td>
+                    <td data-label="Action" class="actions">
+                        <button onclick="editVoucher(${v.id})" title="Edit"><i class="fas fa-edit"></i></button>
+                        <button class="del-btn" onclick="deleteVoucher(${v.id})" title="Delete"><i class="fas fa-trash-alt"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function deleteVoucher(id) {
+            if(confirm("Are you sure you want to delete this voucher? All associated entries will be removed.")) {
+                try {
+                    await DB.deleteVoucher(id);
+                    renderVouchers();
+                } catch(e) {
+                    alert("Delete Failed: " + e);
+                }
+            }
+        }
+
+        function editVoucher(id) {
+            // Redirect to Entry Mode with ID
+            // For now, let's assume query param
+            window.location.href = `voucher_entry.html?id=${id}`;
         }
     </script>
 </body>
