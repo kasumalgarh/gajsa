@@ -104,15 +104,24 @@
     <div class="main">
         <div class="top-bar">
             <select id="reportType" onchange="toggleFilters()">
-                <option value="Health">🏥 Business Health (AI)</option>
-                <option value="PL">📉 Profit & Loss</option>
-                <option value="BalanceSheet">⚖️ Balance Sheet</option>
-                <option value="TrialBalance">📑 Trial Balance</option>
-                <option value="DayBook">📅 Day Book</option>
-                <option value="Ledger">👤 Party Ledger</option>
-                <option value="Stock">📦 Stock Summary</option>
-                <option value="LowStock">⚠️ Low Stock</option>
-                <option value="Expiry">🗓️ Expiry Report</option>
+                <optgroup label="Business Overview">
+                    <option value="Health">🏥 Business Health (AI)</option>
+                    <option value="PL">📉 Profit & Loss</option>
+                    <option value="BalanceSheet">⚖️ Balance Sheet</option>
+                </optgroup>
+                <optgroup label="Accounting">
+                    <option value="TrialBalance">📑 Trial Balance</option>
+                    <option value="DayBook">📅 Day Book</option>
+                    <option value="Ledger">👤 Party Ledger</option>
+                    <option value="Receivables">💰 Outstanding Receivables (Udhari)</option>
+                    <option value="Payables">💸 Outstanding Payables (Dena)</option>
+                    <option value="GSTReport">🏛️ GST Tax Report</option>
+                </optgroup>
+                <optgroup label="Inventory">
+                    <option value="Stock">📦 Stock Summary</option>
+                    <option value="LowStock">⚠️ Low Stock</option>
+                    <option value="Expiry">🗓️ Expiry Report</option>
+                </optgroup>
             </select>
 
             <div id="partyFilter" style="display:none; width:100%;">
@@ -124,8 +133,8 @@
             <input type="date" id="fromDate">
             <input type="date" id="toDate">
 
-            <button class="btn btn-go" onclick="generateReport()">🔄 Generate Report</button>
-            <button class="btn btn-excel" onclick="exportToExcel()">📊 Export Excel</button>
+            <button class="btn btn-go" onclick="generateReport()">🔄 Generate</button>
+            <button class="btn btn-excel" onclick="exportToExcel()">📊 Export</button>
             <button class="btn btn-print" onclick="window.print()">🖨️ Print</button>
         </div>
 
@@ -134,7 +143,7 @@
                 <div style="text-align:center; padding:120px 40px; color:#cbd5e1;">
                     <h2>Select Report Type</h2>
                     <p style="margin-top:15px;">Choose from dropdown & click Generate</p>
-                    <p style="margin-top:10px; font-size:14px;">Tip: Business Health uses AI for predictions</p>
+                    <p style="margin-top:10px; font-size:14px;">Includes AI Health, GST & Outstanding Reports</p>
                 </div>
             </div>
         </div>
@@ -218,6 +227,9 @@
                     else if(type === 'TrialBalance') renderTrialBalance(container);
                     else if(type === 'DayBook') renderDayBook(container);
                     else if(type === 'Ledger') renderPartyLedger(container);
+                    else if(type === 'Receivables') renderOutstanding(container, 13, "Receivables (Udhari)"); // 13=Debtors
+                    else if(type === 'Payables') renderOutstanding(container, 12, "Payables (Dena Hai)"); // 12=Creditors
+                    else if(type === 'GSTReport') renderGSTReport(container);
                     else if(type === 'Stock') renderStockSummary(container);
                     else if(type === 'LowStock') renderLowStock(container);
                     else if(type === 'Expiry') renderExpiryReport(container);
@@ -252,9 +264,7 @@
                 const group = groups.find(g => g.id === l.group_id);
                 const root = group ? GROUP_TYPES[group.name] || 'Liabilities' : 'Liabilities';
                 
-                // Aggregation Logic: 
-                // Assets/Expenses = Debit Positive
-                // Liab/Income = Credit Positive (So we flip sign for negative balances)
+                // Aggregation Logic
                 if(root === 'Assets' || root === 'Expenses') balances[root] += bal;
                 else balances[root] += (bal * -1); 
             });
@@ -325,7 +335,7 @@
             const balances = getGroupBalances();
             const closingStock = items.reduce((s, i) => s + ((i.current_stock || 0) * (i.std_cost || 0)), 0);
             const grossProfit = balances.Income - balances.Expenses;
-            const netProfit = grossProfit + closingStock; // Simplified
+            const netProfit = grossProfit + closingStock; 
 
             container.innerHTML = `
                 <h2>Profit & Loss Statement</h2>
@@ -357,12 +367,9 @@
         function renderBalanceSheet(container) {
             const balances = getGroupBalances();
             const closingStock = items.reduce((s, i) => s + ((i.current_stock || 0) * (i.std_cost || 0)), 0);
-            // Net Profit is added to Capital (Liabilities side)
             const netProfit = (balances.Income - balances.Expenses) + closingStock; 
             
-            // Total Liabilities = Capital + Liabilities + Net Profit
             const totalLiab = balances.Liabilities + netProfit;
-            // Total Assets = Assets + Closing Stock
             const totalAssets = balances.Assets + closingStock;
 
             container.innerHTML = `
@@ -405,6 +412,73 @@
                 html += `<tr><td>${l.name}</td><td class="amt">${dr ? dr.toLocaleString('en-IN') : ''}</td><td class="amt">${cr ? cr.toLocaleString('en-IN') : ''}</td></tr>`;
             });
             html += `<tr class="bold-row"><td>Total</td><td class="amt">${totalDr.toLocaleString('en-IN')}</td><td class="amt">${totalCr.toLocaleString('en-IN')}</td></tr></tbody></table>`;
+            container.innerHTML = html;
+        }
+
+        // --- NEW: OUTSTANDING REPORTS ---
+        function renderOutstanding(container, groupId, title) {
+            // groupId 13 = Debtors, 12 = Creditors
+            let html = `<h2>Outstanding ${title}</h2><p class="sub-head">Pending Bills</p>
+            <table><thead><tr><th>Party Name</th><th class="amt">Pending Amount</th></tr></thead><tbody>`;
+            
+            let totalPending = 0;
+            const targetLedgers = ledgers.filter(l => l.group_id == groupId); // 13 or 12
+
+            targetLedgers.forEach(l => {
+                const bal = calculateLedgerBalance(l.id);
+                // For Debtors (Asset), Dr is +ve. For Creditors (Liab), Cr is +ve (so bal would be -ve in our logic)
+                const pending = groupId === 13 ? bal : (bal * -1);
+
+                if(pending > 0.01) {
+                    totalPending += pending;
+                    html += `<tr><td>${l.name}</td><td class="amt" style="color:${groupId===13?'var(--red)':'var(--green)'};">₹${pending.toLocaleString('en-IN')}</td></tr>`;
+                }
+            });
+
+            if(totalPending === 0) html += `<tr><td colspan="2" style="text-align:center; padding:20px;">No Outstanding Amount</td></tr>`;
+            
+            html += `<tr class="bold-row"><td>Total Outstanding</td><td class="amt">₹${totalPending.toLocaleString('en-IN')}</td></tr></tbody></table>`;
+            container.innerHTML = html;
+        }
+
+        // --- NEW: GST REPORT ---
+        function renderGSTReport(container) {
+            // Group 11 = Duties & Taxes
+            const taxLedgers = ledgers.filter(l => l.group_id == 11);
+            let inputTax = 0, outputTax = 0;
+            
+            let html = `<h2>GST Tax Report</h2><p class="sub-head">Input vs Output</p>
+            <table><thead><tr><th>Tax Ledger</th><th class="amt">Input (Dr)</th><th class="amt">Output (Cr)</th></tr></thead><tbody>`;
+
+            taxLedgers.forEach(l => {
+                const bal = calculateLedgerBalance(l.id);
+                // Bal is net. We should approximate based on name or sign
+                // Logic: Input GST usually Dr (+ve), Output usually Cr (-ve)
+                const isInput = l.name.toLowerCase().includes('input');
+                const isOutput = l.name.toLowerCase().includes('output');
+                
+                let dr = 0, cr = 0;
+                if(bal > 0) dr = bal; 
+                else cr = Math.abs(bal);
+
+                if(isInput) inputTax += dr;
+                if(isOutput) outputTax += cr;
+
+                if(dr > 0 || cr > 0) {
+                    html += `<tr><td>${l.name}</td><td class="amt">${dr?dr.toFixed(2):'-'}</td><td class="amt">${cr?cr.toFixed(2):'-'}</td></tr>`;
+                }
+            });
+
+            const netPayable = outputTax - inputTax;
+            const status = netPayable > 0 ? "Tax Payable" : "Tax Credit (Refund)";
+            const color = netPayable > 0 ? "var(--red)" : "var(--green)";
+
+            html += `<tr class="bold-row"><td>Total</td><td class="amt">₹${inputTax.toFixed(2)}</td><td class="amt">₹${outputTax.toFixed(2)}</td></tr>`;
+            html += `</tbody></table>
+            <div style="margin-top:20px; padding:15px; background:${netPayable > 0 ? '#fee2e2':'#dcfce7'}; border-radius:8px; text-align:center;">
+                <h3>${status}: <span style="color:${color};">₹${Math.abs(netPayable).toFixed(2)}</span></h3>
+            </div>`;
+            
             container.innerHTML = html;
         }
 

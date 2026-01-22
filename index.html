@@ -4,617 +4,496 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Arth Book - Executive Dashboard</title>
-    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="manifest" href="manifest.json">
 
     <style>
         :root {
-            --primary-color: #0f172a; --accent-color: #2563eb; --bg-color: #f1f5f9;
-            --card-bg: #ffffff; --text-color: #1e293b; --success-color: #10b981;
-            --warning-color: #f59e0b; --danger-color: #ef4444; --border-color: #e2e8f0;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --primary: #0f172a; --accent: #2563eb; --bg: #f8fafc;
+            --surface: #ffffff; --text-main: #1e293b; --text-sub: #64748b;
+            --success: #10b981; --warning: #f59e0b; --danger: #ef4444;
+            --border: #e2e8f0; --shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 10px 15px -3px rgba(0,0,0,0.05);
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         
-        /* BODY LAYOUT */
-        body { 
-            background-color: var(--bg-color); 
-            color: var(--text-color); 
-            display: flex; 
-            height: 100vh; 
-            overflow: hidden; 
-            flex-direction: row; /* Desktop Default */
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { display: flex; height: 100vh; background: var(--bg); color: var(--text-main); overflow: hidden; }
 
         /* SIDEBAR */
-        .sidebar { width: 260px; background: var(--primary-color); color: #94a3b8; display: flex; flex-direction: column; height: 100vh; flex-shrink: 0; overflow-y: auto; transition: 0.3s; z-index: 1000; }
-        .brand-logo { padding: 20px; font-size: 20px; font-weight: 800; color: white; display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
-        .nav-links { list-style: none; padding: 0 10px; }
-        .nav-links li { margin-bottom: 5px; }
-        .nav-links a { display: flex; align-items: center; gap: 12px; padding: 12px 15px; color: inherit; text-decoration: none; border-radius: 8px; font-weight: 500; transition: 0.2s; }
-        .nav-links a:hover, .nav-links a.active { background: #1e293b; color: white; }
+        .sidebar { width: 260px; background: var(--primary); color: #94a3b8; display: flex; flex-direction: column; flex-shrink: 0; height: 100vh; transition: 0.3s; z-index: 100; }
+        .brand { padding: 25px 20px; font-size: 22px; font-weight: 800; color: white; display: flex; align-items: center; gap: 12px; letter-spacing: -0.5px; }
+        .nav-links { list-style: none; padding: 0 12px; flex: 1; overflow-y: auto; }
+        .nav-links a { display: flex; align-items: center; gap: 12px; padding: 12px 16px; color: inherit; text-decoration: none; border-radius: 8px; font-weight: 500; margin-bottom: 4px; transition: 0.2s; }
+        .nav-links a:hover, .nav-links a.active { background: rgba(255,255,255,0.1); color: white; }
+        .nav-links i { width: 20px; text-align: center; }
 
         /* MAIN CONTENT */
-        main { flex: 1; padding: 25px; overflow-y: auto; display: flex; flex-direction: column; position: relative; }
-
-        /* CARDS */
-        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 20px; }
-        .card { background: var(--card-bg); border-radius: 12px; padding: 20px; box-shadow: var(--shadow); border: 1px solid var(--border-color); position: relative; }
-        .card h3 { font-size: 14px; color: #64748b; font-weight: 600; text-transform: uppercase; margin-bottom: 10px; }
-        .value { font-size: 28px; font-weight: 800; color: var(--text-color); margin-bottom: 5px; }
-
-        .green-edge { border-left: 5px solid var(--success-color); }
-        .gold-edge { border-left: 5px solid var(--warning-color); }
-        .blue-edge { border-left: 5px solid var(--accent-color); }
-        .red-edge { border-left: 5px solid var(--danger-color); }
-
-        .btn { padding: 10px 20px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; }
-        .btn-primary { background: var(--accent-color); color: white; }
-        .btn:hover { opacity: 0.9; transform: translateY(-1px); }
-        .btn-warning { background: var(--danger-color); color: white; }
-
-        input { padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; }
+        main { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
         
-        /* TABLE */
-        .table-container { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 10px; }
-        th { text-align: left; padding: 12px; background: #f8fafc; color: #64748b; border-bottom: 2px solid var(--border-color); white-space: nowrap; }
-        td { padding: 12px; border-bottom: 1px solid var(--border-color); white-space: nowrap; }
+        /* HEADER */
+        .header { background: var(--surface); padding: 15px 30px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .header h2 { font-size: 1.25rem; font-weight: 700; color: var(--primary); }
+        .date-badge { background: #f1f5f9; padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; color: var(--text-sub); font-weight: 600; display: flex; align-items: center; gap: 8px; }
+
+        /* DASHBOARD GRID */
+        .scroll-area { padding: 30px; overflow-y: auto; flex: 1; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 30px; }
         
+        .card { background: var(--surface); border-radius: 16px; padding: 24px; box-shadow: var(--shadow); border: 1px solid var(--border); position: relative; transition: transform 0.2s; cursor: pointer; }
+        .card:hover { transform: translateY(-3px); border-color: var(--accent); }
+        .card-icon { position: absolute; top: 20px; right: 20px; width: 40px; height: 40px; background: #f1f5f9; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--text-sub); font-size: 18px; }
+        .card h3 { font-size: 0.9rem; font-weight: 600; color: var(--text-sub); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .value { font-size: 2rem; font-weight: 800; color: var(--primary); margin-bottom: 5px; }
+        .trend { font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 5px; }
+        .trend.up { color: var(--success); } .trend.down { color: var(--danger); }
+
+        /* CHARTS SECTION */
+        .charts-row { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 30px; }
+        .chart-card { background: var(--surface); border-radius: 16px; padding: 24px; box-shadow: var(--shadow); border: 1px solid var(--border); height: 350px; }
+        .chart-header { display: flex; justify-content: space-between; margin-bottom: 20px; }
+        .chart-title { font-weight: 700; color: var(--primary); font-size: 1.1rem; }
+
+        /* RECENT ACTIVITY & ALERTS */
+        .bottom-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .list-card { background: var(--surface); border-radius: 16px; padding: 0; box-shadow: var(--shadow); border: 1px solid var(--border); overflow: hidden; display: flex; flex-direction: column; }
+        .list-header { padding: 20px; border-bottom: 1px solid var(--border); font-weight: 700; color: var(--primary); display: flex; justify-content: space-between; background: #f8fafc; }
+        .list-body { overflow-y: auto; max-height: 300px; }
+        .txn-item { padding: 15px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; transition: 0.2s; cursor: pointer; }
+        .txn-item:hover { background: #f1f5f9; }
+        .txn-info strong { display: block; color: var(--text-main); font-size: 0.95rem; }
+        .txn-info span { font-size: 0.8rem; color: var(--text-sub); }
+        .txn-amt { font-weight: 700; font-family: monospace; font-size: 1rem; }
+
+        /* UNIVERSAL SEARCH */
+        .search-container { margin-bottom: 30px; position: relative; }
+        .search-bar { width: 100%; padding: 16px 20px 16px 50px; border-radius: 12px; border: 1px solid var(--border); font-size: 1rem; box-shadow: var(--shadow); outline: none; transition: 0.2s; }
+        .search-bar:focus { border-color: var(--accent); ring: 4px solid rgba(37,99,235,0.1); }
+        .search-icon { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); color: var(--text-sub); font-size: 18px; }
+        #searchResults { position: absolute; top: 100%; left: 0; width: 100%; background: white; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 1px solid var(--border); z-index: 500; display: none; margin-top: 10px; max-height: 400px; overflow-y: auto; }
+
+        /* ALERTS */
+        .alert-item { padding: 15px 20px; border-bottom: 1px solid var(--border); display: flex; gap: 15px; align-items: start; }
+        .alert-icon { width: 32px; height: 32px; background: #fee2e2; color: var(--danger); border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .alert-content h4 { font-size: 0.9rem; font-weight: 600; color: var(--text-main); margin-bottom: 2px; }
+        .alert-content p { font-size: 0.8rem; color: var(--text-sub); }
+
         /* FAB */
-        .fab-add { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; background: var(--accent-color); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 10px 25px rgba(37,99,235,0.4); transition: 0.3s; z-index: 500; text-decoration: none; }
-        .fab-add:hover { transform: scale(1.1) rotate(90deg); }
+        .fab { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; background: var(--accent); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 10px 20px rgba(37,99,235,0.3); cursor: pointer; transition: 0.3s; z-index: 1000; text-decoration: none; }
+        .fab:hover { transform: scale(1.1) rotate(90deg); }
 
-        /* OVERLAY */
-        .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 900; }
-        .overlay.active { display: block; }
-
-        /* RESPONSIVE ELEMENTS */
-        .menu-toggle { display: none; }
-        header { display: none; }
-        
-        /* --- MOBILE FIXES --- */
-        @media (max-width: 768px) {
-            /* 1. Body ko Column karein taaki Header upar aur Main neeche aaye */
-            body { 
-                flex-direction: column; 
-            }
-
-            /* 2. Sidebar ko Screen ke bahar rakhein */
-            .sidebar { 
-                position: fixed; 
-                left: -100%; 
-                top: 0; 
-                height: 100%; 
-                width: 260px; 
-                box-shadow: 5px 0 15px rgba(0,0,0,0.2); 
-                transition: left 0.3s ease-in-out; 
-            }
-            .sidebar.active { left: 0; }
-            
-            /* 3. Header Setup */
-            header { 
-                display: flex; 
-                justify-content: space-between; 
-                align-items: center; 
-                padding: 15px; 
-                background: white; 
-                border-bottom: 1px solid var(--border-color); 
-                width: 100%; 
-                flex-shrink: 0; /* Header chota na ho */
-            }
-            
-            /* 4. Main Content Full Width */
-            main { 
-                padding: 15px; 
-                width: 100%; 
-                flex: 1; /* Baki bachi jagah lele */
-            }
-
-            .brand-logo { display: none; }
-            .menu-toggle { display: block; font-size: 24px; cursor: pointer; color: var(--primary-color); margin-right: 15px; }
-
-            /* Grids */
-            .dashboard-grid { grid-template-columns: 1fr !important; }
-
-            /* Search Bar */
-            .search-row { flex-direction: column; width: 100%; }
-            #univSearch { width: 100% !important; margin-bottom: 10px; }
-            .search-row button { width: 100%; justify-content: center; }
-
-            h2 { font-size: 1.2rem; }
+        /* RESPONSIVE */
+        @media (max-width: 1024px) {
+            .charts-row, .bottom-row { grid-template-columns: 1fr; }
+            .sidebar { position: fixed; left: -100%; }
+            .sidebar.active { left: 0; box-shadow: 10px 0 30px rgba(0,0,0,0.2); }
+            .menu-btn { display: block !important; margin-right: 15px; font-size: 24px; cursor: pointer; }
         }
+        .menu-btn { display: none; }
     </style>
 </head>
 <body>
 
-    <div class="overlay" id="menuOverlay" onclick="toggleSidebar()"></div>
-
-    <div id="loginOverlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0f172a; z-index: 9999; display: flex; align-items: center; justify-content: center; color: white;">
-        <div class="card" style="width: 350px; max-width:90%; text-align: center; border-top: 5px solid var(--accent-color); padding:30px;">
-            <div style="font-size: 50px; margin-bottom: 15px;">🛡️</div>
-            <h2 style="color: #1e293b; margin-bottom:5px;">Arth Book</h2>
-            <p style="color: #64748b; font-size: 13px; margin-bottom: 25px;">Secure Business Operating System</p>
-            <form onsubmit="handleLogin(event)">
-                <div style="margin-bottom: 15px;">
-                    <input type="text" id="username" placeholder="Username (admin)" required style="width:100%; padding:12px;">
-                </div>
-                <div style="margin-bottom: 20px;">
-                    <input type="password" id="password" placeholder="Password" required style="width:100%; padding:12px;">
-                </div>
-                <button type="submit" class="btn btn-primary" style="width: 100%; padding:12px; font-size:16px;">Unlock Device</button>
-            </form>
-            <div style="margin-top: 20px; font-size: 11px; color: #94a3b8;">
-                Device ID: <span id="displayMachineID">Checking...</span>
-            </div>
-        </div>
-    </div>
-
-    <header>
-        <div style="display:flex; align-items:center;">
-            <span class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></span>
-            <span style="font-weight:800; font-size:18px; color:var(--primary-color);">Arth Book</span>
-        </div>
-        <button class="btn btn-warning" onclick="logout()" style="padding: 6px 12px; font-size: 12px;">
-            <i class="fas fa-power-off"></i>
-        </button>
-    </header>
-
     <div class="sidebar" id="sidebar">
-        <div class="brand-logo">
-            <i class="fas fa-book"></i> Arth Book
-        </div>
-        <div id="syncStatus" style="display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; padding: 5px 10px; border-radius: 20px; background: #f1f5f9; color: #64748b; transition: 0.3s; margin: 0 10px;">
-            <i id="syncIcon" class="fas fa-cloud"></i> 
-            <span id="syncText">Backup: Pending</span>
-        </div>
+        <div class="brand"><i class="fas fa-cube"></i> Arth Book</div>
         <ul class="nav-links">
-            <li><a href="index.html" class="active"><i class="fas fa-chart-pie"></i> Dashboard</a></li>
-            <li><a href="sales_invoice.html"><i class="fas fa-file-invoice"></i> Sales Invoice</a></li>
-            <li><a href="purchase_invoice.html"><i class="fas fa-truck"></i> Purchase Entry</a></li>
-            <li><a href="vouchers.html"><i class="fas fa-receipt"></i> Vouchers (JV)</a></li>
-            <li><a href="item_master.html"><i class="fas fa-boxes"></i> Inventory & Stock</a></li>
-            <li><a href="ArthBook.html"><i class="fas fa-users"></i> Parties (Ledgers)</a></li>
-            <li><a href="reports.html"><i class="fas fa-chart-line"></i> Smart Reports</a></li>
-            <hr style="margin: 15px 10px; border: 0; border-top: 1px solid #334155;">
-            <li><a href="gst_filing.html"><i class="fas fa-university"></i> GST Filing</a></li>
-            <li><a href="taxation.html"><i class="fas fa-calculator"></i> Global Tax / ITR</a></li>
-            <li><a href="settings.html"><i class="fas fa-cogs"></i> Settings</a></li>
-            <li><a href="help.html" target="_blank">❓ Help / मदद</a></li>
+            <li><a href="index.html" class="active"><i class="fas fa-home"></i> Dashboard</a></li>
+            <li><a href="sales_invoice.html"><i class="fas fa-file-invoice"></i> Sales</a></li>
+            <li><a href="purchase_invoice.html"><i class="fas fa-shopping-bag"></i> Purchase</a></li>
+            <li><a href="vouchers.html"><i class="fas fa-receipt"></i> Vouchers</a></li>
+            <li><a href="item_master.html"><i class="fas fa-boxes"></i> Inventory</a></li>
+            <li><a href="ArthBook.html"><i class="fas fa-users"></i> Parties</a></li>
+            <li><a href="reports.html"><i class="fas fa-chart-line"></i> Reports</a></li>
+            <li><a href="gst_filing.html"><i class="fas fa-university"></i> GST Returns</a></li>
+            <li><a href="settings.html"><i class="fas fa-cog"></i> Settings</a></li>
         </ul>
-        <div class="user-menu" style="margin-top:auto; padding:20px;">
-            <div id="todayDate" style="font-size: 12px; color: #94a3b8; margin-bottom: 10px;">...</div>
-            <button class="btn btn-warning" onclick="logout()" style="width:100%; justify-content:center;">
-                <i class="fas fa-power-off"></i> Logout
-            </button>
+        <div style="padding: 20px; font-size: 12px; color: #64748b; text-align: center;">
+            v4.0 | Licensed User
         </div>
     </div>
 
     <main>
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap:wrap; gap:10px;">
-            <h2 style="color: var(--primary-color);">Executive Overview</h2>
-            <button class="btn btn-primary" id="refreshBtn" onclick="refreshDashboard()">
-                <i class="fas fa-sync-alt" id="spinIcon"></i> Refresh Data
-            </button>
-        </div>
-
-        <div class="card" style="margin-bottom: 20px; padding: 20px;">
-            <div class="search-row" style="display: flex; gap: 10px;">
-                <input type="text" id="univSearch" placeholder="🔍 Search Bill No, Party Name, Amount..." style="flex:1; min-width:250px;" onkeyup="if(event.key==='Enter') searchVouchers()">
-                <button class="btn btn-primary" onclick="searchVouchers()">Find</button>
+        <div class="header">
+            <div style="display:flex; align-items:center;">
+                <i class="fas fa-bars menu-btn" onclick="document.getElementById('sidebar').classList.toggle('active')"></i>
+                <h2>Executive Overview</h2>
             </div>
-            <div class="table-container" id="searchTable" style="display: none; margin-top: 20px;">
-                <table>
-                    <thead><tr><th>Date</th><th>Party</th><th>Type</th><th>Voucher #</th><th>Amount</th><th>Action</th></tr></thead>
-                    <tbody id="searchBody"></tbody>
-                </table>
-            </div>
-            <div id="noResult" style="display:none; padding:20px; text-align:center; color:#666; font-size:14px;">No records found.</div>
-        </div>
-
-        <div class="dashboard-grid">
-            <div class="card green-edge">
-                <h3>Gross Profit (GP)</h3>
-                <div class="value" id="grossProfit">₹0</div>
-                <div style="font-size: 0.85rem; color: #64748b;">(Sales - Cost of Goods)</div>
-            </div>
-            
-            <div class="card gold-edge">
-                <h3>Cash In Hand</h3>
-                <div class="value" id="cashBal">₹0</div>
-                <div style="font-size: 0.85rem; color: #64748b;" id="cashStatus">Drawer Balance</div>
-            </div>
-
-            <div class="card blue-edge">
-                <h3>Receivables (Lena)</h3>
-                <div class="value" id="receivables">₹0</div>
-                <div style="font-size: 0.85rem; color: #64748b;" id="debtorsCount">0 Customers</div>
-            </div>
-
-            <div class="card red-edge">
-                <h3>Payables (Dena)</h3>
-                <div class="value" id="payables">₹0</div>
-                <div style="font-size: 0.85rem; color: #64748b;">Due to Suppliers</div>
+            <div class="date-badge">
+                <i class="far fa-calendar-alt"></i>
+                <span id="currentDate">Jan 22, 2026</span>
             </div>
         </div>
 
-        <div class="dashboard-grid" style="grid-template-columns: 2fr 1fr;">
-            <div class="card">
-                <h3>Sales Trends (Last 6 Months)</h3>
-                <div style="position: relative; height: 280px; margin-top:10px;">
+        <div class="scroll-area">
+            <div class="search-container">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" class="search-bar" id="globalSearch" placeholder="Search anything (Bill No, Customer Name, Amount, Item)..." onkeyup="performSearch()">
+                <div id="searchResults"></div>
+            </div>
+
+            <div class="kpi-grid">
+                <div class="card" onclick="window.location.href='reports.html?type=PL'">
+                    <div class="card-icon" style="color:var(--success);"><i class="fas fa-chart-line"></i></div>
+                    <h3>Gross Profit (Est.)</h3>
+                    <div class="value" id="grossProfit">₹0.00</div>
+                    <div class="trend" id="gpTrend">
+                        <span style="font-weight:400; color:var(--text-sub);">Sales - Cost of Goods</span>
+                    </div>
+                </div>
+
+                <div class="card" onclick="window.location.href='vouchers.html'">
+                    <div class="card-icon" style="color:var(--warning);"><i class="fas fa-wallet"></i></div>
+                    <h3>Cash In Hand</h3>
+                    <div class="value" id="cashBalance">₹0.00</div>
+                    <div class="trend" id="cashTrend">
+                        <span>Drawer Balance</span>
+                    </div>
+                </div>
+
+                <div class="card" onclick="window.location.href='reports.html?type=Receivables'">
+                    <div class="card-icon" style="color:var(--accent);"><i class="fas fa-hand-holding-usd"></i></div>
+                    <h3>Receivables (Lena)</h3>
+                    <div class="value" id="receivables">₹0.00</div>
+                    <div class="trend up">
+                        <i class="fas fa-exclamation-circle"></i> <span id="debtorCount">0</span> Parties Pending
+                    </div>
+                </div>
+
+                <div class="card" onclick="window.location.href='gst_filing.html'">
+                    <div class="card-icon" style="color:var(--danger);"><i class="fas fa-balance-scale"></i></div>
+                    <h3>Net GST Payable</h3>
+                    <div class="value" id="gstPayable">₹0.00</div>
+                    <div class="trend" id="gstTrend">
+                        <span style="font-size:12px;">Output (Sales) - Input (Pur)</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="charts-row">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div class="chart-title">Sales Performance</div>
+                        <select style="border:none; bg:transparent; font-weight:600; color:var(--text-sub); outline:none;">
+                            <option>Last 6 Months</option>
+                        </select>
+                    </div>
                     <canvas id="salesChart"></canvas>
                 </div>
-            </div>
-            <div class="card">
-                <h3>GST Tax Liability</h3>
-                <div style="position: relative; height: 220px; margin-top:10px;">
-                    <canvas id="gstChart"></canvas>
-                </div>
-                <div style="margin-top: 15px; font-size: 0.9rem;">
-                    <div style="display:flex; justify-content:space-between; color: var(--success-color); font-weight:600;">
-                        <span>Input Credit:</span> <span id="inTax">₹0</span>
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div class="chart-title">Tax Analysis</div>
                     </div>
-                    <div style="display:flex; justify-content:space-between; color: var(--danger-color); margin-top: 8px; font-weight:600;">
-                        <span>Output Tax:</span> <span id="outTax">₹0</span>
+                    <div style="height:220px; position:relative;">
+                        <canvas id="taxChart"></canvas>
+                    </div>
+                    <div style="text-align:center; margin-top:15px; font-size:0.9rem;">
+                        <span style="color:var(--success); margin-right:10px;">● Input Credit</span>
+                        <span style="color:var(--danger);">● Output Liability</span>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div class="dashboard-grid" style="grid-template-columns: 1fr 1fr;">
-            <div class="card">
-                <h3>Recent Transactions</h3>
-                <div id="recentTxn" style="margin-top: 15px; max-height:300px; overflow-y:auto;">
-                    <div class="text-center" style="color: #999; padding:20px;">Loading recent activity...</div>
+            <div class="bottom-row">
+                <div class="list-card">
+                    <div class="list-header">
+                        <span>Recent Transactions</span>
+                        <a href="vouchers.html" style="font-size:0.8rem; text-decoration:none; color:var(--accent);">View All</a>
+                    </div>
+                    <div class="list-body" id="recentTxnList">
+                        </div>
                 </div>
-            </div>
 
-            <div class="card">
-                <h3>⚠️ Action Needed</h3>
-                <div id="alertsList" style="margin-top: 15px; max-height:300px; overflow-y:auto;">
-                    <div class="text-center" style="color:#999; padding:20px;">All systems healthy ✨</div>
+                <div class="list-card">
+                    <div class="list-header">
+                        <span>⚠️ Action Required</span>
+                    </div>
+                    <div class="list-body" id="alertList">
+                        </div>
                 </div>
             </div>
         </div>
     </main>
 
-    <a href="sales_invoice.html" class="fab-add" title="New Sale">
-        <i class="fas fa-plus"></i>
-    </a>
-
-    <div id="toast" style="position:fixed; bottom:80px; left:50%; transform:translateX(-50%); background:var(--success-color); color:white; padding:12px 30px; border-radius:8px; display:none; font-weight:600; box-shadow:var(--shadow); z-index:1000;">Dashboard Refreshed!</div>
+    <a href="sales_invoice.html" class="fab" title="Quick Sale"><i class="fas fa-plus"></i></a>
 
     <script src="db.js"></script>
-    <script src="security_utils.js" onerror="console.log('Security Utils optional')"></script>
-    <script src="ai_engine.js" onerror="console.log('AI Engine optional')"></script>
-    <script src="tally_bridge.js" onerror="console.log('Tally Bridge optional')"></script>
-
     <script>
-        let globalVouchers = [];
-        let globalLedgerMap = {};
+        let dbData = { vouchers: [], ledgers: [], items: [], entries: [], groups: [] };
 
-        document.getElementById('todayDate').innerText = new Date().toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
-
-        // --- SIDEBAR TOGGLE ---
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('active');
-            document.getElementById('menuOverlay').classList.toggle('active');
-        }
-
-        window.addEventListener('load', async () => {
-            if (window.Security) {
-                const devID = await Security.getMachineID();
-                document.getElementById('displayMachineID').innerText = devID;
-            }
-            if (sessionStorage.getItem('user_session')) {
-                await DB.init(); 
-                document.getElementById('loginOverlay').style.display = 'none';
-                initDashboard();
-            }
-        });
-
-        async function handleLogin(e) {
-            e.preventDefault();
-            const u = document.getElementById('username').value.trim();
-            const p = document.getElementById('password').value;
-            await DB.init();
-            try {
-                try { await DB.login(u, p); } catch {
-                    if (window.Security) { const hashed = await Security.hashPassword(p); await DB.login(u, hashed); } else { throw new Error("Security module missing"); }
-                }
-                sessionStorage.setItem('user_session', JSON.stringify({ username: u, role: 'admin' }));
-                document.getElementById('loginOverlay').style.display = 'none';
-                initDashboard();
-            } catch (err) { console.error(err); alert('Invalid credentials!'); }
-        }
-
-        function logout() {
-            if (confirm('Secure logout?')) {
-                sessionStorage.removeItem('user_session');
-                location.reload();
-            }
-        }
-
-        async function initDashboard() { await runAnalytics(); }
-
-        async function runAnalytics() {
-            const vouchers = await DB.getAll('vouchers');
-            const items = await DB.getAll('items');
-            const ledgers = await DB.getAll('ledgers');
-            const entries = await DB.getAll('acct_entries');
-            const groups = await DB.getAll('groups');
-
-            globalVouchers = vouchers;
-            globalLedgerMap = {};
-            ledgers.forEach(l => globalLedgerMap[l.id] = l);
-
-            const balances = {};
-            entries.forEach(e => {
-                balances[e.ledger_id] = (balances[e.ledger_id] || 0) + (e.debit || 0) - (e.credit || 0);
-            });
-
-            // --- PROFIT CALCULATION ---
-            const salesGrp = groups.find(g => g.name === 'Sales Accounts');
-            const purGrp = groups.find(g => g.name === 'Purchase Accounts');
+        window.onload = async () => {
+            document.getElementById('currentDate').innerText = new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
             
-            let netSales = 0, netPurchase = 0;
+            await DB.init();
+            await loadData();
+            calculateKPIs();
+            renderCharts();
+            renderLists();
+        };
 
-            if(salesGrp && purGrp) {
-                entries.forEach(e => {
-                    const l = ledgers.find(led => led.id === e.ledger_id);
-                    if(l) {
-                        if(l.group_id === salesGrp.id) netSales += (e.credit - e.debit);
-                        if(l.group_id === purGrp.id) netPurchase += (e.debit - e.credit);
+        async function loadData() {
+            dbData.vouchers = await DB.getAll('vouchers');
+            dbData.ledgers = await DB.getAll('ledgers');
+            dbData.items = await DB.getAll('items');
+            dbData.entries = await DB.getAll('acct_entries');
+            dbData.groups = await DB.getAll('groups');
+        }
+
+        function calculateKPIs() {
+            // 1. CASH BALANCE (Group ID 14 usually)
+            // We need to sum entries for all ledgers under Cash Group
+            const cashGrp = dbData.groups.find(g => g.name === 'Cash-in-Hand');
+            let cashBal = 0;
+            if(cashGrp) {
+                const cashLedgers = dbData.ledgers.filter(l => l.group_id === cashGrp.id).map(l => l.id);
+                dbData.entries.forEach(e => {
+                    if(cashLedgers.includes(e.ledger_id)) {
+                        cashBal += (parseFloat(e.debit)||0) - (parseFloat(e.credit)||0);
                     }
                 });
-            } else {
-                vouchers.forEach(v => {
-                    if (v.type === 'Sales') netSales += v.amount || 0;
-                    if (v.type === 'Purchase') netPurchase += v.amount || 0;
+                // Add Opening balances
+                dbData.ledgers.filter(l => l.group_id === cashGrp.id).forEach(l => cashBal += (l.opening_balance || 0));
+            }
+            updateKPI('cashBalance', cashBal, 'cashTrend');
+
+            // 2. RECEIVABLES (Debtors - Group 13)
+            const debtGrp = dbData.groups.find(g => g.name === 'Sundry Debtors');
+            let receivables = 0, debtCount = 0;
+            if(debtGrp) {
+                dbData.ledgers.filter(l => l.group_id === debtGrp.id).forEach(l => {
+                    let bal = parseFloat(l.opening_balance) || 0;
+                    // Calculate net balance from entries
+                    dbData.entries.filter(e => e.ledger_id === l.id).forEach(e => bal += (e.debit - e.credit));
+                    if(bal > 1) { // Threshold 1rs
+                        receivables += bal;
+                        debtCount++;
+                    }
                 });
             }
+            document.getElementById('receivables').innerText = formatCurrency(receivables);
+            document.getElementById('debtorCount').innerText = debtCount;
 
-            const closingStockVal = items.reduce((sum, i) => sum + ((i.current_stock || 0) * (i.std_cost || 0)), 0);
-            const cogs = Math.max(0, netPurchase - closingStockVal);
-            const profit = netSales - cogs;
-
-            const pEl = document.getElementById('grossProfit');
-            pEl.innerText = fmt(profit);
-            pEl.style.color = profit >= 0 ? 'var(--success-color)' : 'var(--danger-color)';
-
-            // Cash Balance
-            const cashGrp = groups.find(g => g.name === 'Cash-in-Hand');
-            let cashTotal = 0;
-            if (cashGrp) {
-                ledgers.filter(l => l.group_id === cashGrp.id).forEach(l => {
-                    cashTotal += (l.opening_balance || 0) + (balances[l.id] || 0);
-                });
-            }
-            const cEl = document.getElementById('cashBal');
-            cEl.innerText = fmt(cashTotal);
-            document.getElementById('cashStatus').innerText = cashTotal < 0 ? '⚠️ Negative Balance!' : 'Drawer Balance';
-            cEl.style.color = cashTotal < 0 ? 'var(--danger-color)' : 'inherit';
-
-            // Receivables
-            const debtorsGrp = groups.find(g => g.name === 'Sundry Debtors');
-            let receivables = 0, debtorCount = 0;
-            if (debtorsGrp) {
-                ledgers.filter(l => l.group_id === debtorsGrp.id).forEach(l => {
-                    const bal = (l.opening_balance || 0) + (balances[l.id] || 0);
-                    if (bal > 0) { receivables += bal; debtorCount++; }
-                });
-            }
-            document.getElementById('receivables').innerText = fmt(receivables);
-            document.getElementById('debtorsCount').innerText = `${debtorCount} Customers Pending`;
-
-            // Payables
-            const creditorsGrp = groups.find(g => g.name === 'Sundry Creditors');
-            let payables = 0;
-            if (creditorsGrp) {
-                ledgers.filter(l => l.group_id === creditorsGrp.id).forEach(l => {
-                    const bal = (l.opening_balance || 0) + (balances[l.id] || 0);
-                    if (bal < 0) payables += Math.abs(bal);
-                });
-            }
-            document.getElementById('payables').innerText = fmt(payables);
-
-            // GST
-            const taxGrp = groups.find(g => g.name === 'Duties & Taxes');
-            let inTax = 0, outTax = 0;
-            if (taxGrp) {
-                ledgers.filter(l => l.group_id === taxGrp.id).forEach(l => {
-                    const bal = (l.opening_balance || 0) + (balances[l.id] || 0);
-                    if (bal > 0) inTax += bal;
-                    else outTax += Math.abs(bal);
-                });
-            }
-            document.getElementById('inTax').innerText = fmt(inTax);
-            document.getElementById('outTax').innerText = fmt(outTax);
-
-            // Alerts
-            const alerts = [];
-            if (cashTotal < 0) alerts.push({ title: 'Negative Cash Balance', sub: 'Immediate attention required', type: 'critical' });
-            items.filter(i => (i.current_stock || 0) <= (i.reorder_level || 5)).forEach(i => 
-                alerts.push({ title: `Low Stock: ${i.name}`, sub: `Only ${i.current_stock || 0} left`, type: 'warning' })
-            );
-
-            const alertDiv = document.getElementById('alertsList');
-            alertDiv.innerHTML = alerts.length ? alerts.map(a => `
-                <div style="display:flex; justify-content:space-between; padding:12px; border-bottom:1px solid #eee; cursor:pointer;" onclick="${a.type==='warning' ? 'location.href=\'item_master.html\'' : ''}">
-                    <div>
-                        <div style="font-weight:600; color:${a.type==='critical'?'red':'orange'}">${a.title}</div>
-                        <div style="font-size:0.85rem; color:#666;">${a.sub}</div>
-                    </div>
-                    <span>${a.type==='critical'?'🛑':'⚠️'}</span>
-                </div>
-            `).join('') : '<div class="text-center" style="color:#999; padding:20px;">✨ All systems healthy</div>';
-
-            // Recent Transactions
-            const recent = vouchers.sort((a,b) => (b.id || 0) - (a.id || 0)).slice(0, 10);
-            document.getElementById('recentTxn').innerHTML = recent.length ? recent.map(v => {
-                const pName = globalLedgerMap[v.party_id]?.name || 'Cash/Other';
-                const isCredit = v.type === 'Sales' || v.type === 'Receipt';
-                return `
-                    <div style="display:flex; justify-content:space-between; padding:12px 0; border-bottom:1px solid #f0f0f0;">
-                        <div>
-                            <div style="font-weight:600;">${pName}</div>
-                            <div style="font-size:0.85rem; color:#999;">${v.voucher_no} • ${v.date}</div>
-                        </div>
-                        <div style="font-weight:bold; color:${isCredit ? 'var(--success-color)' : 'var(--danger-color)'}">
-                            ${isCredit ? '+' : '-'} ${fmt(v.amount || 0)}
-                        </div>
-                    </div>`;
-            }).join('') : '<div class="text-center" style="color:#999; padding:20px;">No recent transactions</div>';
-
-            renderCharts(vouchers, inTax, outTax);
-        }
-
-        function searchVouchers() {
-            const query = document.getElementById('univSearch').value.toLowerCase().trim();
-            const table = document.getElementById('searchTable');
-            const tbody = document.getElementById('searchBody');
-            const noRes = document.getElementById('noResult');
-
-            if (!query) {
-                table.style.display = 'none';
-                noRes.style.display = 'none';
-                return;
-            }
-
-            const results = globalVouchers.filter(v => {
-                const party = globalLedgerMap[v.party_id]?.name?.toLowerCase() || '';
-                return v.voucher_no.toLowerCase().includes(query) ||
-                        v.date.includes(query) ||
-                        (v.amount || 0).toString().includes(query) ||
-                        party.includes(query);
-            }).sort((a,b) => (b.id || 0) - (a.id || 0));
-
-            tbody.innerHTML = '';
-            if (results.length) {
-                table.style.display = 'block';
-                noRes.style.display = 'none';
-                results.forEach(v => {
-                    const party = globalLedgerMap[v.party_id]?.name || 'Cash';
-                    const page = v.type === 'Sales' ? 'sales_invoice.html' : 
-                                 v.type === 'Purchase' ? 'purchase_invoice.html' : 'vouchers.html';
-                    tbody.innerHTML += `<tr>
-                        <td>${v.date}</td>
-                        <td><b>${party}</b></td>
-                        <td>${v.type}</td>
-                        <td>${v.voucher_no}</td>
-                        <td>${fmt(v.amount || 0)}</td>
-                        <td><button class="btn btn-primary" style="padding:4px 10px; font-size:0.8rem;" onclick="location.href='${page}?id=${v.id}'">Open</button></td>
-                    </tr>`;
-                });
-            } else {
-                table.style.display = 'none';
-                noRes.style.display = 'block';
-            }
-        }
-
-        async function refreshDashboard() {
-            const btn = document.getElementById('refreshBtn');
-            const icon = document.getElementById('spinIcon');
-            btn.disabled = true;
-            icon.classList.add('fa-spin');
-            await runAnalytics();
-            icon.classList.remove('fa-spin');
-            btn.disabled = false;
-            showToast();
-        }
-
-        function renderCharts(vouchers, inTax, outTax) {
-            const months = [], salesData = {};
-            const today = new Date();
-            for (let i = 5; i >= 0; i--) {
-                const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
-                const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
-                months.push(d.toLocaleString('default', { month: 'short' }));
-                salesData[key] = 0;
-            }
-            vouchers.forEach(v => {
-                if (v.type === 'Sales' && v.date) {
-                    const key = v.date.substring(0,7);
-                    salesData[key] = (salesData[key] || 0) + (v.amount || 0);
-                }
+            // 3. GROSS PROFIT (Sales - COGS)
+            // Sales = Total Credit in Sales Accounts
+            // COGS = Opening Stock + Purchase - Closing Stock
+            // SIMPLIFIED FOR DASHBOARD: Sales Vouchers Total - (Purchase Vouchers Total - Closing Stock Value)
+            let totalSales = 0, totalPurchase = 0;
+            dbData.vouchers.forEach(v => {
+                if(v.type === 'Sales') totalSales += v.amount;
+                if(v.type === 'Purchase') totalPurchase += v.amount;
             });
+            const closingStock = dbData.items.reduce((s, i) => s + ((i.current_stock||0) * (i.std_cost||0)), 0);
+            const profit = totalSales - (totalPurchase - closingStock); // Rough GP
+            const pEl = document.getElementById('grossProfit');
+            pEl.innerText = formatCurrency(profit);
+            pEl.style.color = profit >= 0 ? 'var(--success)' : 'var(--danger)';
 
-            if (window.salesChart instanceof Chart) window.salesChart.destroy();
-            
-            window.salesChart = new Chart(document.getElementById('salesChart'), {
+            // 4. GST LIABILITY
+            // Output Tax (Cr) - Input Tax (Dr)
+            let inputTax = 0, outputTax = 0;
+            const taxGrp = dbData.groups.find(g => g.name === 'Duties & Taxes');
+            if(taxGrp) {
+                dbData.ledgers.filter(l => l.group_id === taxGrp.id).forEach(l => {
+                    let bal = parseFloat(l.opening_balance) || 0;
+                    dbData.entries.filter(e => e.ledger_id === l.id).forEach(e => bal += (e.debit - e.credit));
+                    
+                    // Logic: Dr Balance = Input Asset, Cr Balance = Output Liability
+                    if(bal > 0) inputTax += bal; 
+                    else outputTax += Math.abs(bal);
+                });
+            }
+            const netTax = outputTax - inputTax;
+            const tEl = document.getElementById('gstPayable');
+            tEl.innerText = formatCurrency(Math.abs(netTax));
+            tEl.style.color = netTax > 0 ? 'var(--danger)' : 'var(--success)';
+            document.getElementById('gstTrend').innerHTML = netTax > 0 ? 
+                `<span style="color:var(--danger)">Payable to Govt</span>` : 
+                `<span style="color:var(--success)">Credit Available</span>`;
+
+            // Pass data to chart
+            window.taxData = { input: inputTax, output: outputTax };
+        }
+
+        function updateKPI(id, val, trendId) {
+            const el = document.getElementById(id);
+            el.innerText = formatCurrency(val);
+            if(val < 0 && trendId) {
+                el.style.color = 'var(--danger)';
+                document.getElementById(trendId).innerHTML = '<i class="fas fa-exclamation-triangle"></i> Negative Balance';
+                document.getElementById(trendId).classList.add('down');
+            }
+        }
+
+        function renderCharts() {
+            // SALES CHART (Last 6 Months)
+            const ctx = document.getElementById('salesChart').getContext('2d');
+            const months = [], data = [];
+            const today = new Date();
+            for(let i=5; i>=0; i--) {
+                const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
+                const k = d.toISOString().slice(0,7); // YYYY-MM
+                months.push(d.toLocaleString('default', {month:'short'}));
+                
+                // Sum Sales for this month
+                const monthlyTotal = dbData.vouchers
+                    .filter(v => v.type === 'Sales' && v.date.startsWith(k))
+                    .reduce((sum, v) => sum + v.amount, 0);
+                data.push(monthlyTotal);
+            }
+
+            new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: months,
                     datasets: [{
-                        label: 'Monthly Sales',
-                        data: months.map(m => {
-                            const key = today.getFullYear() + '-' + (today.getMonth() + 1 - months.indexOf(m)).toString().padStart(2,'0');
-                            return salesData[key] || 0;
-                        }),
+                        label: 'Sales',
+                        data: data,
                         borderColor: '#2563eb',
-                        backgroundColor: 'rgba(37,99,235,0.1)',
+                        backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.4,
                         fill: true,
-                        tension: 0.4
+                        pointRadius: 4
                     }]
                 },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, grid: { borderDash: [5,5] } }, x: { grid: { display: false } } }
+                }
             });
 
-            if (window.gstChart instanceof Chart) window.gstChart.destroy();
+            // TAX CHART
+            const ctx2 = document.getElementById('taxChart').getContext('2d');
+            new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Input Credit', 'Output Liability'],
+                    datasets: [{
+                        data: [window.taxData.input, window.taxData.output],
+                        backgroundColor: ['#10b981', '#ef4444'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '75%',
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        function renderLists() {
+            // RECENT TRANSACTIONS
+            const list = document.getElementById('recentTxnList');
+            const sorted = [...dbData.vouchers].sort((a,b) => (b.id - a.id)).slice(0, 10); // Last 10
             
-            const gstCanvas = document.getElementById('gstChart');
-            if (inTax + outTax === 0) {
-                const ctx = gstCanvas.getContext('2d');
-                ctx.clearRect(0, 0, gstCanvas.width, gstCanvas.height);
-            } else {
-                window.gstChart = new Chart(gstCanvas, {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['Input Credit', 'Output Liability'],
-                        datasets: [{ data: [inTax, outTax], backgroundColor: ['#10b981', '#ef4444'] }]
-                    },
-                    options: { responsive: true, cutout: '70%', plugins: { legend: { position: 'bottom' } } }
+            if(sorted.length === 0) list.innerHTML = '<div style="padding:20px; text-align:center; color:#94a3b8;">No transactions yet</div>';
+            else {
+                list.innerHTML = sorted.map(v => {
+                    // Find ledger name (Simplified logic assuming party_id or look up entries)
+                    // Since voucher object structure in db.js 3.6 might be simple header, we might need to fetch entry 0 ledger
+                    // For dashboard speed, let's assume we display voucher no and amount
+                    const isCredit = ['Sales', 'Receipt', 'Credit Note'].includes(v.type);
+                    const color = isCredit ? 'var(--success)' : 'var(--text-main)';
+                    const icon = isCredit ? 'fa-arrow-down' : 'fa-arrow-up';
+                    
+                    return `
+                    <div class="txn-item" onclick="window.location.href='voucher_entry.html?id=${v.id}&mode=view'">
+                        <div style="display:flex; gap:15px; align-items:center;">
+                            <div style="width:35px; height:35px; background:#f1f5f9; border-radius:50%; display:flex; align-items:center; justify-content:center; color:${color}">
+                                <i class="fas ${icon}"></i>
+                            </div>
+                            <div class="txn-info">
+                                <strong>${v.type} #${v.voucher_no}</strong>
+                                <span>${v.date} • ${v.narration || '-'}</span>
+                            </div>
+                        </div>
+                        <div class="txn-amt" style="color:${color}">${isCredit?'+':''} ${formatCurrency(v.amount)}</div>
+                    </div>`;
+                }).join('');
+            }
+
+            // ALERTS
+            const alerts = document.getElementById('alertList');
+            let alertHTML = '';
+            
+            // 1. Low Stock
+            const lowStock = dbData.items.filter(i => (i.current_stock||0) <= (i.reorder_level||5));
+            if(lowStock.length > 0) {
+                alertHTML += createAlert('Low Stock Warning', `${lowStock.length} items are below reorder level.`, 'fa-box-open');
+            }
+
+            // 2. Negative Cash
+            const cashEl = document.getElementById('cashBalance');
+            if(cashEl.innerText.includes('-')) {
+                alertHTML += createAlert('Negative Cash', 'Cash balance is negative. Please check entries.', 'fa-exclamation-triangle');
+            }
+
+            if(!alertHTML) alertHTML = '<div style="padding:20px; text-align:center; color:var(--success);"><i class="fas fa-check-circle"></i> Everything looks good!</div>';
+            alerts.innerHTML = alertHTML;
+        }
+
+        function createAlert(title, msg, icon) {
+            return `
+            <div class="alert-item">
+                <div class="alert-icon"><i class="fas ${icon}"></i></div>
+                <div class="alert-content">
+                    <h4>${title}</h4>
+                    <p>${msg}</p>
+                </div>
+            </div>`;
+        }
+
+        function performSearch() {
+            const q = document.getElementById('globalSearch').value.toLowerCase();
+            const resBox = document.getElementById('searchResults');
+            
+            if(q.length < 2) { resBox.style.display = 'none'; return; }
+
+            // Search Vouchers
+            const vRes = dbData.vouchers.filter(v => 
+                v.voucher_no.toLowerCase().includes(q) || 
+                v.amount.toString().includes(q)
+            ).slice(0, 5);
+
+            // Search Parties
+            const lRes = dbData.ledgers.filter(l => l.name.toLowerCase().includes(q)).slice(0, 5);
+
+            let html = '';
+            if(vRes.length) {
+                html += `<div style="padding:8px 15px; font-size:11px; font-weight:700; color:#94a3b8; background:#f8fafc;">VOUCHERS</div>`;
+                vRes.forEach(v => {
+                    html += `<div style="padding:10px 15px; cursor:pointer; border-bottom:1px solid #eee;" onclick="window.location.href='voucher_entry.html?id=${v.id}&mode=view'">
+                        <div style="font-weight:600;">${v.type} #${v.voucher_no}</div>
+                        <div style="font-size:12px; color:#64748b;">${v.date} • ₹${v.amount}</div>
+                    </div>`;
                 });
             }
-        }
 
-        function fmt(num) {
-            return '₹' + (num || 0).toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-        }
-
-        function showToast() {
-            const t = document.getElementById('toast');
-            t.style.display = 'block';
-            setTimeout(() => t.style.display = 'none', 2000);
-        }
-
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('./sw.js').catch(() => {});
-        }
-        
-        window.addEventListener('backup-status', (e) => {
-            const status = e.detail;
-            const div = document.getElementById('syncStatus');
-            const icon = document.getElementById('syncIcon');
-            const text = document.getElementById('syncText');
-
-            if (status === 'success') {
-                div.style.background = '#dcfce7'; 
-                div.style.color = '#10b981'; 
-                text.innerText = "Cloud: Synced";
-                icon.className = "fas fa-cloud-upload-alt";
-            } else if (status === 'local_ok') {
-                text.innerText = "Local: Saved";
-            } else {
-                div.style.background = '#fee2e2'; 
-                div.style.color = '#ef4444'; 
-                text.innerText = "Sync Failed";
-                icon.className = "fas fa-exclamation-triangle";
+            if(lRes.length) {
+                html += `<div style="padding:8px 15px; font-size:11px; font-weight:700; color:#94a3b8; background:#f8fafc;">PARTIES / LEDGERS</div>`;
+                lRes.forEach(l => {
+                    html += `<div style="padding:10px 15px; cursor:pointer; border-bottom:1px solid #eee;" onclick="window.location.href='reports.html?type=Ledger'">
+                        <div style="font-weight:600;">${l.name}</div>
+                    </div>`;
+                });
             }
+
+            if(!html) html = '<div style="padding:15px; text-align:center; color:#94a3b8;">No results found</div>';
+            
+            resBox.innerHTML = html;
+            resBox.style.display = 'block';
+        }
+
+        // Hide search on click outside
+        document.addEventListener('click', (e) => {
+            if(!e.target.closest('.search-container')) document.getElementById('searchResults').style.display = 'none';
         });
+
+        function formatCurrency(num) {
+            return '₹' + (num || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
     </script>
 </body>
 </html>
