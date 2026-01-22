@@ -35,6 +35,21 @@
         #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 4.5s; }
         @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 80px; opacity: 1;} }
         @keyframes fadeout { from {bottom: 80px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+
+        /* --- FIX: INVENTORY ROW LAYOUT --- */
+        /* This overrides style.css for Item rows to give space to Qty/Rate */
+        .entry-row.inventory-row {
+            /* 60px Label | 2fr Item Name | 160px Qty-Rate | 140px Amount | 40px Del */
+            grid-template-columns: 60px 2fr 160px 140px 40px !important;
+        }
+
+        /* Mobile Adjustment for Inventory Rows */
+        @media (max-width: 768px) {
+            .entry-row.inventory-row {
+                /* On mobile, we keep the card layout, CSS handles wrapping */
+                grid-template-columns: 60px 1fr 40px !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -170,11 +185,16 @@
             rowDataMeta = {};
 
             if(!isViewMode) {
-                if(isInventoryMode) addRow('Party');
-                else { addRow(mode==='Receipt'?'Cr':'Dr'); addRow(mode==='Receipt'?'Dr':'Cr'); }
+                if(isInventoryMode) {
+                    addRow('Party'); // Add Party Row
+                    addRow('Item');  // FIX: Auto-add first Item Row
+                } else { 
+                    addRow(mode==='Receipt'?'Cr':'Dr'); 
+                    addRow(mode==='Receipt'?'Dr':'Cr'); 
+                }
             }
 
-            // FIX 2: Force focus on Date after rows are added (Overrides row auto-focus)
+            // FIX 2: Force focus on Date after rows are added
             setTimeout(() => document.getElementById('vDate').focus(), 100);
         }
 
@@ -182,7 +202,9 @@
         function addRow(type='Dr', data=null) {
             const idx = document.querySelectorAll('.entry-row').length;
             const div = document.createElement('div');
-            div.className = 'entry-row';
+            
+            // Default Class
+            div.className = 'entry-row'; 
             div.dataset.index = idx;
 
             const lVal = data ? (data.ledger || '') : '';
@@ -192,6 +214,10 @@
             const aVal = data ? (data.amount || '') : '';
 
             if(isInventoryMode && idx > 0) { // ITEM ROW
+                
+                // FIX: Add 'inventory-row' class to change column layout
+                div.classList.add('inventory-row');
+
                 div.innerHTML = `
                     <div style="grid-column:1; padding-top:12px; font-weight:bold; color:#64748b;">Item</div>
                     <div class="c-ledger">
