@@ -8,62 +8,50 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
     <style>
-        /* Extra Styles for New Features */
+        /* Styles for New Features */
         .bal-ind { font-size: 10px; color: #64748b; font-style: italic; margin-top: 2px; display: block; height: 15px; }
         .bal-ind.dr { color: var(--red); }
         .bal-ind.cr { color: var(--green); }
         .bal-ind.loading::after { content: " ⏳"; animation: spin 1s infinite; }
-
+        
         .row-narr { font-size: 11px; color: #64748b; border: none; border-bottom: 1px dashed #ccc; width: 100%; background: transparent; margin-top: 2px; }
         .row-narr:focus { border-bottom: 1px solid var(--primary); }
 
-        /* Inventory Row Specifics */
         .qty-input, .rate-input { width: 100%; border: none; text-align: right; font-weight: 600; font-size: 13px; }
         
-        /* C/D Note Fields */
+        /* POINT 2: Stock Error Style */
+        .qty-input.error { color: red; border-bottom: 2px solid red; background: #fff0f0; } 
+
         .extra-fields { display: none; gap: 10px; padding: 5px 10px; background: rgba(0,0,0,0.02); border-bottom: 1px solid var(--border); }
         .extra-fields.active { display: flex; }
         
-        /* Popups */
         .details-popup { position: absolute; background: #fff; border: 1px solid var(--primary); box-shadow: 0 10px 25px rgba(0,0,0,0.2); z-index: 500; padding: 10px; width: 300px; border-radius: 4px; display: none; }
         .details-popup h4 { margin: 0 0 10px 0; font-size: 12px; background: var(--primary); color: white; padding: 5px; margin: -10px -10px 10px -10px; }
         .det-row { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 12px; }
         .det-row input, .det-row select { width: 60%; padding: 4px; border: 1px solid #ccc; }
+
+        /* POINT 6: Undo Toast */
+        #toast { visibility: hidden; min-width: 250px; margin-left: -125px; background-color: #1e293b; color: #fff; text-align: center; border-radius: 4px; padding: 16px; position: fixed; z-index: 3000; left: 50%; bottom: 80px; font-size: 14px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 4.5s; }
+        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 80px; opacity: 1;} }
+        @keyframes fadeout { from {bottom: 80px; opacity: 1;} to {bottom: 0; opacity: 0;} }
     </style>
 </head>
 <body>
 
     <div class="sidebar">
         <div class="brand">ARTH</div>
-        <a href="#" onclick="setMode('Contra')" class="side-btn" id="btnContra">
-            <span class="btn-text">Contra</span> <span class="key-tag">F4</span>
-        </a>
-        <a href="#" onclick="setMode('Payment')" class="side-btn active" id="btnPayment">
-            <span class="btn-text">Payment</span> <span class="key-tag">F5</span>
-        </a>
-        <a href="#" onclick="setMode('Receipt')" class="side-btn" id="btnReceipt">
-            <span class="btn-text">Receipt</span> <span class="key-tag">F6</span>
-        </a>
-        <a href="#" onclick="setMode('Journal')" class="side-btn" id="btnJournal">
-            <span class="btn-text">Journal</span> <span class="key-tag">F7</span>
-        </a>
+        <a href="#" onclick="setMode('Contra')" class="side-btn" id="btnContra"><i class="fas fa-exchange-alt"></i> <span class="btn-text">Contra</span> <span class="key-tag">F4</span></a>
+        <a href="#" onclick="setMode('Payment')" class="side-btn active" id="btnPayment"><i class="fas fa-money-bill-wave"></i> <span class="btn-text">Payment</span> <span class="key-tag">F5</span></a>
+        <a href="#" onclick="setMode('Receipt')" class="side-btn" id="btnReceipt"><i class="fas fa-hand-holding-usd"></i> <span class="btn-text">Receipt</span> <span class="key-tag">F6</span></a>
+        <a href="#" onclick="setMode('Journal')" class="side-btn" id="btnJournal"><i class="fas fa-book"></i> <span class="btn-text">Journal</span> <span class="key-tag">F7</span></a>
         <hr style="border-color:rgba(255,255,255,0.1); margin:5px 0;">
-        <a href="#" onclick="setMode('Sales')" class="side-btn" id="btnSales">
-            <span class="btn-text">Sales</span> <span class="key-tag">F8</span>
-        </a>
-        <a href="#" onclick="setMode('Purchase')" class="side-btn" id="btnPurchase">
-            <span class="btn-text">Purchase</span> <span class="key-tag">F9</span>
-        </a>
-        <a href="#" onclick="openF10Modal()" class="side-btn" style="color:var(--accent);">
-            <span class="btn-text">Other Vouchers</span> <span class="key-tag">F10</span>
-        </a>
+        <a href="#" onclick="setMode('Sales')" class="side-btn" id="btnSales"><i class="fas fa-shopping-cart"></i> <span class="btn-text">Sales</span> <span class="key-tag">F8</span></a>
+        <a href="#" onclick="setMode('Purchase')" class="side-btn" id="btnPurchase"><i class="fas fa-shopping-bag"></i> <span class="btn-text">Purchase</span> <span class="key-tag">F9</span></a>
+        <a href="#" onclick="openF10Modal()" class="side-btn" style="color:var(--accent);"><i class="fas fa-ellipsis-h"></i> <span class="btn-text">Other Vouchers</span> <span class="key-tag">F10</span></a>
         <div style="margin-top:auto;">
-            <a href="#" onclick="setMode('Credit Note')" class="side-btn" id="btnCreditNote" style="font-size:11px;">
-                <span class="btn-text">Credit Note</span> <span class="key-tag">^F8</span>
-            </a>
-            <a href="#" onclick="setMode('Debit Note')" class="side-btn" id="btnDebitNote" style="font-size:11px;">
-                <span class="btn-text">Debit Note</span> <span class="key-tag">^F9</span>
-            </a>
+            <a href="#" onclick="setMode('Credit Note')" class="side-btn" id="btnCreditNote" style="font-size:11px;"><i class="fas fa-file-invoice-dollar"></i> <span class="btn-text">Credit Note</span> <span class="key-tag">^F8</span></a>
+            <a href="#" onclick="setMode('Debit Note')" class="side-btn" id="btnDebitNote" style="font-size:11px;"><i class="fas fa-file-invoice"></i> <span class="btn-text">Debit Note</span> <span class="key-tag">^F9</span></a>
         </div>
     </div>
 
@@ -77,7 +65,7 @@
         </div>
 
         <div class="extra-fields" id="cnDnFields">
-            <input type="text" id="origInvNo" placeholder="Orig. Invoice No" style="padding:5px; font-size:12px; border:1px solid #ccc;">
+            <input type="text" id="origInvNo" placeholder="Orig. Invoice No (Blur to Fetch)" style="padding:5px; font-size:12px; border:1px solid #ccc;">
             <input type="date" id="origInvDate" style="padding:5px; font-size:12px; border:1px solid #ccc;">
             <input type="text" id="returnReason" placeholder="Reason (e.g. Damaged)" style="padding:5px; font-size:12px; border:1px solid #ccc; flex:1;">
         </div>
@@ -94,247 +82,407 @@
                 <div style="font-size:18px; font-weight:bold; font-family:'JetBrains Mono';" id="lblTotal">0.00</div>
                 <div id="diffAlert" style="color:#ef4444; font-size:12px; display:none;">Diff: <span id="lblDiff">0.00</span></div>
             </div>
-            <button onclick="saveVoucher()" style="background:var(--green); color:white; border:none; padding:10px 25px; font-weight:bold; border-radius:4px; margin-left:20px;">SAVE</button>
+            <button id="btnSave" onclick="saveVoucher()" style="background:var(--green); color:white; border:none; padding:10px 25px; font-weight:bold; border-radius:4px; margin-left:20px;">SAVE</button>
         </div>
     </div>
 
-    <div id="bankPopup" class="details-popup">
-        <h4>Bank Allocations</h4>
-        <div class="det-row"><span>Trans Type:</span> <select><option>Cheque</option><option>e-Fund Transfer</option><option>DD</option><option>UPI</option></select></div>
-        <div class="det-row"><span>Inst. No:</span> <input type="text" placeholder="Chq/Ref No/UTR"></div>
-        <div class="det-row"><span>Inst. Date:</span> <input type="date"></div>
-        <div style="text-align:right;"><button onclick="saveMeta('bank')" style="background:var(--primary); color:white; border:none; padding:5px 10px; border-radius:3px; font-size:11px;">Done</button></div>
-    </div>
-
-    <div id="billPopup" class="details-popup">
-        <h4>Bill-wise Details</h4>
-        <div class="det-row"><span>Ref Type:</span> <select><option>New Ref</option><option>Agst Ref</option><option>Advance</option><option>On Account</option></select></div>
-        <div class="det-row"><span>Ref Name:</span> <input type="text" placeholder="Bill No"></div>
-        <div class="det-row"><span>Due Date:</span> <input type="date"></div>
-        <div class="det-row"><span>Amount:</span> <input type="number" id="billAmt"></div>
-        <div style="text-align:right;"><button onclick="saveMeta('bill')" style="background:var(--primary); color:white; border:none; padding:5px 10px; border-radius:3px; font-size:11px;">Done</button></div>
-    </div>
-
-    <div class="modal-overlay" id="f10Modal" onclick="closeF10Modal()">
-        <div class="center-modal" onclick="event.stopPropagation()">
-            <h3 style="margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:10px;">Select Voucher Type</h3>
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; max-height:400px; overflow-y:auto;">
-                <div>
-                    <div style="font-weight:bold; color:#64748b; font-size:12px;">Accounting</div>
-                    <div class="v-list-item" onclick="setMode('Contra')"><span>Contra</span> <span>F4</span></div>
-                    <div class="v-list-item" onclick="setMode('Payment')"><span>Payment</span> <span>F5</span></div>
-                    <div class="v-list-item" onclick="setMode('Receipt')"><span>Receipt</span> <span>F6</span></div>
-                    <div class="v-list-item" onclick="setMode('Journal')"><span>Journal</span> <span>F7</span></div>
-                    <div class="v-list-item" onclick="setMode('Credit Note')"><span>Credit Note</span> <span>^F8</span></div>
-                    <div class="v-list-item" onclick="setMode('Debit Note')"><span>Debit Note</span> <span>^F9</span></div>
-                </div>
-                <div>
-                    <div style="font-weight:bold; color:#64748b; font-size:12px;">Inventory</div>
-                    <div class="v-list-item" onclick="setMode('Sales')"><span>Sales</span> <span>F8</span></div>
-                    <div class="v-list-item" onclick="setMode('Purchase')"><span>Purchase</span> <span>F9</span></div>
-                </div>
-            </div>
-            <button onclick="closeF10Modal()" style="width:100%; margin-top:10px; padding:8px;">Close</button>
-        </div>
-    </div>
-
-    <div class="calc-modal" id="calcModal">
-        <div class="calc-header" id="calcHeader">Arth Calc <span onclick="toggleCalc()">✕</span></div>
-        <div class="calc-body">
-            <input type="text" class="calc-display" id="cDisp" readonly>
-            <div class="calc-grid">
-                <button class="c-btn" onclick="cIn('7')">7</button><button class="c-btn" onclick="cIn('8')">8</button><button class="c-btn" onclick="cIn('9')">9</button><button class="c-btn" onclick="cIn('/')">/</button>
-                <button class="c-btn" onclick="cIn('4')">4</button><button class="c-btn" onclick="cIn('5')">5</button><button class="c-btn" onclick="cIn('6')">6</button><button class="c-btn" onclick="cIn('*')">*</button>
-                <button class="c-btn" onclick="cIn('1')">1</button><button class="c-btn" onclick="cIn('2')">2</button><button class="c-btn" onclick="cIn('3')">3</button><button class="c-btn" onclick="cIn('-')">-</button>
-                <button class="c-btn" onclick="cIn('0')">0</button><button class="c-btn" onclick="cIn('.')">.</button><button class="c-btn eq" onclick="cCalc()">Enter</button>
-            </div>
-        </div>
+    <div id="toast">
+        <span>✅ Voucher Saved!</span>
+        <button onclick="undoLastSave()" style="background:transparent; border:1px solid #fff; color:white; padding:4px 10px; cursor:pointer; font-size:12px; border-radius:4px;">UNDO (Ctrl+Z)</button>
     </div>
 
     <datalist id="ledgerList"></datalist>
-    <datalist id="itemList"></datalist> <script src="db.js"></script>
-    <script>
-        let currentMode = 'Payment';
-        let allLedgers = [];
-        let allItems = []; // For Inventory Mode
-        let rowDataMeta = {}; 
-        let currentRowIndex = -1; 
-        let isInventoryMode = false;
+    <datalist id="itemList"></datalist>
 
-        // Themes
-        const THEMES = {
-            'Contra': '#f8fafc', 'Payment': '#fffbeb', 'Receipt': '#f0fdf4', 
-            'Journal': '#eff6ff', 'Credit Note': '#fff1f2', 'Debit Note': '#ecfeff',
-            'Sales': '#eff6ff', 'Purchase': '#fffbeb'
-        };
+    <div id="bankPopup" class="details-popup">
+        <h4>Bank Allocations</h4>
+        <div class="det-row"><span>Trans:</span> <select><option>Cheque</option><option>UPI</option></select></div>
+        <div class="det-row"><span>No:</span> <input type="text"></div>
+        <div class="det-row"><span>Date:</span> <input type="date"></div>
+        <div style="text-align:right;"><button onclick="saveMeta('bank')">Done</button></div>
+    </div>
+    <div id="billPopup" class="details-popup">
+        <h4>Bill Details</h4>
+        <div class="det-row"><span>Ref:</span> <select><option>New Ref</option><option>Agst Ref</option></select></div>
+        <div class="det-row"><span>Name:</span> <input type="text"></div>
+        <div class="det-row"><span>Amt:</span> <input type="number"></div>
+        <div style="text-align:right;"><button onclick="saveMeta('bill')">Done</button></div>
+    </div>
+
+    <div class="modal-overlay" id="f10Modal" onclick="closeF10Modal()"><div class="center-modal" onclick="event.stopPropagation()"><h3>Select Voucher</h3><div id="f10List"></div><button onclick="closeF10Modal()">Close</button></div></div>
+    <div class="calc-modal" id="calcModal"><div class="calc-header" id="calcHeader">Arth Calc <span onclick="toggleCalc()">✕</span></div><div class="calc-body"><input type="text" class="calc-display" id="cDisp" readonly><div class="calc-grid"><button class="c-btn" onclick="cIn('7')">7</button><button class="c-btn" onclick="cIn('8')">8</button><button class="c-btn" onclick="cIn('9')">9</button><button class="c-btn" onclick="cIn('/')">/</button><button class="c-btn" onclick="cIn('4')">4</button><button class="c-btn" onclick="cIn('5')">5</button><button class="c-btn" onclick="cIn('6')">6</button><button class="c-btn" onclick="cIn('*')">*</button><button class="c-btn" onclick="cIn('1')">1</button><button class="c-btn" onclick="cIn('2')">2</button><button class="c-btn" onclick="cIn('3')">3</button><button class="c-btn" onclick="cIn('-')">-</button><button class="c-btn" onclick="cIn('0')">0</button><button class="c-btn" onclick="cIn('.')">.</button><button class="c-btn eq" onclick="cCalc()">Enter</button></div></div></div>
+
+    <script src="db.js"></script>
+    <script>
+        let currentMode = 'Payment', allLedgers = [], allItems = [], rowDataMeta = {}, currentRowIndex = -1, isInventoryMode = false;
+        let lastSavedId = null; // Point 6: Undo
+        let isViewMode = false; // Point 8: View
+
+        const THEMES = { 'Contra':'#f8fafc', 'Payment':'#fffbeb', 'Receipt':'#f0fdf4', 'Journal':'#eff6ff', 'Credit Note':'#fff1f2', 'Debit Note':'#ecfeff', 'Sales':'#eff6ff', 'Purchase':'#fffbeb' };
 
         window.onload = async () => {
-            try {
-                await DB.init();
-                allLedgers = await DB.getAll('ledgers');
-                allItems = await DB.getAll('items'); // Fetch items too
-                
-                // Populate Item Datalist
-                const il = document.getElementById('itemList');
-                il.innerHTML = allItems.map(i => `<option value="${i.name}">`).join('');
+            await DB.init();
+            allLedgers = await DB.getAll('ledgers');
+            allItems = await DB.getAll('items');
+            
+            document.getElementById('ledgerList').innerHTML = allLedgers.map(l => `<option value="${l.name}">`).join('');
+            document.getElementById('itemList').innerHTML = allItems.map(i => `<option value="${i.name}">`).join('');
+            
+            // Populate F10 Menu
+            const f10HTML = `<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;"><div><b>Accounting</b><br><div class="v-list-item" onclick="setMode('Payment')">Payment F5</div><div class="v-list-item" onclick="setMode('Receipt')">Receipt F6</div><div class="v-list-item" onclick="setMode('Contra')">Contra F4</div><div class="v-list-item" onclick="setMode('Journal')">Journal F7</div></div><div><b>Inventory</b><br><div class="v-list-item" onclick="setMode('Sales')">Sales F8</div><div class="v-list-item" onclick="setMode('Purchase')">Purchase F9</div></div></div>`;
+            document.getElementById('f10List').innerHTML = f10HTML;
 
-                const t = new Date();
-                document.getElementById('vDate').value = `${String(t.getDate()).padStart(2,'0')}${String(t.getMonth()+1).padStart(2,'0')}${String(t.getFullYear()).slice(-2)}`;
-                
-                setMode('Payment');
-                document.getElementById('vDate').focus();
-            } catch(e) { console.error("DB Error", e); }
+            // Point 8: View Mode Check
+            const urlParams = new URLSearchParams(window.location.search);
+            const viewId = urlParams.get('id');
+            const modeParam = urlParams.get('mode');
+
+            const t = new Date();
+            document.getElementById('vDate').value = `${String(t.getDate()).padStart(2,'0')}${String(t.getMonth()+1).padStart(2,'0')}${String(t.getFullYear()).slice(-2)}`;
+
+            setMode('Payment');
+
+            if(viewId) await loadVoucherForView(viewId, modeParam === 'view');
+            else document.getElementById('vDate').focus();
+
+            // Point 3: CN/DN Auto Fill
+            document.getElementById('origInvNo').addEventListener('blur', autoFillFromOriginal);
         };
 
-        // --- 1. MODE & LAYOUT ---
         async function setMode(mode) {
             currentMode = mode;
             isInventoryMode = ['Sales', 'Purchase'].includes(mode);
-            
-            // UI Updates
             document.querySelector('.main-area').style.background = THEMES[mode] || '#fff';
             document.getElementById('lblMode').innerText = mode;
-            document.querySelectorAll('.side-btn').forEach(b => b.classList.remove('active'));
             
-            // Highlight Button
-            if(mode==='Credit Note') document.getElementById('btnCreditNote').classList.add('active');
-            else if(mode==='Debit Note') document.getElementById('btnDebitNote').classList.add('active');
-            else if(document.getElementById(`btn${mode}`)) document.getElementById(`btn${mode}`).classList.add('active');
+            document.querySelectorAll('.side-btn').forEach(b => b.classList.remove('active'));
+            const btnId = `btn${mode.replace(/\s/g,'')}`;
+            if(document.getElementById(btnId)) document.getElementById(btnId).classList.add('active');
 
-            // C/D Note Extra Fields
             const extra = document.getElementById('cnDnFields');
-            if(mode === 'Credit Note' || mode === 'Debit Note') extra.classList.add('active');
-            else extra.classList.remove('active');
+            if(mode.includes('Note')) extra.classList.add('active'); else extra.classList.remove('active');
 
-            // Numbering
             const num = await DB.getNextVoucherNo(mode);
             const prefix = mode.slice(0,4).toUpperCase();
             document.getElementById('vNo').value = `${prefix}-${num}`;
 
-            // Reset
             document.getElementById('gridRows').innerHTML = '';
             rowDataMeta = {};
 
-            // Initial Rows Logic
-            if(isInventoryMode) {
-                // For Sales/Purchase: 1st Row is Party (Ledger), Subsequent are Items
-                addRow('Party'); 
-            } else {
-                if(mode==='Payment') { addRow('Dr'); addRow('Cr'); }
-                else if(mode==='Receipt') { addRow('Cr'); addRow('Dr'); }
-                else { addRow('Dr'); addRow('Cr'); }
+            if(!isViewMode) {
+                if(isInventoryMode) addRow('Party');
+                else { addRow(mode==='Receipt'?'Cr':'Dr'); addRow(mode==='Receipt'?'Dr':'Cr'); }
             }
-            closeF10Modal();
+
+            // FIX 2: Force focus on Date after rows are added (Overrides row auto-focus)
+            setTimeout(() => document.getElementById('vDate').focus(), 100);
         }
 
-        // --- 2. ROW RENDER LOGIC ---
-        function addRow(type='Dr') {
-            const index = document.querySelectorAll('.entry-row').length;
+        // --- ROW LOGIC ---
+        function addRow(type='Dr', data=null) {
+            const idx = document.querySelectorAll('.entry-row').length;
             const div = document.createElement('div');
             div.className = 'entry-row';
-            div.dataset.index = index;
+            div.dataset.index = idx;
 
-            // INVENTORY ROW (If Sales/Purchase and NOT the first row which is Party)
-            if(isInventoryMode && index > 0) {
+            const lVal = data ? (data.ledger || '') : '';
+            const iVal = data ? (data.item || '') : '';
+            const qVal = data ? (data.qty || '') : '';
+            const rVal = data ? (data.rate || '') : '';
+            const aVal = data ? (data.amount || '') : '';
+
+            if(isInventoryMode && idx > 0) { // ITEM ROW
                 div.innerHTML = `
-                    <div style="grid-column: 1; font-weight:bold; color:#64748b; padding-top:12px;">Item</div>
+                    <div style="grid-column:1; padding-top:12px; font-weight:bold; color:#64748b;">Item</div>
                     <div class="c-ledger">
-                        <input type="text" list="itemList" class="r-item focusable" placeholder="Select Item" 
-                               oninput="handleItemInput(this)">
+                        <input type="text" list="itemList" class="r-item focusable" placeholder="Select Item" value="${iVal}" oninput="checkStock(this); calcRow(this)">
                         <span class="bal-ind"></span>
                     </div>
-                    <div style="grid-column: 3; display:flex; gap:5px;">
-                        <input type="number" class="qty-input focusable" placeholder="Qty" oninput="calcRowAmt(this)">
-                        <input type="number" class="rate-input focusable" placeholder="Rate" oninput="calcRowAmt(this)">
+                    <div style="grid-column:3; display:flex; gap:5px;">
+                        <input type="number" class="qty-input focusable" placeholder="Qty" value="${qVal}" oninput="checkStock(this); calcRow(this)">
+                        <input type="number" class="rate-input focusable" placeholder="Rate" value="${rVal}" oninput="calcRow(this)">
                     </div>
-                    <div class="c-amt">
-                        <input type="number" class="amt-input focusable" placeholder="0.00" readonly>
-                    </div>
-                    <div class="c-del"><i class="fas fa-times" style="color:var(--red);" onclick="deleteRow(this)"></i></div>
+                    <div class="c-amt"><input type="number" class="amt-input" value="${aVal}" readonly></div>
+                    <div class="c-del"><i class="fas fa-times" style="color:var(--red);" onclick="delRow(this)"></i></div>
                 `;
-            } 
-            // ACCOUNTING ROW
-            else {
+            } else { // LEDGER ROW
                 div.innerHTML = `
-                    <div class="c-type">
-                        <select class="r-type focusable" onchange="handleTypeChange(this)">
-                            <option value="Dr" ${type==='Dr' || type==='Party'?'selected':''}>Dr</option>
-                            <option value="Cr" ${type==='Cr'?'selected':''}>Cr</option>
-                        </select>
-                    </div>
+                    <div class="c-type"><select class="r-type focusable"><option value="Dr" ${type==='Dr'?'selected':''}>Dr</option><option value="Cr" ${type==='Cr'?'selected':''}>Cr</option></select></div>
                     <div class="c-ledger">
-                        <input type="text" list="ledgerList" class="r-ledger focusable" placeholder="Select Ledger" 
-                               onfocus="filterLedgers(this)" oninput="handleLedgerInput(this, ${index})" onblur="checkPopupTriggers(this, ${index})">
-                        <span class="bal-ind" id="bal-${index}"></span>
-                        <input type="text" class="row-narr" placeholder="Narration for this line...">
+                        <input type="text" list="ledgerList" class="r-ledger focusable" placeholder="Select Ledger" value="${lVal}" oninput="fetchBal(this, ${idx})" onblur="checkPopups(this, ${idx})">
+                        <span class="bal-ind" id="bal-${idx}"></span>
+                        <input type="text" class="row-narr" placeholder="Narration...">
                     </div>
-                    <div class="c-hist"><i class="fas fa-history" style="color:#cbd5e1;"></i></div>
-                    <div class="c-amt">
-                        <input type="number" class="amt-input focusable" placeholder="0.00" 
-                               onfocus="handleAmtFocus(this)" oninput="calcTotals()">
-                    </div>
-                    <div class="c-del"><i class="fas fa-times" style="color:var(--red);" onclick="deleteRow(this)"></i></div>
+                    <div class="c-hist"><i class="fas fa-history"></i></div>
+                    <div class="c-amt"><input type="number" class="amt-input focusable" value="${aVal}" oninput="calcTotals()"></div>
+                    <div class="c-del"><i class="fas fa-times" style="color:var(--red);" onclick="delRow(this)"></i></div>
                 `;
             }
-            
             document.getElementById('gridRows').appendChild(div);
-            // Auto Focus
-            if(index > 0) setTimeout(() => div.querySelector('input').focus(), 50);
+            if(!data && idx > 0) setTimeout(() => div.querySelector('input').focus(), 50);
         }
 
-        function deleteRow(icon) {
-            if(document.querySelectorAll('.entry-row').length > 1) {
-                icon.closest('.entry-row').remove();
+        // --- POINT 1: GST AUTO CALC ---
+        function calculateGST() {
+            if(!isInventoryMode) return;
+            let taxable = 0;
+            document.querySelectorAll('.r-item').forEach(i => {
+                const row = i.closest('.entry-row');
+                taxable += parseFloat(row.querySelector('.amt-input').value) || 0;
+            });
+
+            if(taxable > 0) {
+                // Determine Tax Ledgers (Hardcoded 18% for demo)
+                const taxes = currentMode==='Sales' ? ['Output CGST', 'Output SGST'] : ['Input CGST', 'Input SGST'];
+                taxes.forEach(taxName => {
+                    const amt = (taxable * 0.09).toFixed(2); // 9% each
+                    let found = false;
+                    document.querySelectorAll('.r-ledger').forEach(l => {
+                        if(l.value === taxName) {
+                            found = true;
+                            l.closest('.entry-row').querySelector('.amt-input').value = amt;
+                        }
+                    });
+                    if(!found) addRow(currentMode==='Sales'?'Cr':'Dr', { ledger: taxName, amount: amt });
+                });
+            }
+        }
+
+        // --- POINT 2: STOCK CHECK ---
+        async function checkStock(input) {
+            if(currentMode !== 'Sales') return;
+            const row = input.closest('.entry-row');
+            const iName = row.querySelector('.r-item').value;
+            const qtyInput = row.querySelector('.qty-input');
+            
+            if(iName) {
+                const item = allItems.find(i => i.name === iName);
+                if(item) {
+                    const stock = await DB.getItemStock(item.id);
+                    const qty = parseFloat(qtyInput.value) || 0;
+                    row.querySelector('.bal-ind').innerHTML = `Stock: ${stock} ${qty>stock ? '<b style="color:red">LOW</b>':''}`;
+                    if(qty > stock) qtyInput.classList.add('error'); else qtyInput.classList.remove('error');
+                }
+            }
+        }
+
+        function calcRow(input) {
+            const row = input.closest('.entry-row');
+            const q = parseFloat(row.querySelector('.qty-input').value) || 0;
+            const r = parseFloat(row.querySelector('.rate-input').value) || 0;
+            row.querySelector('.amt-input').value = (q * r).toFixed(2);
+            calcTotals(); // Trigger GST
+        }
+
+        function calcTotals() {
+            if(isInventoryMode) calculateGST();
+            let dr=0, cr=0;
+            document.querySelectorAll('.entry-row').forEach(row => {
+                const amt = parseFloat(row.querySelector('.amt-input').value) || 0;
+                if(row.querySelector('.r-item')) {
+                    if(currentMode==='Sales') cr+=amt; else dr+=amt;
+                } else {
+                    const type = row.querySelector('.r-type')?.value;
+                    if(type==='Dr') dr+=amt; else cr+=amt;
+                }
+            });
+            const diff = Math.abs(dr-cr);
+            document.getElementById('lblTotal').innerText = Math.max(dr,cr).toFixed(2);
+            document.getElementById('lblTotal').dataset.dr = dr;
+            document.getElementById('lblTotal').dataset.cr = cr;
+            document.getElementById('lblDiff').innerText = diff.toFixed(2);
+            document.getElementById('diffAlert').style.display = diff > 0.05 ? 'block' : 'none';
+        }
+
+        // --- POINT 3: CN/DN AUTO FILL ---
+        async function autoFillFromOriginal() {
+            const vNo = this.value;
+            if(!vNo) return;
+            const v = await DB.getVoucherByNo(vNo);
+            if(v) {
+                document.getElementById('origInvDate').value = v.date;
+                // Fetch Items (Simplification: In real app, loop fetchEntries)
+                const entries = await DB.getEntriesByVoucherId(v.id);
+                document.getElementById('gridRows').innerHTML = ''; // Clear
+                
+                // Add Party Row (First)
+                const party = entries.find(e => !e.meta_data || !JSON.parse(e.meta_data).item_id);
+                const partyL = allLedgers.find(l => l.id === party?.ledger_id);
+                if(partyL) addRow('Dr', { ledger: partyL.name }); // Assumption for structure
+
+                // Add Items
+                entries.forEach(e => {
+                    if(e.meta_data) {
+                        const meta = JSON.parse(e.meta_data);
+                        if(meta.item_id) {
+                            const item = allItems.find(i => i.id === meta.item_id);
+                            if(item) addRow('Dr', { item: item.name, qty: meta.qty, rate: meta.rate, amount: (meta.qty*meta.rate).toFixed(2) });
+                        }
+                    }
+                });
                 calcTotals();
             }
         }
 
-        // --- 3. INPUT HANDLERS ---
-        
-        // Ledger Balance with Spinner
-        let debounceTimer;
-        function handleLedgerInput(input, idx) {
-            const balSpan = document.getElementById(`bal-${idx}`);
-            balSpan.innerText = "Fetching...";
-            balSpan.classList.add('loading');
-            
-            clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(async () => {
-                const name = input.value;
-                const ledger = allLedgers.find(l => l.name === name);
-                balSpan.classList.remove('loading');
+        // --- POINT 5: DUPLICATE ROW (Alt+2) ---
+        function duplicateRow() {
+            const activeRow = document.activeElement.closest('.entry-row');
+            if(activeRow) {
+                const clone = activeRow.cloneNode(true);
+                // Clear IDs to avoid conflict
+                clone.querySelectorAll('input').forEach(i => i.value = activeRow.querySelector(`.${i.className.split(' ')[0]}`).value); 
+                document.getElementById('gridRows').insertBefore(clone, activeRow.nextSibling);
+                calcTotals();
+            }
+        }
+
+        // --- POINT 6 & 7: SAVE & UNDO ---
+        async function saveVoucher() {
+            const btn = document.getElementById('btnSave');
+            btn.innerHTML = "Saving... ⏳"; btn.disabled = true;
+
+            calcTotals();
+            if(parseFloat(document.getElementById('lblDiff').innerText) > 0.05) {
+                alert("Mismatch!"); btn.innerHTML = "SAVE"; btn.disabled = false; return;
+            }
+
+            // POINT 2: BLOCK ON LOW STOCK
+            let stockError = false;
+            if(currentMode === 'Sales') {
+                document.querySelectorAll('.qty-input').forEach(q => {
+                    if(q.classList.contains('error')) stockError = true;
+                });
+            }
+            if(stockError) {
+                alert("Cannot Save: Fix Low Stock Errors!"); btn.innerHTML = "SAVE"; btn.disabled = false; return;
+            }
+
+            const vData = {
+                type: currentMode,
+                voucher_no: document.getElementById('vNo').value,
+                date: document.getElementById('vDate').value,
+                narration: document.getElementById('narr').value || 'NA',
+                amount: parseFloat(document.getElementById('lblTotal').innerText),
+                ref_no: document.getElementById('origInvNo').value
+            };
+
+            const entries = [];
+            const rows = document.querySelectorAll('.entry-row');
+            for(let i=0; i<rows.length; i++) {
+                const row = rows[i];
+                let ledgerId=0, dr=0, cr=0, meta={};
                 
-                if(ledger) {
-                    const bal = await DB.getLedgerBalance(ledger.id);
-                    balSpan.innerText = `Cur Bal: ₹${Math.abs(bal.net).toLocaleString()} ${bal.net >= 0 ? 'Dr' : 'Cr'}`;
-                    balSpan.className = `bal-ind ${bal.net >= 0 ? 'dr' : 'cr'}`;
+                if(row.querySelector('.r-item')) {
+                    const iName = row.querySelector('.r-item').value;
+                    const item = allItems.find(x => x.name === iName);
+                    if(!item) { alert("Item Invalid"); btn.disabled=false; return; }
+                    meta.item_id = item.id;
+                    meta.qty = row.querySelector('.qty-input').value;
+                    
+                    const defL = allLedgers.find(l => l.name === (currentMode==='Sales'?'Local Sales':'Local Purchase'));
+                    ledgerId = defL ? defL.id : (allLedgers[0] ? allLedgers[0].id : 0); 
+                    
+                    const amt = parseFloat(row.querySelector('.amt-input').value);
+                    if(currentMode==='Sales') cr=amt; else dr=amt;
                 } else {
-                    balSpan.innerText = "";
+                    const lName = row.querySelector('.r-ledger').value;
+                    const l = allLedgers.find(l=>l.name===lName);
+                    if(!l) { alert("Ledger Invalid"); btn.disabled=false; return; }
+                    ledgerId = l.id;
+                    const type = row.querySelector('.r-type').value;
+                    const amt = parseFloat(row.querySelector('.amt-input').value);
+                    if(type==='Dr') dr=amt; else cr=amt;
                 }
+                entries.push({ledger_id:ledgerId, debit:dr, credit:cr, meta_data:meta});
+            }
+
+            try {
+                await DB.saveVoucherTransaction(vData, entries);
+                
+                // Set Undo ID
+                const saved = await DB.getVoucherByNo(vData.voucher_no);
+                lastSavedId = saved.id;
+                
+                // Show Toast
+                const toast = document.getElementById("toast");
+                toast.className = "show";
+                setTimeout(()=>{ toast.className = toast.className.replace("show", ""); }, 5000);
+
+                // Point 4: Print/Share
+                if(confirm("✅ Saved! Print?")) window.print();
+
+                // Reset
+                document.getElementById('gridRows').innerHTML = '';
+                setMode(currentMode);
+            } catch(e) { alert(e.message); }
+            
+            btn.innerHTML = "SAVE"; btn.disabled = false;
+        }
+
+        async function undoLastSave() {
+            if(lastSavedId && confirm("Undo last entry?")) {
+                await DB.deleteVoucher(lastSavedId);
+                alert("Undo Successful!");
+                lastSavedId = null;
+            }
+        }
+
+        // --- POINT 8: VIEW MODE ---
+        async function loadVoucherForView(id, readOnly) {
+            isViewMode = true;
+            // Fetch voucher logic here (Simple version)
+            const v = await DB.getOne('vouchers', parseInt(id));
+            if(!v) return;
+            
+            setMode(v.type);
+            document.getElementById('vNo').value = v.voucher_no;
+            document.getElementById('narr').value = v.narration;
+            
+            const entries = await DB.getEntriesByVoucherId(v.id);
+            document.getElementById('gridRows').innerHTML = '';
+            
+            // Re-populate Grid logic (simplified for view)
+            entries.forEach(e => {
+                const l = allLedgers.find(al => al.id === e.ledger_id);
+                // Basic render for view
+                if(l) addRow(e.debit > 0 ? 'Dr':'Cr', { ledger: l.name, amount: e.debit || e.credit });
+            });
+
+            document.getElementById('btnSave').style.display = 'none';
+            document.querySelectorAll('input, select, button').forEach(e => e.disabled = true);
+        }
+
+        // Shortcuts
+        document.addEventListener('keydown', (e) => {
+            if(e.altKey && e.key === '2') { e.preventDefault(); duplicateRow(); }
+            if(e.ctrlKey && e.key === 'z') { e.preventDefault(); undoLastSave(); }
+            if(e.altKey && e.key === 's') saveVoucher();
+        });
+
+        // Helpers
+        function delRow(icon) { icon.closest('.entry-row').remove(); calcTotals(); }
+        let debounceTimer;
+        function fetchBal(input, idx) {
+             clearTimeout(debounceTimer);
+             const span = document.getElementById(`bal-${idx}`);
+             span.innerText = "⏳";
+             debounceTimer = setTimeout(async () => {
+                const l = allLedgers.find(x => x.name === input.value);
+                if(l) {
+                    const b = await DB.getLedgerBalance(l.id);
+                    span.innerText = `₹${b.abs} ${b.type}`;
+                    span.className = `bal-ind ${b.type.toLowerCase()}`;
+                } else span.innerText = "";
             }, 300);
         }
-
-        // Inventory Calculation
-        function calcRowAmt(input) {
-            const row = input.closest('.entry-row');
-            const qty = parseFloat(row.querySelector('.qty-input').value) || 0;
-            const rate = parseFloat(row.querySelector('.rate-input').value) || 0;
-            const amt = qty * rate;
-            row.querySelector('.amt-input').value = amt.toFixed(2);
-            calcTotals();
-        }
-
-        // --- 4. POPUP LOGIC (Fixed) ---
-        function checkPopupTriggers(input, idx) {
+        function checkPopups(input, idx) { 
             const name = input.value;
             const ledger = allLedgers.find(l => l.name === name);
             if(!ledger) return;
-
             currentRowIndex = idx;
             if(ledger.group_id === 4) showPopup(input, 'bankPopup');
             else if([5,7].includes(ledger.group_id)) showPopup(input, 'billPopup');
         }
-
         function showPopup(target, id) {
             const p = document.getElementById(id);
             const rect = target.getBoundingClientRect();
@@ -343,167 +491,33 @@
             p.style.display = 'block';
             p.querySelector('input').focus();
         }
-
-        window.saveMeta = function(type) {
+        function saveMeta(type) {
             if(currentRowIndex === -1) return;
             if(!rowDataMeta[currentRowIndex]) rowDataMeta[currentRowIndex] = {};
-
             const popupId = type === 'bank' ? 'bankPopup' : 'billPopup';
             const popup = document.getElementById(popupId);
-            
-            // Collect Data
             const inputs = popup.querySelectorAll('input, select');
             const data = {};
             inputs.forEach(i => data[i.previousElementSibling?.innerText || i.id] = i.value);
-            
             rowDataMeta[currentRowIndex][type] = data;
-            
             popup.style.display = 'none';
-            // Return Focus
             document.querySelectorAll('.entry-row')[currentRowIndex].querySelector('.amt-input').focus();
-        };
-
-        // --- 5. SHORTCUTS & SAVE ---
-        document.addEventListener('keydown', (e) => {
-            // Undo (Ctrl+Z)
-            if(e.ctrlKey && e.key === 'z') {
-                e.preventDefault();
-                const rows = document.querySelectorAll('.entry-row');
-                if(rows.length > 0) deleteRow(rows[rows.length-1].querySelector('.c-del i'));
-            }
-            // Delete Row (Alt+D)
-            if(e.altKey && e.key === 'd') {
-                e.preventDefault();
-                const activeRow = document.activeElement.closest('.entry-row');
-                if(activeRow) deleteRow(activeRow.querySelector('.c-del i'));
-            }
-            // Save (Alt+S)
-            if(e.altKey && e.key === 's') saveVoucher();
-            // Enter Navigation
-            if(e.key === 'Enter') handleEnter(e);
-            // Mode Shortcuts
-            if(e.key === 'F4') setMode('Contra');
-            if(e.key === 'F5') setMode('Payment');
-            if(e.key === 'F8') setMode('Sales');
-            if(e.key === 'F9') setMode('Purchase');
-            if(e.ctrlKey && e.key === 'F8') { e.preventDefault(); setMode('Credit Note'); }
-            if(e.ctrlKey && e.key === 'F9') { e.preventDefault(); setMode('Debit Note'); }
-        });
-
-        function handleEnter(e) {
-            e.preventDefault();
-            // Simplified Enter Logic
-            const inputs = Array.from(document.querySelectorAll('.focusable, input:not([readonly]), select'));
-            const idx = inputs.indexOf(document.activeElement);
-            
-            // Check if last amount field -> Add Row
-            if(document.activeElement.classList.contains('amt-input')) {
-                 const rows = document.querySelectorAll('.entry-row');
-                 if(document.activeElement.closest('.entry-row') === rows[rows.length-1]) {
-                     calcTotals();
-                     const diff = parseFloat(document.getElementById('lblDiff').innerText);
-                     // If difference exists or it's Sales/Purchase mode (add items), add row
-                     if(diff > 0 || isInventoryMode) {
-                         addRow(diff > 0 && !isInventoryMode ? (parseFloat(document.getElementById('lblTotal').dataset.dr) < parseFloat(document.getElementById('lblTotal').dataset.cr) ? 'Dr':'Cr') : 'Dr');
-                         return;
-                     }
-                 }
-            }
-            if(idx < inputs.length - 1) inputs[idx+1].focus();
         }
+        function handleItemInput(input) { /* Placeholder */ }
+        function handleTypeChange(sel) { filterLedgers(sel.closest('.entry-row').querySelector('.r-ledger')); }
+        function handleAmtFocus(input) { if(input.value==='') { calcTotals(); const diff=parseFloat(document.getElementById('lblDiff').innerText); if(diff>0) input.value=diff.toFixed(2); } }
+        function toggleCalc() { document.getElementById('calcModal').style.display = document.getElementById('calcModal').style.display==='block'?'none':'block'; }
+        function cIn(v) { document.getElementById('cDisp').value += v; }
+        function cCalc() { try { const v = eval(document.getElementById('cDisp').value); const active = document.activeElement; if(active && active.classList.contains('amt-input')) { active.value = parseFloat(v).toFixed(2); calcTotals(); toggleCalc(); } } catch(e) {} }
+        
+        // Draggable Calc
+        const cHeader = document.getElementById('calcHeader');
+        const cModal = document.getElementById('calcModal');
+        let isDragging = false, offsetX, offsetY;
+        cHeader.addEventListener('mousedown', (e) => { isDragging = true; offsetX = e.clientX - cModal.offsetLeft; offsetY = e.clientY - cModal.offsetTop; });
+        document.addEventListener('mousemove', (e) => { if (isDragging) { cModal.style.left = `${e.clientX - offsetX}px`; cModal.style.top = `${e.clientY - offsetY}px`; } });
+        document.addEventListener('mouseup', () => isDragging = false);
 
-        async function saveVoucher() {
-            calcTotals();
-            const diff = parseFloat(document.getElementById('lblDiff').innerText);
-            if(diff > 0.05) return alert("❌ Voucher Unbalanced!");
-
-            const narr = document.getElementById('narr').value;
-            
-            // Harvest Data
-            const voucherData = {
-                type: currentMode,
-                voucher_no: document.getElementById('vNo').value,
-                date: document.getElementById('vDate').value, // Need ISO conversion in DB
-                narration: narr,
-                amount: parseFloat(document.getElementById('lblTotal').innerText),
-                // Credit/Debit Note Extra Data
-                ref_no: document.getElementById('origInvNo').value,
-                ref_date: document.getElementById('origInvDate').value
-            };
-
-            const entries = [];
-            const rows = document.querySelectorAll('.entry-row');
-            
-            // Handling Accounting vs Inventory Rows
-            for(let i=0; i<rows.length; i++) {
-                const row = rows[i];
-                let ledgerId = 0, debit = 0, credit = 0;
-                let meta = rowDataMeta[i] || {};
-                
-                if(row.querySelector('.r-item')) {
-                    // Inventory Row (Treat as Sales/Purchase Account Entry)
-                    // In real app, you need Item ID. For now, we save basic data.
-                    meta.item = row.querySelector('.r-item').value;
-                    meta.qty = row.querySelector('.qty-input').value;
-                    meta.rate = row.querySelector('.rate-input').value;
-                    
-                    // Assume default Sales/Purchase Ledger for items
-                    const defName = currentMode === 'Sales' ? 'Local Sales' : 'Local Purchase';
-                    const defL = allLedgers.find(l => l.name === defName);
-                    ledgerId = defL ? defL.id : 0;
-                    
-                    const amt = parseFloat(row.querySelector('.amt-input').value);
-                    if(currentMode === 'Sales') credit = amt; else debit = amt;
-                } else {
-                    // Accounting Row
-                    const name = row.querySelector('.r-ledger').value;
-                    const l = allLedgers.find(l => l.name === name);
-                    if(!l) return alert(`Invalid Ledger at Row ${i+1}`);
-                    ledgerId = l.id;
-                    const type = row.querySelector('.r-type').value;
-                    const amt = parseFloat(row.querySelector('.amt-input').value);
-                    if(type === 'Dr') debit = amt; else credit = amt;
-                    meta.line_narr = row.querySelector('.row-narr').value;
-                }
-
-                entries.push({ ledger_id: ledgerId, debit, credit, meta_data: meta });
-            }
-
-            try {
-                await DB.saveVoucherTransaction(voucherData, entries);
-                if(confirm("✅ Saved! Do you want to Print?")) {
-                    window.print(); // Or redirect to print page
-                }
-                location.reload();
-            } catch(e) { alert(e.message); }
-        }
-
-        // Basic Calc & Helpers
-        function filterLedgers(input) {
-            // Same filtering logic as before...
-            const dl = document.getElementById('ledgerList');
-            dl.innerHTML = allLedgers.map(l => `<option value="${l.name}">`).join('');
-        }
-        function handleAmtFocus(input) { /* Auto fill logic */ }
-        function calcTotals() {
-            let dr=0, cr=0;
-            document.querySelectorAll('.amt-input').forEach(inp => {
-                const row = inp.closest('.entry-row');
-                const val = parseFloat(inp.value) || 0;
-                // If Item row: Sales=Cr, Purchase=Dr
-                if(row.querySelector('.r-item')) {
-                    if(currentMode==='Sales') cr+=val; else dr+=val;
-                } else {
-                    const type = row.querySelector('.r-type').value;
-                    if(type==='Dr') dr+=val; else cr+=val;
-                }
-            });
-            const diff = Math.abs(dr-cr);
-            document.getElementById('lblTotal').innerText = Math.max(dr,cr).toFixed(2);
-            document.getElementById('lblTotal').dataset.dr = dr;
-            document.getElementById('lblTotal').dataset.cr = cr;
-            document.getElementById('lblDiff').innerText = diff.toFixed(2);
-        }
         function openF10Modal() { document.getElementById('f10Modal').style.display='block'; }
         function closeF10Modal() { document.getElementById('f10Modal').style.display='none'; }
     </script>

@@ -1,12 +1,12 @@
 /* FILENAME: db.js
    PURPOSE: Arth Book Core Engine (Double Entry System)
-   VERSION: 3.2 (Final Polish: Delete Logic, Strict Date, Enhanced Audit)
+   VERSION: 3.4 (Fixed Syntax Error: Helper Functions Moved Inside Class)
 */
 
 class ArthBookDB {
     constructor() {
         this.dbName = "ArthBook_DB";
-        this.dbVersion = 26;
+        this.dbVersion = 27; // Ensure version is high enough to create 'items' table
         this.db = null;
         this.currentUser = JSON.parse(sessionStorage.getItem('user_session')) || { role: 'admin', username: 'Owner' };
     }
@@ -19,7 +19,7 @@ class ArthBookDB {
             request.onupgradeneeded = (event) => {
                 const db = event.target.result;
 
-                // Core Stores
+                // Create Stores if they don't exist
                 if (!db.objectStoreNames.contains("vouchers")) {
                     const s = db.createObjectStore("vouchers", { keyPath: "id", autoIncrement: true });
                     s.createIndex("type", "type");
@@ -33,10 +33,15 @@ class ArthBookDB {
                 }
                 if (!db.objectStoreNames.contains("ledgers")) {
                     const s = db.createObjectStore("ledgers", { keyPath: "id", autoIncrement: true });
+                    s.createIndex("name", "name", { unique: true });
                 }
                 if (!db.objectStoreNames.contains("settings")) db.createObjectStore("settings", { keyPath: "id" });
                 if (!db.objectStoreNames.contains("audit_logs")) db.createObjectStore("audit_logs", { keyPath: "id", autoIncrement: true });
-                if (!db.objectStoreNames.contains("items")) db.createObjectStore("items", { keyPath: "id", autoIncrement: true });
+                
+                // Inventory Store (Critical for Stock)
+                if (!db.objectStoreNames.contains("items")) {
+                    db.createObjectStore("items", { keyPath: "id", autoIncrement: true });
+                }
             };
 
             request.onsuccess = (event) => {
@@ -66,8 +71,7 @@ class ArthBookDB {
         const ledger = await this.getOne('ledgers', parseInt(ledgerId));
         let opening = parseFloat(ledger?.opening_balance) || 0;
         
-        // Nature Check: Liabilities (Group 1,4,7) & Income (Group 8) treated as Credit (-ve)
-        // Groups: 1=Capital, 4=Bank(OD), 7=Creditors, 8=Sales/Income
+        // Nature Check
         const creditNatureGroups = [1, 4, 7, 8]; 
         if (creditNatureGroups.includes(ledger?.group_id)) {
             opening = -Math.abs(opening); 
@@ -103,7 +107,7 @@ class ArthBookDB {
         });
     }
 
-    // --- 4. SAVE TRANSACTION (Strict Date & Audit) ---
+    // --- 4. SAVE TRANSACTION (Updated with Stock Logic) ---
     async saveVoucherTransaction(voucherData, entriesData) {
         if (!this.db) await this.init();
 
@@ -125,25 +129,18 @@ class ArthBookDB {
         if (voucherData.date && voucherData.date.length === 6) {
             const dd = parseInt(voucherData.date.slice(0,2));
             const mm = parseInt(voucherData.date.slice(2,4));
-            const yy = parseInt(voucherData.date.slice(4,6)); // 25 -> 2025
-
+            const yy = parseInt(voucherData.date.slice(4,6));
             const fullYear = 2000 + yy;
             
-            // Native Date Object Check (Handles Leap Years etc)
             const dateObj = new Date(fullYear, mm - 1, dd);
-            
-            if (dateObj.getFullYear() !== fullYear || 
-                dateObj.getMonth() + 1 !== mm || 
-                dateObj.getDate() !== dd) {
+            if (dateObj.getFullYear() !== fullYear || dateObj.getMonth() + 1 !== mm || dateObj.getDate() !== dd) {
                 throw new Error(`Invalid Date! ${dd}/${mm}/${yy} is not a valid calendar date.`);
             }
-
-            // Convert to ISO YYYY-MM-DD
             voucherData.date = `${fullYear}-${String(mm).padStart(2,'0')}-${String(dd).padStart(2,'0')}`;
         }
 
         return new Promise((resolve, reject) => {
-            const tx = this.db.transaction(["vouchers", "acct_entries", "audit_logs"], "readwrite");
+            const tx = this.db.transaction(["vouchers", "acct_entries", "audit_logs", "items"], "readwrite");
             
             // 1. Save Header
             const vStore = tx.objectStore("vouchers");
@@ -152,8 +149,9 @@ class ArthBookDB {
             vRequest.onsuccess = (e) => {
                 const voucherId = voucherData.id || e.target.result;
                 const eStore = tx.objectStore("acct_entries");
+                const iStore = tx.objectStore("items");
 
-                // If Editing: Delete old entries
+                // If Editing: Delete old entries logic
                 if(voucherData.id) {
                     const idx = eStore.index("voucher_id");
                     const keyRange = IDBKeyRange.only(voucherId);
@@ -163,20 +161,45 @@ class ArthBookDB {
                     };
                 }
 
-                // 2. Save Rows
+                // 2. Save Rows & UPDATE STOCK
                 entriesData.forEach(entry => {
                     entry.voucher_id = voucherId;
+                    
+                    // --- STOCK UPDATE LOGIC ---
+                    let meta = entry.meta_data;
+                    
+                    if(meta && typeof meta === 'object' && meta.item_id) {
+                        const itemId = parseInt(meta.item_id);
+                        const qty = parseFloat(meta.qty) || 0;
+                        
+                        const itemReq = iStore.get(itemId);
+                        itemReq.onsuccess = (ev) => {
+                            const item = ev.target.result;
+                            if(item) {
+                                let currentStock = parseFloat(item.current_stock) || 0;
+                                
+                                if(voucherData.type === 'Sales') currentStock -= qty;
+                                else if(voucherData.type === 'Purchase') currentStock += qty;
+                                else if(voucherData.type === 'Credit Note') currentStock += qty; 
+                                else if(voucherData.type === 'Debit Note') currentStock -= qty;
+                                
+                                item.current_stock = currentStock;
+                                iStore.put(item); 
+                            }
+                        };
+                    }
+
                     if(entry.meta_data && typeof entry.meta_data === 'object') {
                         entry.meta_data = JSON.stringify(entry.meta_data);
                     }
                     eStore.add(entry);
                 });
 
-                // 3. ENHANCED AUDIT LOG
+                // 3. Audit Log
                 tx.objectStore("audit_logs").add({
                     timestamp: new Date().toISOString(),
                     action: voucherData.id ? "EDIT" : "CREATE",
-                    desc: `${voucherData.type} #${voucherData.voucher_no} (Rows: ${entriesData.length}) - ₹${voucherData.amount.toFixed(2)}`,
+                    desc: `${voucherData.type} #${voucherData.voucher_no} - ₹${voucherData.amount.toFixed(2)}`,
                     user: this.currentUser.username
                 });
             };
@@ -186,13 +209,12 @@ class ArthBookDB {
         });
     }
 
-    // --- 5. DELETE VOUCHER (New Feature) ---
+    // --- 5. DELETE VOUCHER ---
     async deleteVoucher(id) {
         if (!this.db) await this.init();
         return new Promise((resolve, reject) => {
             const tx = this.db.transaction(["vouchers", "acct_entries", "audit_logs"], "readwrite");
             
-            // 1. Get Voucher details for Audit
             const vStore = tx.objectStore("vouchers");
             const vReq = vStore.get(id);
             
@@ -200,10 +222,8 @@ class ArthBookDB {
                 const voucher = e.target.result;
                 if (!voucher) { reject("Voucher not found"); return; }
 
-                // 2. Delete Voucher
                 vStore.delete(id);
 
-                // 3. Delete Entries
                 const eStore = tx.objectStore("acct_entries");
                 const idx = eStore.index("voucher_id");
                 const keyRange = IDBKeyRange.only(id);
@@ -213,7 +233,6 @@ class ArthBookDB {
                     if (cursor) { cursor.delete(); cursor.continue(); }
                 };
 
-                // 4. Audit Log
                 tx.objectStore("audit_logs").add({
                     timestamp: new Date().toISOString(),
                     action: "DELETE",
@@ -246,6 +265,37 @@ class ArthBookDB {
             };
         });
     }
+    
+    // --- 7. GET VOUCHER BY NO ---
+    async getVoucherByNo(vNo) {
+        if (!this.db) await this.init();
+        return new Promise((resolve, reject) => {
+            const tx = this.db.transaction('vouchers', 'readonly');
+            const index = tx.objectStore('vouchers').index('voucher_no');
+            const req = index.get(vNo);
+            req.onsuccess = () => resolve(req.result);
+            req.onerror = () => reject(req.error);
+        });
+    }
+
+    // --- 8. GET ENTRIES BY VOUCHER ID ---
+    async getEntriesByVoucherId(vid) {
+        if (!this.db) await this.init();
+        return new Promise((resolve) => {
+            const tx = this.db.transaction('acct_entries', 'readonly');
+            const idx = tx.objectStore('acct_entries').index('voucher_id');
+            idx.getAll(vid).onsuccess = (e) => resolve(e.target.result || []);
+        });
+    }
+
+    // --- 9. STOCK CHECK HELPER ---
+    async getItemStock(itemId) {
+        if (!this.db) await this.init();
+        return new Promise(r => {
+            const tx = this.db.transaction('items', 'readonly');
+            tx.objectStore('items').get(itemId).onsuccess = e => r(e.target.result?.current_stock || 0);
+        });
+    }
 
     // --- UTILS ---
     async getAll(storeName) {
@@ -257,6 +307,8 @@ class ArthBookDB {
             req.onerror = () => reject(req.error);
         });
     }
-}
 
+} // CLASS ENDS HERE
+
+// GLOBAL INSTANCE
 const DB = new ArthBookDB();
