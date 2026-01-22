@@ -277,44 +277,47 @@
 
     <script src="db.js"></script>
     <script>
-        let items=[], ledgers=[], cart=[], settings={};
+        let items=[], ledgers=[], cart=[], settings={}, groups=[];
         let selectedMode = 'Cash';
 
         window.onload = async () => {
             await DB.init();
             
-            // Load Data
-            const [iData, lData, sData] = await Promise.all([
-                DB.getAll('items'),
-                DB.getAll('ledgers'),
-                DB.getSettings()
-            ]);
+            // 1. Load Data Safely
+            try {
+                [items, ledgers, settings, groups] = await Promise.all([
+                    DB.getAll('items'),
+                    DB.getAll('ledgers'),
+                    DB.getAll('settings'),
+                    DB.getAll('groups')
+                ]);
+            } catch(e) { console.error("Load Error", e); }
             
-            items = iData || [];
-            ledgers = lData || [];
-            settings = sData || {}; 
-            
+            // 2. Render Items Grid
             renderItems(items);
+            
+            // 3. Populate Customers (Smart Filter: Debtors + Cash)
             loadCustomers();
+            
             generateInvNo();
             document.getElementById('billDate').valueAsDate = new Date();
         };
 
         // Auto Close Sidebar on Mobile Logic
-        document.querySelectorAll('.nav-links a').forEach(link => {
-            link.addEventListener('click', () => {
-                if (window.innerWidth <= 1024) document.getElementById('sidebar').classList.remove('active');
-            });
-        });
-        document.querySelector('.main-content').addEventListener('click', (e) => {
-            if (e.target.closest('.menu-btn')) return;
-            if (window.innerWidth <= 1024) document.getElementById('sidebar').classList.remove('active');
-        });
+        function toggleMenu() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
 
         // --- 1. ITEM RENDER & SEARCH ---
         function renderItems(list) {
             const container = document.getElementById('itemContainer');
             container.innerHTML = '';
+            
+            if(list.length === 0) {
+                container.innerHTML = '<div style="width:100%; text-align:center; padding:20px; color:#94a3b8;">No Items Found. Add in Inventory.</div>';
+                return;
+            }
+
             list.forEach(i => { 
                 const stock = i.current_stock || 0;
                 const low = stock <= (i.reorder_level || 5);
@@ -396,8 +399,8 @@
                 div.innerHTML = `
                     <div>${idx+1}</div>
                     <div style="white-space:nowrap; overflow:hidden; font-weight:600; color:var(--text-main);">${c.name}</div>
-                    <input type="number" value="${c.qty}" onchange="updateQty(${idx}, this.value, ${c.id})">
-                    <input type="number" value="${c.rate}" onchange="updateRate(${idx}, this.value)">
+                    <input type="number" value="${c.qty}" min="1" onchange="updateQty(${idx}, this.value, ${c.id})">
+                    <input type="number" value="${c.rate}" min="0" onchange="updateRate(${idx}, this.value)">
                     <div style="text-align:right; font-weight:600;">${(base+taxAmt).toFixed(2)}</div>
                     <div style="color:var(--red); cursor:pointer; text-align:center;" onclick="removeCart(${idx})"><i class="fas fa-trash"></i></div>
                 `;
@@ -411,7 +414,7 @@
             if(qty <= 0) return removeCart(idx);
             
             // Check Stock again
-            const item = await DB.getOne('items', itemId);
+            const item = items.find(i => i.id === itemId); // Use local cache for speed
             if(qty > (item.current_stock || 0)) {
                 alert(`⚠️ Only ${item.current_stock} available!`);
                 cart[idx].qty = item.current_stock; // Reset to max
@@ -474,49 +477,47 @@
             };
 
             const entries = [];
-            cart.forEach(c => {
-                entries.push({
-                    ledger_id: 0, // Will be mapped in DB logic
-                    item_id: c.id,
-                    qty: c.qty,
-                    rate: c.rate,
-                    amount: c.qty * c.rate,
-                    meta_data: { item_id: c.id, qty: c.qty, rate: c.rate } // Crucial for stock
-                });
-            });
-
+            
             try {
-                // Construct proper accounting entries
-                const accEntries = [];
-                
-                // 1. Debit (Money Coming In)
+                // 1. Debit (Money Coming In) - Find Ledger ID
                 let debitLedgerId = 0;
+                
+                // Find Cash Ledger
+                const cashL = ledgers.find(l => l.name === 'Cash' || l.name === 'Cash-in-Hand');
+                
                 if(selectedMode === 'Cash') {
-                    const l = ledgers.find(x => x.name === 'Cash');
-                    debitLedgerId = l ? l.id : 0;
+                    debitLedgerId = cashL ? cashL.id : 0;
                 } else if(selectedMode === 'Udhar') {
                     debitLedgerId = parseInt(pid);
                 } else {
-                    const l = ledgers.find(x => x.name === 'Bank Accounts' || x.group_id === 15); // Fallback
-                    debitLedgerId = l ? l.id : 0;
+                    // Bank
+                    const bankL = ledgers.find(l => l.name === 'Bank Accounts' || l.group_id === 15);
+                    debitLedgerId = bankL ? bankL.id : 0;
                 }
                 
-                if(debitLedgerId) accEntries.push({ ledger_id: debitLedgerId, debit: grand, credit: 0 });
+                if(debitLedgerId) entries.push({ ledger_id: debitLedgerId, debit: grand, credit: 0 });
 
-                // 2. Credit (Sales)
-                const salesLedger = ledgers.find(l => l.name === 'Local Sales');
-                if(salesLedger) {
-                    cart.forEach(c => {
-                        accEntries.push({ 
-                            ledger_id: salesLedger.id, 
-                            debit: 0, 
-                            credit: c.qty * c.rate, // Excl tax approx for now or Incl based on logic
-                            meta_data: { item_id: c.id, qty: c.qty, rate: c.rate }
-                        });
-                    });
+                // 2. Credit (Sales Account)
+                let salesL = ledgers.find(l => l.name === 'Local Sales' || l.name === 'Sales Account');
+                // Fallback
+                if(!salesL) {
+                    const sGroup = groups.find(g => g.name === 'Sales Accounts');
+                    if(sGroup) salesL = ledgers.find(l => l.group_id === sGroup.id);
                 }
+                const salesId = salesL ? salesL.id : 0;
 
-                await DB.saveVoucherTransaction(voucher, accEntries);
+                // 3. Item Entries (For Stock)
+                cart.forEach(c => {
+                    entries.push({
+                        ledger_id: salesId,
+                        debit: 0, 
+                        credit: c.qty * c.rate, // Approximate credit to sales
+                        meta_data: { item_id: c.id, qty: c.qty, rate: c.rate } // Stock deduction logic in DB
+                    });
+                });
+
+                // 4. Save
+                await DB.saveVoucherTransaction(voucher, entries);
                 
                 if(shouldPrint) {
                     printReceipt(voucher, cart, grand);
@@ -525,7 +526,7 @@
                     location.reload();
                 }
 
-            } catch(e) { alert("Error: " + e.message); }
+            } catch(e) { alert("Error: " + e.message); console.error(e); }
         }
 
         // --- 4. PRINTING ---
@@ -592,14 +593,29 @@
         // --- UTILS ---
         function loadCustomers() {
             const sel = document.getElementById('custSelect');
-            ledgers.filter(l => l.group_id === 13).forEach(l => { // 13 = Debtors
-                sel.innerHTML += `<option value="${l.id}">${l.name}</option>`;
-            });
+            sel.innerHTML = '<option value="">Walk-in Customer (Cash)</option>';
+            
+            // SMART FILTER: Show Debtors (Customers) + Cash/Bank
+            const targetNames = ['Sundry Debtors', 'Cash-in-Hand', 'Bank Accounts'];
+            const allowedGroupIds = groups
+                .filter(g => targetNames.includes(g.name))
+                .map(g => g.id);
+
+            const validParties = ledgers.filter(l => allowedGroupIds.includes(l.group_id));
+            
+            if(validParties.length > 0) {
+                validParties.sort((a,b) => a.name.localeCompare(b.name));
+                validParties.forEach(l => {
+                    sel.innerHTML += `<option value="${l.id}">${l.name}</option>`;
+                });
+            }
         }
         
         async function generateInvNo() {
-            const n = await DB.getNextVoucherNo('Sales');
-            document.getElementById('invNo').innerText = `INV-${n}`;
+            try {
+                const n = await DB.getNextVoucherNo('Sales');
+                document.getElementById('invNo').innerText = `INV-${n}`;
+            } catch(e) { console.error("Voucher No Error", e); }
         }
         
         document.addEventListener('keydown', e => {
