@@ -2,10 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <title>Login - Arth Book</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
         body {
             margin: 0;
@@ -13,33 +16,45 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: #0f172a; /* Dark Navy Background */
+            background: #0f172a; 
             font-family: 'Inter', sans-serif;
         }
         .login-card {
             background: white;
             padding: 40px;
             border-radius: 16px;
-            width: 350px;
+            width: 360px;
             text-align: center;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
         }
-        .logo { font-size: 32px; margin-bottom: 10px; }
-        h2 { margin: 0 0 5px 0; color: #1e293b; }
+        .logo { font-size: 40px; margin-bottom: 15px; }
+        h2 { margin: 0 0 5px 0; color: #1e293b; font-weight: 800; }
         p { margin: 0 0 30px 0; color: #64748b; font-size: 14px; }
         
-        .input-group { margin-bottom: 20px; text-align: left; }
-        label { display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 5px; }
+        .input-group { margin-bottom: 20px; text-align: left; position: relative; }
+        label { display: block; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
+        
         input {
             width: 100%;
-            padding: 12px;
+            padding: 12px 15px;
             border: 2px solid #e2e8f0;
-            border-radius: 8px;
+            border-radius: 10px;
             font-size: 16px;
             outline: none;
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+        }
+        input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+        
+        .toggle-password {
+            position: absolute;
+            right: 15px;
+            top: 35px;
+            cursor: pointer;
+            color: #94a3b8;
             transition: 0.2s;
         }
-        input:focus { border-color: #3b82f6; }
+        .toggle-password:hover { color: #3b82f6; }
         
         button {
             width: 100%;
@@ -47,16 +62,29 @@
             background: #0f172a;
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 10px;
             font-size: 16px;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
-            transition: 0.2s;
+            transition: all 0.2s ease;
+            margin-top: 10px;
         }
-        button:hover { background: #1e293b; transform: translateY(-1px); }
+        button:hover:not(:disabled) { background: #1e293b; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        button:disabled { background: #94a3b8; cursor: not-allowed; }
         
-        .error { color: #ef4444; font-size: 13px; margin-top: 10px; display: none; }
-        .footer { margin-top: 20px; font-size: 12px; color: #94a3b8; }
+        .error { 
+            color: #ef4444; 
+            font-size: 13px; 
+            margin-top: 15px; 
+            display: none; 
+            background: #fee2e2; 
+            padding: 10px; 
+            border-radius: 8px;
+            border: 1px solid #fecaca;
+        }
+        
+        .hint { font-size: 12px; color: #94a3b8; margin-top: 15px; }
+        .footer { margin-top: 25px; font-size: 11px; color: #94a3b8; border-top: 1px solid #f1f5f9; paddingTop: 15px; }
     </style>
 </head>
 <body>
@@ -64,7 +92,7 @@
     <div class="login-card">
         <div class="logo">🚀</div>
         <h2>Arth Book</h2>
-        <p>Secure Business Accounting</p>
+        <p>Premium Accounting Software</p>
 
         <div class="input-group">
             <label>Username</label>
@@ -74,45 +102,77 @@
         <div class="input-group">
             <label>PIN / Password</label>
             <input type="password" id="pass" placeholder="Enter PIN" value="123">
+            <i class="fas fa-eye toggle-password" id="toggleIcon" onclick="togglePass()"></i>
         </div>
 
-        <button onclick="handleLogin()">Unlock System 🔒</button>
-        <div class="error" id="errorMsg">Invalid Credentials</div>
+        <button id="loginBtn" onclick="handleLogin()">Unlock System 🔒</button>
         
-        <div class="footer">Local Secure Environment v24.0</div>
+        <div class="error" id="errorMsg"></div>
+        
+        <div class="hint">
+            Default Access: <b>admin / 123</b>
+        </div>
+        
+        <div class="footer">
+            Local Secure Environment v4.0<br>
+            Data stored only in your browser (IndexedDB)
+        </div>
     </div>
 
     <script src="db.js"></script>
-    <script src="security_utils.js" onerror="console.log('Security Utils missing')"></script>
+    <script src="security_utils.js" onerror="console.warn('Security Utils not found')"></script>
     
     <script>
-        // Init DB immediately
+        // 1. Init DB & Session Check
         window.onload = async () => {
-            await DB.init();
-            
-            // Auto-redirect if already logged in
-            if(sessionStorage.getItem('user_session')) {
-                window.location.href = 'index.html';
-            }
+            try {
+                await DB.init();
+                if(sessionStorage.getItem('user_session')) {
+                    window.location.href = 'index.html';
+                }
+            } catch(e) { console.error("Database Init Failed", e); }
         };
 
+        // 2. Toggle Password Visibility
+        function togglePass() {
+            const passInput = document.getElementById('pass');
+            const icon = document.getElementById('toggleIcon');
+            if (passInput.type === 'password') {
+                passInput.type = 'text';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                passInput.type = 'password';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        }
+
+        // 3. Handle Login Logic
         async function handleLogin() {
-            const u = document.getElementById('user').value.trim();
-            const p = document.getElementById('pass').value;
-            const btn = document.querySelector('button');
+            const uInput = document.getElementById('user');
+            const pInput = document.getElementById('pass');
+            const btn = document.getElementById('loginBtn');
             const err = document.getElementById('errorMsg');
 
-            if(!u || !p) return;
+            // Sanitize & Case-insensitive username
+            const u = uInput.value.trim().toLowerCase();
+            const p = pInput.value;
 
-            btn.innerText = "Verifying...";
+            if(!u || !p) {
+                showError("Please enter both username and password");
+                return;
+            }
+
+            // UI Loading State
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verifying...';
             err.style.display = 'none';
 
             try {
-                // Try direct login first
+                // Step A: Try direct login
                 try {
                     await DB.login(u, p);
                 } catch(loginErr) {
-                    // Try hashed login if direct fails (for security utils support)
+                    // Step B: Try hashed login (fallback for security_utils)
                     if(window.Security) {
                         const hashed = await Security.hashPassword(p);
                         await DB.login(u, hashed);
@@ -121,18 +181,24 @@
                     }
                 }
                 
-                // Session is set inside DB.login(), just redirect
+                // Success -> Redirect
                 window.location.href = 'index.html';
                 
             } catch (e) {
-                console.error(e);
+                console.error("Login attempt failed:", e);
+                btn.disabled = false;
                 btn.innerText = "Unlock System 🔒";
-                err.innerText = "❌ Invalid Username or Password";
-                err.style.display = 'block';
+                showError("❌ Access Denied: Invalid Credentials");
             }
         }
+
+        function showError(msg) {
+            const err = document.getElementById('errorMsg');
+            err.innerText = msg;
+            err.style.display = 'block';
+        }
         
-        // Allow Enter Key
+        // Enter Key Support
         document.addEventListener('keydown', (e) => {
             if(e.key === 'Enter') handleLogin();
         });

@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <title>Arth Book - GST Compliance</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -10,23 +11,14 @@
 
     <style>
         :root {
-            --sidebar-bg: #0f172a;
-            --sidebar-active: #1e293b;
-            --accent: #2563eb;
-            --bg: #f8fafc;
-            --text: #1e293b;
-            --muted: #64748b;
-            --border: #e2e8f0;
-            --green: #10b981;
-            --red: #ef4444;
-            --orange: #f59e0b;
-            --shadow: 0 4px 12px rgba(0,0,0,0.08);
-            --transition: all 0.3s ease;
+            --sidebar-bg: #0f172a; --sidebar-active: #1e293b; --accent: #2563eb;
+            --bg: #f8fafc; --text: #1e293b; --muted: #64748b; --border: #e2e8f0;
+            --green: #10b981; --red: #ef4444; --orange: #f59e0b;
+            --shadow: 0 4px 12px rgba(0,0,0,0.08); --transition: all 0.3s ease;
         }
         * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
         body { display: flex; height: 100vh; background: var(--bg); color: var(--text); overflow: hidden; }
 
-        /* SIDEBAR */
         .sidebar { 
             width: 260px; background: var(--sidebar-bg); padding: 20px; display: flex; 
             flex-direction: column; flex-shrink: 0; height: 100vh; overflow-y: auto; 
@@ -36,7 +28,6 @@
         .nav-links a { display: flex; align-items: center; gap: 12px; padding: 14px 18px; color: #94a3b8; text-decoration: none; border-radius: 10px; margin-bottom: 6px; font-weight: 500; transition: var(--transition); }
         .nav-links a:hover, .nav-links a.active { background: var(--sidebar-active); color: white; }
 
-        /* MAIN */
         .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
         .top-bar { background: white; padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; box-shadow: var(--shadow); }
 
@@ -54,16 +45,13 @@
         .stat-card.blue { border-left: 5px solid var(--accent); }
         .stat-card.green { border-left: 5px solid var(--green); }
         .stat-card.red { border-left: 5px solid var(--red); }
-        .stat-lbl { font-size: 14px; color: var(--muted); font-weight: 600; }
-        .stat-val { font-size: 28px; font-weight: 800; margin: 10px 0; }
-
+        
         table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 15px; }
         th { background: #f1f5f9; padding: 12px; text-align: left; font-weight: 600; color: var(--muted); border-bottom: 2px solid var(--border); }
         td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
         .amt { text-align: right; font-weight: 600; font-family: 'JetBrains Mono', monospace; }
 
         .btn { padding: 12px 24px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: var(--transition); }
-        .btn:hover { opacity: 0.9; transform: translateY(-2px); }
         .btn-json { background: var(--green); color: white; }
 
         @media (max-width: 900px) {
@@ -121,29 +109,28 @@
                 <div class="stat-grid">
                     <div class="stat-card blue">
                         <div class="stat-lbl">Total Output Tax Liability</div>
-                        <div class="stat-val" id="outputTax">₹0</div>
+                        <div class="stat-val" id="outputTax">₹0.00</div>
                     </div>
                     <div class="stat-card green">
                         <div class="stat-lbl">Input Tax Credit Available</div>
-                        <div class="stat-val" id="inputTax">₹0</div>
+                        <div class="stat-val" id="inputTax">₹0.00</div>
                     </div>
                     <div class="stat-card red">
                         <div class="stat-lbl">Net GST Payable</div>
-                        <div class="stat-val" id="netPayable">₹0</div>
+                        <div class="stat-val" id="netPayable">₹0.00</div>
                     </div>
                 </div>
-
                 <div class="report-box">
                     <h3>Validation Status</h3>
                     <div id="validationErrors" style="margin-top:15px;">
-                        <p id="statusMsg" style="color:var(--green);">✅ Checks complete.</p>
+                        <p id="statusMsg" style="color:var(--green);">✅ Checks complete. Ready for Export.</p>
                     </div>
                 </div>
             </div>
 
             <div id="gstr1" class="tab-content">
                 <div class="report-box">
-                    <h3>B2B Invoices</h3>
+                    <h3>B2B Invoices (Registered)</h3>
                     <table id="b2bTable">
                         <thead><tr><th>GSTIN</th><th>Party</th><th>Invoice</th><th>Date</th><th>Taxable</th><th>IGST</th><th>CGST</th><th>SGST</th></tr></thead>
                         <tbody></tbody>
@@ -152,7 +139,7 @@
                 <div class="report-box">
                     <h3>B2CS (Consumer Supplies)</h3>
                     <table id="b2csTable">
-                        <thead><tr><th>POS</th><th>Rate</th><th>Taxable Value</th><th>IGST</th><th>CGST</th><th>SGST</th></tr></thead>
+                        <thead><tr><th>POS (State Code)</th><th>Rate</th><th>Taxable Value</th><th>IGST</th><th>CGST</th><th>SGST</th></tr></thead>
                         <tbody></tbody>
                     </table>
                 </div>
@@ -160,7 +147,7 @@
 
             <div id="gstr3b" class="tab-content">
                 <div class="report-box">
-                    <h3>GSTR-3B Summary</h3>
+                    <h3>GSTR-3B Table Summary</h3>
                     <table id="summaryTable3B">
                         <thead><tr><th>Details</th><th>Taxable</th><th>IGST</th><th>CGST</th><th>SGST</th></tr></thead>
                         <tbody></tbody>
@@ -170,9 +157,9 @@
 
             <div id="hsn" class="tab-content">
                 <div class="report-box">
-                    <h3>HSN-wise Summary</h3>
+                    <h3>HSN-wise Summary (Table 12)</h3>
                     <table id="hsnTable">
-                        <thead><tr><th>HSN</th><th>Description</th><th>Qty</th><th>Taxable</th><th>IGST</th><th>CGST</th><th>SGST</th></tr></thead>
+                        <thead><tr><th>HSN Code</th><th>Description</th><th>Qty</th><th>Taxable</th><th>IGST</th><th>CGST</th><th>SGST</th></tr></thead>
                         <tbody></tbody>
                     </table>
                 </div>
@@ -232,8 +219,6 @@
                 const isReg = party.gstin && party.gstin.length === 15;
 
                 const billItems = vItems.filter(vi => vi.voucher_id === v.id);
-                
-                // Group invoice items by rate to handle multi-rate bills
                 let invoiceRateGroups = {};
 
                 billItems.forEach(bi => {
@@ -253,7 +238,6 @@
                     invoiceRateGroups[rate].cgst += c_amt;
                     invoiceRateGroups[rate].sgst += s_amt;
 
-                    // HSN Accumulation
                     const hsn = bi.hsn || prod.hsn || '9999';
                     if(!gstData.hsn[hsn]) gstData.hsn[hsn] = { desc: prod.name || 'Misc', qty: 0, val: 0, igst: 0, cgst: 0, sgst: 0 };
                     gstData.hsn[hsn].qty += bi.qty;
@@ -264,7 +248,6 @@
                 });
 
                 if (v.type === 'Sales') {
-                    // Update Outward Totals
                     Object.values(invoiceRateGroups).forEach(g => {
                         gstData.outward.taxable += g.taxable;
                         gstData.outward.igst += g.igst;
@@ -273,15 +256,8 @@
                     });
 
                     if(isReg) {
-                        gstData.b2b.push({ 
-                            gstin: party.gstin, 
-                            name: party.name, 
-                            inv: v.voucher_no, 
-                            date: v.date, 
-                            rates: invoiceRateGroups 
-                        });
+                        gstData.b2b.push({ gstin: party.gstin, name: party.name, inv: v.voucher_no, date: v.date, rates: invoiceRateGroups });
                     } else {
-                        // B2CS Grouping (Per State Per Rate)
                         Object.entries(invoiceRateGroups).forEach(([rate, g]) => {
                             const k = `${pState}_${rate}`;
                             if(!gstData.b2cs[k]) gstData.b2cs[k] = { state: pState, rate: parseFloat(rate), taxable: 0, igst: 0, cgst: 0, sgst: 0 };
@@ -313,93 +289,79 @@
             document.getElementById('inputTax').innerText = '₹' + formatInr(inTotal);
             document.getElementById('netPayable').innerText = '₹' + formatInr(Math.max(0, outTotal - inTotal));
 
-            // B2B Table
+            const statusEl = document.getElementById('statusMsg');
+            if (outTotal > 0 && !company.gstin) {
+                statusEl.innerText = '⚠️ GSTIN missing in settings';
+                statusEl.style.color = 'var(--red)';
+            } else {
+                statusEl.innerText = '✅ Checks complete. Ready for Export.';
+                statusEl.style.color = 'var(--green)';
+            }
+
             document.querySelector('#b2bTable tbody').innerHTML = gstData.b2b.map(r => {
                 let tx = 0, i = 0, c = 0, s = 0;
                 Object.values(r.rates).forEach(g => { tx += g.taxable; i += g.igst; c += g.cgst; s += g.sgst; });
                 return `<tr><td>${r.gstin}</td><td>${r.name}</td><td>${r.inv}</td><td>${r.date}</td><td class="amt">${formatInr(tx)}</td><td class="amt">${formatInr(i)}</td><td class="amt">${formatInr(c)}</td><td class="amt">${formatInr(s)}</td></tr>`;
             }).join('') || '<tr><td colspan="8" style="text-align:center;">No B2B Data</td></tr>';
 
-            // B2CS Table
             document.querySelector('#b2csTable tbody').innerHTML = Object.values(gstData.b2cs).map(r => `
-                <tr><td>State: ${r.state}</td><td>${r.rate}%</td><td class="amt">${formatInr(r.taxable)}</td><td class="amt">${formatInr(r.igst)}</td><td class="amt">${formatInr(r.cgst)}</td><td class="amt">${formatInr(r.sgst)}</td></tr>
+                <tr><td>${r.state} (${r.state.padStart(2,'0')})</td><td>${r.rate}%</td><td class="amt">${formatInr(r.taxable)}</td><td class="amt">${formatInr(r.igst)}</td><td class="amt">${formatInr(r.cgst)}</td><td class="amt">${formatInr(r.sgst)}</td></tr>
             `).join('') || '<tr><td colspan="6" style="text-align:center;">No B2CS Data</td></tr>';
 
-            // GSTR-3B
             document.querySelector('#summaryTable3B tbody').innerHTML = `
                 <tr><td>3.1 Outward Taxable Supplies</td><td class="amt">${formatInr(gstData.outward.taxable)}</td><td class="amt">${formatInr(gstData.outward.igst)}</td><td class="amt">${formatInr(gstData.outward.cgst)}</td><td class="amt">${formatInr(gstData.outward.sgst)}</td></tr>
-                <tr style="background:#f0fdf4;"><td>4. Eligible ITC</td><td class="amt">-</td><td class="amt">${formatInr(gstData.itc.igst)}</td><td class="amt">${formatInr(gstData.itc.cgst)}</td><td class="amt">${formatInr(gstData.itc.sgst)}</td></tr>
+                <tr style="background:#f0fdf4;"><td>4. Eligible ITC (Purchases)</td><td class="amt">-</td><td class="amt">${formatInr(gstData.itc.igst)}</td><td class="amt">${formatInr(gstData.itc.cgst)}</td><td class="amt">${formatInr(gstData.itc.sgst)}</td></tr>
             `;
 
-            // HSN Table
             document.querySelector('#hsnTable tbody').innerHTML = Object.entries(gstData.hsn).map(([h, d]) => `
                 <tr><td>${h}</td><td>${d.desc}</td><td class="amt">${d.qty}</td><td class="amt">${formatInr(d.val)}</td><td class="amt">${formatInr(d.igst)}</td><td class="amt">${formatInr(d.cgst)}</td><td class="amt">${formatInr(d.sgst)}</td></tr>
             `).join('') || '<tr><td colspan="7" style="text-align:center;">No HSN Data</td></tr>';
         }
 
         function downloadGSTR1() {
-            if(!company.gstin) return alert("Update Company GSTIN in Settings first!");
+            if (!company.gstin) return alert("Pehle Settings mein Company GSTIN update karein!");
             const month = document.getElementById('gstMonth').value.replace('-', '');
             
-            const json = {
-                gstin: company.gstin,
-                fp: month,
-                version: "2.0", // Updated to modern schema
-                gt: 0,
-                cur_gt: 0,
-                b2b: gstData.b2b.map(b => {
-                    let totalVal = 0;
-                    const itms = Object.entries(b.rates).map(([rt, g], idx) => {
-                        totalVal += (g.taxable + g.igst + g.cgst + g.sgst);
-                        return {
-                            num: idx + 1,
-                            itm_det: {
-                                rt: parseFloat(rt),
-                                txval: parseFloat(g.taxable.toFixed(2)),
-                                iamt: parseFloat(g.igst.toFixed(2)),
-                                camt: parseFloat(g.cgst.toFixed(2)),
-                                samt: parseFloat(g.sgst.toFixed(2)),
-                                csamt: 0
-                            }
-                        };
-                    });
+            const b2bMap = {};
+            gstData.b2b.forEach(bill => {
+                if (!b2bMap[bill.gstin]) b2bMap[bill.gstin] = { ctin: bill.gstin, inv: [] };
+                let invoiceTotalVal = 0;
+                const itms = Object.entries(bill.rates).map(([rt, g], idx) => {
+                    const txval = Number(g.taxable.toFixed(2));
+                    const iamt = Number(g.igst.toFixed(2));
+                    const camt = Number(g.cgst.toFixed(2));
+                    const samt = Number(g.sgst.toFixed(2));
+                    invoiceTotalVal += txval + iamt + camt + samt;
                     return {
-                        ctin: b.gstin,
-                        inv: [{
-                            inum: b.inv,
-                            idt: b.date.split('-').reverse().join('-'),
-                            val: parseFloat(totalVal.toFixed(2)),
-                            pos: b.gstin.substring(0, 2),
-                            rchrg: "N",
-                            inv_typ: "R",
-                            itms: itms
-                        }]
+                        num: idx + 1,
+                        itm_det: { rt: Number(rt), txval, iamt, camt, samt, csamt: 0 }
                     };
-                }),
-                b2cs: Object.values(gstData.b2cs).map(c => ({
-                    sply_ty: "OE",
-                    pos: c.state.padStart(2, '0'),
-                    rt: c.rate,
-                    txval: parseFloat(c.taxable.toFixed(2)),
-                    iamt: parseFloat(c.igst.toFixed(2)),
-                    camt: parseFloat(c.cgst.toFixed(2)),
-                    samt: parseFloat(c.sgst.toFixed(2)),
-                    csamt: 0
-                })),
+                });
+                b2bMap[bill.gstin].inv.push({
+                    inum: bill.inv, idt: bill.date.split('-').reverse().join('-'),
+                    val: Number(invoiceTotalVal.toFixed(2)), pos: bill.gstin.substring(0, 2),
+                    rchrg: "N", inv_typ: "R", itms
+                });
+            });
+
+            const json = {
+                gstin: company.gstin, fp: month, version: "1.3", gt: 0, cur_gt: 0,
+                b2b: Object.values(b2bMap),
+                b2cs: Object.values(gstData.b2cs)
+                    .filter(c => c.taxable > 0)
+                    .map(c => ({
+                        pos: c.state.padStart(2, '0'), rt: c.rate, txval: Number(c.taxable.toFixed(2)),
+                        iamt: Number(c.igst.toFixed(2)), camt: Number(c.cgst.toFixed(2)), samt: Number(c.sgst.toFixed(2)),
+                        csamt: 0, sply_ty: "B2C" 
+                    })),
                 hsn: {
                     data: Object.entries(gstData.hsn).map(([hsn, d], idx) => ({
-                        num: idx + 1,
-                        hsn_sc: hsn,
-                        desc: d.desc,
-                        uqc: "NOS",
-                        qty: parseFloat(d.qty),
-                        txval: parseFloat(d.val.toFixed(2)),
-                        iamt: parseFloat(d.igst.toFixed(2)),
-                        camt: parseFloat(d.cgst.toFixed(2)),
-                        samt: parseFloat(d.sgst.toFixed(2)),
-                        csamt: 0
+                        num: idx + 1, hsn_sc: hsn.padStart(4, '0'), desc: d.desc.substring(0, 150), uqc: "NOS",
+                        qty: Number(d.qty.toFixed(2)), txval: Number(d.val.toFixed(2)),
+                        iamt: Number(d.igst.toFixed(2)), camt: Number(d.cgst.toFixed(2)), samt: Number(d.sgst.toFixed(2)), csamt: 0
                     }))
-                }
+                },
+                cdnr: [], cdnur: [], expt: [], at: [], atadj: [], nil: { inv: [] }, ecom: []
             };
 
             const blob = new Blob([JSON.stringify(json, null, 2)], { type: 'application/json' });
