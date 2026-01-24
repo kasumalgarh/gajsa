@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
     <title>Advanced Reporting - Arth Book</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -51,7 +52,7 @@
         table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 15px; }
         th { background: #f1f5f9; padding: 12px; text-align: left; font-weight: 600; color: #475569; border-bottom: 2px solid var(--border); }
         td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
-        .amt { text-align: right; font-weight: 600; font-family: monospace; }
+        .amt { text-align: right; font-weight: 600; font-family: 'JetBrains Mono', monospace; }
         .bold-row { font-weight: 700; background: #f8fafc; border-top: 2px solid var(--border); border-bottom: 2px solid var(--border); }
 
         /* HEALTH REPORT */
@@ -92,28 +93,28 @@
             <i class="fas fa-cube"></i> Arth Book
         </div>
         <ul class="nav-links" style="list-style: none; padding: 0 10px;">
-            <li><a href="index.html"><i class="fas fa-home"></i> Dashboard</a></li>
-            <li><a href="sales_invoice.html"><i class="fas fa-file-invoice"></i> Sales (POS)</a></li>
-            <li><a href="purchase_invoice.html"><i class="fas fa-truck"></i> Purchase</a></li>
-            <li><a href="vouchers.html"><i class="fas fa-receipt"></i> Day Book</a></li>
+            <li><a href="index.html" class="nav-link"><i class="fas fa-home"></i> Dashboard</a></li>
+            <li><a href="sales_invoice.html" class="nav-link"><i class="fas fa-file-invoice"></i> Sales (POS)</a></li>
+            <li><a href="purchase_invoice.html" class="nav-link"><i class="fas fa-truck"></i> Purchase</a></li>
+            <li><a href="vouchers.html" class="nav-link"><i class="fas fa-receipt"></i> Day Book</a></li>
             
             <li style="margin-top:15px; margin-bottom:5px; font-size:11px; color:#64748b; font-weight:bold; padding-left:15px; text-transform:uppercase;">Masters</li>
-            <li><a href="item_master.html"><i class="fas fa-boxes"></i> Inventory</a></li>
-            <li><a href="ArthBook.html"><i class="fas fa-users"></i> Parties</a></li>
-            <li><a href="coa.html"><i class="fas fa-sitemap"></i> Accounts</a></li>
+            <li><a href="item_master.html" class="nav-link"><i class="fas fa-boxes"></i> Inventory</a></li>
+            <li><a href="ArthBook.html" class="nav-link"><i class="fas fa-users"></i> Parties</a></li>
+            <li><a href="coa.html" class="nav-link"><i class="fas fa-sitemap"></i> Accounts</a></li>
             
             <li style="margin-top:15px; margin-bottom:5px; font-size:11px; color:#64748b; font-weight:bold; padding-left:15px; text-transform:uppercase;">Reports & Tax</li>
-            <li><a href="reports.html"><i class="fas fa-chart-line"></i> Reports</a></li>
-            <li><a href="gst_filing.html"><i class="fas fa-university"></i> GST Returns</a></li>
-            <li><a href="taxation.html"><i class="fas fa-calculator"></i> Tax / ITR</a></li>
+            <li><a href="reports.html" class="nav-link active"><i class="fas fa-chart-line"></i> Reports</a></li>
+            <li><a href="gst_filing.html" class="nav-link"><i class="fas fa-university"></i> GST Returns</a></li>
+            <li><a href="taxation.html" class="nav-link"><i class="fas fa-calculator"></i> Tax / ITR</a></li>
             
             <hr style="border:0; border-top:1px solid rgba(255,255,255,0.1); margin:15px 5px;">
-            <li><a href="settings.html"><i class="fas fa-cog"></i> Settings</a></li>
-            <li><a href="help.html"><i class="fas fa-question-circle"></i> Help</a></li>
+            <li><a href="settings.html" class="nav-link"><i class="fas fa-cog"></i> Settings</a></li>
+            <li><a href="help.html" class="nav-link"><i class="fas fa-question-circle"></i> Help</a></li>
         </ul>
         
         <div style="padding: 20px; font-size: 11px; color: #64748b; text-align: center; margin-top:auto;">
-            Arth Book v4.0<br>Authorized User
+            Arth Book v4.1<br>Authorized User
         </div>
     </div>
 
@@ -140,7 +141,7 @@
                 </optgroup>
             </select>
 
-            <div id="partyFilter" style="display:none; width:100%;">
+            <div id="partyFilter" style="display:none; width:300px;">
                 <input type="text" id="partyInput" list="partyList" placeholder="Search & Select Party..." style="width:100%;">
                 <datalist id="partyList"></datalist>
                 <input type="hidden" id="selectedPartyId">
@@ -172,6 +173,9 @@
         let ledgers = [], items = [], groups = [], acctEntries = [], vouchers = [], batches = [];
         let ledgerMap = {}, itemMap = {};
 
+        // Helper: Dynamic Group ID Lookup
+        const getGroupIdByName = (name) => groups.find(g => g.name === name)?.id;
+
         // AI Safety
         if (!window.AI) {
             window.AI = {
@@ -181,41 +185,27 @@
 
         window.onload = async () => {
             await DB.init();
-
-            // Load all necessary data
             [ledgers, items, groups, acctEntries, vouchers, batches] = await Promise.all([
-                DB.getAll('ledgers'), 
-                DB.getAll('items'),
-                DB.getAll('groups'),
-                DB.getAll('acct_entries'),
-                DB.getAll('vouchers'),
-                DB.getAll('batches') || []
+                DB.getAll('ledgers'), DB.getAll('items'), DB.getAll('groups'),
+                DB.getAll('acct_entries'), DB.getAll('vouchers'), DB.getAll('batches') || []
             ]);
-
             ledgers.forEach(l => ledgerMap[l.id] = l.name);
             items.forEach(i => itemMap[i.id] = i.name);
 
             const today = new Date();
             document.getElementById('toDate').valueAsDate = today;
             document.getElementById('fromDate').valueAsDate = new Date(today.getFullYear(), today.getMonth(), 1);
-
             populatePartyDatalist();
         };
 
         function toggleMenu() {
-            document.getElementById('mySidebar').classList.toggle('active');
+            document.getElementById('sidebar').classList.toggle('active');
             document.querySelector('.overlay').classList.toggle('active');
         }
 
         function populatePartyDatalist() {
             const datalist = document.getElementById('partyList');
-            datalist.innerHTML = '';
-            ledgers.sort((a,b) => a.name.localeCompare(b.name)).forEach(l => {
-                const opt = document.createElement('option');
-                opt.value = l.name;
-                opt.dataset.id = l.id;
-                datalist.appendChild(opt);
-            });
+            datalist.innerHTML = ledgers.map(l => `<option value="${l.name}" data-id="${l.id}">`).join('');
         }
 
         function toggleFilters() {
@@ -224,16 +214,14 @@
         }
 
         function getSelectedPartyId() {
-            const input = document.getElementById('partyInput').value.trim();
-            const option = Array.from(document.querySelectorAll('#partyList option'))
-                .find(opt => opt.value === input);
-            return option ? option.dataset.id : null;
+            const val = document.getElementById('partyInput').value;
+            return ledgers.find(l => l.name === val)?.id;
         }
 
         async function generateReport() {
             const type = document.getElementById('reportType').value;
             const container = document.getElementById('reportContent');
-            container.innerHTML = '<div style="text-align:center; padding:80px; color:#94a3b8;"><h3>Generating Report...</h3></div>';
+            container.innerHTML = '<div style="text-align:center; padding:80px;"><h3>Generating Report...</h3></div>';
 
             setTimeout(async () => {
                 try {
@@ -243,14 +231,13 @@
                     else if(type === 'TrialBalance') renderTrialBalance(container);
                     else if(type === 'DayBook') renderDayBook(container);
                     else if(type === 'Ledger') renderPartyLedger(container);
-                    else if(type === 'Receivables') renderOutstanding(container, 13, "Receivables (Udhari)"); // 13=Debtors
-                    else if(type === 'Payables') renderOutstanding(container, 12, "Payables (Dena Hai)"); // 12=Creditors
+                    else if(type === 'Receivables') renderOutstanding(container, getGroupIdByName('Sundry Debtors'), "Receivables (Udhari)");
+                    else if(type === 'Payables') renderOutstanding(container, getGroupIdByName('Sundry Creditors'), "Payables (Dena Hai)");
                     else if(type === 'GSTReport') renderGSTReport(container);
                     else if(type === 'Stock') renderStockSummary(container);
                     else if(type === 'LowStock') renderLowStock(container);
                     else if(type === 'Expiry') renderExpiryReport(container);
                 } catch (e) {
-                    console.error(e);
                     container.innerHTML = `<h3 style="color:red; text-align:center;">Error: ${e.message}</h3>`;
                 }
             }, 200);
@@ -261,15 +248,12 @@
             const ledger = ledgers.find(l => l.id === ledgerId);
             if(!ledger) return 0;
             let balance = parseFloat(ledger.opening_balance) || 0;
-
-            acctEntries
-                .filter(e => e.ledger_id === ledgerId)
-                .forEach(e => {
-                    const v = vouchers.find(v => v.id === e.voucher_id);
-                    if(!upToDate || (v && v.date <= upToDate)) {
-                        balance += (parseFloat(e.debit) || 0) - (parseFloat(e.credit) || 0);
-                    }
-                });
+            acctEntries.filter(e => e.ledger_id === ledgerId).forEach(e => {
+                const v = vouchers.find(v => v.id === e.voucher_id);
+                if(!upToDate || (v && v.date <= upToDate)) {
+                    balance += (parseFloat(e.debit) || 0) - (parseFloat(e.credit) || 0);
+                }
+            });
             return balance;
         }
 
@@ -279,8 +263,6 @@
                 const bal = calculateLedgerBalance(l.id);
                 const group = groups.find(g => g.id === l.group_id);
                 const root = group ? GROUP_TYPES[group.name] || 'Liabilities' : 'Liabilities';
-                
-                // Aggregation Logic
                 if(root === 'Assets' || root === 'Expenses') balances[root] += bal;
                 else balances[root] += (bal * -1); 
             });
@@ -302,118 +284,64 @@
         // --- RENDER FUNCTIONS ---
         async function renderBusinessHealth(container) {
             const stockValue = items.reduce((sum, i) => sum + ((i.current_stock || 0) * (i.std_cost || 0)), 0);
-            const prediction = await window.AI.predictNextMonth() || { forecast: 0, dailyAvg: 0 };
-
+            const prediction = await window.AI.predictNextMonth();
             container.innerHTML = `
-                <h2>Business Health Overview 
-
-[Image of financial growth chart]
-</h2>
+                <h2>Business Health Overview</h2>
                 <p class="sub-head">AI-Powered Insights • ${new Date().toLocaleDateString('en-IN')}</p>
-
                 <div class="ai-box">
                     <h3 style="color:var(--accent); margin-bottom:10px;">🤖 AI Prediction</h3>
-                    <p>Based on recent sales trends:</p>
-                    <div style="font-size:28px; font-weight:800; margin:15px 0;">₹${parseFloat(prediction.forecast || 0).toLocaleString('en-IN')}</div>
-                    <p>Projected Revenue Next Month<br><small>Daily Avg: ₹${parseFloat(prediction.dailyAvg || 0).toLocaleString('en-IN')}</small></p>
+                    <div style="font-size:28px; font-weight:800; margin:15px 0;">₹${(prediction.forecast || 0).toLocaleString('en-IN')}</div>
+                    <p>Projected Revenue Next Month<br><small>Daily Avg: ₹${(prediction.dailyAvg || 0).toLocaleString('en-IN')}</small></p>
                 </div>
-
                 <div class="health-grid">
-                    <div class="h-card">
-                        <h4>Current Stock Value</h4>
-                        <div class="amt" style="font-size:24px; color:var(--green);">₹${stockValue.toLocaleString('en-IN')}</div>
-                    </div>
-                    <div class="h-card">
-                        <h4>Sales Trend</h4>
-                        <canvas id="trendChart" height="180"></canvas>
-                    </div>
-                </div>
-            `;
-
+                    <div class="h-card"><h4>Stock Value</h4><div class="amt" style="font-size:24px; color:var(--green);">₹${stockValue.toLocaleString('en-IN')}</div></div>
+                    <div class="h-card"><canvas id="trendChart" height="180"></canvas></div>
+                </div>`;
             new Chart(document.getElementById('trendChart'), {
                 type: 'line',
-                data: {
-                    labels: ['Current Month', 'Next Month (AI)'],
-                    datasets: [{
-                        label: 'Revenue',
-                        data: [prediction.currentMonth || 0, prediction.forecast || 0],
-                        borderColor: '#2563eb',
-                        backgroundColor: 'rgba(37,99,235,0.1)',
-                        tension: 0.4,
-                        fill: true
-                    }]
-                },
-                options: { responsive: true, plugins: { legend: { display: false } } }
+                data: { labels: ['Current', 'Next (AI)'], datasets: [{ data: [prediction.currentMonth, prediction.forecast], borderColor: '#2563eb', fill: true }] }
             });
         }
 
         function renderProfitLoss(container) {
             const balances = getGroupBalances();
             const closingStock = items.reduce((s, i) => s + ((i.current_stock || 0) * (i.std_cost || 0)), 0);
-            const grossProfit = balances.Income - balances.Expenses;
-            const netProfit = grossProfit + closingStock; 
-
+            const netProfit = (balances.Income - balances.Expenses) + closingStock; 
             container.innerHTML = `
                 <h2>Profit & Loss Statement</h2>
-                <p class="sub-head">For the Period</p>
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
-                    <div>
-                        <table>
-                            <thead><tr><th>Expenses</th><th class="amt">Amount</th></tr></thead>
-                            <tbody>
-                                <tr><td>Purchases & Expenses</td><td class="amt">${balances.Expenses.toLocaleString('en-IN')}</td></tr>
-                                ${netProfit > 0 ? `<tr class="bold-row"><td>Net Profit</td><td class="amt" style="color:var(--green);">${netProfit.toLocaleString('en-IN')}</td></tr>` : ''}
-                            </tbody>
-                        </table>
-                    </div>
-                    <div>
-                        <table>
-                            <thead><tr><th>Income</th><th class="amt">Amount</th></tr></thead>
-                            <tbody>
-                                <tr><td>Sales & Income</td><td class="amt">${balances.Income.toLocaleString('en-IN')}</td></tr>
-                                <tr><td>Closing Stock</td><td class="amt">${closingStock.toLocaleString('en-IN')}</td></tr>
-                                ${netProfit < 0 ? `<tr class="bold-row"><td>Net Loss</td><td class="amt" style="color:var(--red);">${Math.abs(netProfit).toLocaleString('en-IN')}</td></tr>` : ''}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            `;
+                    <table><thead><tr><th>Expenses</th><th class="amt">Amount</th></tr></thead><tbody>
+                        <tr><td>Purchases & Expenses</td><td class="amt">${balances.Expenses.toLocaleString('en-IN')}</td></tr>
+                        ${netProfit > 0 ? `<tr class="bold-row"><td>Net Profit</td><td class="amt" style="color:var(--green);">${netProfit.toLocaleString('en-IN')}</td></tr>` : ''}
+                    </tbody></table>
+                    <table><thead><tr><th>Income</th><th class="amt">Amount</th></tr></thead><tbody>
+                        <tr><td>Sales & Income</td><td class="amt">${balances.Income.toLocaleString('en-IN')}</td></tr>
+                        <tr><td>Closing Stock</td><td class="amt">${closingStock.toLocaleString('en-IN')}</td></tr>
+                        ${netProfit < 0 ? `<tr class="bold-row"><td>Net Loss</td><td class="amt" style="color:var(--red);">${Math.abs(netProfit).toLocaleString('en-IN')}</td></tr>` : ''}
+                    </tbody></table>
+                </div>`;
         }
 
         function renderBalanceSheet(container) {
             const balances = getGroupBalances();
             const closingStock = items.reduce((s, i) => s + ((i.current_stock || 0) * (i.std_cost || 0)), 0);
             const netProfit = (balances.Income - balances.Expenses) + closingStock; 
-            
             const totalLiab = balances.Liabilities + netProfit;
             const totalAssets = balances.Assets + closingStock;
-
             container.innerHTML = `
                 <h2>Balance Sheet</h2>
-                <p class="sub-head">As on ${new Date().toLocaleDateString('en-IN')}</p>
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
-                    <div>
-                        <table>
-                            <thead><tr><th>Liabilities</th><th class="amt">Amount</th></tr></thead>
-                            <tbody>
-                                <tr><td>Capital & Liabilities</td><td class="amt">${balances.Liabilities.toLocaleString('en-IN')}</td></tr>
-                                <tr><td>Net Profit / Loss</td><td class="amt">${netProfit.toLocaleString('en-IN')}</td></tr>
-                                <tr class="bold-row"><td>Total</td><td class="amt">${totalLiab.toLocaleString('en-IN')}</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div>
-                        <table>
-                            <thead><tr><th>Assets</th><th class="amt">Amount</th></tr></thead>
-                            <tbody>
-                                <tr><td>Fixed & Current Assets</td><td class="amt">${balances.Assets.toLocaleString('en-IN')}</td></tr>
-                                <tr><td>Closing Stock</td><td class="amt">${closingStock.toLocaleString('en-IN')}</td></tr>
-                                <tr class="bold-row"><td>Total</td><td class="amt">${totalAssets.toLocaleString('en-IN')}</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            `;
+                    <table><thead><tr><th>Liabilities</th><th class="amt">Amount</th></tr></thead><tbody>
+                        <tr><td>Capital & Liabilities</td><td class="amt">${balances.Liabilities.toLocaleString('en-IN')}</td></tr>
+                        <tr><td>Net Profit</td><td class="amt">${netProfit.toLocaleString('en-IN')}</td></tr>
+                        <tr class="bold-row"><td>Total</td><td class="amt">${totalLiab.toLocaleString('en-IN')}</td></tr>
+                    </tbody></table>
+                    <table><thead><tr><th>Assets</th><th class="amt">Amount</th></tr></thead><tbody>
+                        <tr><td>Fixed & Current Assets</td><td class="amt">${balances.Assets.toLocaleString('en-IN')}</td></tr>
+                        <tr><td>Closing Stock</td><td class="amt">${closingStock.toLocaleString('en-IN')}</td></tr>
+                        <tr class="bold-row"><td>Total</td><td class="amt">${totalAssets.toLocaleString('en-IN')}</td></tr>
+                    </tbody></table>
+                </div>`;
         }
 
         function renderTrialBalance(container) {
@@ -422,183 +350,95 @@
             ledgers.forEach(l => {
                 const bal = calculateLedgerBalance(l.id);
                 if(Math.abs(bal) < 0.01) return;
-                const dr = bal > 0 ? bal : 0;
-                const cr = bal < 0 ? Math.abs(bal) : 0;
+                const dr = bal > 0 ? bal : 0; const cr = bal < 0 ? Math.abs(bal) : 0;
                 totalDr += dr; totalCr += cr;
                 html += `<tr><td>${l.name}</td><td class="amt">${dr ? dr.toLocaleString('en-IN') : ''}</td><td class="amt">${cr ? cr.toLocaleString('en-IN') : ''}</td></tr>`;
             });
-            html += `<tr class="bold-row"><td>Total</td><td class="amt">${totalDr.toLocaleString('en-IN')}</td><td class="amt">${totalCr.toLocaleString('en-IN')}</td></tr></tbody></table>`;
-            container.innerHTML = html;
+            container.innerHTML = html + `<tr class="bold-row"><td>Total</td><td class="amt">${totalDr.toLocaleString('en-IN')}</td><td class="amt">${totalCr.toLocaleString('en-IN')}</td></tr></tbody></table>`;
         }
 
-        // --- NEW: OUTSTANDING REPORTS ---
         function renderOutstanding(container, groupId, title) {
-            // groupId 13 = Debtors, 12 = Creditors
-            let html = `<h2>Outstanding ${title}</h2><p class="sub-head">Pending Bills</p>
-            <table><thead><tr><th>Party Name</th><th class="amt">Pending Amount</th></tr></thead><tbody>`;
-            
-            let totalPending = 0;
-            const targetLedgers = ledgers.filter(l => l.group_id == groupId); // 13 or 12
-
-            targetLedgers.forEach(l => {
+            if(!groupId) return container.innerHTML = `<h3 style="color:red; text-align:center;">Group '${title}' not found in Database.</h3>`;
+            let html = `<h2>Outstanding ${title}</h2><table><thead><tr><th>Party Name</th><th class="amt">Amount</th></tr></thead><tbody>`;
+            let total = 0;
+            ledgers.filter(l => l.group_id == groupId).forEach(l => {
                 const bal = calculateLedgerBalance(l.id);
-                // For Debtors (Asset), Dr is +ve. For Creditors (Liab), Cr is +ve (so bal would be -ve in our logic)
-                const pending = groupId === 13 ? bal : (bal * -1);
-
+                const pending = (title.includes("Receivables")) ? bal : (bal * -1);
                 if(pending > 0.01) {
-                    totalPending += pending;
-                    html += `<tr><td>${l.name}</td><td class="amt" style="color:${groupId===13?'var(--red)':'var(--green)'};">₹${pending.toLocaleString('en-IN')}</td></tr>`;
+                    total += pending;
+                    html += `<tr><td>${l.name}</td><td class="amt">₹${pending.toLocaleString('en-IN')}</td></tr>`;
                 }
             });
-
-            if(totalPending === 0) html += `<tr><td colspan="2" style="text-align:center; padding:20px;">No Outstanding Amount</td></tr>`;
-            
-            html += `<tr class="bold-row"><td>Total Outstanding</td><td class="amt">₹${totalPending.toLocaleString('en-IN')}</td></tr></tbody></table>`;
-            container.innerHTML = html;
+            container.innerHTML = html + `<tr class="bold-row"><td>Total</td><td class="amt">₹${total.toLocaleString('en-IN')}</td></tr></tbody></table>`;
         }
 
-        // --- NEW: GST REPORT ---
         function renderGSTReport(container) {
-            // Group 11 = Duties & Taxes
-            const taxLedgers = ledgers.filter(l => l.group_id == 11);
-            let inputTax = 0, outputTax = 0;
-            
-            let html = `<h2>GST Tax Report</h2><p class="sub-head">Input vs Output</p>
-            <table><thead><tr><th>Tax Ledger</th><th class="amt">Input (Dr)</th><th class="amt">Output (Cr)</th></tr></thead><tbody>`;
-
+            const gid = getGroupIdByName('Duties & Taxes');
+            const taxLedgers = ledgers.filter(l => l.group_id == gid);
+            let inputTax = 0, outputTax = 0, html = `<h2>GST Tax Report</h2><table><thead><tr><th>Tax Ledger</th><th class="amt">Input (Dr)</th><th class="amt">Output (Cr)</th></tr></thead><tbody>`;
             taxLedgers.forEach(l => {
                 const bal = calculateLedgerBalance(l.id);
-                // Bal is net. We should approximate based on name or sign
-                // Logic: Input GST usually Dr (+ve), Output usually Cr (-ve)
-                const isInput = l.name.toLowerCase().includes('input');
-                const isOutput = l.name.toLowerCase().includes('output');
-                
-                let dr = 0, cr = 0;
-                if(bal > 0) dr = bal; 
-                else cr = Math.abs(bal);
-
-                if(isInput) inputTax += dr;
-                if(isOutput) outputTax += cr;
-
-                if(dr > 0 || cr > 0) {
-                    html += `<tr><td>${l.name}</td><td class="amt">${dr?dr.toFixed(2):'-'}</td><td class="amt">${cr?cr.toFixed(2):'-'}</td></tr>`;
-                }
+                let dr = bal > 0 ? bal : 0, cr = bal < 0 ? Math.abs(bal) : 0;
+                if(l.name.toLowerCase().includes('input')) inputTax += dr;
+                if(l.name.toLowerCase().includes('output')) outputTax += cr;
+                html += `<tr><td>${l.name}</td><td class="amt">${dr.toFixed(2)}</td><td class="amt">${cr.toFixed(2)}</td></tr>`;
             });
-
-            const netPayable = outputTax - inputTax;
-            const status = netPayable > 0 ? "Tax Payable" : "Tax Credit (Refund)";
-            const color = netPayable > 0 ? "var(--red)" : "var(--green)";
-
-            html += `<tr class="bold-row"><td>Total</td><td class="amt">₹${inputTax.toFixed(2)}</td><td class="amt">₹${outputTax.toFixed(2)}</td></tr>`;
-            html += `</tbody></table>
-            <div style="margin-top:20px; padding:15px; background:${netPayable > 0 ? '#fee2e2':'#dcfce7'}; border-radius:8px; text-align:center;">
-                <h3>${status}: <span style="color:${color};">₹${Math.abs(netPayable).toFixed(2)}</span></h3>
-            </div>`;
-            
-            container.innerHTML = html;
+            const net = outputTax - inputTax;
+            container.innerHTML = html + `<tr class="bold-row"><td>Total</td><td class="amt">₹${inputTax.toFixed(2)}</td><td class="amt">₹${outputTax.toFixed(2)}</td></tr></tbody></table>
+            <div style="margin-top:20px; padding:15px; background:${net>0?'#fee2e2':'#dcfce7'}; border-radius:8px; text-align:center;">
+                <h3>${net>0?'Payable':'Refund'}: ₹${Math.abs(net).toFixed(2)}</h3></div>`;
         }
 
         function renderDayBook(container) {
-            const from = document.getElementById('fromDate').value;
-            const to = document.getElementById('toDate').value;
+            const from = document.getElementById('fromDate').value, to = document.getElementById('toDate').value;
             const filtered = vouchers.filter(v => v.date >= from && v.date <= to).sort((a,b) => a.date.localeCompare(b.date));
-
-            let html = `<h2>Day Book</h2><p class="sub-head">${from} to ${to}</p><table><thead><tr><th>Date</th><th>Voucher</th><th>Type</th><th>Narration</th><th class="amt">Amount</th></tr></thead><tbody>`;
-            filtered.forEach(v => {
-                html += `<tr><td>${v.date}</td><td>${v.voucher_no}</td><td>${v.type}</td><td>${v.narration || '-'}</td><td class="amt">₹${(v.amount || 0).toLocaleString('en-IN')}</td></tr>`;
-            });
+            let html = `<h2>Day Book</h2><table><thead><tr><th>Date</th><th>Voucher</th><th>Type</th><th class="amt">Amount</th></tr></thead><tbody>`;
+            filtered.forEach(v => { html += `<tr><td>${v.date}</td><td>${v.voucher_no}</td><td>${v.type}</td><td class="amt">₹${(v.amount || 0).toLocaleString('en-IN')}</td></tr>`; });
             container.innerHTML = html + '</tbody></table>';
         }
 
         function renderPartyLedger(container) {
-            const partyId = getSelectedPartyId();
-            if(!partyId) return container.innerHTML = '<h3 style="text-align:center; color:var(--red);">Please select a valid party</h3>';
-
-            const partyName = ledgers.find(l => l.id == partyId)?.name || 'Unknown';
-            const from = document.getElementById('fromDate').value;
-            const to = document.getElementById('toDate').value;
-
-            let openingBal = calculateLedgerBalance(partyId, from);
-            let runningBal = openingBal;
-
-            const relevantEntries = acctEntries
-                .filter(e => e.ledger_id == partyId)
-                .map(e => ({ entry: e, voucher: vouchers.find(v => v.id === e.voucher_id) }))
-                .filter(x => x.voucher && x.voucher.date >= from && x.voucher.date <= to)
-                .sort((a,b) => a.voucher.date.localeCompare(b.voucher.date));
-
-            let html = `<h2>Ledger Statement - ${partyName}</h2><p class="sub-head">${from} to ${to}</p>
-            <table><thead><tr><th>Date</th><th>Voucher</th><th>Particulars</th><th class="amt">Debit</th><th class="amt">Credit</th><th class="amt">Balance</th></tr></thead><tbody>
-            <tr><td colspan="3"><strong>Opening Balance</strong></td><td class="amt"></td><td class="amt"></td><td class="amt"><strong>₹${openingBal.toLocaleString('en-IN')}</strong></td></tr>`;
-
-            relevantEntries.forEach(x => {
-                const dr = parseFloat(x.entry.debit) || 0;
-                const cr = parseFloat(x.entry.credit) || 0;
-                runningBal += dr - cr;
-                html += `<tr><td>${x.voucher.date}</td><td>${x.voucher.voucher_no}</td><td>${x.voucher.narration || x.voucher.type}</td>
-                <td class="amt">${dr ? '₹' + dr.toLocaleString('en-IN') : ''}</td>
-                <td class="amt">${cr ? '₹' + cr.toLocaleString('en-IN') : ''}</td>
-                <td class="amt"><strong>₹${runningBal.toLocaleString('en-IN')}</strong></td></tr>`;
+            const pid = getSelectedPartyId();
+            if(!pid) return container.innerHTML = '<h3 style="color:red; text-align:center;">Select a Party</h3>';
+            const from = document.getElementById('fromDate').value, to = document.getElementById('toDate').value;
+            let bal = calculateLedgerBalance(pid, from), html = `<h2>Ledger: ${ledgerMap[pid]}</h2><table><thead><tr><th>Date</th><th>Voucher</th><th class="amt">Debit</th><th class="amt">Credit</th><th class="amt">Balance</th></tr></thead><tbody>`;
+            html += `<tr><td colspan="4">Opening Balance</td><td class="amt">₹${bal.toLocaleString('en-IN')}</td></tr>`;
+            acctEntries.filter(e => e.ledger_id == pid).map(e => ({e, v: vouchers.find(v => v.id == e.voucher_id)})).filter(x => x.v && x.v.date >= from && x.v.date <= to).forEach(x => {
+                const dr = parseFloat(x.e.debit)||0, cr = parseFloat(x.e.credit)||0; bal += dr - cr;
+                html += `<tr><td>${x.v.date}</td><td>${x.v.voucher_no}</td><td class="amt">${dr||''}</td><td class="amt">${cr||''}</td><td class="amt">₹${bal.toLocaleString('en-IN')}</td></tr>`;
             });
-
-            html += `<tr class="bold-row"><td colspan="5">Closing Balance</td><td class="amt"><strong>₹${runningBal.toLocaleString('en-IN')}</strong></td></tr></tbody></table>`;
-            container.innerHTML = html;
+            container.innerHTML = html + '</tbody></table>';
         }
 
         function renderStockSummary(container) {
-            const totalValue = items.reduce((sum, i) => sum + ((i.current_stock || 0) * (i.std_cost || 0)), 0);
-            let html = `<h2>Stock Summary</h2><table><thead><tr><th>Item</th><th>Current Stock</th><th>Rate</th><th class="amt">Value</th></tr></thead><tbody>`;
-            items.forEach(i => {
-                const value = (i.current_stock || 0) * (i.std_cost || 0);
-                html += `<tr><td>${i.name}</td><td class="amt">${i.current_stock || 0} ${i.unit || ''}</td><td class="amt">₹${(i.std_cost || 0).toFixed(2)}</td><td class="amt">₹${value.toLocaleString('en-IN')}</td></tr>`;
-            });
-            html += `<tr class="bold-row"><td colspan="3">Total Stock Value</td><td class="amt">₹${totalValue.toLocaleString('en-IN')}</td></tr></tbody></table>`;
-            container.innerHTML = html;
+            let total = 0, html = `<h2>Stock Summary</h2><table><thead><tr><th>Item</th><th>Stock</th><th class="amt">Value</th></tr></thead><tbody>`;
+            items.forEach(i => { const val = (i.current_stock||0)*(i.std_cost||0); total += val; html += `<tr><td>${i.name}</td><td>${i.current_stock}</td><td class="amt">₹${val.toLocaleString('en-IN')}</td></tr>`; });
+            container.innerHTML = html + `<tr class="bold-row"><td>Total Value</td><td></td><td class="amt">₹${total.toLocaleString('en-IN')}</td></tr></tbody></table>`;
         }
 
         function renderLowStock(container) {
-            const lowItems = items.filter(i => (i.current_stock || 0) <= (i.reorder_level || 5));
-            let html = `<h2>Low Stock Alert</h2>`;
-            if(lowItems.length === 0) html += '<p style="text-align:center; color:var(--green); padding:50px;">✨ All items above reorder level!</p>';
-            else {
-                html += `<table><thead><tr><th>Item</th><th>Current Stock</th><th>Reorder Level</th></tr></thead><tbody>`;
-                lowItems.forEach(i => {
-                    html += `<tr><td>${i.name}</td><td class="amt" style="color:var(--red);">${i.current_stock || 0}</td><td class="amt">${i.reorder_level || 0}</td></tr>`;
-                });
-                html += '</tbody></table>';
-            }
-            container.innerHTML = html;
+            const low = items.filter(i => (i.current_stock||0) <= (i.reorder_level||5));
+            let html = `<h2>Low Stock Alert</h2><table><thead><tr><th>Item</th><th>Current</th><th>Min</th></tr></thead><tbody>`;
+            low.forEach(i => { html += `<tr><td>${i.name}</td><td style="color:red;">${i.current_stock}</td><td>${i.reorder_level}</td></tr>`; });
+            container.innerHTML = html + '</tbody></table>';
         }
 
         function renderExpiryReport(container) {
             const today = new Date().toISOString().slice(0,10);
-            const soon = new Date(Date.now() + 30*24*60*60*1000).toISOString().slice(0,10);
-            let html = `<h2>Batch Expiry Report</h2><table><thead><tr><th>Item</th><th>Batch</th><th>Expiry Date</th><th>Qty</th><th>Status</th></tr></thead><tbody>`;
-            batches.forEach(b => {
-                if(!b.expiry_date) return;
-                const itemName = itemMap[b.item_id] || `Item ${b.item_id}`;
-                const status = b.expiry_date < today ? 'Expired' : (b.expiry_date <= soon ? 'Expiring Soon' : 'OK');
-                const color = b.expiry_date < today ? 'var(--red)' : (b.expiry_date <= soon ? 'var(--orange)' : 'var(--green)');
-                html += `<tr><td>${itemName}</td><td>${b.batch_no || '-'}</td><td>${b.expiry_date}</td><td class="amt">${b.qty || 0}</td><td style="color:${color}; font-weight:700;">${status}</td></tr>`;
+            let html = `<h2>Expiry Report</h2><table><thead><tr><th>Item</th><th>Batch</th><th>Expiry</th></tr></thead><tbody>`;
+            batches.forEach(b => { 
+                const color = b.expiry_date < today ? 'red' : 'orange';
+                html += `<tr><td>${itemMap[b.item_id]}</td><td>${b.batch_no}</td><td style="color:${color}">${b.expiry_date}</td></tr>`; 
             });
             container.innerHTML = html + '</tbody></table>';
         }
 
         function exportToExcel() {
             const table = document.querySelector('#reportContent table');
-            if(!table) return alert('Generate a report first!');
-            let csv = [];
-            table.querySelectorAll('tr').forEach(row => {
-                const cells = row.querySelectorAll('th, td');
-                csv.push(Array.from(cells).map(cell => `"${cell.innerText.trim().replace(/"/g, '""')}"`).join(','));
-            });
-            const blob = new Blob([csv.join('\n')], { type: 'text/csv' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `ArthBook_Report_${new Date().toISOString().slice(0,10)}.csv`;
-            a.click();
-            URL.revokeObjectURL(url);
+            if(!table) return alert('No Data');
+            let csv = Array.from(table.querySelectorAll('tr')).map(tr => Array.from(tr.querySelectorAll('th,td')).map(td => `"${td.innerText}"`).join(',')).join('\n');
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'Report.csv'; a.click();
         }
     </script>
 </body>

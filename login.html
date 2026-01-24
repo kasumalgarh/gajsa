@@ -10,81 +10,21 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        body {
-            margin: 0;
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #0f172a; 
-            font-family: 'Inter', sans-serif;
-        }
-        .login-card {
-            background: white;
-            padding: 40px;
-            border-radius: 16px;
-            width: 360px;
-            text-align: center;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
-        }
+        body { margin: 0; height: 100vh; display: flex; align-items: center; justify-content: center; background: #0f172a; font-family: 'Inter', sans-serif; }
+        .login-card { background: white; padding: 40px; border-radius: 16px; width: 360px; text-align: center; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2); }
         .logo { font-size: 40px; margin-bottom: 15px; }
         h2 { margin: 0 0 5px 0; color: #1e293b; font-weight: 800; }
         p { margin: 0 0 30px 0; color: #64748b; font-size: 14px; }
-        
         .input-group { margin-bottom: 20px; text-align: left; position: relative; }
-        label { display: block; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
-        
-        input {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #e2e8f0;
-            border-radius: 10px;
-            font-size: 16px;
-            outline: none;
-            transition: all 0.2s ease;
-            box-sizing: border-box;
-        }
+        label { display: block; font-size: 11px; font-weight: 700; color: #475569; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
+        input { width: 100%; padding: 12px 15px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 16px; outline: none; transition: all 0.2s ease; box-sizing: border-box; }
         input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
-        
-        .toggle-password {
-            position: absolute;
-            right: 15px;
-            top: 35px;
-            cursor: pointer;
-            color: #94a3b8;
-            transition: 0.2s;
-        }
-        .toggle-password:hover { color: #3b82f6; }
-        
-        button {
-            width: 100%;
-            padding: 14px;
-            background: #0f172a;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            margin-top: 10px;
-        }
+        .toggle-password { position: absolute; right: 15px; top: 33px; cursor: pointer; color: #94a3b8; transition: 0.2s; font-size: 14px; }
+        button { width: 100%; padding: 14px; background: #0f172a; color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.2s ease; margin-top: 10px; }
         button:hover:not(:disabled) { background: #1e293b; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
         button:disabled { background: #94a3b8; cursor: not-allowed; }
-        
-        .error { 
-            color: #ef4444; 
-            font-size: 13px; 
-            margin-top: 15px; 
-            display: none; 
-            background: #fee2e2; 
-            padding: 10px; 
-            border-radius: 8px;
-            border: 1px solid #fecaca;
-        }
-        
-        .hint { font-size: 12px; color: #94a3b8; margin-top: 15px; }
-        .footer { margin-top: 25px; font-size: 11px; color: #94a3b8; border-top: 1px solid #f1f5f9; paddingTop: 15px; }
+        .error { color: #ef4444; font-size: 13px; margin-top: 15px; display: none; background: #fee2e2; padding: 10px; border-radius: 8px; border: 1px solid #fecaca; }
+        .footer { margin-top: 25px; font-size: 11px; color: #94a3b8; border-top: 1px solid #f1f5f9; padding-top: 15px; line-height: 1.5; }
     </style>
 </head>
 <body>
@@ -96,100 +36,110 @@
 
         <div class="input-group">
             <label>Username</label>
-            <input type="text" id="user" placeholder="e.g. admin" value="admin">
+            <input type="text" id="user" placeholder="e.g. admin">
         </div>
 
         <div class="input-group">
             <label>PIN / Password</label>
-            <input type="password" id="pass" placeholder="Enter PIN" value="123">
+            <input type="password" id="pass" placeholder="Enter PIN">
             <i class="fas fa-eye toggle-password" id="toggleIcon" onclick="togglePass()"></i>
         </div>
 
         <button id="loginBtn" onclick="handleLogin()">Unlock System 🔒</button>
-        
         <div class="error" id="errorMsg"></div>
         
-        <div class="hint">
-            Default Access: <b>admin / 123</b>
+        <div id="setupHint" style="display:none; font-size:12px; color:#f59e0b; margin-top:15px; font-weight:600;">
+            ⚠️ First time? Use: admin / 123
         </div>
-        
+
         <div class="footer">
-            Local Secure Environment v4.0<br>
+            Local Secure Environment v4.1<br>
             Data stored only in your browser (IndexedDB)
         </div>
     </div>
 
     <script src="db.js"></script>
-    <script src="security_utils.js" onerror="console.warn('Security Utils not found')"></script>
+    <script src="security_utils.js" onerror="console.warn('Security Utils Missing')"></script>
     
     <script>
-        // 1. Init DB & Session Check
+        let loginTimeout;
+
         window.onload = async () => {
             try {
                 await DB.init();
-                if(sessionStorage.getItem('user_session')) {
-                    window.location.href = 'index.html';
-                }
-            } catch(e) { console.error("Database Init Failed", e); }
+                
+                // 1. Remember Username Logic
+                const savedUser = localStorage.getItem('last_username');
+                if (savedUser) document.getElementById('user').value = savedUser;
+
+                // 2. Check if DB is empty for Hint
+                const users = await DB.getAll('users');
+                if (users.length === 0) document.getElementById('setupHint').style.display = 'block';
+
+                // 3. Auto-redirect
+                if(sessionStorage.getItem('user_session')) window.location.href = 'index.html';
+            } catch(e) { console.error("Init Error", e); }
         };
 
-        // 2. Toggle Password Visibility
         function togglePass() {
             const passInput = document.getElementById('pass');
             const icon = document.getElementById('toggleIcon');
-            if (passInput.type === 'password') {
-                passInput.type = 'text';
-                icon.classList.replace('fa-eye', 'fa-eye-slash');
-            } else {
-                passInput.type = 'password';
-                icon.classList.replace('fa-eye-slash', 'fa-eye');
-            }
+            const isPass = passInput.type === 'password';
+            passInput.type = isPass ? 'text' : 'password';
+            icon.classList.toggle('fa-eye', !isPass);
+            icon.classList.toggle('fa-eye-slash', isPass);
         }
 
-        // 3. Handle Login Logic
         async function handleLogin() {
             const uInput = document.getElementById('user');
             const pInput = document.getElementById('pass');
             const btn = document.getElementById('loginBtn');
             const err = document.getElementById('errorMsg');
 
-            // Sanitize & Case-insensitive username
             const u = uInput.value.trim().toLowerCase();
             const p = pInput.value;
 
-            if(!u || !p) {
-                showError("Please enter both username and password");
-                return;
-            }
+            if(!u || !p) return showError("Username & PIN required");
 
             // UI Loading State
             btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verifying...';
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="color:white;"></i> Verifying...';
             err.style.display = 'none';
 
+            // 4. Timeout logic (15 sec)
+            loginTimeout = setTimeout(() => {
+                resetBtn();
+                showError("⏳ Login Timeout: System taking too long to respond.");
+            }, 15000);
+
             try {
-                // Step A: Try direct login
+                // Step A: Direct login
                 try {
                     await DB.login(u, p);
                 } catch(loginErr) {
-                    // Step B: Try hashed login (fallback for security_utils)
+                    // Step B: Hashed login fallback
                     if(window.Security) {
                         const hashed = await Security.hashPassword(p);
                         await DB.login(u, hashed);
-                    } else {
-                        throw loginErr;
-                    }
+                    } else { throw loginErr; }
                 }
                 
-                // Success -> Redirect
+                // Success -> Save Username & Redirect
+                clearTimeout(loginTimeout);
+                localStorage.setItem('last_username', u);
                 window.location.href = 'index.html';
                 
             } catch (e) {
-                console.error("Login attempt failed:", e);
-                btn.disabled = false;
-                btn.innerText = "Unlock System 🔒";
+                clearTimeout(loginTimeout);
+                resetBtn();
                 showError("❌ Access Denied: Invalid Credentials");
             }
+        }
+
+        function resetBtn() {
+            const btn = document.getElementById('loginBtn');
+            btn.disabled = false;
+            btn.innerText = "Unlock System 🔒";
         }
 
         function showError(msg) {
@@ -198,10 +148,7 @@
             err.style.display = 'block';
         }
         
-        // Enter Key Support
-        document.addEventListener('keydown', (e) => {
-            if(e.key === 'Enter') handleLogin();
-        });
+        document.addEventListener('keydown', e => { if(e.key === 'Enter') handleLogin(); });
     </script>
 </body>
 </html>
