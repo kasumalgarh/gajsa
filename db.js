@@ -1,6 +1,6 @@
 /* FILENAME: db.js
    PURPOSE: Arth Book Core Engine (Ultimate - With Settings & Backup)
-   VERSION: 3.9 (Fixed Login & User Store)
+   VERSION: 3.10 (Google Drive Integration Added)
 */
 
 class ArthBookDB {
@@ -74,7 +74,7 @@ class ArthBookDB {
         });
     }
 
-    // --- 3. SECURITY & LOGIN (UPDATED) ---
+    // --- 3. SECURITY & LOGIN ---
     async login(username, password) {
         if (!this.db) await this.init();
         return new Promise((resolve, reject) => {
@@ -84,7 +84,6 @@ class ArthBookDB {
 
             request.onsuccess = (e) => {
                 const users = e.target.result;
-                // Find matching user (Case-insensitive username)
                 const user = users.find(u => u.username.toLowerCase() === username.toLowerCase() && u.password === password);
                 
                 if (user) {
@@ -99,7 +98,6 @@ class ArthBookDB {
     }
 
     async seedInitialData() {
-        // 1. Seed Groups & Ledgers
         const groups = await this.getAll('groups');
         if (groups.length === 0) {
             const tx = this.db.transaction(['groups', 'ledgers'], 'readwrite');
@@ -138,7 +136,6 @@ class ArthBookDB {
             defaultLedgers.forEach(l => lStore.put(l));
         }
 
-        // 2. Seed Initial Admin User
         const users = await this.getAll('users');
         if (users.length === 0) {
             const uTx = this.db.transaction('users', 'readwrite');
@@ -152,7 +149,66 @@ class ArthBookDB {
         }
     }
 
-    // --- 4. DATA HANDLING (NO REMOVALS) ---
+    // --- 4. BACKUP & CLOUD MANAGER (NEW & IMPROVED) ---
+    
+    // Original JSON Download Function
+    async exportBackup() {
+        if (!this.db) await this.init();
+        const stores = ['vouchers', 'acct_entries', 'ledgers', 'groups', 'items', 'settings', 'users'];
+        const backup = {};
+        for (const name of stores) { backup[name] = await this.getAll(name); }
+        const blob = new Blob([JSON.stringify(backup, null, 2)], {type : 'application/json'});
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `ArthBook_Backup_${new Date().toISOString().slice(0,10)}.json`;
+        a.click();
+    }
+
+    // NEW: GOOGLE DRIVE BACKUP ENGINE
+    async backupToGoogleDrive(accessToken) {
+        if (!this.db) await this.init();
+        const stores = ['vouchers', 'acct_entries', 'ledgers', 'groups', 'items', 'settings', 'users'];
+        const backupData = {};
+        
+        for (const name of stores) {
+            backupData[name] = await this.getAll(name);
+        }
+
+        const fileName = `ArthBook_Backup_${new Date().toISOString().slice(0,10)}.json`;
+        const fileContent = JSON.stringify(backupData, null, 2);
+
+        // Google Drive Multipart Upload
+        const metadata = {
+            name: fileName,
+            mimeType: 'application/json'
+        };
+
+        const form = new FormData();
+        form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+        form.append('file', new Blob([fileContent], { type: 'application/json' }));
+
+        try {
+            const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + accessToken },
+                body: form
+            });
+            const result = await response.json();
+            console.log("✅ Drive Backup Success:", result);
+            return result;
+        } catch (err) {
+            console.error("❌ Google Drive Upload Error:", err);
+            throw err;
+        }
+    }
+
+    // Placeholder for Github (Kept as requested)
+    async syncToGithub(token, repo, filename, message) {
+        console.log("Simulating GitHub Sync...", token, repo);
+        return new Promise(r => setTimeout(() => r(true), 1500)); 
+    }
+
+    // --- 5. DATA HANDLING ---
     async getAll(storeName) {
         if (!this.db) await this.init();
         return new Promise((resolve) => {
