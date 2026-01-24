@@ -6,6 +6,7 @@
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <title>Arth Book - GST Compliance</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
         :root {
@@ -31,13 +32,9 @@
             flex-direction: column; flex-shrink: 0; height: 100vh; overflow-y: auto; 
             transition: var(--transition); z-index: 100;
         }
-        .brand { font-size: 20px; font-weight: 800; color: white; margin-bottom: 40px; display: flex; align-items: center; gap: 10px; }
-        .nav-link { display: flex; align-items: center; gap: 12px; padding: 14px 18px; color: #94a3b8; text-decoration: none; border-radius: 10px; margin-bottom: 6px; font-weight: 500; transition: var(--transition); }
-        .nav-link:hover, .nav-link.active { background: var(--sidebar-active); color: white; }
-
-        /* MOBILE MENU */
-        .menu-btn { display: none; position: fixed; top: 15px; left: 15px; z-index: 1100; background: none; border: none; font-size: 1.6rem; color: var(--text); cursor: pointer; }
-        .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 900; }
+        .brand-logo { font-size: 20px; font-weight: 800; color: white; margin-bottom: 40px; display: flex; align-items: center; gap: 10px; }
+        .nav-links a { display: flex; align-items: center; gap: 12px; padding: 14px 18px; color: #94a3b8; text-decoration: none; border-radius: 10px; margin-bottom: 6px; font-weight: 500; transition: var(--transition); }
+        .nav-links a:hover, .nav-links a.active { background: var(--sidebar-active); color: white; }
 
         /* MAIN */
         .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
@@ -48,8 +45,10 @@
         .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
 
         .content { flex: 1; overflow-y: auto; padding: 30px; }
-        .report-box { background: white; padding: 25px; border-radius: 12px; box-shadow: var(--shadow); border: 1px solid var(--border); margin-bottom: 30px; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
 
+        .report-box { background: white; padding: 25px; border-radius: 12px; box-shadow: var(--shadow); border: 1px solid var(--border); margin-bottom: 30px; }
         .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; margin-bottom: 30px; }
         .stat-card { background: white; padding: 25px; border-radius: 12px; box-shadow: var(--shadow); text-align: center; }
         .stat-card.blue { border-left: 5px solid var(--accent); }
@@ -61,66 +60,49 @@
         table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 15px; }
         th { background: #f1f5f9; padding: 12px; text-align: left; font-weight: 600; color: var(--muted); border-bottom: 2px solid var(--border); }
         td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
-        .amt { text-align: right; font-weight: 600; }
+        .amt { text-align: right; font-weight: 600; font-family: 'JetBrains Mono', monospace; }
 
         .btn { padding: 12px 24px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: var(--transition); }
         .btn:hover { opacity: 0.9; transform: translateY(-2px); }
         .btn-json { background: var(--green); color: white; }
 
-        .error-list { color: var(--red); padding: 15px; background: #fee2e2; border-radius: 8px; margin-top: 15px; }
-
         @media (max-width: 900px) {
-            .menu-btn { display: block; }
-            .sidebar { position: fixed; left: -100%; top: 0; height: 100%; z-index: 1000; box-shadow: var(--shadow); }
+            .sidebar { position: fixed; left: -100%; top: 0; height: 100%; z-index: 1000; }
             .sidebar.active { left: 0; }
-            .overlay.active { display: block; }
-            .top-bar { padding: 15px; flex-direction: column; align-items: stretch; }
-            .tabs { padding: 0 15px; gap: 15px; }
-            .content { padding: 20px 15px; }
-            .stat-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
 
-    <button class="menu-btn" onclick="toggleMenu()">☰</button>
-    <div class="overlay" onclick="toggleMenu()"></div>
+    <button class="menu-btn" onclick="toggleMenu()" style="display:none; position: fixed; top: 15px; left: 15px; z-index: 1100; background: none; border: none; font-size: 1.6rem; cursor: pointer;">☰</button>
+    <div class="overlay" onclick="toggleMenu()" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 900;"></div>
 
      <div class="sidebar" id="sidebar">
-        <div class="brand-logo" style="padding: 20px; font-size: 20px; font-weight: 800; color: white; display: flex; align-items: center; gap: 10px;">
+        <div class="brand-logo">
             <i class="fas fa-cube"></i> Arth Book
         </div>
-        <ul class="nav-links" style="list-style: none; padding: 0 10px;">
+        <ul class="nav-links" style="list-style: none; padding: 0;">
             <li><a href="index.html"><i class="fas fa-home"></i> Dashboard</a></li>
             <li><a href="sales_invoice.html"><i class="fas fa-file-invoice"></i> Sales (POS)</a></li>
             <li><a href="purchase_invoice.html"><i class="fas fa-truck"></i> Purchase</a></li>
             <li><a href="vouchers.html"><i class="fas fa-receipt"></i> Day Book</a></li>
-            
-            <li style="margin-top:15px; margin-bottom:5px; font-size:11px; color:#64748b; font-weight:bold; padding-left:15px; text-transform:uppercase;">Masters</li>
+            <li style="margin:15px 0 5px 15px; font-size:11px; color:#64748b; font-weight:bold; text-transform:uppercase;">Masters</li>
             <li><a href="item_master.html"><i class="fas fa-boxes"></i> Inventory</a></li>
             <li><a href="ArthBook.html"><i class="fas fa-users"></i> Parties</a></li>
             <li><a href="coa.html"><i class="fas fa-sitemap"></i> Accounts</a></li>
-            
-            <li style="margin-top:15px; margin-bottom:5px; font-size:11px; color:#64748b; font-weight:bold; padding-left:15px; text-transform:uppercase;">Reports & Tax</li>
+            <li style="margin:15px 0 5px 15px; font-size:11px; color:#64748b; font-weight:bold; text-transform:uppercase;">Reports & Tax</li>
             <li><a href="reports.html"><i class="fas fa-chart-line"></i> Reports</a></li>
-            <li><a href="gst_filing.html"><i class="fas fa-university"></i> GST Returns</a></li>
-            <li><a href="taxation.html"><i class="fas fa-calculator"></i> Tax / ITR</a></li>
-            
+            <li><a href="gst_filing.html" class="active"><i class="fas fa-university"></i> GST Returns</a></li>
             <hr style="border:0; border-top:1px solid rgba(255,255,255,0.1); margin:15px 5px;">
             <li><a href="settings.html"><i class="fas fa-cog"></i> Settings</a></li>
-            <li><a href="help.html"><i class="fas fa-question-circle"></i> Help</a></li>
         </ul>
-        
-        <div style="padding: 20px; font-size: 11px; color: #64748b; text-align: center; margin-top:auto;">
-            Arth Book v4.0<br>Authorized User
-        </div>
     </div>
 
     <div class="main">
         <div class="top-bar">
             <h2>GST Compliance Portal</h2>
             <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                <input type="month" id="gstMonth" value="" style="padding:10px; border-radius:8px; border:1px solid var(--border);">
+                <input type="month" id="gstMonth" style="padding:10px; border-radius:8px; border:1px solid var(--border);">
                 <button class="btn btn-json" onclick="generateGSTData()">🔄 Generate Data</button>
                 <button class="btn btn-json" onclick="downloadGSTR1()">📥 GSTR-1 JSON</button>
                 <button class="btn" style="background:#64748b; color:white;" onclick="window.print()">🖨️ Print</button>
@@ -128,10 +110,10 @@
         </div>
 
         <div class="tabs">
-            <div class="tab active" onclick="switchTab('overview')">📊 Overview & ITC</div>
-            <div class="tab" onclick="switchTab('gstr1')">📄 GSTR-1 Details</div>
-            <div class="tab" onclick="switchTab('gstr3b')">📋 GSTR-3B Summary</div>
-            <div class="tab" onclick="switchTab('hsn')">🔢 HSN Summary</div>
+            <div class="tab active" onclick="switchTab('overview', this)">📊 Overview & ITC</div>
+            <div class="tab" onclick="switchTab('gstr1', this)">📄 GSTR-1 Details</div>
+            <div class="tab" onclick="switchTab('gstr3b', this)">📋 GSTR-3B Summary</div>
+            <div class="tab" onclick="switchTab('hsn', this)">🔢 HSN Summary</div>
         </div>
 
         <div class="content">
@@ -154,23 +136,23 @@
                 <div class="report-box">
                     <h3>Validation Status</h3>
                     <div id="validationErrors" style="margin-top:15px;">
-                        <p style="color:var(--green);">✅ No critical errors found. Data ready for filing.</p>
+                        <p id="statusMsg" style="color:var(--green);">✅ Checks complete.</p>
                     </div>
                 </div>
             </div>
 
             <div id="gstr1" class="tab-content">
                 <div class="report-box">
-                    <h3>B2B Invoices (Taxable Supplies to Registered)</h3>
+                    <h3>B2B Invoices</h3>
                     <table id="b2bTable">
-                        <thead><tr><th>GSTIN</th><th>Party</th><th>Invoice</th><th>Date</th><th>Value</th><th>Taxable</th><th>IGST</th><th>CGST</th><th>SGST</th></tr></thead>
+                        <thead><tr><th>GSTIN</th><th>Party</th><th>Invoice</th><th>Date</th><th>Taxable</th><th>IGST</th><th>CGST</th><th>SGST</th></tr></thead>
                         <tbody></tbody>
                     </table>
                 </div>
                 <div class="report-box">
-                    <h3>B2CS (Other Supplies)</h3>
+                    <h3>B2CS (Consumer Supplies)</h3>
                     <table id="b2csTable">
-                        <thead><tr><th>Place of Supply</th><th>Rate</th><th>Taxable Value</th><th>IGST</th><th>CGST</th><th>SGST</th></tr></thead>
+                        <thead><tr><th>POS</th><th>Rate</th><th>Taxable Value</th><th>IGST</th><th>CGST</th><th>SGST</th></tr></thead>
                         <tbody></tbody>
                     </table>
                 </div>
@@ -178,16 +160,9 @@
 
             <div id="gstr3b" class="tab-content">
                 <div class="report-box">
-                    <h3>3.1 Outward Supplies</h3>
-                    <table id="outwardTable">
-                        <thead><tr><th>Nature</th><th>Taxable Value</th><th>IGST</th><th>CGST</th><th>SGST</th><th>Total Tax</th></tr></thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-                <div class="report-box">
-                    <h3>4. Eligible ITC</h3>
-                    <table id="itcTable">
-                        <thead><tr><th>Details</th><th>IGST</th><th>CGST</th><th>SGST</th><th>Total</th></tr></thead>
+                    <h3>GSTR-3B Summary</h3>
+                    <table id="summaryTable3B">
+                        <thead><tr><th>Details</th><th>Taxable</th><th>IGST</th><th>CGST</th><th>SGST</th></tr></thead>
                         <tbody></tbody>
                     </table>
                 </div>
@@ -197,7 +172,7 @@
                 <div class="report-box">
                     <h3>HSN-wise Summary</h3>
                     <table id="hsnTable">
-                        <thead><tr><th>HSN</th><th>Description</th><th>UQC</th><th>Qty</th><th>Taxable Value</th><th>IGST</th><th>CGST</th><th>SGST</th></tr></thead>
+                        <thead><tr><th>HSN</th><th>Description</th><th>Qty</th><th>Taxable</th><th>IGST</th><th>CGST</th><th>SGST</th></tr></thead>
                         <tbody></tbody>
                     </table>
                 </div>
@@ -206,321 +181,223 @@
     </div>
 
     <script src="db.js"></script>
+    <script src="auth.js"></script>
     <script>
-        let gstData = { b2b: [], b2cs: [], hsn: {}, outward: {}, itc: {} };
+        let gstData = { b2b: [], b2cs: {}, hsn: {}, outward: { taxable: 0, igst: 0, cgst: 0, sgst: 0 }, itc: { igst: 0, cgst: 0, sgst: 0 } };
         let company = {};
-        let myStateCode = '08'; // Default Rajasthan
+        let myStateCode = '08'; 
 
         window.onload = async () => {
             await DB.init();
-            
-            // FIX 1: Fetch Settings correctly using db.js 3.8 structure
             company = await DB.getSettings() || {}; 
             
-            // Try to extract state code from GSTIN if state_code not explicitly saved
             if(company.gstin && company.gstin.length >= 2) {
                 myStateCode = company.gstin.substring(0, 2);
-            } else if (company.state_code) {
-                myStateCode = company.state_code;
             }
 
             const today = new Date();
-            const monthStr = today.toISOString().slice(0,7);
-            document.getElementById('gstMonth').value = monthStr;
-
+            document.getElementById('gstMonth').value = today.toISOString().slice(0,7);
             generateGSTData();
         };
 
         function toggleMenu() {
-            document.getElementById('mySidebar').classList.toggle('active');
-            document.querySelector('.overlay').classList.toggle('active');
+            document.getElementById('sidebar').classList.toggle('active');
+            document.querySelector('.overlay').style.display = document.querySelector('.overlay').style.display === 'block' ? 'none' : 'block';
         }
 
-        function switchTab(id) {
+        function switchTab(id, el) {
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.getElementById(id).classList.add('active');
-            event.target.classList.add('active');
+            el.classList.add('active');
         }
 
         async function generateGSTData() {
-            const [year, month] = document.getElementById('gstMonth').value.split('-');
+            const monthVal = document.getElementById('gstMonth').value;
+            if(!monthVal) return;
+            const [year, month] = monthVal.split('-');
             const start = `${year}-${month}-01`;
             const end = `${year}-${month}-31`;
 
-            // FIX 2: Load Voucher Items & Products to get accurate tax rates
-            const [vouchers, ledgers, vItems, allProducts] = await Promise.all([
-                DB.getAll('vouchers'),
-                DB.getAll('ledgers'),
-                DB.getAll('voucher_items') || [],
-                DB.getAll('items') || []
+            const [vouchers, ledgers, vItems, items] = await Promise.all([
+                DB.getAll('vouchers'), DB.getAll('ledgers'), DB.getAll('voucher_items'), DB.getAll('items')
             ]);
 
-            const sales = vouchers.filter(v => v.type === 'Sales' && v.date >= start && v.date <= end);
-            const purchases = vouchers.filter(v => v.type === 'Purchase' && v.date >= start && v.date <= end);
+            gstData = { b2b: [], b2cs: {}, hsn: {}, outward: { taxable: 0, igst: 0, cgst: 0, sgst: 0 }, itc: { igst: 0, cgst: 0, sgst: 0 } };
 
-            gstData = { b2b: [], b2cs: [], hsn: {}, outward: { taxable: 0, igst: 0, cgst: 0, sgst: 0 }, itc: { igst: 0, cgst: 0, sgst: 0 } };
-
-            // --- PROCESS SALES ---
-            sales.forEach(v => {
+            vouchers.filter(v => v.date >= start && v.date <= end).forEach(v => {
                 const party = ledgers.find(l => l.id === v.party_id) || {};
-                // Extract Party State from GSTIN or Address
-                let partyState = myStateCode; // Default Local
-                if (party.gstin && party.gstin.length >= 2) partyState = party.gstin.substring(0,2);
-                else if (party.state_code) partyState = party.state_code;
+                let pState = party.gstin ? party.gstin.substring(0, 2) : (party.state_code || myStateCode);
+                const isInter = pState !== myStateCode;
+                const isReg = party.gstin && party.gstin.length === 15;
 
-                const isInter = partyState !== myStateCode;
-                const isRegistered = party.gstin && party.gstin.length === 15;
-
-                // Find items for this voucher to get exact tax rates
-                const itemsInBill = vItems.filter(vi => vi.voucher_id === v.id);
+                const billItems = vItems.filter(vi => vi.voucher_id === v.id);
                 
-                // If no items found (e.g. direct accounting entry), assume 18% on total amount
-                if(itemsInBill.length === 0) {
-                    itemsInBill.push({
-                        rate: v.amount / 1.18, // Reverse calc assumption
-                        qty: 1,
-                        gst: 18,
-                        hsn: '9999', // General Service
-                        name: 'General Sales'
-                    });
-                }
+                // Group invoice items by rate to handle multi-rate bills
+                let invoiceRateGroups = {};
 
-                itemsInBill.forEach(item => {
-                    // Logic to get Product Details (HSN, Name) from Item ID
-                    const prod = allProducts.find(p => p.id === item.item_id);
-                    const hsnCode = prod ? prod.hsn : (item.hsn || 'GENERAL');
-                    const uqc = prod ? prod.unit : 'OTH';
+                billItems.forEach(bi => {
+                    const prod = items.find(i => i.id === bi.item_id) || {};
+                    const rate = bi.gst || prod.gst_rate || 18;
+                    const txVal = (bi.rate || 0) * (bi.qty || 0);
+                    const tax = txVal * (rate / 100);
+
+                    if(!invoiceRateGroups[rate]) invoiceRateGroups[rate] = { taxable: 0, igst: 0, cgst: 0, sgst: 0 };
                     
-                    // Tax Calculation
-                    // Assuming item.rate is Unit Price. If saved as tax inclusive, logic changes.
-                    // Standard practice: Rate is usually basic price.
-                    const basicAmt = (item.qty * item.rate);
-                    const taxRate = item.gst || prod?.gst_rate || 0; // Look in item entry first, then product master
-                    const taxAmt = basicAmt * (taxRate / 100);
+                    const i_amt = isInter ? tax : 0;
+                    const c_amt = isInter ? 0 : tax / 2;
+                    const s_amt = isInter ? 0 : tax / 2;
 
-                    let i_amt = 0, c_amt = 0, s_amt = 0;
-                    if(isInter) i_amt = taxAmt;
-                    else { c_amt = taxAmt/2; s_amt = taxAmt/2; }
+                    invoiceRateGroups[rate].taxable += txVal;
+                    invoiceRateGroups[rate].igst += i_amt;
+                    invoiceRateGroups[rate].cgst += c_amt;
+                    invoiceRateGroups[rate].sgst += s_amt;
 
-                    // Accumulate Outward
-                    gstData.outward.taxable += basicAmt;
-                    gstData.outward.igst += i_amt;
-                    gstData.outward.cgst += c_amt;
-                    gstData.outward.sgst += s_amt;
-
-                    // HSN Summary Accumulation
-                    if(!gstData.hsn[hsnCode]) gstData.hsn[hsnCode] = { desc: prod?.name||'Item', uqc, qty:0, val:0, igst:0, cgst:0, sgst:0 };
-                    gstData.hsn[hsnCode].qty += item.qty;
-                    gstData.hsn[hsnCode].val += basicAmt;
-                    gstData.hsn[hsnCode].igst += i_amt;
-                    gstData.hsn[hsnCode].cgst += c_amt;
-                    gstData.hsn[hsnCode].sgst += s_amt;
-
-                    // B2B / B2CS logic (Per Item or Per Bill? Usually Per Bill, but we sum here for simplicity)
-                    // For accuracy, we should aggregate per bill first. 
-                    // To keep code simple, we will add to B2CS buckets item-wise.
-                    // For B2B, we need to show invoice level.
+                    // HSN Accumulation
+                    const hsn = bi.hsn || prod.hsn || '9999';
+                    if(!gstData.hsn[hsn]) gstData.hsn[hsn] = { desc: prod.name || 'Misc', qty: 0, val: 0, igst: 0, cgst: 0, sgst: 0 };
+                    gstData.hsn[hsn].qty += bi.qty;
+                    gstData.hsn[hsn].val += txVal;
+                    gstData.hsn[hsn].igst += i_amt;
+                    gstData.hsn[hsn].cgst += c_amt;
+                    gstData.hsn[hsn].sgst += s_amt;
                 });
 
-                // --- Invoice Level Aggregation for B2B Table ---
-                // We re-calculate total bill values
-                let billTaxable = 0, billIGST = 0, billCGST = 0, billSGST = 0;
-                itemsInBill.forEach(item => {
-                    const prod = allProducts.find(p => p.id === item.item_id);
-                    const basic = item.qty * item.rate;
-                    const rt = item.gst || prod?.gst_rate || 0;
-                    const tax = basic * (rt/100);
-                    billTaxable += basic;
-                    if(isInter) billIGST += tax; else { billCGST += tax/2; billSGST += tax/2; }
-                });
-
-                const billTotal = billTaxable + billIGST + billCGST + billSGST;
-
-                if (isRegistered) {
-                    gstData.b2b.push({
-                        gstin: party.gstin,
-                        name: party.name,
-                        invoice: v.voucher_no,
-                        date: v.date,
-                        value: billTotal.toFixed(2),
-                        taxable: billTaxable.toFixed(2),
-                        igst: billIGST.toFixed(2),
-                        cgst: billCGST.toFixed(2),
-                        sgst: billSGST.toFixed(2)
+                if (v.type === 'Sales') {
+                    // Update Outward Totals
+                    Object.values(invoiceRateGroups).forEach(g => {
+                        gstData.outward.taxable += g.taxable;
+                        gstData.outward.igst += g.igst;
+                        gstData.outward.cgst += g.cgst;
+                        gstData.outward.sgst += g.sgst;
                     });
-                } else {
-                    // Group B2CS by Rate
-                    itemsInBill.forEach(item => {
-                        const prod = allProducts.find(p => p.id === item.item_id);
-                        const basic = item.qty * item.rate;
-                        const rt = item.gst || prod?.gst_rate || 0;
-                        const tax = basic * (rt/100);
-                        
-                        const key = `${partyState}-${rt}`;
-                        if (!gstData.b2cs[key]) gstData.b2cs[key] = { state: partyState, rate: rt, taxable: 0, igst: 0, cgst: 0, sgst: 0 };
-                        
-                        gstData.b2cs[key].taxable += basic;
-                        if(isInter) gstData.b2cs[key].igst += tax;
-                        else { 
-                            gstData.b2cs[key].cgst += tax/2; 
-                            gstData.b2cs[key].sgst += tax/2; 
-                        }
+
+                    if(isReg) {
+                        gstData.b2b.push({ 
+                            gstin: party.gstin, 
+                            name: party.name, 
+                            inv: v.voucher_no, 
+                            date: v.date, 
+                            rates: invoiceRateGroups 
+                        });
+                    } else {
+                        // B2CS Grouping (Per State Per Rate)
+                        Object.entries(invoiceRateGroups).forEach(([rate, g]) => {
+                            const k = `${pState}_${rate}`;
+                            if(!gstData.b2cs[k]) gstData.b2cs[k] = { state: pState, rate: parseFloat(rate), taxable: 0, igst: 0, cgst: 0, sgst: 0 };
+                            gstData.b2cs[k].taxable += g.taxable;
+                            gstData.b2cs[k].igst += g.igst;
+                            gstData.b2cs[k].cgst += g.cgst;
+                            gstData.b2cs[k].sgst += g.sgst;
+                        });
+                    }
+                } else if (v.type === 'Purchase') {
+                    Object.values(invoiceRateGroups).forEach(g => {
+                        gstData.itc.igst += g.igst; gstData.itc.cgst += g.cgst; gstData.itc.sgst += g.sgst;
                     });
                 }
             });
 
-            // --- PROCESS PURCHASES (ITC) ---
-            // Simplified Logic: Purchases are usually taken as straight Input Credit
-            purchases.forEach(v => {
-                // If items exist, use them. Else flat 18%.
-                const itemsInBill = vItems.filter(vi => vi.voucher_id === v.id);
-                
-                if(itemsInBill.length > 0) {
-                    itemsInBill.forEach(item => {
-                        const prod = allProducts.find(p => p.id === item.item_id);
-                        const basic = item.qty * item.rate;
-                        const rt = item.gst || prod?.gst_rate || 0;
-                        const tax = basic * (rt/100);
-                        
-                        // Check Party State
-                        const party = ledgers.find(l => l.id === v.party_id) || {};
-                        let partyState = myStateCode;
-                        if (party.gstin && party.gstin.length >= 2) partyState = party.gstin.substring(0,2);
-                        else if (party.state_code) partyState = party.state_code;
-                        
-                        if(partyState !== myStateCode) gstData.itc.igst += tax;
-                        else { gstData.itc.cgst += tax/2; gstData.itc.sgst += tax/2; }
-                    });
-                } else {
-                    // Fallback for direct vouchers
-                    const tax = (v.amount || 0) * 0.18; // Rough estimate
-                    gstData.itc.cgst += tax/2;
-                    gstData.itc.sgst += tax/2; 
-                }
-            });
-
-            renderOverview();
-            renderGSTR1();
-            renderGSTR3B();
-            renderHSN();
+            renderData();
         }
 
-        function renderOverview() {
-            const output = gstData.outward.igst + gstData.outward.cgst + gstData.outward.sgst;
-            const input = gstData.itc.igst + gstData.itc.cgst + gstData.itc.sgst;
-            const payable = Math.max(0, output - input);
-
-            document.getElementById('outputTax').innerText = '₹' + output.toLocaleString('en-IN', {maximumFractionDigits:2});
-            document.getElementById('inputTax').innerText = '₹' + input.toLocaleString('en-IN', {maximumFractionDigits:2});
-            document.getElementById('netPayable').innerText = '₹' + payable.toLocaleString('en-IN', {maximumFractionDigits:2});
+        function formatInr(num) {
+            return (num || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
 
-        function renderGSTR1() {
-            const b2bBody = document.querySelector('#b2bTable tbody');
-            b2bBody.innerHTML = gstData.b2b.map(row => `
-                <tr>
-                    <td>${row.gstin}</td><td>${row.name}</td><td>${row.invoice}</td><td>${row.date}</td>
-                    <td class="amt">${row.value}</td><td class="amt">${row.taxable}</td>
-                    <td class="amt">${row.igst}</td><td class="amt">${row.cgst}</td><td class="amt">${row.sgst}</td>
-                </tr>
-            `).join('') || '<tr><td colspan="9" style="text-align:center; color:var(--muted);">No B2B invoices</td></tr>';
-
-            const b2csBody = document.querySelector('#b2csTable tbody');
-            b2csBody.innerHTML = Object.values(gstData.b2cs).map(row => `
-                <tr>
-                    <td>${row.state}</td><td>${row.rate}%</td><td class="amt">${row.taxable.toFixed(2)}</td>
-                    <td class="amt">${row.igst.toFixed(2)}</td><td class="amt">${row.cgst.toFixed(2)}</td><td class="amt">${row.sgst.toFixed(2)}</td>
-                </tr>
-            `).join('') || '<tr><td colspan="6" style="text-align:center; color:var(--muted);">No B2CS supplies</td></tr>';
-        }
-
-        function renderGSTR3B() {
-            const outwardBody = document.querySelector('#outwardTable tbody');
-            outwardBody.innerHTML = `
-                <tr>
-                    <td>Outward Taxable Supplies</td>
-                    <td class="amt">${gstData.outward.taxable.toFixed(2)}</td>
-                    <td class="amt">${gstData.outward.igst.toFixed(2)}</td>
-                    <td class="amt">${gstData.outward.cgst.toFixed(2)}</td>
-                    <td class="amt">${gstData.outward.sgst.toFixed(2)}</td>
-                    <td class="amt">${(gstData.outward.igst + gstData.outward.cgst + gstData.outward.sgst).toFixed(2)}</td>
-                </tr>
-            `;
-
-            const itcBody = document.querySelector('#itcTable tbody');
-            itcBody.innerHTML = `
-                <tr>
-                    <td>Eligible ITC (From Purchases)</td>
-                    <td class="amt">${gstData.itc.igst.toFixed(2)}</td>
-                    <td class="amt">${gstData.itc.cgst.toFixed(2)}</td>
-                    <td class="amt">${gstData.itc.sgst.toFixed(2)}</td>
-                    <td class="amt">${(gstData.itc.igst + gstData.itc.cgst + gstData.itc.sgst).toFixed(2)}</td>
-                </tr>
-            `;
-        }
-
-        function renderHSN() {
-            const body = document.querySelector('#hsnTable tbody');
-            const hsnRows = Object.entries(gstData.hsn).map(([hsn, data]) => `
-                <tr>
-                    <td>${hsn}</td>
-                    <td>${data.desc}</td>
-                    <td>${data.uqc}</td>
-                    <td class="amt">${data.qty}</td>
-                    <td class="amt">${data.val.toFixed(2)}</td>
-                    <td class="amt">${data.igst.toFixed(2)}</td>
-                    <td class="amt">${data.cgst.toFixed(2)}</td>
-                    <td class="amt">${data.sgst.toFixed(2)}</td>
-                </tr>
-            `).join('');
+        function renderData() {
+            const outTotal = gstData.outward.igst + gstData.outward.cgst + gstData.outward.sgst;
+            const inTotal = gstData.itc.igst + gstData.itc.cgst + gstData.itc.sgst;
             
-            body.innerHTML = hsnRows || '<tr><td colspan="8" style="text-align:center; color:var(--muted);">No HSN Data Available</td></tr>';
+            document.getElementById('outputTax').innerText = '₹' + formatInr(outTotal);
+            document.getElementById('inputTax').innerText = '₹' + formatInr(inTotal);
+            document.getElementById('netPayable').innerText = '₹' + formatInr(Math.max(0, outTotal - inTotal));
+
+            // B2B Table
+            document.querySelector('#b2bTable tbody').innerHTML = gstData.b2b.map(r => {
+                let tx = 0, i = 0, c = 0, s = 0;
+                Object.values(r.rates).forEach(g => { tx += g.taxable; i += g.igst; c += g.cgst; s += g.sgst; });
+                return `<tr><td>${r.gstin}</td><td>${r.name}</td><td>${r.inv}</td><td>${r.date}</td><td class="amt">${formatInr(tx)}</td><td class="amt">${formatInr(i)}</td><td class="amt">${formatInr(c)}</td><td class="amt">${formatInr(s)}</td></tr>`;
+            }).join('') || '<tr><td colspan="8" style="text-align:center;">No B2B Data</td></tr>';
+
+            // B2CS Table
+            document.querySelector('#b2csTable tbody').innerHTML = Object.values(gstData.b2cs).map(r => `
+                <tr><td>State: ${r.state}</td><td>${r.rate}%</td><td class="amt">${formatInr(r.taxable)}</td><td class="amt">${formatInr(r.igst)}</td><td class="amt">${formatInr(r.cgst)}</td><td class="amt">${formatInr(r.sgst)}</td></tr>
+            `).join('') || '<tr><td colspan="6" style="text-align:center;">No B2CS Data</td></tr>';
+
+            // GSTR-3B
+            document.querySelector('#summaryTable3B tbody').innerHTML = `
+                <tr><td>3.1 Outward Taxable Supplies</td><td class="amt">${formatInr(gstData.outward.taxable)}</td><td class="amt">${formatInr(gstData.outward.igst)}</td><td class="amt">${formatInr(gstData.outward.cgst)}</td><td class="amt">${formatInr(gstData.outward.sgst)}</td></tr>
+                <tr style="background:#f0fdf4;"><td>4. Eligible ITC</td><td class="amt">-</td><td class="amt">${formatInr(gstData.itc.igst)}</td><td class="amt">${formatInr(gstData.itc.cgst)}</td><td class="amt">${formatInr(gstData.itc.sgst)}</td></tr>
+            `;
+
+            // HSN Table
+            document.querySelector('#hsnTable tbody').innerHTML = Object.entries(gstData.hsn).map(([h, d]) => `
+                <tr><td>${h}</td><td>${d.desc}</td><td class="amt">${d.qty}</td><td class="amt">${formatInr(d.val)}</td><td class="amt">${formatInr(d.igst)}</td><td class="amt">${formatInr(d.cgst)}</td><td class="amt">${formatInr(d.sgst)}</td></tr>
+            `).join('') || '<tr><td colspan="7" style="text-align:center;">No HSN Data</td></tr>';
         }
 
         function downloadGSTR1() {
+            if(!company.gstin) return alert("Update Company GSTIN in Settings first!");
             const month = document.getElementById('gstMonth').value.replace('-', '');
+            
             const json = {
-                gstin: company.gstin || '',
+                gstin: company.gstin,
                 fp: month,
-                version: "1.1",
-                b2b: gstData.b2b.map(b => ({
-                    ctin: b.gstin,
-                    inv: [{
-                        inum: b.invoice,
-                        idt: b.date.split('-').reverse().join('-'),
-                        val: parseFloat(b.value),
-                        itms: [{
-                            num: 1,
+                version: "2.0", // Updated to modern schema
+                gt: 0,
+                cur_gt: 0,
+                b2b: gstData.b2b.map(b => {
+                    let totalVal = 0;
+                    const itms = Object.entries(b.rates).map(([rt, g], idx) => {
+                        totalVal += (g.taxable + g.igst + g.cgst + g.sgst);
+                        return {
+                            num: idx + 1,
                             itm_det: {
-                                txval: parseFloat(b.taxable),
-                                rt: 18, 
-                                iamt: parseFloat(b.igst),
-                                camt: parseFloat(b.cgst),
-                                samt: parseFloat(b.sgst)
+                                rt: parseFloat(rt),
+                                txval: parseFloat(g.taxable.toFixed(2)),
+                                iamt: parseFloat(g.igst.toFixed(2)),
+                                camt: parseFloat(g.cgst.toFixed(2)),
+                                samt: parseFloat(g.sgst.toFixed(2)),
+                                csamt: 0
                             }
+                        };
+                    });
+                    return {
+                        ctin: b.gstin,
+                        inv: [{
+                            inum: b.inv,
+                            idt: b.date.split('-').reverse().join('-'),
+                            val: parseFloat(totalVal.toFixed(2)),
+                            pos: b.gstin.substring(0, 2),
+                            rchrg: "N",
+                            inv_typ: "R",
+                            itms: itms
                         }]
-                    }]
-                })),
+                    };
+                }),
                 b2cs: Object.values(gstData.b2cs).map(c => ({
                     sply_ty: "OE",
+                    pos: c.state.padStart(2, '0'),
                     rt: c.rate,
-                    txval: c.taxable,
-                    iamt: c.igst,
-                    camt: c.cgst,
-                    samt: c.sgst
+                    txval: parseFloat(c.taxable.toFixed(2)),
+                    iamt: parseFloat(c.igst.toFixed(2)),
+                    camt: parseFloat(c.cgst.toFixed(2)),
+                    samt: parseFloat(c.sgst.toFixed(2)),
+                    csamt: 0
                 })),
                 hsn: {
-                    data: Object.entries(gstData.hsn).map(([hsn, d]) => ({
-                        num: 1,
+                    data: Object.entries(gstData.hsn).map(([hsn, d], idx) => ({
+                        num: idx + 1,
                         hsn_sc: hsn,
                         desc: d.desc,
-                        uqc: d.uqc,
-                        qty: d.qty,
-                        txval: d.val,
-                        iamt: d.igst,
-                        camt: d.cgst,
-                        samt: d.sgst
+                        uqc: "NOS",
+                        qty: parseFloat(d.qty),
+                        txval: parseFloat(d.val.toFixed(2)),
+                        iamt: parseFloat(d.igst.toFixed(2)),
+                        camt: parseFloat(d.cgst.toFixed(2)),
+                        samt: parseFloat(d.sgst.toFixed(2)),
+                        csamt: 0
                     }))
                 }
             };
@@ -529,7 +406,7 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `GSTR1_${month}_${company.gstin || 'draft'}.json`;
+            a.download = `GSTR1_${company.gstin}_${month}.json`;
             a.click();
             URL.revokeObjectURL(url);
         }
