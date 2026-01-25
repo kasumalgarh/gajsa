@@ -10,8 +10,238 @@
 
 
 </head>
-<body>
+<style>
+    /* ==========================================================================
+   ARTH BOOK - CHART OF ACCOUNTS (COA) MASTER STYLE
+   ========================================================================== */
 
+:root {
+    --primary: #0d47a1;
+    --primary-dark: #002171;
+    --accent: #ffca28;
+    --bg: #f1f5f9;
+    --surface: #ffffff;
+    --text-main: #1e293b;
+    --text-sub: #64748b;
+    --border: #e2e8f0;
+    --asset: #10b981;    /* Green */
+    --liab: #f43f5e;     /* Red */
+    --inc: #3b82f6;      /* Blue */
+    --exp: #f59e0b;      /* Orange */
+    --sidebar-width: 260px;
+    --list-width: 320px;
+}
+
+/* --- RESET & GLOBAL --- */
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; outline: none; }
+body { display: flex; height: 100vh; background: var(--bg); color: var(--text-main); overflow: hidden; }
+
+/* --- SIDEBAR FIX (No Purple Links) --- */
+.sidebar {
+    width: var(--sidebar-width); background: var(--primary) !important;
+    color: white; display: flex; flex-direction: column; flex-shrink: 0; height: 100vh;
+    overflow-y: auto; z-index: 2000; box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+}
+.brand-logo { padding: 20px; font-size: 20px; font-weight: 800; border-bottom: 1px solid rgba(255,255,255,0.1); color: white !important; }
+.nav-links { padding: 10px; list-style: none; }
+.nav-links li { margin-bottom: 5px; }
+.sidebar a {
+    display: flex !important; align-items: center; gap: 12px;
+    padding: 12px 15px; color: rgba(255,255,255,0.85) !important;
+    text-decoration: none !important; border-radius: 8px; font-weight: 500; font-size: 14px; transition: 0.2s;
+}
+.sidebar a:hover { background: rgba(255,255,255,0.15) !important; color: #fff !important; padding-left: 20px; }
+.sidebar a.active { background: var(--accent) !important; color: var(--primary-dark) !important; font-weight: 800; }
+
+/* --- MAIN SPLIT LAYOUT --- */
+.main { flex: 1; display: flex; height: 100vh; overflow: hidden; position: relative; }
+
+/* LEFT PANEL: ACCOUNT TREE LIST */
+.list-panel {
+    width: var(--list-width); background: var(--surface);
+    border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0;
+}
+.search-box { padding: 15px; border-bottom: 1px solid var(--border); position: relative; }
+.search-box i { position: absolute; left: 25px; top: 28px; color: var(--text-sub); }
+.search-box input {
+    width: 100%; padding: 10px 12px 10px 35px; border: 1px solid var(--border);
+    border-radius: 8px; font-size: 14px; background: #f8fafc;
+}
+
+.list-content { flex: 1; overflow-y: auto; }
+
+/* Tree Item Styling */
+.tree-item {
+    padding: 12px 15px; border-bottom: 1px solid #f1f5f9;
+    cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: 0.1s;
+}
+.tree-item:hover { background: #f0f9ff; }
+.tree-item.active { background: #e0f2fe; border-left: 4px solid var(--primary); }
+
+.group-info strong { display: block; font-size: 13px; color: var(--text-main); }
+.group-info span { font-size: 11px; color: var(--text-sub); }
+
+/* --- RIGHT PANEL: FORM --- */
+.form-panel { flex: 1; background: var(--bg); display: flex; flex-direction: column; overflow: hidden; }
+
+.form-header {
+    padding: 15px 25px; background: var(--surface); border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+    font-weight: 700; color: var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.form-grid { flex: 1; overflow-y: auto; padding: 25px; display: flex; flex-direction: column; gap: 20px; }
+
+/* Form Elements */
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group label { font-size: 12px; font-weight: 700; color: var(--text-sub); text-transform: uppercase; }
+
+input, select {
+    padding: 12px; border: 1px solid var(--border); border-radius: 8px;
+    font-size: 14px; background: #fff; width: 100%; transition: 0.2s;
+}
+input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(13,71,161,0.1); }
+input:disabled { background: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
+
+.helper-text { font-size: 11px; color: var(--text-sub); margin-top: 4px; font-style: italic; }
+
+/* Opening Balance Row */
+.balance-row { display: flex; gap: 10px; }
+
+/* --- BUTTONS --- */
+.actions { padding: 20px 25px; background: var(--surface); border-top: 1px solid var(--border); display: flex; gap: 12px; }
+
+.btn {
+    padding: 10px 20px; border: none; border-radius: 8px;
+    font-weight: 600; cursor: pointer; font-size: 14px; transition: 0.2s;
+    display: inline-flex; align-items: center; gap: 8px;
+}
+.btn:hover { transform: translateY(-1px); opacity: 0.9; }
+
+.btn-save { background: var(--primary); color: white; }
+.btn-new { background: var(--asset); color: white; }
+.btn-del { background: #fee2e2; color: var(--liab); margin-left: auto; }
+
+/* --- BADGES (Nature Colors) --- */
+.badge { font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 12px; text-transform: uppercase; color: white; }
+.badge-asset { background: var(--asset); }
+.badge-liab { background: var(--liab); }
+.badge-inc { background: var(--inc); }
+.badge-exp { background: var(--exp); }
+
+/* --- TOAST --- */
+#toast {
+    position: fixed; bottom: 30px; right: 30px; background: var(--text-main); color: white;
+    padding: 12px 24px; border-radius: 50px; display: none; z-index: 3000; box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+/* --- MOBILE RESPONSIVE --- */
+.menu-btn { 
+    display: none; position: absolute; left: 15px; top: 15px; z-index: 2001; 
+    background: var(--primary); color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer;
+}
+.overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1500; }
+
+@media (max-width: 900px) {
+    .sidebar { position: fixed; left: -100%; width: 280px; }
+    .sidebar.active { left: 0; }
+    .menu-btn { display: block; }
+    .overlay.active { display: block; }
+
+    .main { flex-direction: column; }
+    .list-panel { width: 100%; height: 35vh; border-right: none; border-bottom: 1px solid var(--border); }
+    .form-panel { height: 65vh; }
+    
+    .form-header { padding: 12px 15px; font-size: 0.9rem; padding-left: 60px; }
+    .form-grid { padding: 15px; }
+    .actions { padding: 15px; flex-wrap: wrap; }
+    .btn { flex: 1; justify-content: center; }
+}/* --- UNIVERSAL MOBILE MENU BUTTON FIX --- */
+@media (max-width: 1024px) {
+    /* 1. बटन को स्क्रीन पर सबसे ऊपर लाना */
+    .menu-btn {
+        display: block !important;
+        position: fixed !important; /* स्क्रीन पर एक जगह टिका रहेगा */
+        top: 15px !important;
+        right: 15px !important; /* राइट साइड में रखा है ताकि थंब से क्लिक हो सके */
+        left: auto !important;
+        z-index: 9999 !important; /* सबसे ऊपरी लेयर */
+        background: var(--primary) !important; /* नीला बैकग्राउंड */
+        color: white !important; /* सफेद आइकॉन */
+        width: 45px;
+        height: 45px;
+        border-radius: 8px;
+        border: none;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+
+    /* 2. ओवरले (काली स्क्रीन) को साइडबार के ठीक पीछे रखना */
+    .overlay {
+        z-index: 2500 !important;
+    }
+
+    /* 3. साइडबार को ओवरले के ऊपर रखना */
+    .sidebar {
+        z-index: 3000 !important;
+    }
+
+    /* 4. जब मेनू खुल जाए, तो बटन को थोड़ा छुपाना या उसका रंग बदलना (Optional) */
+    .sidebar.active ~ .menu-btn {
+        background: var(--accent) !important;
+        color: var(--primary-dark) !important;
+    }
+
+    /* 5. पेज हेडर में बटन के लिए जगह छोड़ना */
+    .header, .top-bar, .form-header {
+        padding-right: 70px !important; 
+    }
+}
+@media (max-width: 900px) {
+    .menu-btn {
+        display: flex !important;
+        position: fixed !important;
+        top: 15px !important;
+        right: 15px !important; /* राइट साइड में */
+        z-index: 9999 !important;
+        background: #0d47a1 !important; /* डार्क ब्लू */
+        color: white !important;
+        width: 45px;
+        height: 45px;
+        border-radius: 8px;
+        border: none;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+
+    .sidebar {
+        position: fixed;
+        left: -280px; /* डिफ़ॉल्ट बंद */
+        transition: 0.3s;
+        z-index: 3000;
+    }
+
+    .sidebar.active {
+        left: 0; /* खुलने पर */
+    }
+
+    .overlay.active {
+        display: block !important;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 2500;
+    }
+}
+</style>
+<body>
+<button class="menu-btn" onclick="toggleMenu()">☰</button>
+<div class="overlay" onclick="toggleMenu()"></div>
   <div class="sidebar" id="sidebar">
         <div class="brand-logo" style="padding: 20px; font-size: 20px; font-weight: 800; color: white; display: flex; align-items: center; gap: 10px;">
             <i class="fas fa-cube"></i> Arth Book
@@ -366,6 +596,14 @@
             toast.style.display = 'block';
             setTimeout(() => toast.style.display = 'none', 2500);
         }
+        function toggleMenu() {
+    // आपके HTML में ID 'sidebar' है, उसे ही यहाँ उपयोग करें
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.querySelector('.overlay');
+    
+    if (sidebar) sidebar.classList.toggle('active');
+    if (overlay) overlay.classList.toggle('active');
+}
     </script>
 </body>
 </html>

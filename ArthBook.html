@@ -9,10 +9,275 @@
 
 
 </head>
+<style>
+    /* ==========================================================================
+   ARTH BOOK - PARTIES & LEDGERS MASTER STYLE (FIXED)
+   ========================================================================== */
+
+:root {
+    --primary: #0d47a1;       /* Royal Navy */
+    --primary-dark: #002171;
+    --accent: #ffca28;        /* Gold */
+    --bg: #f1f5f9;
+    --surface: #ffffff;
+    --text-main: #1e293b;
+    --text-sub: #64748b;
+    --border: #e2e8f0;
+    --success: #10b981;
+    --danger: #ef4444;
+    --sidebar-width: 260px;
+    --list-width: 320px;
+}
+
+/* --- RESET --- */
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; outline: none; }
+body { display: flex; height: 100vh; background: var(--bg); color: var(--text-main); overflow: hidden; }
+a { text-decoration: none; }
+
+/* --- SIDEBAR (FIXED) --- */
+.sidebar {
+    width: var(--sidebar-width);
+    background: var(--primary) !important;
+    color: white;
+    display: flex; flex-direction: column; flex-shrink: 0; height: 100vh;
+    overflow-y: auto; z-index: 2000;
+    box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+    transition: 0.2s ease-in-out;
+}
+.brand-logo { padding: 20px; font-size: 20px; font-weight: 800; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 10px; color: white !important; }
+.nav-links { padding: 10px; list-style: none; }
+.nav-links li { margin-bottom: 5px; }
+
+.sidebar a, .nav-link {
+    display: flex !important; align-items: center; gap: 12px;
+    padding: 12px 15px; color: rgba(255,255,255,0.85) !important;
+    text-decoration: none; border-radius: 8px; font-weight: 500; font-size: 14px;
+    transition: 0.2s;
+}
+.sidebar a:hover, .nav-link:hover { background: rgba(255,255,255,0.15) !important; color: #fff !important; padding-left: 20px; }
+.sidebar a.active, .nav-link.active { background: var(--accent) !important; color: var(--primary-dark) !important; font-weight: 800; }
+
+/* --- MAIN LAYOUT (SPLIT VIEW) --- */
+.main { flex: 1; display: flex; height: 100vh; overflow: hidden; position: relative; }
+
+/* LEFT PANEL: LIST */
+.list-panel {
+    width: var(--list-width);
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    flex-shrink: 0;
+}
+
+.search-box { padding: 15px; border-bottom: 1px solid var(--border); background: #fff; }
+.search-box input {
+    width: 100%; padding: 10px 12px; border: 1px solid var(--border);
+    border-radius: 8px; font-size: 14px; background: #f8fafc;
+}
+.search-box input:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 3px rgba(13,71,161,0.1); }
+
+.list-content { flex: 1; overflow-y: auto; padding: 0; }
+
+.ledger-item {
+    padding: 15px; border-bottom: 1px solid var(--border);
+    cursor: pointer; transition: 0.1s; display: flex;
+    justify-content: space-between; align-items: center;
+}
+.ledger-item:hover { background: #f0f9ff; }
+.ledger-item.active { background: #e0f2fe; border-left: 4px solid var(--primary); }
+
+.ledger-info { display: flex; flex-direction: column; gap: 3px; }
+.ledger-info strong { font-size: 14px; color: var(--text-main); font-weight: 600; }
+.ledger-info span { font-size: 11px; color: var(--text-sub); }
+
+.balance-info { text-align: right; }
+.balance-amount { font-weight: 700; font-size: 13px; font-family: monospace; }
+.balance-amount.dr { color: var(--success); }
+.balance-amount.cr { color: var(--danger); }
+.balance-label { font-size: 10px; color: var(--text-sub); display: block; }
+
+/* RIGHT PANEL: FORM */
+.form-panel {
+    flex: 1; background: var(--bg);
+    display: flex; flex-direction: column;
+    overflow: hidden;
+}
+
+.form-header {
+    padding: 15px 25px; background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 1.2rem; font-weight: 700; color: var(--primary);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.form-grid {
+    flex: 1; overflow-y: auto; padding: 25px;
+    display: flex; flex-direction: column; gap: 20px;
+}
+
+.form-section {
+    background: var(--surface); padding: 20px;
+    border-radius: 12px; border: 1px solid var(--border);
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 20px; position: relative;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.section-title {
+    grid-column: 1 / -1; font-size: 12px; font-weight: 700;
+    color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px;
+    border-bottom: 1px dashed var(--border); padding-bottom: 10px; margin-bottom: 5px;
+}
+
+/* Inputs */
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-group label { font-size: 12px; font-weight: 600; color: var(--text-sub); }
+input, select {
+    padding: 10px; border: 1px solid var(--border);
+    border-radius: 6px; font-size: 14px; width: 100%; background: #fff;
+}
+input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(13,71,161,0.1); }
+
+.balance-row { display: flex; gap: 10px; }
+.balance-row select { width: 100px; }
+
+/* Buttons */
+.actions {
+    padding: 15px 25px; background: var(--surface);
+    border-top: 1px solid var(--border);
+    display: flex; gap: 10px; align-items: center;
+}
+
+.btn { padding: 10px 20px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 14px; transition: 0.2s; }
+.btn-save { background: var(--primary); color: white; }
+.btn-new { background: var(--success); color: white; }
+.btn-del { background: #fee2e2; color: var(--danger); margin-left: auto; }
+.btn-stmt { background: var(--accent); color: var(--primary-dark); }
+
+/* --- MODAL (STATEMENT TABLE FIX) --- */
+.modal {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+    z-index: 3000; align-items: center; justify-content: center; backdrop-filter: blur(2px);
+}
+.modal-content {
+    background: white; width: 90%; max-width: 900px; height: 85vh;
+    border-radius: 12px; display: flex; flex-direction: column; overflow: hidden;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+}
+.modal-header {
+    padding: 15px 20px; border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center; background: #f8fafc;
+}
+.modal-body { flex: 1; overflow-y: auto; padding: 20px; }
+
+/* Fixed Table Styling */
+.stmt-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.stmt-table th { 
+    background: #f1f5f9; padding: 12px; text-align: left; 
+    position: sticky; top: 0; border-bottom: 2px solid var(--border);
+    white-space: nowrap; font-weight: 700; color: var(--text-main);
+}
+.stmt-table td { padding: 10px 12px; border-bottom: 1px solid #e2e8f0; color: var(--text-main); }
+.stmt-table .amt { text-align: right; font-family: monospace; font-weight: 600; }
+.stmt-table .bal { font-weight: 700; color: var(--primary); }
+.stmt-table tr:hover { background: #f8fafc; }
+.stmt-table tr.closing { background: #fffbeb; font-weight: bold; border-top: 2px solid var(--accent); }
+
+/* --- RESPONSIVE --- */
+.menu-btn { display: none; position: absolute; left: 15px; top: 15px; z-index: 2001; background: var(--primary); color: white; border: none; padding: 8px 12px; border-radius: 4px; font-size: 18px; cursor: pointer; }
+.overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1500; }
+
+@media (max-width: 900px) {
+    .sidebar { position: fixed; left: -100%; width: 260px; }
+    .sidebar.active { left: 0; }
+    .menu-btn { display: block; }
+    .overlay.active { display: block; }
+
+    .main { flex-direction: column; }
+    .list-panel { width: 100%; height: 40vh; border-right: none; border-bottom: 1px solid var(--border); }
+    .form-panel { height: 60vh; }
+    
+    .form-header { padding: 10px 15px; font-size: 1rem; padding-left: 60px; } 
+    .form-grid { padding: 15px; }
+    .form-section { grid-template-columns: 1fr; padding: 15px; }
+    .actions { padding: 10px 15px; flex-wrap: wrap; }
+    .btn { flex: 1; text-align: center; }
+    
+    /* Modal Mobile Fix */
+    .modal-content { width: 95%; height: 90vh; }
+    .stmt-table { display: block; overflow-x: auto; white-space: nowrap; }
+}
+
+@media print {
+    .sidebar, .list-panel, .form-header, .actions, .menu-btn, .overlay { display: none !important; }
+    .main, .form-panel { height: auto; overflow: visible; background: white; }
+    .modal { position: static; background: white; height: auto; display: block; }
+    .modal-content { width: 100%; max-width: 100%; height: auto; box-shadow: none; border: none; }
+    .modal-header .no-print { display: none; }
+    .modal-body { overflow: visible; }
+}
+
+/* Toast */
+#toast { position: fixed; bottom: 30px; right: 30px; background: var(--text-main); color: white; padding: 12px 24px; border-radius: 50px; display: none; z-index: 4000; box-shadow: 0 5px 15px rgba(0,0,0,0.2); font-weight: 600; }
+/* --- MOBILE MENU BUTTON FIX --- */
+.menu-btn {
+    display: none; /* Desktop पर छुपाएं */
+    position: fixed; /* Fixed रखें ताकि स्क्रॉल पर भी दिखे */
+    top: 15px; 
+    left: 15px; /* Left साइड में */
+    z-index: 3000; /* साइडबार (2000) से ऊपर */
+    background: none;
+    border: none;
+    color: var(--primary); /* डिफ़ॉल्ट नीला रंग */
+    font-size: 1.8rem;
+    cursor: pointer;
+    padding: 5px;
+}
+
+/* जब साइडबार खुला हो (Active), तो बटन का रंग सफ़ेद करें */
+.sidebar.active ~ .menu-btn {
+    color: white; 
+}
+
+/* मोबाइल स्क्रीन के लिए */
+@media (max-width: 1024px) {
+    .menu-btn { display: block; }
+    
+    /* साइडबार को फिक्स करें */
+    .sidebar {
+        position: fixed;
+        left: -280px; /* डिफ़ॉल्ट बंद */
+        top: 0;
+        height: 100vh;
+        width: 260px;
+        transition: left 0.3s ease; /* Smooth एनीमेशन */
+        z-index: 2500;
+    }
+    
+    .sidebar.active {
+        left: 0; /* खुलने पर */
+    }
+    
+    .overlay {
+        display: none;
+        position: fixed;
+        padding-right: 0%;
+        inset: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 2400; /* साइडबार के ठीक पीछे */
+        backdrop-filter: blur(2px);
+    }
+    
+    .overlay.active { display: block; }
+}</style>
 <body>
 
-    <button class="menu-btn" onclick="toggleMenu()">☰</button>
-    <div class="overlay" onclick="toggleMenu()"></div>
+<button class="menu-btn" id="menuToggle">
+    <i class="fas fa-bars"></i>
+☰</button>
+
+<div class="overlay" id="overlay"></div>  
 
      <div class="sidebar" id="sidebar">
         <div class="brand-logo" style="padding: 20px; font-size: 20px; font-weight: 800; color: white; display: flex; align-items: center; gap: 10px;">
@@ -204,10 +469,33 @@
             document.getElementById('ledgerName').focus();
         };
 
-        function toggleMenu() {
-            document.getElementById('mySidebar').classList.toggle('active');
-            document.querySelector('.overlay').classList.toggle('active');
+   // --- MENU TOGGLE FUNCTION (FIXED) ---
+function toggleMenu() {
+    // यहाँ सही ID 'sidebar' का इस्तेमाल करें
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.querySelector('.overlay');
+    
+    if (sidebar) sidebar.classList.toggle('active');
+    if (overlay) overlay.classList.toggle('active');
+}
+
+// --- AUTO CLOSE ON MOBILE ---
+// जब भी मोबाइल पर किसी लिंक या काली स्क्रीन (Overlay) पर क्लिक हो, तो मेनू बंद करें
+document.addEventListener("DOMContentLoaded", function() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.querySelector('.overlay');
+    const links = document.querySelectorAll('.nav-link, .brand-logo');
+
+    function closeSidebar() {
+        if (window.innerWidth <= 900) {
+            if (sidebar) sidebar.classList.remove('active');
+            if (overlay) overlay.classList.remove('active');
         }
+    }
+
+    links.forEach(link => link.addEventListener('click', closeSidebar));
+    if (overlay) overlay.addEventListener('click', closeSidebar);
+});
 
         function populateGroups() {
             const select = document.getElementById('groupSelect');
@@ -460,6 +748,55 @@
             if (e.altKey && e.key === 'n') { e.preventDefault(); newLedger(); }
             if (e.altKey && e.key === 's') { e.preventDefault(); saveLedger(); }
         });
-    </script>
+    </script><script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Elements को ID से पकड़ें
+        const toggleBtn = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        const links = document.querySelectorAll('.sidebar a'); // साइडबार के सारे लिंक्स
+
+        // 1. ओपन/क्लोज फंक्शन
+        function toggleMenu() {
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+            
+            // बटन का रंग बदलें (Blue -> White)
+            if (sidebar.classList.contains('active')) {
+                toggleBtn.style.color = 'white';
+            } else {
+                toggleBtn.style.color = ''; // Default CSS color पर वापस
+            }
+        }
+
+        // 2. बंद करने का फंक्शन
+        function closeMenu() {
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+            toggleBtn.style.color = ''; 
+        }
+
+        // 3. इवेंट लिसनर्स (क्लिक करने पर क्या हो)
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', (e) => {
+                e.stopPropagation(); // क्लिक को फैलने से रोकें
+                toggleMenu();
+            });
+        }
+
+        if (overlay) {
+            overlay.addEventListener('click', closeMenu);
+        }
+
+        // 4. किसी भी लिंक पर क्लिक करने पर बंद करें
+        links.forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth <= 1024) { // सिर्फ मोबाइल पर
+                    closeMenu();
+                }
+            });
+        });
+    });
+</script>
 </body>
 </html>
