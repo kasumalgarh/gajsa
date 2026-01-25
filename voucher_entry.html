@@ -10,6 +10,146 @@
     
 
 </head>
+<style>
+    /* ==========================================================================
+   ARTH BOOK - POWER ENTRY (VOUCHERS) MASTER STYLE
+   ========================================================================== */
+
+:root {
+    --primary: #0d47a1;
+    --primary-dark: #002171;
+    --accent: #ffca28;
+    --bg: #f8fafc;
+    --surface: #ffffff;
+    --text-main: #1e293b;
+    --text-sub: #64748b;
+    --border: #cbd5e1;
+    --success: #10b981;
+    --danger: #ef4444;
+    --sidebar-width: 260px;
+}
+
+/* --- RESET & LAYOUT --- */
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; outline: none; }
+body { display: flex; height: 100vh; background: var(--bg); color: var(--text-main); overflow: hidden; }
+
+/* --- SIDEBAR --- */
+.sidebar {
+    width: var(--sidebar-width); background: var(--primary); color: white;
+    display: flex; flex-direction: column; flex-shrink: 0; height: 100vh;
+    overflow-y: auto; z-index: 2000; box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+}
+.brand-logo { padding: 20px; font-size: 20px; font-weight: 800; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 10px; }
+.nav-links { padding: 10px; list-style: none; flex: 1; }
+.nav-links li { margin-bottom: 5px; }
+.nav-link { display: flex; align-items: center; gap: 12px; padding: 12px 15px; color: rgba(255,255,255,0.8); text-decoration: none; border-radius: 8px; font-size: 14px; }
+.nav-link.active { background: var(--accent); color: var(--primary-dark); font-weight: 800; }
+
+/* Short-cut Buttons Area */
+.v-shortcuts { padding: 10px; border-top: 1px solid rgba(255,255,255,0.1); display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.v-btn { 
+    background: rgba(255,255,255,0.1); border: none; padding: 10px; border-radius: 6px; 
+    color: white; font-size: 11px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;
+}
+.v-btn:hover { background: rgba(255,255,255,0.2); }
+.v-btn.active { background: var(--accent); color: var(--primary-dark); font-weight: bold; }
+.key-tag { font-size: 9px; background: rgba(0,0,0,0.2); padding: 2px 4px; border-radius: 3px; }
+
+/* --- MAIN AREA --- */
+.main-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; transition: 0.3s; }
+
+.top-bar {
+    background: #fff; padding: 10px 20px; border-bottom: 2px solid var(--primary);
+    display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+.v-mode-badge { background: var(--primary); color: white; padding: 5px 15px; border-radius: 4px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+
+/* --- ENTRY GRID (THE TALLY STYLE) --- */
+.grid-container {
+    flex: 1; overflow-y: auto; padding: 0;
+    background: repeating-linear-gradient(#fff, #fff 35px, #f1f5f9 35px, #f1f5f9 36px); /* Line effect */
+}
+
+.entry-row {
+    display: grid; grid-template-columns: 60px 1fr 100px 180px 40px;
+    border-bottom: 1px solid var(--border); align-items: center; min-height: 40px;
+}
+.entry-row:focus-within { background: #e0f2fe !important; }
+
+/* Inventory Row Variation */
+.inventory-row { grid-template-columns: 60px 1fr 280px 180px 40px; background: #fafafa; }
+
+/* Inner Controls */
+input, select { 
+    border: none; background: transparent; padding: 8px 12px; width: 100%; 
+    font-size: 14px; color: var(--text-main); font-weight: 500;
+}
+input:focus { background: white; box-shadow: inset 0 0 0 1px var(--primary); }
+
+.c-ledger { position: relative; border-right: 1px solid var(--border); }
+.bal-ind { position: absolute; right: 10px; top: 2px; font-size: 10px; font-weight: bold; }
+.bal-ind.dr { color: var(--success); }
+.bal-ind.cr { color: var(--danger); }
+
+.row-narr { font-size: 11px !important; color: var(--text-sub); font-style: italic; }
+
+/* --- FOOTER BAR --- */
+.footer-bar {
+    background: #fff; border-top: 2px solid var(--primary); padding: 15px 25px;
+    display: flex; justify-content: space-between; align-items: center; gap: 20px;
+}
+
+.calc-trigger { 
+    background: #f1f5f9; padding: 8px 15px; border-radius: 6px; 
+    cursor: pointer; font-weight: bold; font-size: 12px; color: var(--primary); border: 1px solid var(--border);
+}
+
+/* --- POPUPS & MODALS --- */
+.details-popup {
+    position: fixed; background: white; border: 2px solid var(--primary);
+    border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    padding: 15px; z-index: 3000; width: 300px; display: none;
+}
+.det-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 12px; }
+.det-row input, .det-row select { border: 1px solid var(--border) !important; background: #fff !important; width: 180px; }
+
+/* Calculator */
+.calc-modal {
+    position: fixed; top: 100px; right: 20px; width: 220px; background: #1e293b;
+    border-radius: 12px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.4); z-index: 4000; display: none;
+}
+.calc-header { background: #334155; color: white; padding: 10px; font-size: 12px; display: flex; justify-content: space-between; cursor: move; }
+.calc-display { background: #0f172a; color: #10b981; width: 100%; border: none; padding: 15px; text-align: right; font-size: 20px; font-family: 'JetBrains Mono'; }
+.calc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: #334155; }
+.c-btn { background: #1e293b; color: white; border: none; padding: 15px 5px; cursor: pointer; }
+.c-btn:hover { background: #334155; }
+.c-btn.eq { background: var(--accent); color: var(--primary-dark); grid-column: span 2; }
+
+/* Toast */
+#toast {
+    visibility: hidden; min-width: 250px; background-color: #1e293b; color: #fff;
+    text-align: center; border-radius: 50px; padding: 16px; position: fixed;
+    z-index: 5000; left: 50%; bottom: 30px; transform: translateX(-50%);
+}
+#toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
+
+/* --- MOBILE RESPONSIVE --- */
+.menu-btn { display: none; font-size: 24px; color: var(--primary); cursor: pointer; margin-right: 15px; }
+
+@media (max-width: 900px) {
+    .sidebar { position: fixed; left: -100%; transition: 0.3s; width: 280px; }
+    .sidebar.active { left: 0; }
+    .menu-btn { display: block; }
+    
+    .entry-row { grid-template-columns: 50px 1fr 100px 40px; }
+    .c-hist { display: none; }
+    .footer-bar { flex-direction: column; align-items: stretch; }
+    .v-shortcuts { display: none; } /* Hide sidebar shortcuts on mobile */
+}
+
+@keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
+@keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+</style>
 <body>
 
    <div class="sidebar" id="sidebar">
