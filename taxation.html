@@ -9,6 +9,135 @@
     
    
 </head>
+<style>
+    /* ==========================================================================
+   ARTH BOOK - TAXATION & COMPLIANCE HUB MASTER STYLE
+   ========================================================================== */
+
+:root {
+    --primary: #0d47a1;
+    --primary-dark: #002171;
+    --accent: #ffca28;
+    --bg: #f1f5f9;
+    --surface: #ffffff;
+    --text-main: #1e293b;
+    --text-sub: #64748b;
+    --border: #e2e8f0;
+    --success: #10b981;
+    --danger: #ef4444;
+    --sidebar-width: 260px;
+}
+
+/* --- RESET & GLOBAL --- */
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; outline: none; }
+body { display: flex; height: 100vh; background: var(--bg); color: var(--text-main); overflow: hidden; }
+
+/* --- SIDEBAR FIX --- */
+.sidebar {
+    width: var(--sidebar-width); background: var(--primary) !important;
+    color: white; display: flex; flex-direction: column; flex-shrink: 0; height: 100vh;
+    overflow-y: auto; z-index: 2000; box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+}
+.brand-logo { padding: 20px; font-size: 20px; font-weight: 800; border-bottom: 1px solid rgba(255,255,255,0.1); color: white !important; }
+.nav-links { padding: 10px; list-style: none; }
+.nav-links li { margin-bottom: 5px; }
+.sidebar a {
+    display: flex !important; align-items: center; gap: 12px;
+    padding: 12px 15px; color: rgba(255,255,255,0.85) !important;
+    text-decoration: none !important; border-radius: 8px; font-weight: 500; font-size: 14px;
+}
+.sidebar a:hover { background: rgba(255,255,255,0.15) !important; color: #fff !important; }
+.sidebar a.active { background: var(--accent) !important; color: var(--primary-dark) !important; font-weight: 800; }
+
+/* --- MAIN LAYOUT --- */
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+
+.header {
+    background: var(--surface); padding: 15px 25px; border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;
+}
+.header h2 { color: var(--primary); font-size: 1.2rem; font-weight: 800; }
+
+.content-area { flex: 1; overflow-y: auto; padding: 20px; }
+
+/* --- TABS --- */
+.tabs { display: flex; background: #fff; padding: 0 20px; border-bottom: 1px solid var(--border); gap: 10px; }
+.tab-btn {
+    padding: 15px 20px; border: none; background: none; font-size: 14px; font-weight: 600;
+    color: var(--text-sub); cursor: pointer; border-bottom: 3px solid transparent; transition: 0.2s;
+}
+.tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+/* --- ITR COMPUTATION LAYOUT --- */
+.itr-container { display: grid; grid-template-columns: 1.5fr 1fr; gap: 20px; align-items: start; }
+
+.itr-form { display: flex; flex-direction: column; gap: 20px; }
+.form-section { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+.section-head { font-size: 13px; font-weight: 800; color: var(--primary); text-transform: uppercase; margin-bottom: 15px; border-bottom: 1px dashed var(--border); padding-bottom: 10px; }
+
+.form-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 20px; }
+.form-row label { font-size: 13px; color: var(--text-main); font-weight: 500; }
+.form-row input { width: 150px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; text-align: right; font-weight: 600; }
+
+/* --- ITR RESULT CARD (GOLDEN THEME) --- */
+.itr-result { background: #fff; border: 2px solid var(--accent); border-radius: 16px; padding: 25px; position: sticky; top: 0; box-shadow: 0 10px 25px rgba(234, 179, 8, 0.1); }
+.res-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; }
+.res-row.final { font-size: 1.4rem; font-weight: 800; border-top: 2px solid #eee; padding-top: 15px; margin-top: 15px; }
+
+/* --- TDS MANAGER CARD --- */
+.tds-card { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 25px; }
+.tds-inputs { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 25px; align-items: flex-end; background: #f8fafc; padding: 20px; border-radius: 10px; }
+.tds-group { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 150px; }
+.tds-group label { font-size: 11px; font-weight: 700; color: var(--text-sub); text-transform: uppercase; }
+
+/* --- TABLES --- */
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { background: #f8fafc; padding: 12px; text-align: left; border-bottom: 2px solid var(--border); font-weight: 700; }
+td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; }
+
+/* --- BUTTONS --- */
+.btn { padding: 10px 20px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; width: 100%; }
+.btn:hover { transform: translateY(-1px); opacity: 0.9; }
+.btn-calc { background: var(--primary); color: white; margin-top: 10px; }
+.btn-add-tds { background: var(--success); color: white; }
+.btn-json { background: var(--accent); color: var(--primary-dark); margin-top: 15px; }
+.btn-print { background: var(--text-main); color: white; margin-top: 10px; }
+
+/* --- UTILS --- */
+.badge { padding: 3px 8px; border-radius: 12px; font-size: 10px; font-weight: 800; text-transform: uppercase; }
+
+/* --- MOBILE RESPONSIVE --- */
+.menu-btn { display: none; position: fixed; right: 15px; top: 12px; z-index: 3000; background: var(--primary); color: white; border: none; width: 40px; height: 40px; border-radius: 8px; font-size: 20px; }
+.overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1500; }
+
+@media (max-width: 1024px) {
+    .sidebar { position: fixed; left: -100%; transition: 0.3s; }
+    .sidebar.active { left: 0; }
+    .menu-btn { display: block; }
+    .overlay.active { display: block; }
+
+    .header { padding-top: 55px; } /* Space for button */
+    .itr-container { grid-template-columns: 1fr; }
+    .itr-result { position: static; margin-top: 20px; }
+    
+    .form-row { flex-direction: column; align-items: flex-start; gap: 8px; }
+    .form-row input { width: 100%; text-align: left; }
+    
+    .tds-inputs { flex-direction: column; }
+    .tds-group { width: 100%; }
+    
+    table { min-width: 600px; } /* Allow horizontal scroll */
+}
+
+/* --- PRINT STYLE --- */
+@media print {
+    .sidebar, .menu-btn, .tabs, .no-print, .btn, .header select { display: none !important; }
+    .main, .content-area { overflow: visible; height: auto; padding: 0; background: white; }
+    .itr-container { display: block; }
+    .itr-result { border: 1px solid #000; box-shadow: none; margin-top: 30px; page-break-inside: avoid; }
+    .form-section { border: 1px solid #000; box-shadow: none; margin-bottom: 20px; }
+}
+</style>
 <body>
 
     <button class="menu-btn" onclick="toggleMenu()">☰</button>

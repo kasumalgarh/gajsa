@@ -13,7 +13,178 @@
 
 
 </head>
-<body>
+<style>
+    /* ==========================================================================
+   ARTH BOOK - CONTROL CENTER (SETTINGS) ROYAL STYLE
+   ========================================================================== */
+
+:root {
+    --primary: #0d47a1;       /* Royal Navy */
+    --primary-dark: #002171;
+    --accent: #ffca28;        /* Gold */
+    --bg: #f1f5f9;
+    --surface: #ffffff;
+    --text-main: #1e293b;
+    --text-sub: #64748b;
+    --border: #e2e8f0;
+    --success: #16a34a;
+    --danger: #dc2626;
+    --sidebar-width: 260px;
+}
+
+/* --- RESET --- */
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; outline: none; }
+body { display: flex; height: 100vh; background: var(--bg); color: var(--text-main); overflow: hidden; }
+
+/* --- SIDEBAR FIX (Royal Blue + White Text) --- */
+.sidebar {
+    width: var(--sidebar-width); background: var(--primary) !important;
+    color: white; display: flex; flex-direction: column; flex-shrink: 0; height: 100vh;
+    overflow-y: auto; z-index: 2000; box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+}
+.brand-logo { padding: 25px 20px; font-size: 22px; font-weight: 800; border-bottom: 1px solid rgba(255,255,255,0.1); color: white !important; }
+.nav-links { padding: 10px; list-style: none; }
+.nav-links li { margin-bottom: 5px; }
+.sidebar a {
+    display: flex !important; align-items: center; gap: 12px;
+    padding: 12px 15px; color: rgba(255,255,255,0.85) !important;
+    text-decoration: none !important; border-radius: 8px; font-weight: 500; font-size: 14px; transition: 0.2s;
+}
+.sidebar a:hover { background: rgba(255,255,255,0.15) !important; color: #fff !important; padding-left: 20px; }
+.sidebar a.active { background: var(--accent) !important; color: var(--primary-dark) !important; font-weight: 800; }
+
+/* --- MAIN LAYOUT --- */
+.main-setting { flex: 1; display: flex; flex-direction: column; overflow-y: auto; background: var(--bg); }
+
+.setting-header {
+    background: var(--surface); padding: 20px 30px; border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;
+    position: sticky; top: 0; z-index: 100;
+}
+.setting-header h1 { font-size: 1.5rem; font-weight: 800; color: var(--primary); }
+
+/* --- TABS --- */
+.tabs {
+    display: flex; background: #fff; padding: 0 30px; border-bottom: 1px solid var(--border);
+    gap: 20px; overflow-x: auto; white-space: nowrap; scrollbar-width: none;
+}
+.tab {
+    padding: 18px 5px; cursor: pointer; font-size: 14px; font-weight: 600;
+    color: var(--text-sub); border-bottom: 3px solid transparent; transition: 0.2s;
+}
+.tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+/* --- CARDS & FORMS --- */
+.tab-content { display: none; padding: 30px; max-width: 1000px; margin: 0 auto; width: 100%; }
+.tab-content.active { display: block; }
+
+.card {
+    background: #fff; border-radius: 16px; padding: 25px; margin-bottom: 25px;
+    border: 1px solid var(--border); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+}
+.card h3 { font-size: 1rem; font-weight: 700; color: var(--primary); margin-bottom: 20px; border-left: 4px solid var(--accent); padding-left: 12px; }
+
+.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+.form-group { display: flex; flex-direction: column; gap: 8px; }
+.form-group label { font-size: 12px; font-weight: 700; color: var(--text-sub); text-transform: uppercase; }
+
+input, select, textarea {
+    padding: 12px; border: 1px solid var(--border); border-radius: 8px;
+    font-size: 14px; background: #f8fafc; transition: 0.2s; width: 100%;
+}
+input:focus, textarea:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 3px rgba(13, 71, 161, 0.1); }
+
+/* --- IMAGE PREVIEW --- */
+.img-preview-box {
+    width: 120px; height: 120px; border: 2px dashed var(--border); border-radius: 12px;
+    margin-top: 10px; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden;
+}
+.img-preview-box img { width: 100%; height: 100%; object-fit: contain; }
+.remove-img {
+    position: absolute; top: 5px; right: 5px; background: var(--danger); color: white;
+    border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; display: none;
+}
+
+/* --- BUTTONS --- */
+.btn-primary {
+    padding: 12px 24px; border: none; border-radius: 8px; background: var(--primary);
+    color: white; font-weight: 700; cursor: pointer; transition: 0.2s; font-size: 14px;
+}
+.btn-primary:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(13, 71, 161, 0.2); }
+.btn-danger { background: #fee2e2; color: var(--danger); border: 1px solid #fecaca; padding: 12px 24px; border-radius: 8px; font-weight: 700; cursor: pointer; }
+.btn-google { background: #fff; color: #444; border: 1px solid var(--border); }
+
+/* --- TOGGLE SWITCH --- */
+.switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e1; transition: .4s; border-radius: 34px; }
+.slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+input:checked + .slider { background-color: var(--success); }
+input:checked + .slider:before { transform: translateX(24px); }
+
+/* --- STATUS BADGES --- */
+.status-badge { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+.status-ok { background: #dcfce7; color: #166534; }
+.status-fail { background: #fee2e2; color: #991b1b; }
+
+/* --- MOBILE RESPONSIVE --- */
+@media (max-width: 900px) {
+    .sidebar { position: fixed; left: -100%; transition: 0.3s; }
+    .sidebar.active { left: 0; }
+    
+    .setting-header { padding: 60px 20px 20px; flex-direction: column; align-items: stretch; text-align: center; }
+    .setting-header h1 { font-size: 1.2rem; }
+    
+    .tabs { padding: 0 10px; }
+    .tab { padding: 15px 10px; font-size: 13px; }
+    
+    .tab-content { padding: 15px; }
+    .card { padding: 20px; border-radius: 12px; }
+    .form-grid { grid-template-columns: 1fr; }
+    
+    .btn-primary, .btn-danger { width: 100%; text-align: center; }
+}/* --- SETTINGS PAGE MENU BUTTON FIX --- */
+@media (max-width: 900px) {
+    .menu-btn {
+        display: flex !important; /* मोबाइल पर दिखाओ */
+        position: fixed !important;
+        top: 15px !important;
+        right: 15px !important; /* राइट साइड में */
+        z-index: 9999 !important; /* सबसे ऊपरी लेयर */
+        background: #0d47a1 !important; /* डार्क ब्लू */
+        color: white !important;
+        width: 45px;
+        height: 45px;
+        border-radius: 8px;
+        border: none;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+
+    .sidebar {
+        position: fixed;
+        left: -280px; /* डिफ़ॉल्ट बंद */
+        transition: 0.3s ease-in-out;
+        z-index: 3000;
+    }
+
+    .sidebar.active {
+        left: 0; /* खुलने पर */
+    }
+
+    .overlay.active {
+        display: block !important;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 2500;
+    }
+}
+</style>
+<body><button class="menu-btn" onclick="toggleMenu()">☰</button>
+<div class="overlay" onclick="toggleMenu()"></div>
 
    <div class="sidebar" id="sidebar">
         <div class="brand-logo" style="padding: 20px; font-size: 20px; font-weight: 800; color: white; display: flex; align-items: center; gap: 10px;">
@@ -406,6 +577,30 @@
                 };
             }
         }
+        // --- MENU TOGGLE FUNCTION ---
+function toggleMenu() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.querySelector('.overlay');
+    
+    if (sidebar) sidebar.classList.toggle('active');
+    if (overlay) overlay.classList.toggle('active');
+}
+
+// --- AUTO CLOSE ON LINK CLICK ---
+document.addEventListener("DOMContentLoaded", function() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.querySelector('.overlay');
+    const links = document.querySelectorAll('.nav-links a');
+
+    links.forEach(link => {
+        link.addEventListener('click', () => {
+            if (window.innerWidth <= 900) {
+                if (sidebar) sidebar.classList.remove('active');
+                if (overlay) overlay.classList.remove('active');
+            }
+        });
+    });
+});
     </script>
 </body>
 </html>
