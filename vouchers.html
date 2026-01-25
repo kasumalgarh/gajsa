@@ -6,11 +6,271 @@
     <title>Day Book - Arth Book</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
-    <link rel="icon" type="image/x-icon" href="favicon.ico"><link rel="stylesheet" href="style.css">
+    
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
 
  
 </head>
+<style>
+    /* ==========================================================================
+   ARTH BOOK PLATINUM THEME - MASTER STYLESHEET v9.0 (FINAL)
+   Covers: All Pages + Mobile Voucher Entry
+   ========================================================================== */
+
+:root {
+    /* --- COLORS --- */
+    --primary: #0d47a1;       /* Royal Navy */
+    --primary-dark: #002171;  /* Darker Navy */
+    --accent: #ffca28;        /* Gold */
+    --bg: #f1f5f9;            /* Background */
+    --surface: #ffffff;       /* Card White */
+    --text-main: #1e293b;
+    --text-sub: #64748b;
+    --border: #e2e8f0;
+    
+    /* --- STATUS --- */
+    --success: #10b981;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+    
+    /* --- LAYOUT --- */
+    --sidebar-width: 260px;
+    --shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    --transition: all 0.2s ease-in-out;
+}
+
+/* ===========================
+   1. GLOBAL RESET
+   =========================== */
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; outline: none; }
+body { display: flex; height: 100vh; background: var(--bg); color: var(--text-main); overflow: hidden; }
+a { text-decoration: none; }
+ul { list-style: none; }
+button { font-family: inherit; }
+
+/* ===========================
+   2. SIDEBAR
+   =========================== */
+.sidebar {
+    width: var(--sidebar-width);
+    background: var(--primary) !important;
+    color: white;
+    display: flex; flex-direction: column; flex-shrink: 0; height: 100vh;
+    overflow-y: auto; z-index: 2000;
+    box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+    transition: var(--transition);
+}
+
+.brand-logo {
+    padding: 20px; font-size: 20px; font-weight: 800; color: white !important;
+    display: flex; align-items: center; gap: 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    margin-bottom: 10px;
+}
+
+.nav-links { padding: 0 10px; margin: 0; }
+.nav-links li { margin-bottom: 5px; }
+
+.sidebar a, .nav-links a, .nav-link {
+    display: flex !important; align-items: center; gap: 12px;
+    padding: 12px 15px; margin-bottom: 5px;
+    color: rgba(255,255,255,0.85) !important;
+    text-decoration: none !important;
+    border-radius: 8px; font-weight: 500; font-size: 14px;
+    transition: var(--transition);
+    background: transparent; cursor: pointer;
+}
+
+.sidebar a:hover, .nav-link:hover {
+    background: rgba(255,255,255,0.15) !important;
+    color: #ffffff !important;
+    padding-left: 20px;
+}
+
+.sidebar a.active, .nav-link.active {
+    background: var(--accent) !important;
+    color: var(--primary-dark) !important;
+    font-weight: 800;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+/* ===========================
+   3. MAIN LAYOUT & HEADERS
+   =========================== */
+.main, .main-content, .main-area { 
+    flex: 1; display: flex; flex-direction: column; 
+    overflow: hidden; position: relative; width: 100%;
+}
+
+.header, .top-bar {
+    background: var(--surface); padding: 15px 20px; 
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between; 
+    flex-wrap: wrap; gap: 15px; flex-shrink: 0;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    min-height: 60px;
+    padding-right: 60px; /* Space for menu btn */
+    position: relative;
+}
+
+.header h2 { margin: 0; font-size: 1.2rem; color: var(--primary); font-weight: 800; }
+
+.scroll-area, .content-scroll { padding: 20px; overflow-y: auto; flex: 1; -webkit-overflow-scrolling: touch; }
+
+/* ===========================
+   4. PAGE SPECIFIC LAYOUTS
+   =========================== */
+
+/* --- SALES & PURCHASE --- */
+.header-card, .grid-header {
+    background: var(--surface); padding: 15px;
+    border-radius: 12px; border: 1px solid var(--border);
+    display: flex; gap: 15px; flex-wrap: wrap; 
+    margin-bottom: 15px; align-items: end;
+}
+
+.entry-bar {
+    background: #fff; padding: 15px; 
+    border: 1px solid var(--border); border-bottom: none;
+    border-radius: 12px 12px 0 0;
+    display: grid; 
+    grid-template-columns: 3fr 1fr 1fr 1fr 100px;
+    gap: 10px; align-items: end;
+}
+
+/* --- VOUCHER ENTRY (Dr/Cr Rows) --- */
+.entry-row {
+    display: grid; 
+    grid-template-columns: 80px 1fr 100px 150px 50px; /* Desktop Grid */
+    gap: 15px; align-items: center;
+    background: var(--surface); border: 1px solid var(--border); 
+    border-radius: 10px; padding: 12px 15px; margin-bottom: 12px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.entry-row input, .entry-row select { 
+    border: 1px solid transparent; background: transparent; padding: 8px;
+}
+.entry-row input:focus, .entry-row select:focus {
+    background: #fff; border-color: var(--primary); box-shadow: 0 0 0 2px rgba(13,71,161,0.1);
+}
+.entry-row .amt { text-align: right; background: #f8fafc; border-radius: 6px; font-weight: bold; }
+
+/* --- TABLES --- */
+.table-container {
+    width: 100%; overflow-x: auto; background: white;
+    border: 1px solid var(--border); border-radius: 8px;
+    margin-bottom: 15px;
+}
+
+table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 700px; /* Scroll on mobile */ }
+th { background: #f8fafc; padding: 12px; text-align: left; font-weight: 700; border-bottom: 2px solid var(--border); white-space: nowrap; }
+td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+
+/* ===========================
+   5. COMPONENTS
+   =========================== */
+.form-group label { display: block; font-size: 12px; font-weight: 700; color: var(--text-sub); margin-bottom: 5px; text-transform: uppercase; }
+
+input, select, textarea {
+    width: 100%; padding: 10px 12px; border: 1px solid var(--border);
+    border-radius: 8px; font-size: 14px; outline: none; background: #fff;
+    color: var(--text-main); transition: 0.2s;
+}
+input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(13, 71, 161, 0.1); }
+
+/* Buttons */
+.btn {
+    padding: 10px 20px; border-radius: 8px; border: none;
+    font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 14px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    text-decoration: none;
+}
+.btn:active { transform: scale(0.98); }
+
+.btn-primary, .btn-save, .btn-add, .btn-new { background: var(--primary); color: white; }
+.btn-success { background: var(--success); color: white; }
+.btn-danger, .btn-del { background: #fee2e2; color: var(--danger); }
+.btn-refresh { background: white; border: 1px solid var(--border); color: var(--text-main); }
+
+/* Card */
+.card { background: var(--surface); border-radius: 12px; box-shadow: var(--shadow); border: 1px solid var(--border); padding: 20px; margin-bottom: 20px; }
+
+/* ===========================
+   6. MOBILE RESPONSIVENESS (THE FIX)
+   =========================== */
+.menu-btn { 
+    display: none; position: absolute; right: 15px; top: 15px; 
+    font-size: 1.5rem; color: var(--primary); background: none; border: none; cursor: pointer; z-index: 100;
+}
+.overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1500; backdrop-filter: blur(2px); }
+
+@media (max-width: 1024px) {
+    /* Sidebar */
+    .sidebar { position: fixed; left: -100%; top: 0; height: 100%; width: 280px; }
+    .sidebar.active { left: 0; }
+    
+    .menu-btn { display: block; }
+    .overlay.active { display: block; }
+    
+    .main { padding: 0; }
+    .header { padding-right: 60px; } 
+    
+    /* Stack Inputs on Mobile */
+    .grid-header, .header-card, .entry-bar {
+        grid-template-columns: 1fr !important;
+        gap: 10px;
+    }
+    
+    /* VOUCHER ENTRY MOBILE FIX */
+    .entry-row {
+        grid-template-columns: 80px 1fr 50px !important; /* Type | Ledger | Del */
+        grid-template-rows: auto auto; /* Two Rows */
+        gap: 10px; padding: 15px; border-left: 4px solid var(--primary);
+    }
+    /* Grid Placement for Voucher Mobile */
+    .entry-row select:first-child { grid-column: 1; grid-row: 1; } /* Dr/Cr */
+    .entry-row select:nth-child(2) { grid-column: 2; grid-row: 1; font-weight: bold; } /* Ledger */
+    .entry-row i.fa-trash { grid-column: 3; grid-row: 1; text-align: center; } /* Delete */
+    .entry-row input.amt { grid-column: 2 / span 2; grid-row: 2; font-size: 16px; margin-top: 5px; } /* Amount */
+    .entry-row .bal-ind { grid-column: 1; grid-row: 2; font-size: 10px; color: #999; } /* Balance */
+
+    /* Buttons */
+    .btn-add, .entry-bar .btn, .header .btn-save, .footer-bar .btn {
+        width: 100%; height: 45px; margin-top: 5px;
+    }
+    
+    /* Modal & Pay Options */
+    .modal { width: 95% !important; padding: 20px !important; }
+    .pay-options { flex-direction: column !important; }
+    .p-opt { padding: 15px; justify-content: flex-start; }
+}
+
+/* ===========================
+   7. UTILITIES
+   =========================== */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2500; display: none; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
+.modal { background: white; width: 500px; max-width: 95%; padding: 25px; border-radius: 16px; box-shadow: 0 25px 50px rgba(0,0,0,0.25); display: flex; flex-direction: column; }
+
+/* Payment Options (Desktop) */
+.pay-options { display: flex; gap: 15px; margin: 20px 0; }
+.p-opt { flex: 1; padding: 15px; border: 2px solid var(--border); border-radius: 10px; text-align: center; cursor: pointer; background: #f9f9f9; display: flex; align-items: center; justify-content: center; gap: 10px; }
+.p-opt.selected { border-color: var(--accent); background: #fffbeb; color: var(--primary-dark); font-weight: bold; }
+
+/* Badge */
+.vtype-badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; color: white; text-transform: uppercase; }
+.badge-Sales { background: var(--primary); }
+.badge-Purchase { background: #d946ef; }
+.badge-Receipt { background: #10b981; }
+.badge-Payment { background: #f59e0b; }
+
+#toast { position: fixed; bottom: 80px; right: 20px; background: var(--success); color: white; padding: 12px 24px; border-radius: 50px; display: none; z-index: 3000; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+
+@media print {
+    .sidebar, .menu-btn, .header, .entry-bar, .footer-bar, .btn, .overlay, #toast, .no-print { display: none !important; }
+    .main, .main-content, .table-area { padding: 0; border: none; height: auto; overflow: visible; }
+}
+</style>
 <body>
    <div class="sidebar" id="sidebar">
         <div class="brand-logo" style="padding: 20px; display: flex; align-items: center; gap: 10px;">
