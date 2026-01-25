@@ -19,8 +19,8 @@
         .setting-header { margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; }
         .setting-header h1 { font-size: 24px; color: var(--primary-color); margin: 0; }
 
-        .tabs { display: flex; gap: 20px; border-bottom: 2px solid var(--border-color); margin-bottom: 20px; }
-        .tab { padding: 12px 20px; cursor: pointer; font-weight: 600; color: #64748b; border-bottom: 3px solid transparent; transition: 0.3s; }
+        .tabs { display: flex; gap: 20px; border-bottom: 2px solid var(--border-color); margin-bottom: 20px; overflow-x: auto; }
+        .tab { padding: 12px 20px; cursor: pointer; font-weight: 600; color: #64748b; border-bottom: 3px solid transparent; transition: 0.3s; white-space: nowrap; }
         .tab:hover { color: var(--primary-color); }
         .tab.active { color: var(--primary-color); border-bottom-color: var(--accent-color); }
 
@@ -50,11 +50,16 @@
         .btn-primary { background: var(--primary-color); color: white; padding: 12px 25px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; }
         .btn-danger { background: var(--danger-color); color: white; padding: 12px 25px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; }
         .btn-google { background: #4285F4; color: white; }
+
+        /* Image Preview Style */
+        .img-preview-box { width: 100%; height: 100px; border: 2px dashed #cbd5e1; border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #f8fafc; margin-top: 10px; position: relative; }
+        .img-preview-box img { max-height: 90%; max-width: 90%; object-fit: contain; }
+        .remove-img { position: absolute; top: 5px; right: 5px; background: #ef4444; color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; display: none; }
     </style>
 </head>
 <body>
 
-  <div class="sidebar" id="sidebar">
+   <div class="sidebar" id="sidebar">
         <div class="brand-logo" style="padding: 20px; font-size: 20px; font-weight: 800; color: white; display: flex; align-items: center; gap: 10px;">
             <i class="fas fa-cube"></i> Arth Book
         </div>
@@ -80,7 +85,7 @@
         </ul>
         
         <div style="padding: 20px; font-size: 11px; color: #64748b; text-align: center; margin-top:auto;">
-            Arth Book v4.1<br>Authorized User
+            Arth Book v4.2<br>Authorized User
         </div>
     </div>
 
@@ -92,6 +97,7 @@
 
         <div class="tabs">
             <div class="tab active" onclick="showTab('company')">🏢 Company Profile</div>
+            <div class="tab" onclick="showTab('invoice')">🖨️ Invoice Settings</div>
             <div class="tab" onclick="showTab('cloud')">☁️ Cloud Backup</div>
             <div class="tab" onclick="showTab('gst')">📡 GST & API</div>
             <div class="tab" onclick="showTab('data')">🗄️ Data Tools</div>
@@ -99,7 +105,7 @@
 
         <div id="company" class="tab-content active">
             <div class="card">
-                <h3>Bill Header Details</h3>
+                <h3>Business Details</h3>
                 <div class="form-grid">
                     <div class="form-group">
                         <label>Business Name</label>
@@ -146,6 +152,41 @@
             </div>
         </div>
 
+        <div id="invoice" class="tab-content">
+            <div class="card">
+                <h3>Branding</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Company Logo (Max 500KB)</label>
+                        <input type="file" id="logoInput" accept="image/*" onchange="handleImage(this, 'logo')">
+                        <div class="img-preview-box" id="logoBox">
+                            <span style="color:#94a3b8; font-size:12px;">No Logo</span>
+                            <img id="logoPreview" style="display:none;">
+                            <button class="remove-img" onclick="clearImage('logo')" id="btnRmLogo">×</button>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Authorized Signature (Max 500KB)</label>
+                        <input type="file" id="signInput" accept="image/*" onchange="handleImage(this, 'sign')">
+                        <div class="img-preview-box" id="signBox">
+                            <span style="color:#94a3b8; font-size:12px;">No Signature</span>
+                            <img id="signPreview" style="display:none;">
+                            <button class="remove-img" onclick="clearImage('sign')" id="btnRmSign">×</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Bill Content</h3>
+                <div class="form-group">
+                    <label>Terms & Conditions (Printed on Invoice)</label>
+                    <textarea id="terms" rows="6" placeholder="1. Goods once sold will not be taken back..."></textarea>
+                </div>
+            </div>
+        </div>
+
         <div id="cloud" class="tab-content">
             <div class="card" style="border-left: 5px solid #4285F4;">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -162,8 +203,6 @@
 
             <div class="card">
                 <h3>Google Drive Connection</h3>
-                <p style="font-size:14px; color:#475569; margin-bottom:20px;">Connect your account once to enable cloud backups. Your data never leaves Google's servers.</p>
-                
                 <div style="display:flex; gap:15px; align-items:center; flex-wrap:wrap;">
                     <button class="btn-primary btn-google" onclick="handleAuthClick()">
                         <i class="fab fa-google"></i> Link Google Account
@@ -183,7 +222,6 @@
         <div id="gst" class="tab-content">
             <div class="card">
                 <h3>e-Invoicing Credentials (GSP)</h3>
-                <p style="font-size:12px; color:#64748b; margin-bottom:20px;">Required for generating IRN and e-Way Bills directly.</p>
                 <div class="form-grid">
                     <div class="form-group">
                         <label>API Environment</label>
@@ -223,7 +261,6 @@
 
             <div class="card" style="border-color: var(--danger-color);">
                 <h3 style="color:var(--danger-color);">Danger Zone</h3>
-                <p style="font-size:13px; color:#ef4444;">Once you delete data, there is no going back. Please be certain.</p>
                 <button class="btn-danger" onclick="factoryReset()">
                     <i class="fas fa-trash"></i> Factory Reset (Wipe All Data)
                 </button>
@@ -236,12 +273,13 @@
     <script src="tally_bridge.js"></script>
     
     <script>
-        // --- GOOGLE DRIVE CONFIGURATION ---
-        // REPLACE THESE WITH YOUR KEYS FROM GOOGLE CLOUD CONSOLE
-const CLIENT_ID = '32983669609-i8c1qe1iqvtitq7nqmm9i186djsiqehm.apps.googleusercontent.com';        const SCOPES = 'https://www.googleapis.com/auth/drive.file';
+        const CLIENT_ID = '32983669609-i8c1qe1iqvtitq7nqmm9i186djsiqehm.apps.googleusercontent.com';
+        const SCOPES = 'https://www.googleapis.com/auth/drive.file';
 
         let tokenClient;
         let accessToken = null;
+        let logoBase64 = null;
+        let signBase64 = null;
 
         function showTab(id) {
             document.querySelectorAll('.tab-content').forEach(d => d.classList.remove('active'));
@@ -252,9 +290,12 @@ const CLIENT_ID = '32983669609-i8c1qe1iqvtitq7nqmm9i186djsiqehm.apps.googleuserc
 
         window.onload = async () => {
             await DB.init();
-            const s = await DB.getSettings();
+            let s = await DB.getSettings();
             
-            // Populate Company Fields
+            if(Array.isArray(s) && s.length > 0) s = s[0];
+            if(!s) s = {};
+
+            // 1. Company Profile
             document.getElementById('compName').value = s.company_name || '';
             document.getElementById('compGST').value = s.gstin || '';
             document.getElementById('compAddr').value = s.address || '';
@@ -266,72 +307,70 @@ const CLIENT_ID = '32983669609-i8c1qe1iqvtitq7nqmm9i186djsiqehm.apps.googleuserc
             document.getElementById('bankIFSC').value = s.bank_ifsc || '';
             document.getElementById('upiId').value = s.upi_id || '';
 
+            // 2. Invoice Settings
+            logoBase64 = s.logo || null;
+            signBase64 = s.signature || null;
+            document.getElementById('terms').value = s.terms || "1. Goods once sold will not be taken back.\n2. Interest @18% p.a. will be charged if not paid by due date.\n3. Subject to local jurisdiction.";
+
+            if(logoBase64) showImg('logo', logoBase64);
+            if(signBase64) showImg('sign', signBase64);
+
+            // 3. System
             document.getElementById('autoBackup').checked = s.auto_backup_enabled || false;
             document.getElementById('lastSyncTime').innerText = s.last_sync || 'Never';
-
             document.getElementById('apiEnv').value = s.api_env || 'sandbox';
             document.getElementById('gspId').value = s.gsp_id || '';
             document.getElementById('gspSecret').value = s.gsp_secret || '';
             document.getElementById('gstUser').value = s.gst_user || '';
 
-            // Initialize Google Identity Client
             initGoogleAuth();
         };
 
-        // --- GOOGLE AUTH LOGIC ---
-        function initGoogleAuth() {
-            try {
-                tokenClient = google.accounts.oauth2.initTokenClient({
-                    client_id: CLIENT_ID,
-                    scope: SCOPES,
-                    callback: (tokenResponse) => {
-                        if (tokenResponse && tokenResponse.access_token) {
-                            accessToken = tokenResponse.access_token;
-                            document.getElementById('driveStatus').innerText = "Linked ✅";
-                            document.getElementById('driveStatus').className = "status-badge status-ok";
-                            alert("✅ Google Drive successfully linked!");
-                        }
-                    },
-                });
-            } catch (e) {
-                console.error("Google Auth Init Failed:", e);
-            }
-        }
-
-        function handleAuthClick() {
-            if (tokenClient) tokenClient.requestAccessToken();
-            else alert("Google Library not loaded yet. Check your internet connection.");
-        }
-
-        async function runManualDriveBackup() {
-            if (!accessToken) {
-                alert("Please click 'Link Google Account' first.");
-                handleAuthClick();
+        // --- UPDATED IMAGE HANDLER (Limit: 500KB) ---
+        function handleImage(input, type) {
+            const file = input.files[0];
+            if(!file) return;
+            
+            if(file.size > 512000) { // Limit increased to 500KB (512,000 bytes)
+                alert("⚠️ Image is too large! Please use a smaller image (under 500KB).");
+                input.value = "";
                 return;
             }
 
-            const btn = event.currentTarget;
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
-            btn.disabled = true;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64 = e.target.result;
+                if(type === 'logo') {
+                    logoBase64 = base64;
+                    showImg('logo', base64);
+                } else {
+                    signBase64 = base64;
+                    showImg('sign', base64);
+                }
+            };
+            reader.readAsDataURL(file);
+        }
 
-            try {
-                await DB.backupToGoogleDrive(accessToken);
-                const now = new Date().toLocaleString();
-                document.getElementById('lastSyncTime').innerText = now;
-                
-                // Update Settings with Sync Time
-                const s = await DB.getSettings();
-                s.last_sync = now;
-                await DB.saveSettings(s);
-                
-                alert("✅ Backup successfully saved to your Google Drive!");
-            } catch (e) {
-                console.error(e);
-                alert("❌ Backup Failed. Please try relinking your account.");
-            } finally {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
+        function showImg(type, src) {
+            document.getElementById(type + 'Preview').src = src;
+            document.getElementById(type + 'Preview').style.display = 'block';
+            document.getElementById('btnRm' + (type.charAt(0).toUpperCase() + type.slice(1))).style.display = 'block';
+            document.querySelector('#' + type + 'Box span').style.display = 'none';
+        }
+
+        function clearImage(type) {
+            if(type === 'logo') {
+                logoBase64 = null;
+                document.getElementById('logoInput').value = '';
+                document.getElementById('logoPreview').style.display = 'none';
+                document.querySelector('#logoBox span').style.display = 'block';
+                document.getElementById('btnRmLogo').style.display = 'none';
+            } else {
+                signBase64 = null;
+                document.getElementById('signInput').value = '';
+                document.getElementById('signPreview').style.display = 'none';
+                document.querySelector('#signBox span').style.display = 'block';
+                document.getElementById('btnRmSign').style.display = 'none';
             }
         }
 
@@ -342,15 +381,17 @@ const CLIENT_ID = '32983669609-i8c1qe1iqvtitq7nqmm9i186djsiqehm.apps.googleuserc
                 address: document.getElementById('compAddr').value,
                 phone: document.getElementById('compPhone').value,
                 email: document.getElementById('compEmail').value,
-                
                 bank_name: document.getElementById('bankName').value,
                 bank_account: document.getElementById('bankAcc').value,
                 bank_ifsc: document.getElementById('bankIFSC').value,
                 upi_id: document.getElementById('upiId').value,
 
+                logo: logoBase64,
+                signature: signBase64,
+                terms: document.getElementById('terms').value,
+
                 auto_backup_enabled: document.getElementById('autoBackup').checked,
                 last_sync: document.getElementById('lastSyncTime').innerText,
-
                 api_env: document.getElementById('apiEnv').value,
                 gsp_id: document.getElementById('gspId').value,
                 gsp_secret: document.getElementById('gspSecret').value,
@@ -361,13 +402,50 @@ const CLIENT_ID = '32983669609-i8c1qe1iqvtitq7nqmm9i186djsiqehm.apps.googleuserc
             alert("✅ Settings Saved Successfully!");
         }
 
+        function initGoogleAuth() {
+            try {
+                tokenClient = google.accounts.oauth2.initTokenClient({
+                    client_id: CLIENT_ID, scope: SCOPES,
+                    callback: (tokenResponse) => {
+                        if (tokenResponse && tokenResponse.access_token) {
+                            accessToken = tokenResponse.access_token;
+                            document.getElementById('driveStatus').innerText = "Linked ✅";
+                            document.getElementById('driveStatus').className = "status-badge status-ok";
+                            alert("✅ Google Drive successfully linked!");
+                        }
+                    },
+                });
+            } catch (e) { console.error("Google Auth Init Failed:", e); }
+        }
+
+        function handleAuthClick() {
+            if (tokenClient) tokenClient.requestAccessToken();
+            else alert("Google Library not loaded. Check internet.");
+        }
+
+        async function runManualDriveBackup() {
+            if (!accessToken) return handleAuthClick();
+            const btn = event.currentTarget;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+            btn.disabled = true;
+            try {
+                await DB.backupToGoogleDrive(accessToken);
+                const now = new Date().toLocaleString();
+                document.getElementById('lastSyncTime').innerText = now;
+                const s = await DB.getSettings();
+                s.last_sync = now;
+                await DB.saveSettings(s);
+                alert("✅ Backup saved to Google Drive!");
+            } catch (e) { alert("❌ Backup Failed."); } 
+            finally { btn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Backup Now to Drive'; btn.disabled = false; }
+        }
+
         function factoryReset() {
-            if(confirm("⚠️ CRITICAL WARNING: This will delete ALL data (Customers, Stock, Bills). Are you sure?")) {
+            if(confirm("⚠️ CRITICAL: This will wipe ALL data. Confirm?")) {
                 const req = indexedDB.deleteDatabase('ArthBook_DB');
                 req.onsuccess = () => {
-                    localStorage.clear();
-                    sessionStorage.clear();
-                    alert("System Reset Complete. Refreshing...");
+                    localStorage.clear(); sessionStorage.clear();
+                    alert("Reset Complete. Reloading...");
                     window.location.href = "login.html";
                 };
             }

@@ -10,11 +10,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        /* --- ARTH BOOK PLATINUM THEME (SALES TABLE EDITION) --- */
+        /* --- ARTH BOOK PLATINUM THEME --- */
         :root { 
-            --primary: #0d47a1;     /* Royal Navy */
+            --primary: #0d47a1; 
             --primary-dark: #002171;
-            --accent: #ffca28;      /* Gold */
+            --accent: #ffca28; 
             --bg: #f1f5f9; 
             --surface: #ffffff;
             --border: #e2e8f0; 
@@ -59,7 +59,6 @@
         .h-label { font-size: 12px; color: #64748b; font-weight: 700; text-transform: uppercase; }
         .h-input { padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-weight: 600; font-size: 14px; outline: none; }
         .h-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(13, 71, 161, 0.1); }
-
         .inv-badge { background: #e0f2fe; color: var(--primary); padding: 5px 12px; border-radius: 20px; font-weight: 800; font-size: 14px; }
 
         /* ENTRY BAR */
@@ -73,7 +72,6 @@
         .e-input:focus { border-color: var(--accent); }
         .btn-add { background: var(--primary); color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-weight: 700; height: 38px; }
         .btn-add:hover { background: var(--primary-dark); }
-        
         .stock-tag { position: absolute; right: 5px; top: 0; font-size: 10px; color: var(--green); font-weight: bold; background: #ecfdf5; padding: 2px 6px; border-radius: 4px; display: none; }
 
         /* TABLE AREA */
@@ -82,7 +80,6 @@
         th { position: sticky; top: 0; background: #f8fafc; padding: 12px; text-align: left; font-size: 12px; font-weight: 700; color: #475569; border-bottom: 2px solid var(--border); z-index: 10; }
         td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; font-size: 13px; color: var(--text-main); vertical-align: middle; }
         tr:hover { background: #f8fafc; }
-        
         .td-input { width: 80px; padding: 5px; border: 1px solid transparent; background: transparent; text-align: center; font-weight: 600; }
         .td-input:focus { border-color: var(--accent); background: white; border-radius: 4px; }
         .td-amt { font-family: 'Courier New', monospace; font-weight: 700; }
@@ -97,14 +94,13 @@
         .lbl-grand { font-size: 28px; font-weight: 800; color: var(--primary); }
         
         .btn-action { padding: 12px 25px; border-radius: 8px; border: none; font-weight: 700; cursor: pointer; color: white; display: flex; align-items: center; gap: 8px; font-size: 16px; }
-        .btn-save { background: var(--success); box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3); }
-        .btn-save:hover { transform: translateY(-2px); }
+        /* FIXED: Green Print Button */
+        .btn-save { background-color: #10b981 !important; color: white !important; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.4); border: 1px solid #059669; }
+        .btn-save:hover { background-color: #047857 !important; transform: translateY(-2px); }
 
         /* MODAL */
         .modal-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.6); display:none; justify-content:center; align-items:center; z-index:2000; backdrop-filter: blur(4px); }
         .modal { background:white; width:95%; max-width:450px; padding:30px; border-radius:20px; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); animation: slideIn 0.2s ease-out; }
-        @keyframes slideIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        
         .pay-options { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin: 25px 0; }
         .p-opt { padding: 15px; border: 2px solid var(--border); border-radius: 12px; text-align: center; cursor: pointer; font-weight: 600; color: var(--text-main); transition: 0.2s; background: #f8fafc; }
         .p-opt:hover { border-color: var(--primary); transform: translateY(-2px); }
@@ -122,7 +118,10 @@
             .btn-add { grid-column: 1 / -1; }
         }
 
+        /* --- PRINT CSS: Hides Browser Headers & URL --- */
         @media print {
+            @page { margin: 0; size: A4; }
+            body { margin: 0; }
             body * { visibility: hidden; }
             #printArea, #printArea * { visibility: visible; }
             #printArea { position: absolute; left: 0; top: 0; width: 100%; }
@@ -140,15 +139,12 @@
             <li><a href="sales_invoice.html" class="nav-link active"><i class="fas fa-file-invoice"></i> Sales (Table)</a></li>
             <li><a href="purchase_invoice.html" class="nav-link"><i class="fas fa-truck"></i> Purchase</a></li>
             <li><a href="vouchers.html" class="nav-link"><i class="fas fa-receipt"></i> Day Book</a></li>
-            
             <li style="margin-top:15px; margin-bottom:5px; font-size:11px; color:#64748b; font-weight:bold; padding-left:15px; text-transform:uppercase;">Masters</li>
             <li><a href="item_master.html" class="nav-link"><i class="fas fa-boxes"></i> Inventory</a></li>
             <li><a href="ArthBook.html" class="nav-link"><i class="fas fa-users"></i> Parties</a></li>
-            
             <hr style="border:0; border-top:1px solid rgba(255,255,255,0.1); margin:15px 5px;">
             <li><a href="settings.html" class="nav-link"><i class="fas fa-cog"></i> Settings</a></li>
         </ul>
-        
         <div style="padding: 20px; font-size: 11px; color: #64748b; text-align: center; margin-top:auto;">
             Arth Book v4.2<br>Table Edition
         </div>
@@ -165,12 +161,10 @@
                     </select>
                 </div>
             </div>
-            
             <div class="h-group" style="max-width: 150px;">
                 <span class="h-label">Invoice Date</span>
                 <input type="date" id="billDate" class="h-input">
             </div>
-
             <div class="h-group" style="max-width: 120px; text-align:right;">
                 <span class="h-label">Inv. No</span>
                 <div id="invNo" class="inv-badge">LOADING</div>
@@ -262,9 +256,13 @@
                 </div>
             </div>
 
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:20px;">
-                <button class="btn-action" style="background:#64748b; font-size:14px; width:100%; justify-content:center;" onclick="saveBill(false)">Save Only</button>
-                <button class="btn-action" style="background:var(--success); font-size:14px; width:100%; justify-content:center;" onclick="saveBill(true)">Print & Save</button>
+            <div style="display:flex; gap:10px; margin-top:20px;">
+                <button class="btn-action" style="background:#64748b; color:white; flex:1; justify-content:center;" onclick="saveBill(false)">
+                    <i class="fas fa-save"></i> Save Only
+                </button>
+                <button class="btn-action" style="background:#10b981; color:white; flex:1; justify-content:center;" onclick="saveBill(true)">
+                    <i class="fas fa-print"></i> Print & Save
+                </button>
             </div>
         </div>
     </div>
@@ -284,6 +282,8 @@
                     DB.getAll('items'), DB.getAll('ledgers'), DB.getAll('settings'), DB.getAll('groups')
                 ]);
                 
+                if(Array.isArray(settings) && settings.length > 0) settings = settings[0];
+
                 updateItemDatalist(items);
                 loadCustomers();
                 generateInvNo();
@@ -292,7 +292,7 @@
             } catch(e) { console.error(e); showToast("⚠️ Database connection failed."); }
         };
 
-        // --- 1. ENTRY LOGIC ---
+        // --- ENTRY LOGIC ---
         function updateItemDatalist(list) {
             const dl = document.getElementById('itemList');
             dl.innerHTML = list.map(i => `<option value="${i.name}">Price: ${i.std_price} | Stock: ${i.current_stock}</option>`).join('');
@@ -301,20 +301,16 @@
         function onItemSelect() {
             const val = document.getElementById('itemSearch').value;
             const item = items.find(i => i.name === val || i.sku === val);
-            
             if(item) {
                 document.getElementById('selItemId').value = item.id;
                 document.getElementById('selItemGst').value = item.gst_rate || 0;
                 document.getElementById('rateInput').value = item.std_price || 0;
-                document.getElementById('itemSearch').value = item.name; // Normalize if scanned sku
-                
-                // Show Stock
+                document.getElementById('itemSearch').value = item.name; 
                 const stock = item.current_stock || 0;
                 const ind = document.getElementById('stockInd');
                 ind.innerText = `Stock: ${stock} ${item.unit||''}`;
                 ind.style.display = 'block';
                 ind.style.color = stock < (item.reorder_level||5) ? 'red' : 'var(--green)';
-                
                 calcLine();
                 document.getElementById('qtyInput').focus();
             }
@@ -336,8 +332,10 @@
             if(!id || !name) return showToast("⚠️ Select an item first");
             if(qty <= 0) return showToast("⚠️ Invalid Quantity");
 
-            // Check Stock
             const item = items.find(i => i.id == id);
+            const itemHsn = item ? item.hsn : '';
+            const itemUnit = item ? item.unit : '';
+
             if(qty > (item.current_stock || 0)) {
                 return showToast(`⚠️ Low Stock! Only ${item.current_stock} available.`);
             }
@@ -346,10 +344,9 @@
             if(existing) {
                 existing.qty += qty;
             } else {
-                cart.push({ id: id, name: name, qty: qty, rate: rate, gst: gst });
+                cart.push({ id: id, name: name, qty: qty, rate: rate, gst: gst, hsn: itemHsn, unit: itemUnit });
             }
 
-            // Clear Inputs
             document.getElementById('itemSearch').value = '';
             document.getElementById('selItemId').value = '';
             document.getElementById('qtyInput').value = 1;
@@ -357,7 +354,6 @@
             document.getElementById('amtDisplay').value = '';
             document.getElementById('stockInd').style.display = 'none';
             document.getElementById('itemSearch').focus();
-
             renderCartTable();
         }
 
@@ -369,26 +365,21 @@
             }
         }
 
-        // --- 2. TABLE RENDER ---
         function renderCartTable() {
             const tbody = document.getElementById('cartTableBody');
-            
             if(cart.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:30px; color:#94a3b8;">Items will appear here...</td></tr>';
                 updateTotals(0,0,0,0);
                 return;
             }
-
             let sub = 0, tax = 0, totalQty = 0;
             tbody.innerHTML = '';
-
             cart.forEach((c, idx) => {
                 const base = c.qty * c.rate;
                 const taxAmt = base * (c.gst/100);
                 sub += base;
                 tax += taxAmt;
                 totalQty += c.qty;
-
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td style="color:#64748b;">${idx+1}</td>
@@ -406,26 +397,19 @@
                 `;
                 tbody.appendChild(tr);
             });
-
             updateTotals(sub, tax, cart.length, totalQty);
         }
 
         function editCart(idx, field, val) {
             const v = parseFloat(val) || 0;
             if(v <= 0 && field === 'qty') return remItem(idx);
-            
-            // Stock Check for Edit
             if(field === 'qty') {
                  const item = items.find(i => i.id == cart[idx].id);
                  if(v > (item.current_stock||0)) {
                      showToast("⚠️ Stock Limit Exceeded");
                      cart[idx].qty = item.current_stock;
-                 } else {
-                     cart[idx].qty = v;
-                 }
-            } else {
-                cart[idx].rate = v;
-            }
+                 } else { cart[idx].qty = v; }
+            } else { cart[idx].rate = v; }
             renderCartTable();
         }
 
@@ -439,12 +423,10 @@
             document.getElementById('lblTax').innerText = tax.toFixed(2);
             document.getElementById('lblGrand').innerText = grand.toFixed(2);
             document.getElementById('modalTotal').innerText = "₹" + grand.toLocaleString('en-IN');
-            
             document.getElementById('lblCount').innerText = count;
             document.getElementById('lblQty').innerText = qty;
         }
 
-        // --- 3. COMMON FUNCS (Preserved) ---
         function loadCustomers() {
             const sel = document.getElementById('custSelect');
             sel.innerHTML = '<option value="">Walk-in Customer (Cash)</option>';
@@ -476,76 +458,292 @@
             el.classList.add('selected');
         }
 
-        // --- 4. SAVE & PRINT (Logic Unchanged) ---
-        async function saveBill(shouldPrint) {
-            const pid = document.getElementById('custSelect').value;
-            const invNo = document.getElementById('invNo').innerText;
-            const date = document.getElementById('billDate').value;
-            const grand = parseFloat(document.getElementById('lblGrand').innerText.replace(',',''));
+        // --- 4. SAVE & PRINT ---
+        // --- UPDATED SAVE FUNCTION (Fixes Missing Tax & Items) ---
+async function saveBill(shouldPrint) {
+    const pid = document.getElementById('custSelect').value;
+    const invNo = document.getElementById('invNo').innerText;
+    const date = document.getElementById('billDate').value;
+    const grand = parseFloat(document.getElementById('lblGrand').innerText.replace(',',''));
 
-            if(selectedMode === 'Udhar' && (!pid || pid === "0" || pid === "")) {
-                alert("❌ Error: Cannot give Credit (Udhar) to Walk-in Customer.");
-                return;
-            }
+    if (selectedMode === 'Udhar' && (!pid || pid === "0" || pid === "")) {
+        alert("❌ Error: Select a Party for Credit Sale.");
+        return;
+    }
 
-            const voucher = {
-                voucher_no: invNo,
-                date: date,
-                type: 'Sales',
-                party_id: parseInt(pid) || 0,
-                amount: grand,
-                payment_mode: selectedMode,
-                narration: `POS Sale - ${selectedMode}`
-            };
+    const voucher = {
+        voucher_no: invNo,
+        date: date,
+        type: 'Sales',
+        party_id: parseInt(pid) || 0,
+        amount: grand,
+        payment_mode: selectedMode,
+        narration: `POS Sale - ${selectedMode}`
+    };
 
-            const entries = [];
-            try {
-                let debitLedgerId = 0;
-                if(selectedMode === 'Cash') {
-                    const cashL = ledgers.find(l => l.name === 'Cash' || l.group_name === 'Cash-in-Hand');
-                    if(cashL) debitLedgerId = cashL.id;
-                } else if(selectedMode === 'Udhar') {
-                    debitLedgerId = parseInt(pid);
-                } else {
-                    const bankL = ledgers.find(l => l.name === 'Bank Account' || l.group_name === 'Bank Accounts');
-                    if(bankL) debitLedgerId = bankL.id;
-                }
+    const entries = [];
+    
+    // 1. Party Debit (Grand Total)
+    let debitLedgerId = 0;
+    if (selectedMode === 'Cash') {
+        const cashL = ledgers.find(l => l.name === 'Cash' || l.group_name === 'Cash-in-Hand');
+        if(cashL) debitLedgerId = cashL.id;
+    } else if (selectedMode === 'Udhar') {
+        debitLedgerId = parseInt(pid);
+    } else {
+        const bankL = ledgers.find(l => l.name === 'Bank Account' || l.group_name === 'Bank Accounts');
+        if(bankL) debitLedgerId = bankL.id;
+    }
+    if (debitLedgerId) entries.push({ ledger_id: debitLedgerId, debit: grand, credit: 0 });
 
-                if(!debitLedgerId && selectedMode !== 'Udhar') console.warn("Ledger not found, using ID 0");
-                if(debitLedgerId) entries.push({ ledger_id: debitLedgerId, debit: grand, credit: 0 });
+    // 2. Sales Credit (Taxable Amount Only)
+    let salesL = ledgers.find(l => l.name === 'Local Sales');
+    if (!salesL) salesL = ledgers.find(l => l.group_id === 9); // Fallback to Sales Group
+    const salesId = salesL ? salesL.id : 0;
 
-                let salesL = ledgers.find(l => l.name === 'Local Sales');
-                if(!salesL) {
-                    const salesGroup = groups.find(g => g.name === 'Sales Accounts');
-                    if(salesGroup) salesL = ledgers.find(l => l.group_id === salesGroup.id);
-                }
-                const salesId = salesL ? salesL.id : 0;
+    let totalTax = 0;
 
-                cart.forEach(c => {
-                    entries.push({
-                        ledger_id: salesId, debit: 0, credit: c.qty * c.rate,
-                        meta_data: { item_id: c.id, qty: c.qty, rate: c.rate } 
-                    });
-                });
+    cart.forEach(c => {
+        const taxable = c.qty * c.rate;
+        const taxAmt = taxable * (c.gst / 100);
+        totalTax += taxAmt;
 
-                await DB.saveVoucherTransaction(voucher, entries);
-                
-                if(shouldPrint) printReceipt(voucher, cart, grand);
-                else {
-                    showToast("✅ Sale Saved!");
-                    setTimeout(() => location.reload(), 1000);
-                }
-            } catch(e) { alert("⛔ Transaction Failed: " + e.message); }
+        entries.push({
+            ledger_id: salesId,
+            debit: 0,
+            credit: taxable,
+            meta_data: { item_id: c.id, qty: c.qty, rate: c.rate } // यह Item Name प्रिंट के लिए जरूरी है
+        });
+    });
+
+    // 3. Tax Credit (Duties & Taxes)
+    if(totalTax > 0) {
+        let taxL = ledgers.find(l => l.name === 'Output GST');
+        if(!taxL) taxL = ledgers.find(l => l.group_name === 'Duties & Taxes');
+        const taxId = taxL ? taxL.id : 0;
+        
+        // अगर Tax लेजर नहीं मिला तो भी एंट्री करो (ताकि टोटल मैच हो)
+        if(taxId) entries.push({ ledger_id: taxId, debit: 0, credit: totalTax });
+    }
+
+    try {
+        await DB.saveVoucherTransaction(voucher, entries);
+        if (shouldPrint) printReceipt(voucher, cart, grand);
+        else {
+            showToast("✅ Sale Saved Correctly!");
+            setTimeout(() => location.reload(), 1000);
         }
+    } catch (e) { alert("Transaction Failed: " + e.message); }
+}
 
-        function printReceipt(v, items, total) {
-            const company = (settings && settings.company_name) ? settings.company_name : "Arth Book Store";
-            const addr = (settings && settings.address) ? settings.address : "";
-            const ph = (settings && settings.phone) ? settings.phone : "";
-            const rows = items.map(i => `<tr><td style="padding:4px 0;">${i.name}<br><small>${i.qty} x ${i.rate}</small></td><td style="text-align:right; padding:4px 0;">${(i.qty*i.rate).toFixed(2)}</td></tr>`).join('');
-            const content = `<div style="width: 78mm; font-family: monospace; padding: 10px; font-size:12px;"><div style="text-align:center;"><h2 style="margin:0; font-size:16px;">${company}</h2><div>${addr}</div><div>Ph: ${ph}</div><hr style="border: 1px dashed #000;"><div style="display:flex; justify-content:space-between;"><span>Inv: ${v.voucher_no}</span><span>${v.date}</span></div><hr style="border: 1px dashed #000;"></div><table style="width:100%; border-collapse:collapse;">${rows}</table><hr style="border: 1px dashed #000;"><div style="text-align:right; font-weight:bold; font-size:16px;">TOTAL: ₹${total.toFixed(2)}</div><div style="text-align:center; margin-top:15px;">Thank You!</div></div>`;
-            document.getElementById('printArea').innerHTML = content;
-            setTimeout(() => { window.print(); setTimeout(() => location.reload(), 500); }, 500);
+        // --- UPDATED PRINT FUNCTION ---
+    // --- GST A4 INVOICE PRINT (Updated with Logo, Bank & Sign) ---
+// --- FINAL GST INVOICE PRINT (Full Grid Lines) ---
+function printReceipt(v, items, total) {
+    const companyName = (settings && settings.company_name) ? settings.company_name : "Arth Book User";
+    const companyAddr = (settings && settings.address) ? settings.address : "India";
+    const companyGST = (settings && settings.gst_user) ? settings.gst_user : "Unregistered";
+    const companyPhone = (settings && settings.phone) ? settings.phone : "";
+    
+    // बैंक डीटेल्स
+    const bankName = (settings && settings.bank_name) ? settings.bank_name : "";
+    const bankAcc = (settings && settings.bank_account) ? settings.bank_account : "";
+    const bankIFSC = (settings && settings.bank_ifsc) ? settings.bank_ifsc : "";
+    const upiId = (settings && settings.upi_id) ? settings.upi_id : "";
+
+    let buyerName = "Cash / Walk-in";
+    let buyerGST = "N/A";
+    let buyerAddr = "";
+    
+    const pid = document.getElementById('custSelect').value;
+    if(pid) {
+        const party = ledgers.find(l => l.id == pid);
+        if(party) {
+            buyerName = party.name;
+            buyerGST = party.gstin || "Unregistered";
+            buyerAddr = party.address || "";
+        }
+    }
+
+    const amountInWords = numToWords(Math.round(total));
+
+    let rows = '';
+    let totalTaxable = 0;
+    let totalCGST = 0;
+    let totalSGST = 0;
+
+    items.forEach((i, idx) => {
+        const rate = parseFloat(i.rate);
+        const qty = parseFloat(i.qty);
+        const gstPercent = parseFloat(i.gst) || 0;
+        
+        const baseAmt = rate * qty; 
+        const taxAmt = baseAmt * (gstPercent / 100);
+        
+        const halfTaxRate = gstPercent / 2;
+        const halfTaxAmt = taxAmt / 2;
+
+        totalTaxable += baseAmt;
+        totalCGST += halfTaxAmt;
+        totalSGST += halfTaxAmt;
+
+        // BORDERS FIXED: border: 1px solid #000 everywhere
+        rows += `
+            <tr>
+                <td style="text-align:center; padding:5px; border:1px solid #000;">${idx + 1}</td>
+                <td style="padding:5px; border:1px solid #000;">${i.name}</td>
+                <td style="text-align:center; padding:5px; border:1px solid #000;">${i.hsn || '-'}</td>
+                <td style="text-align:center; padding:5px; border:1px solid #000;">${qty} ${i.unit || ''}</td>
+                <td style="text-align:right; padding:5px; border:1px solid #000;">${rate.toFixed(2)}</td>
+                <td style="text-align:right; padding:5px; border:1px solid #000;">${baseAmt.toFixed(2)}</td>
+                <td style="text-align:right; padding:5px; border:1px solid #000;">${halfTaxRate}%<br><small>${halfTaxAmt.toFixed(2)}</small></td>
+                <td style="text-align:right; padding:5px; border:1px solid #000;">${halfTaxRate}%<br><small>${halfTaxAmt.toFixed(2)}</small></td>
+                <td style="text-align:right; padding:5px; border:1px solid #000;">${(baseAmt + taxAmt).toFixed(2)}</td>
+            </tr>
+        `;
+    });
+
+    const exactTotal = totalTaxable + totalCGST + totalSGST;
+    const grandTotal = Math.round(exactTotal);
+    const roundOffAmt = grandTotal - exactTotal;
+
+    const content = `
+        <div style="width: 210mm; padding: 20px; font-family: 'Arial', sans-serif; color: #000; background: white; margin: auto;">
+            
+            <div style="border: 1px solid #000;">
+                
+                <div style="text-align: center; border-bottom: 1px solid #000; padding: 8px; background: #eee;">
+                    <h2 style="margin: 0; text-transform: uppercase; font-size: 18px;">TAX INVOICE</h2>
+                </div>
+
+                <div style="display: flex; border-bottom: 1px solid #000;">
+                    <div style="flex: 1; padding: 10px; border-right: 1px solid #000;">
+                        <img src="logo.png" style="max-height: 50px; margin-bottom: 5px; display:block;" onerror="this.style.display='none'">
+                        
+                        <h3 style="margin: 0 0 5px 0; font-size: 16px;">${companyName}</h3>
+                        <div style="font-size: 12px; line-height: 1.4;">
+                            ${companyAddr}<br>
+                            <strong>GSTIN:</strong> ${companyGST}<br>
+                            <strong>Contact:</strong> ${companyPhone}
+                        </div>
+                    </div>
+                    
+                    <div style="flex: 1; padding: 10px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 10px;">
+                            <span><strong>Inv No:</strong> ${v.voucher_no}</span>
+                            <span><strong>Date:</strong> ${v.date}</span>
+                        </div>
+                        <div style="font-size: 12px; line-height: 1.4; border-top: 1px solid #ccc; padding-top: 5px;">
+                            <strong>Bill To:</strong><br>
+                            <span style="font-weight:bold; font-size: 14px;">${buyerName}</span><br>
+                            <span>${buyerAddr}</span><br>
+                            <span><strong>GSTIN:</strong> ${buyerGST}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                    <thead>
+                        <tr style="background: #f0f0f0;">
+                            <th style="border: 1px solid #000; padding: 6px; width: 5%;">#</th>
+                            <th style="border: 1px solid #000; padding: 6px; width: 30%;">Item Description</th>
+                            <th style="border: 1px solid #000; padding: 6px;">HSN</th>
+                            <th style="border: 1px solid #000; padding: 6px;">Qty</th>
+                            <th style="border: 1px solid #000; padding: 6px;">Rate</th>
+                            <th style="border: 1px solid #000; padding: 6px;">Taxable</th>
+                            <th style="border: 1px solid #000; padding: 6px;">CGST</th>
+                            <th style="border: 1px solid #000; padding: 6px;">SGST</th>
+                            <th style="border: 1px solid #000; padding: 6px;">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rows}
+                        <tr style="height: 50px;">
+                            <td style="border:1px solid #000;"></td>
+                            <td style="border:1px solid #000;"></td>
+                            <td style="border:1px solid #000;"></td>
+                            <td style="border:1px solid #000;"></td>
+                            <td style="border:1px solid #000;"></td>
+                            <td style="border:1px solid #000;"></td>
+                            <td style="border:1px solid #000;"></td>
+                            <td style="border:1px solid #000;"></td>
+                            <td style="border:1px solid #000;"></td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="5" style="border: 1px solid #000; text-align: right; padding: 6px; font-weight: bold;">Sub Total</td>
+                            <td style="border: 1px solid #000; text-align: right; padding: 6px;">${totalTaxable.toFixed(2)}</td>
+                            <td style="border: 1px solid #000; text-align: right; padding: 6px;">${totalCGST.toFixed(2)}</td>
+                            <td style="border: 1px solid #000; text-align: right; padding: 6px;">${totalSGST.toFixed(2)}</td>
+                            <td style="border: 1px solid #000; text-align: right; padding: 6px; font-weight: bold;">${exactTotal.toFixed(2)}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="8" style="border: 1px solid #000; text-align: right; padding: 6px;">Round Off</td>
+                            <td style="border: 1px solid #000; text-align: right; padding: 6px;">${roundOffAmt > 0 ? '+' : ''}${roundOffAmt.toFixed(2)}</td>
+                        </tr>
+                        <tr style="background:#eee;">
+                            <td colspan="8" style="border: 1px solid #000; text-align: right; padding: 6px; font-weight: 800; font-size:14px;">GRAND TOTAL</td>
+                            <td style="border: 1px solid #000; text-align: right; padding: 6px; font-weight: 800; font-size:14px;">₹${grandTotal.toFixed(2)}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+
+                <div style="display: flex; border-top: 1px solid #000;">
+                    <div style="flex: 1.8; padding: 10px; border-right: 1px solid #000;">
+                        <div style="font-size: 12px;"><strong>Amount in Words:</strong></div>
+                        <div style="font-style: italic; margin-top: 5px; font-weight:600;">${amountInWords} Only</div>
+                        
+                        <div style="margin-top: 15px; font-size: 11px; border: 1px solid #000; padding: 8px;">
+                            <strong>Bank Details:</strong><br>
+                            Bank: ${bankName}<br>
+                            A/c: <b>${bankAcc}</b> &nbsp;|&nbsp; IFSC: ${bankIFSC}<br>
+                            UPI: ${upiId}
+                        </div>
+
+                        <div style="margin-top: 10px; font-size: 10px;">
+                            <strong>Terms & Conditions:</strong><br>
+                            1. Goods once sold will not be taken back.<br>
+                            2. Subject to local jurisdiction.<br>
+                            3. E. & O.E.
+                        </div>
+                    </div>
+                    
+                    <div style="flex: 1.2; padding: 10px; text-align: center; display: flex; flex-direction: column; justify-content: space-between;">
+                        <div style="margin-top: 10px;">
+                            <div style="font-size: 12px; margin-bottom:40px;">For ${companyName}</div>
+                            
+                            <img src="sign.png" style="height: 40px; margin: 0 auto; display:block;" onerror="this.style.display='none'">
+                            
+                            <div style="font-size: 12px; font-weight:bold; border-top:1px solid #000; padding-top:5px; margin-top:5px;">Authorized Signatory</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="text-align:center; font-size:10px; margin-top:5px;">This is a Computer Generated Invoice</div>
+        </div>
+    `;
+
+    document.getElementById('printArea').innerHTML = content;
+    setTimeout(() => { window.print(); setTimeout(() => location.reload(), 500); }, 500);
+}
+
+        function numToWords(n) {
+            if (n === 0) return "Zero";
+            const units = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"];
+            const teens = ["Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
+            const tens = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
+            function convert(num) {
+                if (num < 10) return units[num];
+                if (num < 20) return teens[num - 10];
+                if (num < 100) return tens[Math.floor(num / 10)] + (num % 10 ? " " + units[num % 10] : "");
+                if (num < 1000) return units[Math.floor(num / 100)] + " Hundred" + (num % 100 ? " and " + convert(num % 100) : "");
+                if (num < 100000) return convert(Math.floor(num / 1000)) + " Thousand" + (num % 1000 ? " " + convert(num % 1000) : "");
+                if (num < 10000000) return convert(Math.floor(num / 100000)) + " Lakh" + (num % 100000 ? " " + convert(num % 100000) : "");
+                return convert(Math.floor(num / 10000000)) + " Crore" + (num % 10000000 ? " " + convert(num % 10000000) : "");
+            }
+            return convert(n);
         }
 
         document.addEventListener('keydown', e => {

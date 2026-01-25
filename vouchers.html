@@ -2,248 +2,213 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="stylesheet" href="style.css">
-    <title>Day Book & Vouchers - Arth Book</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Day Book - Arth Book</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
 
     <style>
-        /* === VOUCHERS / DAY BOOK SPECIFIC STYLES === */
+        /* === UI FIXES (Date & Search Bar) === */
+        body { overflow: hidden; } /* Prevent double scrollbars */
         
-        .main-area { background: #f8fafc; overflow-y: hidden; }
-        .content-scroll { flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 80px; }
-
-        /* Top Filters Bar */
-        .top-bar {
-            background: white;
-            padding: 15px 20px;
-            border-bottom: 1px solid var(--border);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            display: flex; flex-direction: column; gap: 15px; height: auto;
+        .main-area { 
+            background: #f8fafc; 
+            height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
         }
-        .tb-header { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+
+        /* Fixed Top Bar Layout */
+        .top-bar {
+            background: white; 
+            padding: 15px 20px; 
+            border-bottom: 1px solid var(--border);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05); 
+            flex-shrink: 0; /* Prevents shrinking */
+            z-index: 50;
+            position: relative;
+        }
+
+        .tb-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .top-bar h2 { margin: 0; font-size: 1.5rem; color: var(--primary); font-weight: 800; }
         
-        .filters { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 5px; align-items: center; }
-        .filter-input, .search-box {
-            padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px;
-            font-size: 14px; min-width: 140px; outline: none; transition: border 0.2s;
+        .filters { 
+            display: flex; 
+            gap: 10px; 
+            flex-wrap: wrap; 
+            align-items: center; 
         }
-        .filter-input:focus, .search-box:focus { border-color: var(--primary); }
-
-        .btn-refresh {
-            background: var(--accent); color: var(--primary-dark); border: none;
-            padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.2s;
-        }
-        .btn-refresh:hover { background: #ffd54f; transform: rotate(180deg); transition: transform 0.5s; }
         
-        .btn-new {
-            background: var(--primary); color: white; border: none; padding: 10px 20px;
-            border-radius: 8px; cursor: pointer; font-weight: 700; display: flex; align-items: center; gap: 8px; text-decoration: none;
-            box-shadow: 0 4px 6px rgba(13, 71, 161, 0.2);
+        .filter-input { 
+            padding: 10px; 
+            border: 1px solid var(--border); 
+            border-radius: 8px; 
+            outline: none; 
+            font-size: 13px;
+            background: #fff;
         }
-        .btn-new:hover { background: var(--primary-dark); transform: translateY(-1px); }
 
-        /* Table Styles */
-        .table-container {
-            background: white; border-radius: 10px; overflow: hidden;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-top: 20px;
+        .search-grp {
+            position: relative; 
+            flex: 1; 
+            min-width: 250px;
+        }
+        .search-grp i {
+            position: absolute; 
+            left: 12px; 
+            top: 50%; 
+            transform: translateY(-50%); 
+            color: #94a3b8;
+        }
+        .search-box { 
+            width: 100%; 
+            padding: 10px 10px 10px 35px; 
+            border: 1px solid var(--border); 
+            border-radius: 8px; 
+            outline: none;
+        }
+        
+        .btn-new { 
+            background: var(--primary); color: white; border: none; padding: 10px 20px; 
+            border-radius: 8px; font-weight: 700; text-decoration: none; 
+            display: flex; align-items: center; gap: 5px; 
+        }
+
+        /* Scrollable Content */
+        .content-scroll { 
+            flex: 1; 
+            overflow-y: auto; 
+            padding: 20px; 
+            padding-bottom: 80px; 
+        }
+
+        /* Table Styling */
+        .table-container { 
+            background: white; 
+            border-radius: 10px; 
+            overflow: hidden; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08); 
+            border: 1px solid #e2e8f0;
         }
         table { width: 100%; border-collapse: collapse; }
-        th { background: var(--primary); color: white; padding: 14px 16px; font-weight: 600; text-align: left; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
+        th { background: var(--primary); color: white; padding: 14px 16px; text-align: left; font-size: 13px; text-transform: uppercase; white-space: nowrap; }
         td { padding: 14px 16px; border-bottom: 1px solid #e2e8f0; font-size: 14px; color: #334155; }
-        tr:last-child td { border-bottom: none; }
-        tr:hover { background: #f8fafc; }
-
-        .amount { font-family: 'JetBrains Mono', monospace; font-weight: 700; color: var(--text-main); text-align: right; }
         
-        /* VISUAL LOGIC: Money In vs Money Out */
-        .amt-in { color: #10b981; } /* Green */
-        .amt-out { color: #1e293b; } /* Standard Dark */
+        .amount { font-family: 'JetBrains Mono', monospace; font-weight: 700; text-align: right; }
+        .amt-in { color: #10b981; } 
+        .amt-out { color: #1e293b; } 
 
-        .actions { white-space: nowrap; text-align: right; }
-        .actions button {
-            background: none; border: none; cursor: pointer; font-size: 16px;
-            margin: 0 8px; color: #94a3b8; transition: 0.2s;
-        }
-        .actions button:hover { color: var(--primary); transform: scale(1.2); }
+        .actions button { background: none; border: none; cursor: pointer; font-size: 16px; margin: 0 5px; color: #94a3b8; transition: 0.2s; }
+        .actions button:hover { color: var(--primary); transform: scale(1.1); }
         .actions .del-btn:hover { color: var(--red); }
 
-        /* Badge Enhancements */
-        .vtype-badge {
-            padding: 4px 10px; border-radius: 20px; font-size: 11px;
-            font-weight: 700; color: white; text-transform: uppercase; letter-spacing: 0.5px;
-            display: inline-block; min-width: 80px; text-align: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .badge-Payment { background: #f59e0b; color: #fff; }
-        .badge-Receipt { background: #10b981; color: #fff; }
-        .badge-Contra { background: #64748b; color: #fff; }
-        .badge-Journal { background: #3b82f6; color: #fff; }
-        .badge-Sales { background: #0d47a1; color: #fff; }
-        .badge-Purchase { background: #d946ef; color: #fff; }
-        .badge-CreditNote { background: #ef4444; color: #fff; }
-        .badge-DebitNote { background: #8b5cf6; color: #fff; }
+        .vtype-badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; color: white; text-transform: uppercase; display: inline-block; min-width: 80px; text-align: center; }
+        .badge-Payment { background: #f59e0b; } .badge-Receipt { background: #10b981; } .badge-Sales { background: #0d47a1; } .badge-Purchase { background: #d946ef; } .badge-Contra { background: #64748b; }
 
-        #noData {
-            background: white; border-radius: 12px; padding: 60px 20px;
-            text-align: center; margin-top: 20px; display: none;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
-        }
-        #noData i { font-size: 64px; color: #cbd5e1; margin-bottom: 20px; }
-
-        #loading { text-align: center; padding: 40px; display: none; }
-        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--accent); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        /* Mobile Card View */
-        @media (max-width: 768px) {
-            .top-bar { height: auto; padding: 15px; }
-            .tb-header { flex-direction: column; align-items: flex-start; gap: 10px; }
-            .filters { width: 100%; flex-direction: column; align-items: stretch; }
-            .btn-new { width: 100%; justify-content: center; }
-
-            .table-container { background: transparent; box-shadow: none; }
-            table { border: 0; }
-            thead { display: none; }
-            
-            tr {
-                display: block; margin-bottom: 15px; border: 1px solid var(--border);
-                border-radius: 10px; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-                position: relative; padding-bottom: 10px;
-            }
-            td {
-                display: block; text-align: right; border: none; padding: 10px 15px;
-                position: relative; border-bottom: 1px solid #f1f5f9;
-            }
-            td:last-child { border-bottom: 0; }
-            td:before {
-                content: attr(data-label);
-                position: absolute; left: 15px; width: 45%;
-                font-weight: 700; text-align: left; color: #64748b; font-size: 12px; text-transform: uppercase;
-            }
-            td.amount { font-size: 18px; }
-            td.amount:before { content: "Amount"; top: 12px; }
-            td.actions { text-align: center; border-top: 1px dashed #e2e8f0; padding-top: 15px; }
-            td.actions:before { display: none; }
+        @media print {
+            @page { margin: 0; size: A4; }
+            body { margin: 0; background: white; }
+            body * { visibility: hidden; }
+            #printArea, #printArea * { visibility: visible; }
+            #printArea { position: absolute; left: 0; top: 0; width: 100%; }
         }
     </style>
 </head>
 <body>
- <div class="sidebar" id="sidebar">
+   <div class="sidebar" id="sidebar">
         <div class="brand-logo" style="padding: 20px; font-size: 20px; font-weight: 800; color: white; display: flex; align-items: center; gap: 10px;">
             <i class="fas fa-cube"></i> Arth Book
         </div>
         <ul class="nav-links" style="list-style: none; padding: 0 10px;">
-            <li><a href="index.html"><i class="fas fa-home"></i> Dashboard</a></li>
-            <li><a href="sales_invoice.html"><i class="fas fa-file-invoice"></i> Sales (POS)</a></li>
-            <li><a href="purchase_invoice.html"><i class="fas fa-truck"></i> Purchase</a></li>
-            <li><a href="vouchers.html"><i class="fas fa-receipt"></i> Day Book</a></li>
-            
+            <li><a href="index.html" class="nav-link"><i class="fas fa-home"></i> Dashboard</a></li>
+            <li><a href="sales_invoice.html" class="nav-link"><i class="fas fa-file-invoice"></i> Sales (Table)</a></li>
+            <li><a href="purchase_invoice.html" class="nav-link"><i class="fas fa-truck"></i> Purchase</a></li>
+            <li><a href="vouchers.html" class="nav-link active"><i class="fas fa-receipt"></i> Day Book</a></li>
             <li style="margin-top:15px; margin-bottom:5px; font-size:11px; color:#64748b; font-weight:bold; padding-left:15px; text-transform:uppercase;">Masters</li>
-            <li><a href="item_master.html"><i class="fas fa-boxes"></i> Inventory</a></li>
-            <li><a href="ArthBook.html"><i class="fas fa-users"></i> Parties</a></li>
-            <li><a href="coa.html"><i class="fas fa-sitemap"></i> Accounts</a></li>
-            
-            <li style="margin-top:15px; margin-bottom:5px; font-size:11px; color:#64748b; font-weight:bold; padding-left:15px; text-transform:uppercase;">Reports & Tax</li>
-            <li><a href="reports.html"><i class="fas fa-chart-line"></i> Reports</a></li>
-            <li><a href="gst_filing.html"><i class="fas fa-university"></i> GST Returns</a></li>
-            <li><a href="taxation.html"><i class="fas fa-calculator"></i> Tax / ITR</a></li>
-            
+            <li><a href="item_master.html" class="nav-link"><i class="fas fa-boxes"></i> Inventory</a></li>
+            <li><a href="ArthBook.html" class="nav-link"><i class="fas fa-users"></i> Parties</a></li>
             <hr style="border:0; border-top:1px solid rgba(255,255,255,0.1); margin:15px 5px;">
-            <li><a href="settings.html"><i class="fas fa-cog"></i> Settings</a></li>
-            <li><a href="help.html"><i class="fas fa-question-circle"></i> Help</a></li>
+            <li><a href="settings.html" class="nav-link"><i class="fas fa-cog"></i> Settings</a></li>
         </ul>
-        
-        <div style="padding: 20px; font-size: 11px; color: #64748b; text-align: center; margin-top:auto;">
-            Arth Book v4.0<br>Authorized User
-        </div>
+        <div style="padding: 20px; font-size: 11px; color: #64748b; text-align: center; margin-top:auto;">Arth Book v4.2<br>Authorized User</div>
     </div>
 
     <div class="main-area">
         <div class="top-bar">
             <div class="tb-header">
                 <h2>Day Book</h2>
-                <a href="voucher_entry.html" class="btn-new">
-                    <i class="fas fa-plus"></i> New Entry
-                </a>
+                <a href="voucher_entry.html" class="btn-new"><i class="fas fa-plus"></i> New Entry</a>
             </div>
-            
             <div class="filters">
                 <input type="date" id="dateFrom" class="filter-input">
                 <input type="date" id="dateTo" class="filter-input">
-                
                 <select id="typeFilter" class="filter-input">
                     <option value="All">All Vouchers</option>
+                    <option value="Sales">Sales</option>
+                    <option value="Purchase">Purchase</option>
                     <option value="Payment">Payment</option>
                     <option value="Receipt">Receipt</option>
                     <option value="Contra">Contra</option>
                     <option value="Journal">Journal</option>
-                    <option value="Sales">Sales</option>
-                    <option value="Purchase">Purchase</option>
                 </select>
-
-                <div style="position:relative; flex:1;">
-                    <i class="fas fa-search" style="position:absolute; left:12px; top:12px; color:#94a3b8;"></i>
-                    <input type="text" id="searchBox" class="search-box" style="width:100%; padding-left:35px;" placeholder="Search Voucher No, Amount...">
+                <div class="search-grp">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchBox" class="search-box" placeholder="Search Vch No, Amount...">
                 </div>
-
                 <button class="btn-refresh" onclick="renderVouchers()"><i class="fas fa-sync-alt"></i></button>
             </div>
         </div>
 
         <div class="content-scroll">
-            <div id="loading"><div class="spinner"></div><p style="margin-top:10px; color:#64748b;">Loading Vouchers...</p></div>
-            
-            <div id="noData">
-                <i class="fas fa-folder-open"></i>
-                <h3>No Vouchers Found</h3>
-                <p style="color:#64748b;">Try changing the date range or filters.</p>
-            </div>
-
+            <div id="loading" style="text-align:center; padding:40px; display:none;">Loading...</div>
+            <div id="noData" style="text-align:center; padding:40px; display:none; color:#64748b;">No Vouchers Found</div>
             <div class="table-container" id="tableWrap">
                 <table>
                     <thead>
                         <tr>
                             <th width="15%">Date</th>
                             <th width="15%">Voucher No</th>
-                            <th>Narration / Particulars</th>
+                            <th>Narration</th>
                             <th width="10%">Type</th>
                             <th width="15%" style="text-align:right;">Amount</th>
-                            <th width="10%" style="text-align:center;">Action</th>
+                            <th width="15%" style="text-align:center;">Action</th>
                         </tr>
                     </thead>
-                    <tbody id="voucherTable">
-                        </tbody>
+                    <tbody id="voucherTable"></tbody>
                 </table>
             </div>
         </div>
     </div>
 
+    <div id="printArea"></div>
+
     <script src="db.js"></script>
     <script>
+        let ledgers = [], items = [], settings = {};
+
         window.onload = async () => {
-            await DB.init();
-            
-            const date = new Date();
-            const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
-            const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
-            
-            document.getElementById('dateFrom').valueAsDate = firstDay;
-            document.getElementById('dateTo').valueAsDate = lastDay;
+            try {
+                await DB.init();
+                [ledgers, items, settings] = await Promise.all([
+                    DB.getAll('ledgers'), DB.getAll('items'), DB.getAll('settings')
+                ]);
+                
+                if(Array.isArray(settings) && settings.length > 0) settings = settings[0];
+                if(!settings) settings = {};
 
-            renderVouchers();
+                const date = new Date();
+                document.getElementById('dateFrom').valueAsDate = new Date(date.getFullYear(), date.getMonth(), 1);
+                document.getElementById('dateTo').valueAsDate = new Date(date.getFullYear(), date.getMonth() + 1, 0);
 
-            document.getElementById('typeFilter').addEventListener('change', renderVouchers);
-            document.getElementById('dateFrom').addEventListener('change', renderVouchers);
-            document.getElementById('dateTo').addEventListener('change', renderVouchers);
-            
-            let timeout;
-            document.getElementById('searchBox').addEventListener('keyup', (e) => {
-                clearTimeout(timeout);
-                timeout = setTimeout(renderVouchers, 300);
-            });
+                renderVouchers();
+
+                document.getElementById('typeFilter').addEventListener('change', renderVouchers);
+                document.getElementById('dateFrom').addEventListener('change', renderVouchers);
+                document.getElementById('dateTo').addEventListener('change', renderVouchers);
+                document.getElementById('searchBox').addEventListener('keyup', (e) => setTimeout(renderVouchers, 300));
+            } catch (e) { console.error(e); }
         };
 
         async function renderVouchers() {
@@ -251,87 +216,337 @@
             document.getElementById('tableWrap').style.display = 'none';
             document.getElementById('noData').style.display = 'none';
 
-            const vData = await DB.getAll('vouchers');
-            
-            const from = document.getElementById('dateFrom').value;
-            const to = document.getElementById('dateTo').value;
-            const type = document.getElementById('typeFilter').value;
-            const search = document.getElementById('searchBox').value.toLowerCase();
+            try {
+                const vData = await DB.getAll('vouchers');
+                const from = document.getElementById('dateFrom').value;
+                const to = document.getElementById('dateTo').value;
+                const type = document.getElementById('typeFilter').value;
+                const search = document.getElementById('searchBox').value.toLowerCase();
 
-            const filtered = vData.filter(v => {
-                const vDate = v.date; 
-                const matchDate = (!from || vDate >= from) && (!to || vDate <= to);
-                const matchType = type === 'All' || v.type === type;
-                const matchSearch = v.voucher_no.toLowerCase().includes(search) || 
-                                    (v.narration && v.narration.toLowerCase().includes(search)) ||
-                                    v.amount.toString().includes(search);
-                
-                return matchDate && matchType && matchSearch;
-            });
+                const filtered = vData.filter(v => {
+                    const matchDate = (!from || v.date >= from) && (!to || v.date <= to);
+                    const matchType = type === 'All' || v.type === type;
+                    const matchSearch = String(v.voucher_no).toLowerCase().includes(search) || 
+                                        (v.narration && v.narration.toLowerCase().includes(search));
+                    return matchDate && matchType && matchSearch;
+                });
 
-            filtered.sort((a,b) => b.date.localeCompare(a.date) || b.id - a.id);
+                filtered.sort((a,b) => b.date.localeCompare(a.date) || b.id - a.id);
 
-            const tbody = document.getElementById('voucherTable');
-            const noData = document.getElementById('noData');
-            const tableWrap = document.getElementById('tableWrap');
-            
-            tbody.innerHTML = '';
-            document.getElementById('loading').style.display = 'none';
+                const tbody = document.getElementById('voucherTable');
+                tbody.innerHTML = '';
+                document.getElementById('loading').style.display = 'none';
 
-            if (filtered.length === 0) {
-                noData.style.display = 'block';
-                return;
-            }
-
-            tableWrap.style.display = 'block';
-
-            filtered.forEach(v => {
-                const displayDate = v.date.split('-').reverse().join('-'); 
-                const badgeClass = `badge-${v.type.replace(/\s/g, '')}` || 'badge-Contra';
-
-                // VISUAL LOGIC: Green for Money In (Receipt/Sales), Normal for Money Out
-                const isMoneyIn = ['Receipt', 'Sales', 'Credit Note'].includes(v.type);
-                const amtClass = isMoneyIn ? 'amt-in' : 'amt-out';
-                const sign = isMoneyIn ? '+' : '';
-
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td data-label="Date">${displayDate}</td>
-                    <td data-label="Voucher No" style="font-weight:600;">${v.voucher_no}</td>
-                    <td data-label="Narration">
-                        <div style="font-weight:600; color:var(--text-main);">${v.type}</div>
-                        <div style="font-size:12px; color:#64748b; font-style:italic;">${v.narration || 'No Narration'}</div>
-                    </td>
-                    <td data-label="Type"><span class="vtype-badge ${badgeClass}">${v.type}</span></td>
-                    <td data-label="Amount" class="amount ${amtClass}">${sign}₹${parseFloat(v.amount).toFixed(2)}</td>
-                    <td data-label="Action" class="actions">
-                        <button onclick="editVoucher(${v.id})" title="Edit"><i class="fas fa-edit"></i></button>
-                        <button class="del-btn" onclick="deleteVoucher(${v.id}, this)" title="Delete"><i class="fas fa-trash-alt"></i></button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        async function deleteVoucher(id, btn) {
-            if(confirm("Are you sure you want to delete this voucher? This cannot be undone.")) {
-                try {
-                    const icon = btn.querySelector('i');
-                    icon.className = "fas fa-spinner fa-spin";
-                    
-                    await DB.deleteVoucher(id);
-                    renderVouchers();
-                } catch(e) {
-                    alert("Delete Failed: " + e);
-                    const icon = btn.querySelector('i'); // Fix ref
-                    icon.className = "fas fa-trash-alt"; 
+                if (filtered.length === 0) {
+                    document.getElementById('noData').style.display = 'block';
+                    return;
                 }
+
+                document.getElementById('tableWrap').style.display = 'block';
+
+                filtered.forEach(v => {
+                    const isIn = ['Receipt', 'Sales', 'Credit Note'].includes(v.type);
+                    const amtClass = isIn ? 'amt-in' : 'amt-out';
+                    
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${v.date.split('-').reverse().join('-')}</td>
+                        <td style="font-weight:600;">${v.voucher_no}</td>
+                        <td style="color:#64748b; font-size:12px;">${v.narration || '-'}</td>
+                        <td><span class="vtype-badge badge-${v.type.replace(/\s/g,'')}">${v.type}</span></td>
+                        <td class="amount ${amtClass}">₹${parseFloat(v.amount).toFixed(2)}</td>
+                        <td class="actions" style="text-align:center;">
+                            <button onclick="printVoucher(${v.id})" title="Print Invoice"><i class="fas fa-print"></i></button>
+                            <button onclick="deleteVoucher(${v.id})"><i class="fas fa-trash-alt"></i></button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch(e) { console.error(e); }
+        }
+
+        // --- MASTER PRINT LOGIC ---
+        async function printVoucher(id) {
+            try {
+                const v = await DB.getOne('vouchers', id);
+                if(!v) return alert("Voucher Not Found!");
+
+                const allEntries = await DB.getAll('acct_entries');
+                const entries = allEntries.filter(e => e.voucher_id === id);
+
+                // --- 1. ONLY SALES GETS A4 INVOICE ---
+                if (v.type === 'Sales') {
+                    let printItems = [];
+                    
+                    // A. Try to find ITEMS from Metadata (New System)
+                    entries.forEach(e => {
+                        if (e.meta_data && e.meta_data.item_id) {
+                            const item = items.find(i => i.id == e.meta_data.item_id);
+                            printItems.push({
+                                name: item ? item.name : "Unknown Item",
+                                hsn: item ? item.hsn : '',
+                                qty: e.meta_data.qty || 0,
+                                rate: e.meta_data.rate || 0,
+                                unit: item ? item.unit : '',
+                                gst: item ? (item.gst_rate || 0) : 0
+                            });
+                        }
+                    });
+
+                    // B. Fallback: If no metadata, use Ledger Names (for simple sales)
+                    if(printItems.length === 0) {
+                        entries.forEach(e => {
+                            if(e.credit > 0) { // Sales Credit side
+                                const l = ledgers.find(x => x.id === e.ledger_id);
+                                if(l && !['Output GST','Input GST','Duties & Taxes'].includes(l.group_name) && !l.name.includes('GST')) {
+                                     printItems.push({
+                                        name: l.name, 
+                                        hsn: '', unit: '', 
+                                        qty: 1, rate: e.credit, gst: 0
+                                     });
+                                }
+                            }
+                        });
+                    }
+                    renderA4Invoice(v, printItems);
+
+                } else {
+                    // --- 2. EVERYTHING ELSE (Purchase, Payment, Receipt, Journal) ---
+                    // This prints a simple Voucher with Dr/Cr Rows
+                    renderSimpleVoucher(v, entries);
+                }
+
+            } catch(e) { console.error(e); alert("Print Error: " + e.message); }
+        }
+
+        // --- A4 INVOICE (Only for Sales) ---
+        function renderA4Invoice(v, printItems) {
+            const companyName = settings.company_name || "My Company";
+            const companyAddr = settings.address || "";
+            const companyGST = settings.gstin || settings.gst_user || "";
+            const logoSrc = settings.logo || "";
+            const signSrc = settings.signature || "";
+
+            const party = ledgers.find(l => l.id == v.party_id);
+            const buyerName = party ? party.name : "Cash Sale";
+            const buyerAddr = (party && party.address) ? party.address : "";
+            const buyerGST = (party && party.gstin) ? party.gstin : "";
+
+            let rows = '';
+            let totalTaxable = 0;
+            let totalCGST = 0; 
+            let totalSGST = 0;
+
+            printItems.forEach((i, idx) => {
+                const amt = i.qty * i.rate;
+                const taxAmt = amt * (i.gst / 100);
+                const halfTax = taxAmt / 2;
+                const halfRate = i.gst / 2;
+
+                totalTaxable += amt;
+                totalCGST += halfTax;
+                totalSGST += halfTax;
+
+                rows += `
+                    <tr>
+                        <td style="text-align:center; padding:5px; border-right:1px solid #000;">${idx + 1}</td>
+                        <td style="padding:5px; border-right:1px solid #000;">${i.name}</td>
+                        <td style="text-align:center; padding:5px; border-right:1px solid #000;">${i.hsn || '-'}</td>
+                        <td style="text-align:center; padding:5px; border-right:1px solid #000;">${i.qty} ${i.unit||''}</td>
+                        <td style="text-align:right; padding:5px; border-right:1px solid #000;">${parseFloat(i.rate).toFixed(2)}</td>
+                        <td style="text-align:right; padding:5px; border-right:1px solid #000;">${amt.toFixed(2)}</td>
+                        <td style="text-align:right; padding:5px; border-right:1px solid #000;">${halfRate}%<br><small>${halfTax.toFixed(2)}</small></td>
+                        <td style="text-align:right; padding:5px; border-right:1px solid #000;">${halfRate}%<br><small>${halfTax.toFixed(2)}</small></td>
+                        <td style="text-align:right; padding:5px;">${(amt + taxAmt).toFixed(2)}</td>
+                    </tr>
+                `;
+            });
+
+            const grandTotal = Math.round(totalTaxable + totalCGST + totalSGST);
+            const roundOff = grandTotal - (totalTaxable + totalCGST + totalSGST);
+
+            const content = `
+                <div style="width: 210mm; padding: 20px; font-family: 'Arial', sans-serif; color: #000; background: white; margin: auto;">
+                    <div style="border: 1px solid #000;">
+                        <div style="text-align: center; border-bottom: 1px solid #000; padding: 8px; background: #eee;">
+                            <h2 style="margin: 0;">TAX INVOICE</h2>
+                        </div>
+                        <div style="display: flex; border-bottom: 1px solid #000;">
+                            <div style="flex: 1; padding: 10px; border-right: 1px solid #000;">
+                                <img src="${logoSrc}" style="max-height: 50px; margin-bottom: 5px; display:${logoSrc?'block':'none'}">
+                                <h3 style="margin: 5px 0;">${companyName}</h3>
+                                <div style="font-size: 12px;">${companyAddr}<br>GSTIN: <b>${companyGST}</b></div>
+                            </div>
+                            <div style="flex: 1; padding: 10px;">
+                                <div style="display: flex; justify-content: space-between; font-size:12px;">
+                                    <span><strong>Inv No:</strong> ${v.voucher_no}</span>
+                                    <span><strong>Date:</strong> ${v.date}</span>
+                                </div>
+                                <div style="margin-top: 10px; font-size:12px; border-top:1px solid #ccc; padding-top:5px;">
+                                    <strong>Bill To:</strong><br>
+                                    <span style="font-weight:bold; font-size:14px;">${buyerName}</span><br>
+                                    ${buyerAddr}<br>${buyerGST ? 'GSTIN: '+buyerGST : ''}
+                                </div>
+                            </div>
+                        </div>
+                        <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                            <thead style="background: #f0f0f0;">
+                                <tr>
+                                    <th style="border: 1px solid #000; padding: 5px; width:5%;">#</th>
+                                    <th style="border: 1px solid #000; padding: 5px; width:35%;">Item Description</th>
+                                    <th style="border: 1px solid #000; padding: 5px;">HSN</th>
+                                    <th style="border: 1px solid #000; padding: 5px;">Qty</th>
+                                    <th style="border: 1px solid #000; padding: 5px;">Rate</th>
+                                    <th style="border: 1px solid #000; padding: 5px;">Taxable</th>
+                                    <th style="border: 1px solid #000; padding: 5px;">CGST</th>
+                                    <th style="border: 1px solid #000; padding: 5px;">SGST</th>
+                                    <th style="border: 1px solid #000; padding: 5px;">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>${rows}
+                                <tr style="height: 50px;"><td colspan="9" style="border:1px solid #000;"></td></tr>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="5" style="border: 1px solid #000; text-align: right; padding: 5px; font-weight: bold;">Sub Total</td>
+                                    <td style="border: 1px solid #000; text-align: right; padding: 5px;">${totalTaxable.toFixed(2)}</td>
+                                    <td style="border: 1px solid #000; text-align: right; padding: 5px;">${totalCGST.toFixed(2)}</td>
+                                    <td style="border: 1px solid #000; text-align: right; padding: 5px;">${totalSGST.toFixed(2)}</td>
+                                    <td style="border: 1px solid #000; text-align: right; padding: 5px; font-weight: bold;">${(totalTaxable+totalCGST+totalSGST).toFixed(2)}</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="8" style="border: 1px solid #000; text-align: right; padding: 5px;">Round Off</td>
+                                    <td style="border: 1px solid #000; text-align: right; padding: 5px;">${roundOff.toFixed(2)}</td>
+                                </tr>
+                                <tr style="background:#eee;">
+                                    <td colspan="8" style="border: 1px solid #000; text-align: right; padding: 5px; font-weight: 800;">GRAND TOTAL</td>
+                                    <td style="border: 1px solid #000; text-align: right; padding: 5px; font-weight: 800;">₹${grandTotal.toFixed(2)}</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                        <div style="display: flex; border-top: 1px solid #000;">
+                            <div style="flex: 1.5; padding: 10px; border-right: 1px solid #000;">
+                                <div style="font-size: 12px;"><strong>Amount in Words:</strong></div>
+                                <div style="font-style: italic; margin-top: 5px;">${numToWords(grandTotal)} Only</div>
+                                <div style="margin-top: 15px; font-size: 11px; border: 1px solid #000; padding: 8px;">
+                                    <strong>Bank Details:</strong><br>Bank: ${settings.bank_name||''}<br>A/c: ${settings.bank_account||''} | IFSC: ${settings.bank_ifsc||''}
+                                </div>
+                            </div>
+                            <div style="flex: 1; padding: 10px; text-align: center;">
+                                <div style="margin-top: 40px;">For ${companyName}</div>
+                                <img src="${signSrc}" style="height: 40px; margin: 5px auto; display:${signSrc?'block':'none'}">
+                                <div style="font-size: 12px; border-top:1px solid #000; padding-top:5px;">Authorized Signatory</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            doPrint(content);
+        }
+
+        // --- SIMPLE VOUCHER (Purchase, Payment, Receipt etc.) ---
+        function renderSimpleVoucher(v, entries) {
+            const companyName = settings.company_name || "Arth Book";
+            const companyAddr = settings.address || "";
+            let tableRows = '';
+            
+            // Loop through all entries (Ledgers + Tax)
+            entries.forEach(e => {
+                const l = ledgers.find(x => x.id === e.ledger_id);
+                const name = l ? l.name : "Unknown Ledger";
+                
+                // Show Debit
+                const debit = e.debit > 0 ? `₹${e.debit.toFixed(2)}` : '';
+                // Show Credit
+                const credit = e.credit > 0 ? `₹${e.credit.toFixed(2)}` : '';
+
+                tableRows += `
+                    <tr>
+                        <td style="padding:8px; border:1px solid #000;">${name}</td>
+                        <td style="padding:8px; border:1px solid #000; text-align:right;">${debit}</td>
+                        <td style="padding:8px; border:1px solid #000; text-align:right;">${credit}</td>
+                    </tr>
+                `;
+            });
+
+            const content = `
+                <div style="width: 100%; max-width: 700px; margin: 20px auto; border: 1px solid #000; padding: 20px; font-family: sans-serif; background:white;">
+                    <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px;">
+                        <h2 style="margin:0; text-transform: uppercase;">${companyName}</h2>
+                        <div style="font-size:12px;">${companyAddr}</div>
+                        <div style="margin-top:10px; font-weight:bold; font-size:18px; text-decoration:underline;">${v.type.toUpperCase()} VOUCHER</div>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                        <div><strong>Voucher No:</strong> ${v.voucher_no}</div>
+                        <div><strong>Date:</strong> ${v.date}</div>
+                    </div>
+
+                    <table style="width:100%; border-collapse:collapse; margin-bottom:20px;">
+                        <thead style="background:#eee;">
+                            <tr>
+                                <th style="border:1px solid #000; padding:8px; text-align:left;">Particulars (Ledger / Tax)</th>
+                                <th style="border:1px solid #000; padding:8px; text-align:right; width:100px;">Debit</th>
+                                <th style="border:1px solid #000; padding:8px; text-align:right; width:100px;">Credit</th>
+                            </tr>
+                        </thead>
+                        <tbody>${tableRows}</tbody>
+                        <tfoot>
+                            <tr style="background:#eee; font-weight:bold;">
+                                <td style="border:1px solid #000; padding:8px; text-align:right;">TOTAL</td>
+                                <td style="border:1px solid #000; padding:8px; text-align:right;">₹${v.amount.toFixed(2)}</td>
+                                <td style="border:1px solid #000; padding:8px; text-align:right;">₹${v.amount.toFixed(2)}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+
+                    <div style="margin-top: 10px;">
+                        <strong>Amount (in words):</strong> ${numToWords(Math.round(v.amount))} Only
+                    </div>
+                    <div style="margin-top: 10px;">
+                        <strong>Narration:</strong> ${v.narration || '-'}
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; margin-top: 60px;">
+                        <div style="border-top: 1px solid #000; padding-top: 5px; width:150px; text-align:center;">Receiver's Sign</div>
+                        <div style="border-top: 1px solid #000; padding-top: 5px; width:150px; text-align:center;">Authorised Sign</div>
+                    </div>
+                </div>
+            `;
+            doPrint(content);
+        }
+
+        function doPrint(html) {
+            const area = document.getElementById('printArea');
+            area.innerHTML = html;
+            setTimeout(() => { window.print(); area.innerHTML = ''; }, 500);
+        }
+
+        function numToWords(n) {
+            if (n === 0) return "Zero";
+            const units = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"];
+            const teens = ["Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
+            const tens = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
+            function convert(num) {
+                if (num < 10) return units[num];
+                if (num < 20) return teens[num - 10];
+                if (num < 100) return tens[Math.floor(num / 10)] + (num % 10 ? " " + units[num % 10] : "");
+                if (num < 1000) return units[Math.floor(num / 100)] + " Hundred" + (num % 100 ? " and " + convert(num % 100) : "");
+                if (num < 100000) return convert(Math.floor(num / 1000)) + " Thousand" + (num % 1000 ? " " + convert(num % 1000) : "");
+                if (num < 10000000) return convert(Math.floor(num / 100000)) + " Lakh" + (num % 100000 ? " " + convert(num % 100000) : "");
+                return convert(Math.floor(num / 10000000)) + " Crore" + (num % 10000000 ? " " + convert(num % 10000000) : "");
+            }
+            return convert(n);
+        }
+
+        async function deleteVoucher(id) {
+            if(confirm("Are you sure?")) {
+                try { await DB.deleteVoucher(id); renderVouchers(); } catch(e) { alert(e.message); }
             }
         }
 
-        function editVoucher(id) {
-            window.location.href = `voucher_entry.html?id=${id}&mode=edit`;
-        }
+        function editVoucher(id) { window.location.href = `voucher_entry.html?id=${id}&mode=edit`; }
     </script>
 </body>
 </html>
