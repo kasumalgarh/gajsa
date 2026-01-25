@@ -272,24 +272,42 @@ input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px 
 }
 </style>
 <body>
-   <div class="sidebar" id="sidebar">
-        <div class="brand-logo" style="padding: 20px; display: flex; align-items: center; gap: 10px;">
-            <img id="appLogo" src="favicon.ico" style="height: 35px; width: auto;" onerror="this.src='https://cdn-icons-png.flaticon.com/512/1041/1041888.png'"> 
-            <span style="font-size: 20px; font-weight: 800; color: white;">Arth Book</span>
-        </div>
-        <ul class="nav-links" style="list-style: none; padding: 0 10px;">
-            <li><a href="index.html" class="nav-link"><i class="fas fa-home"></i> Dashboard</a></li>
-            <li><a href="sales_invoice.html" class="nav-link"><i class="fas fa-file-invoice"></i> Sales (Table)</a></li>
-            <li><a href="purchase_invoice.html" class="nav-link"><i class="fas fa-truck"></i> Purchase</a></li>
-            <li><a href="vouchers.html" class="nav-link active"><i class="fas fa-receipt"></i> Day Book</a></li>
-            <li style="margin-top:15px; margin-bottom:5px; font-size:11px; color:#64748b; font-weight:bold; padding-left:15px; text-transform:uppercase;">Masters</li>
-            <li><a href="item_master.html" class="nav-link"><i class="fas fa-boxes"></i> Inventory</a></li>
-            <li><a href="ArthBook.html" class="nav-link"><i class="fas fa-users"></i> Parties</a></li>
-            <hr style="border:0; border-top:1px solid rgba(255,255,255,0.1); margin:15px 5px;">
-            <li><a href="settings.html" class="nav-link"><i class="fas fa-cog"></i> Settings</a></li>
-        </ul>
-        <div style="padding: 20px; font-size: 11px; color: #64748b; text-align: center; margin-top:auto;">Arth Book v4.2<br>Authorized User</div>
+<button class="menu-btn" onclick="toggleMenu()">☰</button>
+<div class="overlay" onclick="toggleMenu()"></div>
+
+<div class="sidebar" id="sidebar">
+    <div class="brand-logo">
+        <i class="fas fa-cube"></i> Arth Book
     </div>
+    
+    <ul class="nav-links">
+        <li><a href="index.html" id="nav-dash"><i class="fas fa-home"></i> Dashboard</a></li>
+        
+        <li class="nav-section">Entry</li>
+        <li><a href="sales_invoice.html" id="nav-sales"><i class="fas fa-file-invoice"></i> Sales (POS)</a></li>
+        <li><a href="purchase_invoice.html" id="nav-purchase"><i class="fas fa-truck"></i> Purchase</a></li>
+        <li><a href="vouchers.html" id="nav-vouchers"><i class="fas fa-receipt"></i> Day Book</a></li>
+        
+        <li class="nav-section">Masters</li>
+        <li><a href="item_master.html" id="nav-items"><i class="fas fa-boxes"></i> Inventory</a></li>
+        <li><a href="ArthBook.html" id="nav-parties"><i class="fas fa-users"></i> Parties</a></li>
+        <li><a href="coa.html" id="nav-accounts"><i class="fas fa-sitemap"></i> Accounts</a></li>
+        
+        <li class="nav-section">Reports & Tax</li>
+        <li><a href="reports.html" id="nav-reports"><i class="fas fa-chart-line"></i> Reports</a></li>
+        <li><a href="gst_filing.html" id="nav-gst"><i class="fas fa-university"></i> GST Returns</a></li>
+        <li><a href="taxation.html" id="nav-tax"><i class="fas fa-calculator"></i> Tax / ITR</a></li>
+        
+        <hr class="nav-divider">
+        
+        <li><a href="settings.html" id="nav-settings"><i class="fas fa-cog"></i> Settings</a></li>
+        <li><a href="help.html" id="nav-help"><i class="fas fa-question-circle"></i> Help Guide</a></li>
+    </ul>
+    
+    <div class="sidebar-footer">
+        Arth Book v5.0<br>Authorized User
+    </div>
+</div>
 
     <div class="main-area">
         <div class="top-bar">
