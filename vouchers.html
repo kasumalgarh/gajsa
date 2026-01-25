@@ -6,16 +6,13 @@
     <title>Day Book - Arth Book</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <link rel="icon" type="image/x-icon" href="favicon.ico">
-
- 
 </head>
 <style>
     /* ==========================================================================
-   ARTH BOOK PLATINUM THEME - MASTER STYLESHEET v9.0 (FINAL)
-   Covers: All Pages + Mobile Voucher Entry
-   ========================================================================== */
+    ARTH BOOK PLATINUM THEME - MASTER STYLESHEET v9.0 (FINAL)
+    Covers: All Pages + Mobile Voucher Entry
+    ========================================================================== */
 
 :root {
     /* --- COLORS --- */
@@ -391,6 +388,14 @@ input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px 
             } catch (e) { console.error(e); }
         };
 
+        // --- MOBILE MENU TOGGLE (NEW) ---
+        function toggleMenu() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.querySelector('.overlay');
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+
         async function renderVouchers() {
             document.getElementById('loading').style.display = 'block';
             document.getElementById('tableWrap').style.display = 'none';
@@ -436,6 +441,7 @@ input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px 
                         <td><span class="vtype-badge badge-${v.type.replace(/\s/g,'')}">${v.type}</span></td>
                         <td class="amount ${amtClass}">₹${parseFloat(v.amount).toFixed(2)}</td>
                         <td class="actions" style="text-align:center;">
+                            <button onclick="editVoucher(${v.id})" title="Edit Entry" style="margin-right:5px;"><i class="fas fa-edit"></i></button>
                             <button onclick="printVoucher(${v.id})" title="Print Invoice"><i class="fas fa-print"></i></button>
                             <button onclick="deleteVoucher(${v.id})"><i class="fas fa-trash-alt"></i></button>
                         </td>
@@ -671,7 +677,24 @@ input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px 
             setTimeout(() => { window.print(); area.innerHTML = ''; }, 500);
         }
 
-        function numToWords(n) { return n + ""; } // Simplify for brevity, full version in previous code if needed
+        // --- NEW NUMBER TO WORDS FUNCTION (INDIAN FORMAT) ---
+        function numToWords(n) {
+            if (n === 0) return "Zero";
+            
+            const units = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
+            const tens = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
+
+            function convert(num) {
+                if (num < 20) return units[num];
+                if (num < 100) return tens[Math.floor(num / 10)] + (num % 10 ? " " + units[num % 10] : "");
+                if (num < 1000) return units[Math.floor(num / 100)] + " Hundred" + (num % 100 ? " " + convert(num % 100) : "");
+                if (num < 100000) return convert(Math.floor(num / 1000)) + " Thousand" + (num % 1000 ? " " + convert(num % 1000) : "");
+                if (num < 10000000) return convert(Math.floor(num / 100000)) + " Lakh" + (num % 100000 ? " " + convert(num % 100000) : "");
+                return convert(Math.floor(num / 10000000)) + " Crore" + (num % 10000000 ? " " + convert(num % 10000000) : "");
+            }
+
+            return convert(n);
+        }
         
         async function deleteVoucher(id) {
             if(confirm("Are you sure?")) {

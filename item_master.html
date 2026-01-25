@@ -4,16 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
-    <title>Arth Book - Item Master (v7.2 Fixed)</title>
+    <title>Arth Book - Item Master (v7.3 Fixed)</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
-
 </head>
 <style>
     /* ==========================================================================
-   ARTH BOOK - INVENTORY MASTER STYLE (Master-Detail Layout)
-   ========================================================================== */
+    ARTH BOOK - INVENTORY MASTER STYLE (Master-Detail Layout)
+    ========================================================================== */
 
 :root {
     --primary: #0d47a1;       /* Royal Navy */
@@ -37,7 +36,7 @@ a { text-decoration: none; }
 ul { list-style: none; }
 button { font-family: inherit; cursor: pointer; }
 
-/* --- SIDEBAR (Global Fix) --- */
+/* --- SIDEBAR --- */
 .sidebar {
     width: var(--sidebar-width);
     background: var(--primary);
@@ -148,7 +147,7 @@ button { font-family: inherit; cursor: pointer; }
 .form-group label { font-size: 12px; font-weight: 700; color: var(--text-sub); text-transform: uppercase; }
 
 input, select {
-    padding: 10px 12px; border: 1px solid var(--border);
+    width: 100%; padding: 10px 12px; border: 1px solid var(--border);
     border-radius: 6px; font-size: 13px; background: #fff; width: 100%;
 }
 input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(13,71,161,0.1); }
@@ -249,9 +248,6 @@ input:disabled { background: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
 }
 </style>
 <body>
-
-    <button class="menu-btn" onclick="toggleMenu()" aria-label="Toggle Menu">☰</button>
-    <div class="overlay" onclick="toggleMenu()"></div>
 
 <button class="menu-btn" onclick="toggleMenu()">☰</button>
 <div class="overlay" onclick="toggleMenu()"></div>
@@ -801,7 +797,7 @@ input:disabled { background: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
             document.getElementById('imgInput').value = '';
         }
 
-        // --- BARCODE PRINTING (FIXED) ---
+        // --- BARCODE PRINTING (FIXED - NO BROKEN TAGS) ---
         function printBarcode() {
             const name = sanitizeInput(document.getElementById('name').value);
             const mrp = document.getElementById('mrp').value;
@@ -814,16 +810,16 @@ input:disabled { background: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
             if(mrp) extraInfo += `MRP: ₹${mrp} `;
             if(exp) extraInfo += `| Exp: ${exp}`;
 
-            // Fix: Split tags to prevent parser confusion
+            // We break the tags here so the browser doesn't think the script ends
             const content = `
-                <ht`+`ml>
-                <bo`+`dy style="text-align:center; font-family:sans-serif; margin:0; padding:10px;">
+                <`+`html>
+                <`+`body style="text-align:center; font-family:sans-serif; margin:0; padding:10px;">
                     <h5 style="margin:0 0 5px 0; text-transform:uppercase; color:#666;">Arth Book</h5>
                     <h3 style="margin:0; font-size:16px;">${name}</h3>
                     <img src="${img}" style="max-width:100%; height:auto;">
                     <p style="margin:5px 0; font-size:12px; font-weight:bold;">${extraInfo}</p>
-                </bo`+`dy>
-                </ht`+`ml>
+                <`+`/body>
+                <`+`/html>
             `;
 
             win.document.write(content);
