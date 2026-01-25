@@ -4,87 +4,158 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>अर्थ बुक - मदद गाइड</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* --- ROOT COLORS --- */
+        :root {
+            --primary: #0d47a1;
+            --primary-dark: #002171;
+            --accent: #ffca28;
+            --bg: #f1f5f9;
+            --surface: #ffffff;
+            --text-main: #1e293b;
+            --text-sub: #64748b;
+            --border: #e2e8f0;
+        }
 
+        /* --- GLOBAL RESET --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { display: flex; height: 100vh; background: var(--bg); color: var(--text-main); overflow: hidden; }
+
+        /* --- SIDEBAR FIX (NO PURPLE LINKS) --- */
+        .sidebar {
+            width: 260px; background: var(--primary) !important;
+            color: white; display: flex; flex-direction: column; flex-shrink: 0; height: 100vh;
+            overflow-y: auto; z-index: 2000; box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+            transition: 0.3s ease-in-out;
+        }
+
+        .brand-logo { 
+            padding: 25px 20px; font-size: 22px; font-weight: 800; color: white !important;
+            border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 10px; 
+        }
+
+        .nav-links { padding: 10px; list-style: none; }
+        .nav-links li { margin-bottom: 5px; }
+
+        /* LINK COLOR FIX: Force White and Remove Purple */
+        .nav-links a, .nav-link {
+            display: flex !important; align-items: center; gap: 12px;
+            padding: 12px 15px; 
+            color: rgba(255,255,255,0.9) !important; /* Force White */
+            text-decoration: none !important; 
+            border-radius: 8px; font-weight: 500; font-size: 14px;
+            transition: 0.2s;
+        }
+
+        .nav-links a:hover { background: rgba(255,255,255,0.15) !important; color: white !important; }
+        .nav-links a.active { background: var(--accent) !important; color: var(--primary-dark) !important; font-weight: 800; }
+
+        /* --- MAIN AREA --- */
+        .main { flex: 1; display: flex; flex-direction: column; overflow-y: auto; background: var(--bg); position: relative; }
+
+        /* --- MOBILE MENU BUTTON (RIGHT SIDE FIX) --- */
+        .menu-btn {
+            display: none; /* Desktop पर छुपाएं */
+            position: fixed !important;
+            top: 15px !important;
+            right: 15px !important; /* राइट साइड में फिक्स */
+            z-index: 9999 !important; /* सबसे ऊपर */
+            background: var(--primary) !important;
+            color: white !important;
+            width: 45px; height: 45px; border: none; border-radius: 8px;
+            align-items: center; justify-content: center; font-size: 1.4rem;
+            cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        .overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.5); z-index: 1500; backdrop-filter: blur(2px);
+        }
+
+        /* --- HELP CONTENT STYLE --- */
+        .help-container { max-width: 800px; margin: 0 auto; padding: 40px 20px; }
+        .welcome-card { 
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white; padding: 40px; border-radius: 20px; text-align: center; margin-bottom: 30px;
+            border-bottom: 5px solid var(--accent);
+        }
+
+        .step-box { background: white; border-radius: 15px; border: 1px solid var(--border); margin-bottom: 20px; overflow: hidden; }
+        .step-title { background: #f8fafc; padding: 18px 25px; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border); }
+        .step-content { padding: 25px; line-height: 1.8; }
+        
+        .btn-look { padding: 3px 10px; border-radius: 6px; font-size: 11px; font-weight: 800; display: inline-block; text-transform: uppercase; margin: 0 2px; }
+        .btn-look.green { background: #10b981; color: white; }
+        .btn-look.blue { background: var(--primary); color: white; }
+
+        /* --- MOBILE RESPONSIVE --- */
+        @media (max-width: 1024px) {
+            .menu-btn { display: flex; } /* मोबाइल पर बटन दिखाओ */
+            .sidebar { position: fixed; left: -280px; top: 0; }
+            .sidebar.active { left: 0; }
+            .overlay.active { display: block; }
+            .help-container { padding-top: 70px; } /* बटन के लिए जगह */
+        }
+    </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>📘 अर्थ बुक (Arth Book) - चलाने का तरीका</h1>
-        <p style="text-align: center; font-size: 18px;">दुकान का हिसाब-किताब, अब उंगलियों पर।</p>
+    <button class="menu-btn" onclick="toggleMenu()">☰</button>
+    <div class="overlay" onclick="toggleMenu()"></div>
 
-        <div class="step-box">
-            <div class="step-title">🛒 1. ग्राहक का बिल कैसे काटें? (सबसे ज़रूरी)</div>
-            <p>जब कोई ग्राहक माल लेने आए, तो यह करें:</p>
-            <ul>
-                <li>सबसे पहले <b>Sales POS</b> वाले बटन पर क्लिक करें।</li>
-                <li><b>ग्राहक चुनें:</b> अगर पुराना ग्राहक है तो उसका नाम चुनें, नया है तो "Walk-in" रहने दें।</li>
-                <li><b>माल जोड़ें:</b>
-                    <ul>
-                        <li>अगर आपके पास <b>बारकोड गन</b> है, तो बस माल पर स्कैन करें।</li>
-                        <li>या फिर <b>सर्च बॉक्स</b> में नाम लिखें (जैसे: Tea, Sugar)।</li>
-                    </ul>
-                </li>
-                <li><b>क्वांटिटी (Quantity):</b> अगर ग्राहक 2 चीज़ ले रहा है, तो <span class="btn-look grey">+</span> बटन दबाएं।</li>
-                <li><b>बिल निकालें:</b> अंत में नीचे हरे रंग का <span class="btn-look green">✅ PRINT</span> बटन दबा दें। बिल सेव हो जाएगा।</li>
-            </ul>
-        </div>
-
-        <div class="step-box">
-            <div class="step-title">📦 2. दुकान में नया माल कैसे भरें?</div>
-            <p>जब आप मार्किट से नया सामान खरीद कर लाएं, तो उसे यहाँ चढ़ाएं:</p>
-            <ul>
-                <li><b>Inventory</b> वाले बटन पर क्लिक करें।</li>
-                <li>ऊपर <span class="btn-look grey">+ New Product</span> बटन दबाएं।</li>
-                <li><b>Item Name:</b> सामान का नाम लिखें (जैसे: Parle-G)।</li>
-                <li><b>Price:</b> कितने में बेचना है, वो दाम लिखें।</li>
-                <li><b>Opening Qty:</b> अभी आपके पास कितने पीस पड़े हैं, वो लिखें।</li>
-                <li>नीचे नीला <span class="btn-look blue">Save Product</span> बटन दबा दें। माल दुकान में चढ़ गया!</li>
-            </ul>
-        </div>
-
-        <div class="step-box">
-            <div class="step-title">💰 3. खर्चा या उधारी का हिसाब कैसे रखें?</div>
-            <p>चाय-पानी का खर्चा हो या किसी को पेमेंट करनी हो:</p>
-            <ul>
-                <li><b>Vouchers</b> वाले बटन पर जाएं।</li>
-                <li><b>Payment:</b> अगर आपने किसी को पैसा दिया।</li>
-                <li><b>Receipt:</b> अगर आपको किसी से पैसा मिला।</li>
-                <li><b>Expense:</b> चाय, पेट्रोल, बिजली बिल का खर्चा।</li>
-                <li>बस रकम (Amount) डालें और सेव कर दें।</li>
-            </ul>
-        </div>
-
-        <div class="step-box">
-            <div class="step-title">📈 4. मुनाफा और गल्ला कैसे देखें?</div>
-            <p>आज कितनी कमाई हुई, यह देखने के लिए:</p>
-            <ul>
-                <li><b>Reports</b> पर क्लिक करें।</li>
-                <li><b>Day Book:</b> आज दिन भर में क्या-क्या हुआ, सब यहाँ दिखेगा।</li>
-                <li><b>Business Health:</b> यहाँ AI (कंप्यूटर का दिमाग) बताएगा कि अगले महीने कितनी कमाई हो सकती है।</li>
-                <li><b>Stock Summary:</b> कौन सा माल खत्म होने वाला है, यहाँ पता चलेगा।</li>
-            </ul>
-        </div>
-
-        <div class="step-box" style="border-color: #2563eb;">
-            <div class="step-title">💾 5. डेटा सुरक्षित कैसे रखें? (सबसे ज़रूरी)</div>
-            <p>आपका सारा हिसाब आपके कंप्यूटर में है। अगर कंप्यूटर खराब हुआ तो डेटा जा सकता है। इसलिए:</p>
-            <ul>
-                <li>रोज़ शाम को दुकान बंद करने से पहले <b>Settings</b> में जाएं।</li>
-                <li><b>Backup & Cloud</b> टैब पर क्लिक करें।</li>
-                <li><span class="btn-look blue">⬇ Download Backup</span> बटन दबाएं।</li>
-                <li>एक फाइल डाउनलोड होगी, उसे अपनी <b>पेन-ड्राइव</b> में या <b>ईमेल</b> पर डाल लें।</li>
-            </ul>
-            <div class="note">⚠️ चेतावनी: कभी भी अपने ब्राउज़र की 'History' डिलीट न करें, वरना सारा डेटा उड़ सकता है।</div>
-        </div>
-
-        <div style="text-align: center; margin-top: 40px; color: #666;">
-            <hr>
-            <p>सॉफ्टवेयर में कोई दिक्कत आए तो <b>Settings > Logs</b> चेक करें या एडमिन से पूछें।</p>
-            <button onclick="window.print()" style="padding: 10px 20px; background: #333; color: white; border: none; border-radius: 5px; cursor: pointer;">🖨️ इस गाइड को प्रिंट करें</button>
-        </div>
-
+    <div class="sidebar" id="sidebar">
+        <div class="brand-logo"><i class="fas fa-cube"></i> अर्थ बुक</div>
+        <ul class="nav-links">
+            <li><a href="index.html"><i class="fas fa-home"></i> डैशबोर्ड</a></li>
+            <li><a href="sales_invoice.html"><i class="fas fa-file-invoice"></i> सेल्स (POS)</a></li>
+            <li><a href="purchase_invoice.html"><i class="fas fa-truck"></i> खरीद</a></li>
+            <li><a href="vouchers.html"><i class="fas fa-receipt"></i> डे बुक</a></li>
+            <li><a href="item_master.html"><i class="fas fa-boxes"></i> इन्वेंटरी</a></li>
+            <li><a href="ArthBook.html"><i class="fas fa-users"></i> पार्टियाँ</a></li>
+            <hr style="border:0; border-top:1px solid rgba(255,255,255,0.1); margin:15px 5px;">
+            <li><a href="settings.html"><i class="fas fa-cog"></i> सेटिंग्स</a></li>
+            <li><a href="help.html" class="active"><i class="fas fa-question-circle"></i> मदद गाइड</a></li>
+        </ul>
     </div>
 
+    <div class="main">
+        <div class="help-container">
+            <div class="welcome-card">
+                <h1>📘 अर्थ बुक गाइड</h1>
+                <p>दुकान का हिसाब अब और भी आसान</p>
+            </div>
+
+            <div class="step-box">
+                <div class="step-title"><i class="fas fa-shopping-cart"></i> 1. बिल काटना</div>
+                <div class="step-content">
+                    <b>Sales POS</b> पर क्लिक करें, सामान स्कैन करें और <span class="btn-look green">PRINT</span> दबाएं।
+                </div>
+            </div>
+
+            <div class="step-box">
+                <div class="step-title"><i class="fas fa-cloud-upload-alt"></i> 2. बैकअप लेना</div>
+                <div class="step-content">
+                    <b>Settings</b> में जाकर <span class="btn-look blue">Download Backup</span> पर क्लिक करें।
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleMenu() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.querySelector('.overlay').classList.toggle('active');
+        }
+
+        // लिंक क्लिक पर मोबाइल मेनू बंद करें
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth <= 1024) toggleMenu();
+            });
+        });
+    </script>
 </body>
 </html>
