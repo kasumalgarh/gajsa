@@ -106,20 +106,42 @@
     <button class="menu-btn" onclick="toggleMenu()">☰</button>
     <div class="overlay" onclick="toggleMenu()"></div>
 
-    <div class="sidebar" id="sidebar">
-        <div class="brand-logo"><i class="fas fa-cube"></i> अर्थ बुक</div>
-        <ul class="nav-links">
-            <li><a href="index.html"><i class="fas fa-home"></i> डैशबोर्ड</a></li>
-            <li><a href="sales_invoice.html"><i class="fas fa-file-invoice"></i> सेल्स (POS)</a></li>
-            <li><a href="purchase_invoice.html"><i class="fas fa-truck"></i> खरीद</a></li>
-            <li><a href="vouchers.html"><i class="fas fa-receipt"></i> डे बुक</a></li>
-            <li><a href="item_master.html"><i class="fas fa-boxes"></i> इन्वेंटरी</a></li>
-            <li><a href="ArthBook.html"><i class="fas fa-users"></i> पार्टियाँ</a></li>
-            <hr style="border:0; border-top:1px solid rgba(255,255,255,0.1); margin:15px 5px;">
-            <li><a href="settings.html"><i class="fas fa-cog"></i> सेटिंग्स</a></li>
-            <li><a href="help.html" class="active"><i class="fas fa-question-circle"></i> मदद गाइड</a></li>
-        </ul>
+ <button class="menu-btn" onclick="toggleMenu()">☰</button>
+<div class="overlay" onclick="toggleMenu()"></div>
+
+<div class="sidebar" id="sidebar">
+    <div class="brand-logo">
+        <i class="fas fa-cube"></i> Arth Book
     </div>
+    
+    <ul class="nav-links">
+        <li><a href="index.html" id="nav-dash"><i class="fas fa-home"></i> Dashboard</a></li>
+        
+        <li class="nav-section">Entry</li>
+        <li><a href="sales_invoice.html" id="nav-sales"><i class="fas fa-file-invoice"></i> Sales (POS)</a></li>
+        <li><a href="purchase_invoice.html" id="nav-purchase"><i class="fas fa-truck"></i> Purchase</a></li>
+        <li><a href="vouchers.html" id="nav-vouchers"><i class="fas fa-receipt"></i> Day Book</a></li>
+        
+        <li class="nav-section">Masters</li>
+        <li><a href="item_master.html" id="nav-items"><i class="fas fa-boxes"></i> Inventory</a></li>
+        <li><a href="ArthBook.html" id="nav-parties"><i class="fas fa-users"></i> Parties</a></li>
+        <li><a href="coa.html" id="nav-accounts"><i class="fas fa-sitemap"></i> Accounts</a></li>
+        
+        <li class="nav-section">Reports & Tax</li>
+        <li><a href="reports.html" id="nav-reports"><i class="fas fa-chart-line"></i> Reports</a></li>
+        <li><a href="gst_filing.html" id="nav-gst"><i class="fas fa-university"></i> GST Returns</a></li>
+        <li><a href="taxation.html" id="nav-tax"><i class="fas fa-calculator"></i> Tax / ITR</a></li>
+        
+        <hr class="nav-divider">
+        
+        <li><a href="settings.html" id="nav-settings"><i class="fas fa-cog"></i> Settings</a></li>
+        <li><a href="help.html" id="nav-help"><i class="fas fa-question-circle"></i> Help Guide</a></li>
+    </ul>
+    
+    <div class="sidebar-footer">
+        Arth Book v5.0<br>Authorized User
+    </div>
+</div>
 
     <div class="main">
         <div class="help-container">
