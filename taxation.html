@@ -2,189 +2,175 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="stylesheet" href="style.css">
-    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Taxation & Compliance - Arth Book</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-    /* --- ARTH BOOK PLATINUM THEME (LEDGER MASTER - PURPLE LINK FIX) --- */
-    :root {
-        --primary: #0d47a1;      /* Royal Navy */
-        --primary-dark: #002171;
-        --accent: #ffca28;       /* Gold */
-        --bg: #f1f5f9;           /* Light Gray Background */
-        --surface: #ffffff;      /* White Surface */
-        --text-main: #1e293b;    /* Dark Slate Text */
-        --text-sub: #64748b;     /* Muted Text */
-        --border: #e2e8f0;
-        --shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 10px 15px -3px rgba(0,0,0,0.05);
-        --sidebar-width: 260px;
-    }
+        /* --- ARTH BOOK PLATINUM THEME (TAXATION FINAL FIX) --- */
+        :root {
+            /* Theme Colors */
+            --primary: #0d47a1;      /* Royal Navy */
+            --primary-dark: #002171;
+            --accent: #ffca28;       /* Gold */
+            --bg: #f1f5f9;           /* Light Gray Background */
+            --surface: #ffffff;      /* White Surface */
+            --text-main: #1e293b;    /* Dark Slate Text */
+            --text-sub: #64748b;     /* Muted Text */
+            
+            /* Status Colors */
+            --success: #10b981; 
+            --warning: #f59e0b; 
+            --danger: #ef4444;
+            
+            /* Borders & Shadows */
+            --border: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 10px 15px -3px rgba(0,0,0,0.05);
+            --sidebar-width: 260px;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { display: flex; height: 100vh; background: var(--bg); color: var(--text-main); overflow: hidden; }
 
-    * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
-    body { display: flex; height: 100vh; background: var(--bg); color: var(--text-main); overflow: hidden; }
+        /* --- SIDEBAR (FIXED LINKS) --- */
+        .sidebar { 
+            width: var(--sidebar-width); background: var(--primary); 
+            padding: 20px; display: flex; flex-direction: column; flex-shrink: 0; height: 100vh; 
+            overflow-y: auto; transition: all 0.3s ease; z-index: 100; box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+        }
+        
+        .brand-logo { 
+            font-size: 20px; font-weight: 800; color: white; margin-bottom: 30px; 
+            display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px; 
+        }
+        
+        .nav-links { list-style: none; padding: 0; margin: 0; }
+        
+        /* Strict Selectors to Override Default Link Styles */
+        .nav-links a, 
+        .nav-links a:visited, 
+        .nav-links a:link, 
+        .nav-links a:active { 
+            display: flex; align-items: center; gap: 12px; padding: 12px 15px; 
+            color: rgba(255,255,255,0.85) !important; /* Force White */
+            text-decoration: none !important; /* Remove Underline */
+            border-radius: 8px; font-weight: 500; transition: 0.2s; font-size: 14px; margin-bottom: 5px;
+        }
+        
+        .nav-links a:hover { 
+            background: rgba(255,255,255,0.1); color: white !important; padding-left: 20px; 
+        }
+        
+        /* Active State */
+        .nav-links a.active, .nav-links a.active:visited { 
+            background: var(--accent) !important; 
+            color: var(--primary-dark) !important; 
+            font-weight: 800; box-shadow: 0 4px 10px rgba(0,0,0,0.2); 
+        }
+        
+        .menu-btn { display: none; position: fixed; top: 15px; left: 15px; z-index: 1100; background: none; border: none; font-size: 1.6rem; color: var(--primary); cursor: pointer; }
+        .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 900; }
 
-    /* --- SIDEBAR --- */
-    .sidebar { 
-        width: var(--sidebar-width); background: var(--primary); 
-        padding: 20px; display: flex; flex-direction: column; flex-shrink: 0; height: 100vh; 
-        overflow-y: auto; transition: all 0.3s ease; z-index: 100; 
-        box-shadow: 4px 0 10px rgba(0,0,0,0.1);
-    }
-    
-    .brand-logo { 
-        font-size: 20px; font-weight: 800; color: white; margin-bottom: 30px; 
-        display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px; 
-    }
-    
-    .nav-links { list-style: none; padding: 0; margin: 0; }
-    
-    /* --- LINK FIX: FORCE WHITE COLOR --- */
-    .nav-links a, 
-    .nav-links a:visited, 
-    .nav-links a:link, 
-    .nav-links a:active,
-    .nav-link,
-    .nav-link:visited { 
-        display: flex; align-items: center; gap: 12px; padding: 12px 15px; 
-        color: rgba(255,255,255,0.85) !important; /* Force White */
-        text-decoration: none !important; 
-        border-radius: 8px; font-weight: 500; transition: 0.2s; font-size: 14px; margin-bottom: 5px;
-    }
-    
-    .nav-links a:hover, .nav-link:hover { 
-        background: rgba(255,255,255,0.1); color: white !important; padding-left: 20px; 
-    }
-    
-    /* ACTIVE LINK STYLE (GOLD) */
-    .nav-links a.active, 
-    .nav-links a.active:visited,
-    .nav-link.active { 
-        background: var(--accent) !important; 
-        color: var(--primary-dark) !important; 
-        font-weight: 800; box-shadow: 0 4px 10px rgba(0,0,0,0.2); 
-    }
-    
-    .menu-btn { display: none; position: fixed; top: 15px; left: 15px; z-index: 1100; background: none; border: none; font-size: 1.6rem; color: var(--primary); cursor: pointer; }
-    .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 900; }
+        /* --- MAIN CONTENT --- */
+        .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+        
+        .header { 
+            background: var(--surface); padding: 15px 30px; border-bottom: 1px solid var(--border); 
+            display: flex; align-items: center; justify-content: space-between; gap: 15px; flex-wrap: wrap; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
+        }
+        .header h2 { margin: 0; font-size: 1.5rem; color: var(--primary); font-weight: 700; display: flex; align-items: center; gap: 10px; }
+        
+        select, input[type="text"], input[type="number"] { 
+            padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; outline: none; background: white; 
+        }
+        input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(13, 71, 161, 0.1); }
 
-    /* --- MAIN CONTENT --- */
-    .main { flex: 1; display: flex; padding: 20px; gap: 20px; overflow: hidden; }
+        /* --- TABS --- */
+        .tabs { display: flex; gap: 20px; padding: 0 30px; background: white; border-bottom: 1px solid var(--border); margin-top: 10px; }
+        .tab-btn { 
+            padding: 12px 5px; background: none; border: none; font-weight: 600; 
+            color: var(--text-sub); cursor: pointer; border-bottom: 3px solid transparent; 
+            transition: 0.3s; font-size: 14px; 
+        }
+        .tab-btn:hover { color: var(--primary); }
+        .tab-btn.active { color: var(--primary); border-bottom-color: var(--accent); }
 
-    /* --- LIST PANEL --- */
-    .list-panel { 
-        width: 380px; background: var(--surface); border-radius: 12px; 
-        display: flex; flex-direction: column; 
-        box-shadow: var(--shadow); border: 1px solid var(--border);
-    }
-    
-    .search-box { 
-        padding: 15px; background: white; border-radius: 12px 12px 0 0; 
-        border-bottom: 1px solid var(--border); background: #f8fafc;
-    }
-    .search-box input { 
-        width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; 
-        font-size: 14px; outline: none; transition: 0.2s; background: white;
-    }
-    .search-box input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(13, 71, 161, 0.1); }
+        .content-area { flex: 1; overflow-y: auto; padding: 30px; background: var(--bg); }
+        .tab-content { display: none; animation: fadeIn 0.3s ease; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-    .list-content { flex: 1; overflow-y: auto; background: white; }
-    
-    .ledger-item { 
-        padding: 15px 20px; border-bottom: 1px solid var(--border); cursor: pointer; 
-        display: flex; justify-content: space-between; align-items: center; transition: 0.2s; 
-    }
-    .ledger-item:hover { background: #f0f9ff; padding-left: 25px; }
-    .ledger-item.active { background: #e0f2fe; border-left: 4px solid var(--primary); }
+        /* --- ITR CARDS --- */
+        .itr-container { display: flex; gap: 25px; flex-wrap: wrap; }
+        
+        .itr-form { 
+            flex: 1; min-width: 350px; background: white; padding: 30px; 
+            border-radius: 12px; box-shadow: var(--shadow); border: 1px solid var(--border); 
+        }
+        
+        .itr-result { 
+            width: 320px; background: #fffbeb; border: 1px solid #fcd34d; 
+            padding: 25px; border-radius: 12px; height: fit-content; 
+            box-shadow: var(--shadow); position: sticky; top: 20px;
+        }
 
-    .ledger-info strong { display: block; font-size: 14px; color: var(--text-main); font-weight: 600; margin-bottom: 2px; }
-    .ledger-info span { font-size: 11px; color: var(--text-sub); }
-    
-    .balance-info { text-align: right; }
-    .balance-amount { font-size: 13px; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
-    .dr { color: #10b981; } /* Green */
-    .cr { color: #ef4444; } /* Red */
-    .balance-label { font-size: 10px; color: var(--text-sub); display: block; font-weight: 700; text-transform: uppercase; }
+        .form-section { margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px dashed var(--border); }
+        .section-head { 
+            font-size: 13px; font-weight: 700; color: var(--text-sub); margin-bottom: 15px; 
+            text-transform: uppercase; letter-spacing: 0.5px; 
+        }
 
-    /* --- FORM PANEL --- */
-    .form-panel { 
-        flex: 1; background: var(--surface); border-radius: 12px; 
-        border: 1px solid var(--border); padding: 30px; display: flex; 
-        flex-direction: column; overflow-y: auto; box-shadow: var(--shadow); 
-    }
-    
-    .form-header { 
-        font-size: 22px; font-weight: 700; margin-bottom: 25px; 
-        display: flex; justify-content: space-between; align-items: center; 
-        color: var(--primary); border-bottom: 1px solid var(--border); padding-bottom: 15px;
-    }
+        .form-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 14px; }
+        .form-row label { flex: 1; color: var(--text-main); font-weight: 500; }
+        .form-row input { width: 140px; text-align: right; font-weight: 600; padding: 10px; }
+        .form-row input[readonly] { background: #f8fafc; color: var(--text-sub); border-color: var(--border); }
 
-    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
-    .form-section { grid-column: 1 / -1; }
-    .section-title { 
-        font-size: 12px; font-weight: 700; color: var(--text-sub); 
-        text-transform: uppercase; letter-spacing: 0.5px; margin: 20px 0 10px; 
-        padding-bottom: 8px; border-bottom: 1px solid var(--border); 
-    }
+        /* --- SUMMARY BOX --- */
+        .itr-result h3 { margin-top: 0; color: #92400e; font-size: 18px; margin-bottom: 20px; border-bottom: 1px solid #fde68a; padding-bottom: 10px; }
+        .res-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; color: #78350f; }
+        .res-row.final { margin-top: 15px; padding-top: 15px; border-top: 1px dashed #fcd34d; font-weight: 800; font-size: 16px; color: #b45309; }
 
-    .form-group label { display: block; font-size: 12px; font-weight: 700; color: var(--text-sub); margin-bottom: 6px; text-transform: uppercase; }
-    .form-group input, .form-group select { 
-        width: 100%; padding: 10px; border: 1px solid var(--border); 
-        border-radius: 6px; font-size: 14px; transition: 0.2s; outline: none; background: #fff;
-    }
-    .form-group input:focus, .form-group select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(13, 71, 161, 0.1); }
+        /* --- BUTTONS --- */
+        .btn { padding: 12px 20px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; color: white; transition: 0.2s; width: 100%; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        
+        .btn-calc { background: var(--primary); }
+        .btn-json { background: var(--success); }
+        .btn-print { background: var(--text-main); }
+        .btn-add-tds { background: var(--primary); width: auto; display: inline-flex; }
 
-    .balance-row { display: flex; gap: 10px; align-items: center; }
-    .balance-row input { flex: 1; }
+        /* --- TDS SECTION --- */
+        .tds-card { background: white; padding: 30px; border-radius: 12px; box-shadow: var(--shadow); border: 1px solid var(--border); }
+        .tds-inputs { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; align-items: end; }
+        .tds-group { flex: 1; min-width: 150px; }
+        .tds-group label { display: block; font-size: 12px; font-weight: 700; color: var(--text-sub); margin-bottom: 5px; }
+        .tds-group input, .tds-group select { width: 100%; }
 
-    /* --- ACTIONS --- */
-    .actions { margin-top: 30px; display: flex; justify-content: space-between; align-items: center; padding-top: 20px; border-top: 1px solid var(--border); }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
+        th { background: #f1f5f9; padding: 12px; text-align: left; font-weight: 700; color: var(--text-sub); border-bottom: 2px solid var(--border); }
+        td { padding: 12px; border-bottom: 1px solid var(--border); color: var(--text-main); }
+        .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; background: #dcfce7; color: #166534; }
 
-    .btn { padding: 12px 25px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; font-size: 14px; text-decoration: none; }
-    .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-    
-    .btn-save { background: var(--primary); color: white; }
-    .btn-new { background: #10b981; color: white; }
-    .btn-del { background: #fee2e2; color: #ef4444; }
-    .btn-stmt { background: var(--text-main); color: white; }
+        @media print {
+            .sidebar, .header, .menu-btn, .overlay, .tabs, .btn, .no-print { display: none !important; }
+            .content-area { padding: 0; background: white; }
+            .itr-container { display: block; }
+            .itr-form, .itr-result { width: 100%; box-shadow: none; border: 1px solid #000; margin-bottom: 20px; }
+            body { background: white; height: auto; overflow: visible; }
+        }
 
-    /* --- TOAST & MODAL --- */
-    #toast { position: fixed; top: 20px; right: 20px; background: #10b981; color: white; padding: 12px 24px; border-radius: 8px; font-weight: 600; box-shadow: var(--shadow); display: none; z-index: 2000; }
-
-    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(2px); z-index: 2000; align-items: center; justify-content: center; }
-    .modal-content { 
-        background: white; width: 90%; max-width: 800px; max-height: 90vh; 
-        border-radius: 12px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); 
-        display: flex; flex-direction: column; animation: slideUp 0.3s ease;
-    }
-    @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
-    .modal-header { padding: 20px 25px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: #f8fafc; }
-    .modal-body { flex: 1; overflow-y: auto; padding: 20px; }
-    
-    .stmt-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    .stmt-table th { background: #f1f5f9; padding: 12px; text-align: left; font-weight: 700; color: var(--text-sub); border-bottom: 2px solid var(--border); position: sticky; top: 0; }
-    .stmt-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: var(--text-main); }
-    .stmt-table tr.closing { background: #e0f2fe; font-weight: 700; border-top: 2px solid var(--primary); }
-
-    @media print {
-        body > *:not(.modal) { display: none; }
-        .modal, .modal-content { position: static; width: 100%; height: auto; background: white; box-shadow: none; border: none; }
-        .modal-header .no-print { display: none; }
-        .modal-body { padding: 0; overflow: visible; }
-    }
-
-    @media (max-width: 900px) {
-        .menu-btn { display: block; }
-        .sidebar { position: fixed; left: -100%; width: 280px; }
-        .sidebar.active { left: 0; }
-        .overlay.active { display: block; }
-        .main { flex-direction: column; padding: 15px; }
-        .list-panel { width: 100%; max-height: 40vh; margin-bottom: 15px; }
-        .form-grid { grid-template-columns: 1fr; }
-        .modal-content { width: 95%; }
-    }
-</style>
+        @media (max-width: 900px) {
+            .menu-btn { display: block; }
+            .sidebar { position: fixed; left: -100%; top: 0; height: 100%; z-index: 1000; box-shadow: 4px 0 10px rgba(0,0,0,0.1); }
+            .sidebar.active { left: 0; }
+            .overlay.active { display: block; }
+            .itr-container { flex-direction: column; }
+            .itr-result { width: 100%; position: static; }
+            .content-area { padding: 15px; }
+        }
+    </style>
 </head>
 <body>
 
@@ -192,44 +178,44 @@
     <div class="overlay" onclick="toggleMenu()"></div>
 
    <div class="sidebar" id="sidebar">
-        <div class="brand-logo" style="padding: 20px; font-size: 20px; font-weight: 800; color: white; display: flex; align-items: center; gap: 10px;">
+        <div class="brand-logo">
             <i class="fas fa-cube"></i> Arth Book
         </div>
-        <ul class="nav-links" style="list-style: none; padding: 0 10px;">
+        <ul class="nav-links">
             <li><a href="index.html"><i class="fas fa-home"></i> Dashboard</a></li>
             <li><a href="sales_invoice.html"><i class="fas fa-file-invoice"></i> Sales (POS)</a></li>
             <li><a href="purchase_invoice.html"><i class="fas fa-truck"></i> Purchase</a></li>
             <li><a href="vouchers.html"><i class="fas fa-receipt"></i> Day Book</a></li>
             
-            <li style="margin-top:15px; margin-bottom:5px; font-size:11px; color:#64748b; font-weight:bold; padding-left:15px; text-transform:uppercase;">Masters</li>
+            <li style="margin-top:15px; margin-bottom:5px; font-size:11px; color:rgba(255,255,255,0.5); font-weight:bold; padding-left:15px; text-transform:uppercase;">Masters</li>
             <li><a href="item_master.html"><i class="fas fa-boxes"></i> Inventory</a></li>
             <li><a href="ArthBook.html"><i class="fas fa-users"></i> Parties</a></li>
             <li><a href="coa.html"><i class="fas fa-sitemap"></i> Accounts</a></li>
             
-            <li style="margin-top:15px; margin-bottom:5px; font-size:11px; color:#64748b; font-weight:bold; padding-left:15px; text-transform:uppercase;">Reports & Tax</li>
+            <li style="margin-top:15px; margin-bottom:5px; font-size:11px; color:rgba(255,255,255,0.5); font-weight:bold; padding-left:15px; text-transform:uppercase;">Reports & Tax</li>
             <li><a href="reports.html"><i class="fas fa-chart-line"></i> Reports</a></li>
             <li><a href="gst_filing.html"><i class="fas fa-university"></i> GST Returns</a></li>
-            <li><a href="taxation.html"><i class="fas fa-calculator"></i> Tax / ITR</a></li>
+            <li><a href="taxation.html" class="active"><i class="fas fa-calculator"></i> Tax / ITR</a></li>
             
             <hr style="border:0; border-top:1px solid rgba(255,255,255,0.1); margin:15px 5px;">
             <li><a href="settings.html"><i class="fas fa-cog"></i> Settings</a></li>
             <li><a href="help.html"><i class="fas fa-question-circle"></i> Help</a></li>
         </ul>
         
-        <div style="padding: 20px; font-size: 11px; color: #64748b; text-align: center; margin-top:auto;">
+        <div style="padding: 20px; font-size: 11px; color: rgba(255,255,255,0.5); text-align: center; margin-top:auto;">
             Arth Book v4.0<br>Authorized User
         </div>
     </div>
 
     <div class="main">
         <div class="header">
-            <h2>🏛️ Taxation & Compliance Hub</h2>
+            <h2><i class="fas fa-landmark"></i> Taxation & Compliance Hub</h2>
             <div style="display:flex; gap:10px; align-items:center;">
-                <select id="fySelect" onchange="loadFYData()" style="padding:10px; border-radius:8px; border:1px solid var(--border);">
+                <select id="fySelect" onchange="loadFYData()">
                     <option value="2025-26">FY 2025-26 (AY 2026-27)</option>
                     <option value="2024-25">FY 2024-25 (AY 2025-26)</option>
                 </select>
-                <button style="padding:8px 15px; background:var(--blue); color:white; border:none; border-radius:6px;" onclick="fetchBusinessIncome()">↻ Refresh P&L</button>
+                <button class="btn btn-add-tds" style="padding:8px 15px; border-radius:6px; width:auto; margin:0;" onclick="fetchBusinessIncome()">↻ Refresh P&L</button>
             </div>
         </div>
 
@@ -238,88 +224,105 @@
             <button class="tab-btn" onclick="showTab('tds')">✂️ TDS/TCS Manager</button>
         </div>
 
-        <div id="itr" class="tab-content active">
-            <div class="itr-container">
-                <div class="itr-form">
-                    <div class="form-section">
-                        <div class="section-head">Income Heads</div>
-                        <div class="form-row"><label>Gross Business Profit (from P&L)</label><input type="number" id="incBiz" readonly></div>
-                        <div class="form-row"><label>Salary Income</label><input type="number" id="incSal" value="0" onchange="saveITRData()"></div>
-                        <div class="form-row"><label>House Property Income</label><input type="number" id="incHouse" value="0" onchange="saveITRData()"></div>
-                        <div class="form-row"><label>Other Sources (Interest, etc.)</label><input type="number" id="incOther" value="0" onchange="saveITRData()"></div>
-                    </div>
-
-                    <div class="form-section">
-                        <div class="section-head">Chapter VI-A Deductions (Old Regime)</div>
-                        <div class="form-row"><label>80C (Max ₹1.5 Lakh)</label><input type="number" id="ded80c" value="0" onchange="saveITRData()"></div>
-                        <div class="form-row"><label>80D (Health Insurance)</label><input type="number" id="ded80d" value="0" onchange="saveITRData()"></div>
-                        <div class="form-row"><label>Other Deductions</label><input type="number" id="dedOther" value="0" onchange="saveITRData()"></div>
-                    </div>
-
-                    <div class="form-section">
-                        <div class="section-head">Taxes Already Paid</div>
-                        <div class="form-row"><label>TDS / TCS Deducted (Auto)</label><input type="number" id="taxTds" value="0" readonly style="background:#e0f2fe;"></div>
-                        <div class="form-row"><label>Advance Tax Paid</label><input type="number" id="taxAdv" value="0" onchange="saveITRData()"></div>
-                        <div class="form-row"><label>Self Assessment Tax</label><input type="number" id="taxSelf" value="0" onchange="saveITRData()"></div>
-                    </div>
-
-                    <button class="btn btn-calc" onclick="calcTax()">🔄 Recalculate Tax Liability</button>
-                </div>
-
-                <div class="itr-result">
-                    <h3 style="margin-bottom:20px; color:#854d0e;">Tax Summary</h3>
-                    <div class="form-row"><span>Gross Total Income</span><span id="resGross" style="font-weight:bold;">₹0</span></div>
-                    <div class="form-row"><span>Deductions (Old)</span><span id="resDed">₹0</span></div>
-                    <div class="form-row" style="border-top:2px solid #ca8a04; padding-top:10px; margin-top:10px;"><span>Taxable Income</span><span id="resTaxable" style="font-weight:bold;">₹0</span></div>
-                    
-                    <div style="margin-top:25px; padding:15px; background:#fefce8; border-radius:8px;">
-                        <div class="form-row"><span>New Regime Tax</span><span id="taxNew">₹0</span></div>
-                        <div class="form-row"><span>Old Regime Tax</span><span id="taxOld">₹0</span></div>
-                        <div class="form-row" style="margin-top:15px; font-size:18px; font-weight:800;">
-                            <span>Final Liability</span>
-                            <span id="finalPayable" style="color:var(--red);">₹0</span>
+        <div class="content-area">
+            <div id="itr" class="tab-content active">
+                <div class="itr-container">
+                    <div class="itr-form">
+                        <div class="form-section">
+                            <div class="section-head">Income Heads</div>
+                            <div class="form-row"><label>Gross Business Profit (from P&L)</label><input type="number" id="incBiz" readonly></div>
+                            <div class="form-row"><label>Salary Income</label><input type="number" id="incSal" value="0" onchange="saveITRData()"></div>
+                            <div class="form-row"><label>House Property Income</label><input type="number" id="incHouse" value="0" onchange="saveITRData()"></div>
+                            <div class="form-row"><label>Other Sources (Interest, etc.)</label><input type="number" id="incOther" value="0" onchange="saveITRData()"></div>
                         </div>
-                        <div style="font-size:12px; margin-top:8px; color:#64748b;">
-                            Recommended: <span id="recommendedRegime" style="font-weight:bold;">New Regime</span>
+
+                        <div class="form-section">
+                            <div class="section-head">Chapter VI-A Deductions (Old Regime)</div>
+                            <div class="form-row"><label>80C (Max ₹1.5 Lakh)</label><input type="number" id="ded80c" value="0" onchange="saveITRData()"></div>
+                            <div class="form-row"><label>80D (Health Insurance)</label><input type="number" id="ded80d" value="0" onchange="saveITRData()"></div>
+                            <div class="form-row"><label>Other Deductions</label><input type="number" id="dedOther" value="0" onchange="saveITRData()"></div>
                         </div>
+
+                        <div class="form-section">
+                            <div class="section-head">Taxes Already Paid</div>
+                            <div class="form-row"><label>TDS / TCS Deducted (Auto)</label><input type="number" id="taxTds" value="0" readonly style="background:#e0f2fe;"></div>
+                            <div class="form-row"><label>Advance Tax Paid</label><input type="number" id="taxAdv" value="0" onchange="saveITRData()"></div>
+                            <div class="form-row"><label>Self Assessment Tax</label><input type="number" id="taxSelf" value="0" onchange="saveITRData()"></div>
+                        </div>
+
+                        <button class="btn btn-calc" onclick="calcTax()"><i class="fas fa-sync-alt"></i> Recalculate Tax Liability</button>
                     </div>
 
-                    <button class="btn btn-json" onclick="downloadJSON()">📥 Export JSON</button>
-                    <button class="btn btn-print" onclick="window.print()">🖨️ Print Report</button>
+                    <div class="itr-result">
+                        <h3>Tax Summary</h3>
+                        <div class="res-row"><span>Gross Total Income</span><span id="resGross" style="font-weight:bold;">₹0</span></div>
+                        <div class="res-row"><span>Deductions (Old)</span><span id="resDed">₹0</span></div>
+                        <div class="res-row" style="border-top:1px solid #eab308; padding-top:10px; margin-top:10px; font-weight:bold;"><span>Taxable Income</span><span id="resTaxable">₹0</span></div>
+                        
+                        <div style="margin-top:20px; padding:15px; background:white; border-radius:8px; border:1px dashed #eab308;">
+                            <div class="res-row"><span>New Regime Tax</span><span id="taxNew">₹0</span></div>
+                            <div class="res-row"><span>Old Regime Tax</span><span id="taxOld">₹0</span></div>
+                            <div class="res-row final">
+                                <span>Final Liability</span>
+                                <span id="finalPayable" style="color:var(--danger);">₹0</span>
+                            </div>
+                            <div style="font-size:12px; margin-top:8px; color:#64748b; text-align:right;">
+                                Recommended: <span id="recommendedRegime" style="font-weight:bold; color:var(--primary);">New Regime</span>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-json" onclick="downloadJSON()"><i class="fas fa-download"></i> Export JSON</button>
+                        <button class="btn btn-print" onclick="window.print()"><i class="fas fa-print"></i> Print Report</button>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div id="tds" class="tab-content">
-            <div class="tds-card">
-                <h3 style="margin-bottom:20px;">TDS / TCS Deduction Register</h3>
-                <div class="tds-inputs no-print">
-                    <select id="tdsType">
-                        <option value="TDS">TDS Deducted</option>
-                        <option value="TCS">TCS Collected</option>
-                    </select>
-                    <select id="tdsSection">
-                        <option value="194C">194C - Contractor (1-2%)</option>
-                        <option value="194J">194J - Professional (10%)</option>
-                        <option value="194I">194I - Rent (10%)</option>
-                        <option value="194H">194H - Commission (5%)</option>
-                        <option value="194Q">194Q - Purchase >50L (0.1%)</option>
-                    </select>
-                    <input type="text" id="tdsParty" placeholder="Party Name">
-                    <input type="number" id="tdsGross" placeholder="Gross Amount">
-                    <input type="number" id="tdsDeductedInput" placeholder="TDS Amount" readonly style="background:#f1f5f9;">
-                    <button class="btn btn-add-tds" onclick="addTDSRecord()">+ Record</button>
-                </div>
+            <div id="tds" class="tab-content">
+                <div class="tds-card">
+                    <h3 style="margin-bottom:20px; color:var(--primary);">TDS / TCS Deduction Register</h3>
+                    <div class="tds-inputs no-print">
+                        <div class="tds-group">
+                            <label>Type</label>
+                            <select id="tdsType">
+                                <option value="TDS">TDS Deducted</option>
+                                <option value="TCS">TCS Collected</option>
+                            </select>
+                        </div>
+                        <div class="tds-group">
+                            <label>Section</label>
+                            <select id="tdsSection">
+                                <option value="194C">194C - Contractor (1-2%)</option>
+                                <option value="194J">194J - Professional (10%)</option>
+                                <option value="194I">194I - Rent (10%)</option>
+                                <option value="194H">194H - Commission (5%)</option>
+                                <option value="194Q">194Q - Purchase >50L (0.1%)</option>
+                            </select>
+                        </div>
+                        <div class="tds-group">
+                            <label>Party Name</label>
+                            <input type="text" id="tdsParty" placeholder="Enter Party Name">
+                        </div>
+                        <div class="tds-group">
+                            <label>Gross Amount</label>
+                            <input type="number" id="tdsGross" placeholder="0.00">
+                        </div>
+                        <div class="tds-group">
+                            <label>TDS Amount</label>
+                            <input type="number" id="tdsDeductedInput" placeholder="Auto Calc" readonly style="background:#f1f5f9;">
+                        </div>
+                        <button class="btn btn-add-tds" style="height:42px; margin-bottom:1px;" onclick="addTDSRecord()">+ Record</button>
+                    </div>
 
-                <div style="overflow-x:auto;">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Date</th><th>Type</th><th>Section</th><th>Party</th><th>Gross</th><th>TDS/TCS</th><th>Net</th><th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tdsTableBody"></tbody>
-                    </table>
+                    <div style="overflow-x:auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Date</th><th>Type</th><th>Section</th><th>Party</th><th>Gross</th><th>TDS/TCS</th><th>Net</th><th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tdsTableBody"></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -345,7 +348,7 @@
         };
 
         function toggleMenu() {
-            document.getElementById('mySidebar').classList.toggle('active');
+            document.getElementById('sidebar').classList.toggle('active');
             document.querySelector('.overlay').classList.toggle('active');
         }
 
@@ -366,8 +369,8 @@
         // --- ITR LOGIC ---
         async function fetchBusinessIncome() {
             // Fetch real accounting data
-            const [vouchers, items, entries, groups, ledgers] = await Promise.all([
-                DB.getAll('vouchers'), DB.getAll('items'), DB.getAll('acct_entries'), DB.getAll('groups'), DB.getAll('ledgers')
+            const [vouchers, items] = await Promise.all([
+                DB.getAll('vouchers'), DB.getAll('items')
             ]);
 
             // Approximate P&L Logic
@@ -454,7 +457,7 @@
             
             const finalEl = document.getElementById('finalPayable');
             finalEl.innerText = (best > 0 ? 'Payable ₹' : 'Refund ₹') + Math.abs(best).toFixed(0);
-            finalEl.style.color = best > 0 ? 'var(--red)' : 'var(--green)';
+            finalEl.style.color = best > 0 ? 'var(--danger)' : 'var(--success)';
         }
 
         function calculateSlab(income, regime) {
@@ -509,13 +512,13 @@
             tbody.innerHTML = tdsRecords.map((r, i) => `
                 <tr>
                     <td>${r.date}</td>
-                    <td><span class="badge" style="background:${r.type==='TDS'?'#fee2e2':'#dcfce7'}">${r.type}</span></td>
+                    <td><span class="badge" style="background:${r.type==='TDS'?'#fee2e2':'#dcfce7'}; color:${r.type==='TDS'?'#991b1b':'#166534'}">${r.type}</span></td>
                     <td>${r.section}</td>
                     <td>${r.party}</td>
                     <td>${r.gross}</td>
                     <td>${r.deducted.toFixed(2)}</td>
                     <td>${(r.gross - r.deducted).toFixed(2)}</td>
-                    <td><button style="color:red; background:none; border:none; cursor:pointer;" onclick="deleteTDS(${i})">×</button></td>
+                    <td><button style="color:red; background:none; border:none; cursor:pointer;" onclick="deleteTDS(${i})"><i class="fas fa-trash"></i></button></td>
                 </tr>
             `).join('');
         }
