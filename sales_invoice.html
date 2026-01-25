@@ -2,13 +2,15 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="stylesheet" href="style.css">
-    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart POS - Arth Book</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
     <style>
         /* --- ARTH BOOK PLATINUM THEME (POS EDITION) --- */
         :root { 
@@ -27,26 +29,25 @@
         * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
         body { background: var(--bg); color: var(--text-main); height: 100vh; display:flex; overflow:hidden; }
 
-        /* --- SIDEBAR (Consistent with Dashboard) --- */
+        /* --- SIDEBAR --- */
         .sidebar { 
             width: var(--sidebar-width); background: var(--primary); color: #e2e8f0; 
             display: flex; flex-direction: column; flex-shrink: 0; height: 100vh; 
             transition: all 0.3s ease-in-out; z-index: 1000; box-shadow: 4px 0 10px rgba(0,0,0,0.1);
         }
-        .brand { 
-            padding: 20px; font-size: 20px; font-weight: 800; color: var(--accent); 
+        .brand-logo { 
+            padding: 20px; font-size: 20px; font-weight: 800; color: white; 
             display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);
         }
         .nav-links { list-style: none; padding: 15px 10px; flex: 1; overflow-y: auto; }
-        .nav-links a { 
+        .nav-link { 
             display: flex; align-items: center; gap: 12px; padding: 12px 15px; 
             color: rgba(255,255,255,0.7); text-decoration: none; border-radius: 8px; 
             font-weight: 500; margin-bottom: 5px; transition: 0.2s; font-size: 14px;
         }
-        .nav-links a:hover { background: rgba(255,255,255,0.1); color: white; padding-left: 20px; }
-        .nav-links a.active { background: var(--accent); color: var(--primary-dark); font-weight: 800; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
-        .nav-links i { width: 20px; text-align: center; }
-
+        .nav-link:hover { background: rgba(255,255,255,0.1); color: white; padding-left: 20px; }
+        .nav-link.active { background: var(--accent); color: var(--primary-dark); font-weight: 800; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        
         /* --- MAIN CONTENT --- */
         .main-content { flex: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden; padding: 10px; position: relative; }
 
@@ -126,6 +127,8 @@
 
         .gst-btn { background: #4f46e5; color: white; padding: 12px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; margin-top: 15px; width: 100%; display: flex; justify-content: center; gap: 8px; }
 
+        #toast { position: fixed; bottom: 20px; right: 20px; background: var(--green); color: white; padding: 12px 24px; border-radius: 8px; font-weight: 600; box-shadow: 0 4px 12px rgba(0,0,0,0.2); display: none; z-index: 3000; }
+
         /* MOBILE RESPONSIVE */
         @media (max-width: 1024px) {
             .sidebar { position: fixed; left: -100%; width: 280px; height: 100vh; }
@@ -152,33 +155,26 @@
 </head>
 <body>
 
- <div class="sidebar" id="sidebar">
-        <div class="brand-logo" style="padding: 20px; font-size: 20px; font-weight: 800; color: white; display: flex; align-items: center; gap: 10px;">
+   <div class="sidebar" id="sidebar">
+        <div class="brand-logo">
             <i class="fas fa-cube"></i> Arth Book
         </div>
-        <ul class="nav-links" style="list-style: none; padding: 0 10px;">
-            <li><a href="index.html"><i class="fas fa-home"></i> Dashboard</a></li>
-            <li><a href="sales_invoice.html"><i class="fas fa-file-invoice"></i> Sales (POS)</a></li>
-            <li><a href="purchase_invoice.html"><i class="fas fa-truck"></i> Purchase</a></li>
-            <li><a href="vouchers.html"><i class="fas fa-receipt"></i> Day Book</a></li>
+        <ul class="nav-links">
+            <li><a href="index.html" class="nav-link"><i class="fas fa-home"></i> Dashboard</a></li>
+            <li><a href="sales_invoice.html" class="nav-link active"><i class="fas fa-file-invoice"></i> Sales (POS)</a></li>
+            <li><a href="purchase_invoice.html" class="nav-link"><i class="fas fa-truck"></i> Purchase</a></li>
+            <li><a href="vouchers.html" class="nav-link"><i class="fas fa-receipt"></i> Day Book</a></li>
             
             <li style="margin-top:15px; margin-bottom:5px; font-size:11px; color:#64748b; font-weight:bold; padding-left:15px; text-transform:uppercase;">Masters</li>
-            <li><a href="item_master.html"><i class="fas fa-boxes"></i> Inventory</a></li>
-            <li><a href="ArthBook.html"><i class="fas fa-users"></i> Parties</a></li>
-            <li><a href="coa.html"><i class="fas fa-sitemap"></i> Accounts</a></li>
-            
-            <li style="margin-top:15px; margin-bottom:5px; font-size:11px; color:#64748b; font-weight:bold; padding-left:15px; text-transform:uppercase;">Reports & Tax</li>
-            <li><a href="reports.html"><i class="fas fa-chart-line"></i> Reports</a></li>
-            <li><a href="gst_filing.html"><i class="fas fa-university"></i> GST Returns</a></li>
-            <li><a href="taxation.html"><i class="fas fa-calculator"></i> Tax / ITR</a></li>
+            <li><a href="item_master.html" class="nav-link"><i class="fas fa-boxes"></i> Inventory</a></li>
+            <li><a href="ArthBook.html" class="nav-link"><i class="fas fa-users"></i> Parties</a></li>
             
             <hr style="border:0; border-top:1px solid rgba(255,255,255,0.1); margin:15px 5px;">
-            <li><a href="settings.html"><i class="fas fa-cog"></i> Settings</a></li>
-            <li><a href="help.html"><i class="fas fa-question-circle"></i> Help</a></li>
+            <li><a href="settings.html" class="nav-link"><i class="fas fa-cog"></i> Settings</a></li>
         </ul>
         
         <div style="padding: 20px; font-size: 11px; color: #64748b; text-align: center; margin-top:auto;">
-            Arth Book v4.0<br>Authorized User
+            Arth Book v4.0<br>POS Edition
         </div>
     </div>
 
@@ -197,8 +193,7 @@
 
         <div class="pos-layout">
             <div class="item-list-area">
-                <div class="vs-viewport" id="itemContainer">
-                    </div>
+                <div class="vs-viewport" id="itemContainer"></div>
             </div>
 
             <div class="cart-area">
@@ -262,10 +257,6 @@
                 </div>
             </div>
 
-            <button class="gst-btn" onclick="generateIRN()">
-                <i class="fas fa-file-code"></i> Generate e-Invoice (Beta)
-            </button>
-
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:20px;">
                 <button class="btn" style="background:#64748b;" onclick="saveBill(false)">Save Only</button>
                 <button class="btn" style="background:var(--success);" onclick="saveBill(true)">Print & Save</button>
@@ -274,6 +265,7 @@
     </div>
 
     <div id="printArea"></div>
+    <div id="toast"></div>
 
     <script src="db.js"></script>
     <script>
@@ -281,40 +273,36 @@
         let selectedMode = 'Cash';
 
         window.onload = async () => {
-            await DB.init();
-            
-            // 1. Load Data Safely
             try {
+                await DB.init();
+                // Parallel Load
                 [items, ledgers, settings, groups] = await Promise.all([
                     DB.getAll('items'),
                     DB.getAll('ledgers'),
                     DB.getAll('settings'),
                     DB.getAll('groups')
                 ]);
-            } catch(e) { console.error("Load Error", e); }
-            
-            // 2. Render Items Grid
-            renderItems(items);
-            
-            // 3. Populate Customers (Smart Filter: Debtors + Cash)
-            loadCustomers();
-            
-            generateInvNo();
-            document.getElementById('billDate').valueAsDate = new Date();
+                
+                renderItems(items);
+                loadCustomers();
+                generateInvNo();
+                document.getElementById('billDate').valueAsDate = new Date();
+                
+            } catch(e) { 
+                console.error("Load Error", e);
+                showToast("⚠️ Database connection failed. Please reload.");
+            }
         };
 
-        // Auto Close Sidebar on Mobile Logic
-        function toggleMenu() {
-            document.getElementById('sidebar').classList.toggle('active');
-        }
+        function toggleMenu() { document.getElementById('sidebar').classList.toggle('active'); }
 
-        // --- 1. ITEM RENDER & SEARCH ---
+        // --- 1. ITEMS & SEARCH ---
         function renderItems(list) {
             const container = document.getElementById('itemContainer');
             container.innerHTML = '';
             
             if(list.length === 0) {
-                container.innerHTML = '<div style="width:100%; text-align:center; padding:20px; color:#94a3b8;">No Items Found. Add in Inventory.</div>';
+                container.innerHTML = '<div style="width:100%; text-align:center; padding:20px; color:#94a3b8;">No Items Found</div>';
                 return;
             }
 
@@ -340,12 +328,11 @@
             q = q.trim().toLowerCase();
             if(!q) return renderItems(items);
             
-            // Exact Barcode Match
             const exact = items.find(i => i.sku && i.sku.toLowerCase() === q);
             if(exact) {
                 addToCart(exact);
                 document.getElementById('searchBar').value = '';
-                renderItems(items); // Reset view
+                renderItems(items);
                 return;
             }
             
@@ -353,19 +340,16 @@
             renderItems(filtered);
         }
 
-        // --- 2. CART LOGIC ---
+        // --- 2. CART ---
         function addToCart(item) {
-            // STOCK CHECK (Block if 0)
             if((item.current_stock || 0) <= 0) {
-                alert(`⚠️ Stock Alert: "${item.name}" is out of stock!`);
-                return;
+                return showToast(`⚠️ Stock Alert: "${item.name}" is out of stock!`);
             }
 
             const ex = cart.find(c => c.id === item.id);
             if(ex) {
                 if(ex.qty + 1 > item.current_stock) {
-                    alert("⚠️ Cannot add more. Stock limit reached!");
-                    return;
+                    return showToast("⚠️ Stock limit reached!");
                 }
                 ex.qty++;
             } else {
@@ -382,7 +366,7 @@
             body.innerHTML = '';
             
             if(cart.length === 0) {
-                body.innerHTML = '<div style="text-align:center; padding:50px; color:#94a3b8;"><i class="fas fa-shopping-cart" style="font-size:30px; margin-bottom:10px; opacity:0.5;"></i><br>Scan items to add</div>';
+                body.innerHTML = '<div style="text-align:center; padding:50px; color:#94a3b8;"><i class="fas fa-shopping-cart" style="font-size:30px; margin-bottom:10px; opacity:0.5;"></i><br>Scan items</div>';
                 updateTotals(0,0);
                 return;
             }
@@ -399,7 +383,7 @@
                 div.innerHTML = `
                     <div>${idx+1}</div>
                     <div style="white-space:nowrap; overflow:hidden; font-weight:600; color:var(--text-main);">${c.name}</div>
-                    <input type="number" value="${c.qty}" min="1" onchange="updateQty(${idx}, this.value, ${c.id})">
+                    <input type="number" value="${c.qty}" min="1" onchange="updateQty(${idx}, this.value, '${c.id}')">
                     <input type="number" value="${c.rate}" min="0" onchange="updateRate(${idx}, this.value)">
                     <div style="text-align:right; font-weight:600;">${(base+taxAmt).toFixed(2)}</div>
                     <div style="color:var(--red); cursor:pointer; text-align:center;" onclick="removeCart(${idx})"><i class="fas fa-trash"></i></div>
@@ -409,15 +393,14 @@
             updateTotals(sub, tax);
         }
 
-        async function updateQty(idx, val, itemId) {
+        function updateQty(idx, val, itemId) {
             const qty = parseFloat(val);
             if(qty <= 0) return removeCart(idx);
             
-            // Check Stock again
-            const item = items.find(i => i.id === itemId); // Use local cache for speed
+            const item = items.find(i => i.id == itemId); 
             if(qty > (item.current_stock || 0)) {
-                alert(`⚠️ Only ${item.current_stock} available!`);
-                cart[idx].qty = item.current_stock; // Reset to max
+                showToast(`⚠️ Only ${item.current_stock} available!`);
+                cart[idx].qty = item.current_stock; 
             } else {
                 cart[idx].qty = qty;
             }
@@ -442,9 +425,9 @@
             document.getElementById('modalTotal').innerText = "₹" + grand.toLocaleString('en-IN');
         }
 
-        // --- 3. PAYMENT & SAVING ---
+        // --- 3. PAY & SAVE ---
         function openPaymentModal() {
-            if(cart.length === 0) return alert("Add items first!");
+            if(cart.length === 0) return showToast("Add items first!");
             document.getElementById('payModal').style.display = 'flex';
         }
         function closeModal() { document.getElementById('payModal').style.display = 'none'; }
@@ -455,138 +438,128 @@
             el.classList.add('selected');
         }
 
-        function generateIRN() {
-            alert("📡 Connecting to GST Sandbox...\n(Feature will be active after API Key setup in Settings)");
-        }
-
         async function saveBill(shouldPrint) {
             const pid = document.getElementById('custSelect').value;
             const invNo = document.getElementById('invNo').innerText;
             const date = document.getElementById('billDate').value;
             const grand = parseFloat(document.getElementById('lblGrand').innerText.replace(',',''));
 
-            // Prepare Data
+            // 1. Validation for Credit Sales
+            if(selectedMode === 'Udhar' && (!pid || pid === "0" || pid === "")) {
+                alert("❌ Error: Cannot give Credit (Udhar) to Walk-in Customer.\nPlease select a registered party.");
+                return;
+            }
+
             const voucher = {
                 voucher_no: invNo,
                 date: date,
                 type: 'Sales',
-                party_id: parseInt(pid) || 0, // 0 for cash
+                party_id: parseInt(pid) || 0,
                 amount: grand,
                 payment_mode: selectedMode,
-                narration: "POS Sale - " + selectedMode
+                narration: `POS Sale - ${selectedMode}`
             };
 
             const entries = [];
             
             try {
-                // 1. Debit (Money Coming In) - Find Ledger ID
+                // 2. FIND LEDGERS SAFELY (Smart Logic)
                 let debitLedgerId = 0;
                 
-                // Find Cash Ledger
-                const cashL = ledgers.find(l => l.name === 'Cash' || l.name === 'Cash-in-Hand');
-                
                 if(selectedMode === 'Cash') {
-                    debitLedgerId = cashL ? cashL.id : 0;
+                    // Find Cash ledger
+                    const cashL = ledgers.find(l => l.name === 'Cash' || l.group_name === 'Cash-in-Hand');
+                    if(cashL) debitLedgerId = cashL.id;
                 } else if(selectedMode === 'Udhar') {
                     debitLedgerId = parseInt(pid);
                 } else {
                     // Bank
-                    const bankL = ledgers.find(l => l.name === 'Bank Accounts' || l.group_id === 15);
-                    debitLedgerId = bankL ? bankL.id : 0;
+                    const bankL = ledgers.find(l => l.name === 'Bank Account' || l.group_name === 'Bank Accounts');
+                    if(bankL) debitLedgerId = bankL.id;
+                }
+                
+                // Fallback if ledger not found (prevent crash, but warn)
+                if(!debitLedgerId && selectedMode !== 'Udhar') {
+                    console.warn("Ledger not found, using ID 0");
                 }
                 
                 if(debitLedgerId) entries.push({ ledger_id: debitLedgerId, debit: grand, credit: 0 });
 
-                // 2. Credit (Sales Account)
-                let salesL = ledgers.find(l => l.name === 'Local Sales' || l.name === 'Sales Account');
-                // Fallback
+                // 3. Sales Ledger
+                let salesL = ledgers.find(l => l.name === 'Local Sales');
                 if(!salesL) {
-                    const sGroup = groups.find(g => g.name === 'Sales Accounts');
-                    if(sGroup) salesL = ledgers.find(l => l.group_id === sGroup.id);
+                    const salesGroup = groups.find(g => g.name === 'Sales Accounts');
+                    if(salesGroup) salesL = ledgers.find(l => l.group_id === salesGroup.id);
                 }
                 const salesId = salesL ? salesL.id : 0;
 
-                // 3. Item Entries (For Stock)
+                // 4. Item Entries
                 cart.forEach(c => {
                     entries.push({
                         ledger_id: salesId,
                         debit: 0, 
-                        credit: c.qty * c.rate, // Approximate credit to sales
-                        meta_data: { item_id: c.id, qty: c.qty, rate: c.rate } // Stock deduction logic in DB
+                        credit: c.qty * c.rate,
+                        meta_data: { item_id: c.id, qty: c.qty, rate: c.rate } 
                     });
                 });
 
-                // 4. Save
                 await DB.saveVoucherTransaction(voucher, entries);
                 
                 if(shouldPrint) {
                     printReceipt(voucher, cart, grand);
                 } else {
-                    alert("✅ Sale Saved Successfully!");
-                    location.reload();
+                    showToast("✅ Sale Saved!");
+                    setTimeout(() => location.reload(), 1000);
                 }
 
-            } catch(e) { alert("Error: " + e.message); console.error(e); }
+            } catch(e) { 
+                alert("⛔ Transaction Failed: " + e.message); 
+            }
         }
 
-        // --- 4. PRINTING ---
+        // --- 4. PRINT ---
         function printReceipt(v, items, total) {
-            const company = settings.company_name || "My Store";
-            const upi = settings.upi_id || "";
+            const company = (settings && settings.company_name) ? settings.company_name : "Arth Book Store";
+            const addr = (settings && settings.address) ? settings.address : "";
+            const ph = (settings && settings.phone) ? settings.phone : "";
             
-            // Render QR
-            let qrCodeHtml = "";
-            if(upi) {
-                qrCodeHtml = `<div id="qr-code-render" style="display:flex; justify-content:center; margin:10px 0;"></div>`;
-            }
-
             const rows = items.map(i => `
                 <tr>
-                    <td>${i.name}<br><small>${i.qty} x ${i.rate}</small></td>
-                    <td style="text-align:right;">${(i.qty*i.rate).toFixed(2)}</td>
+                    <td style="padding:4px 0;">${i.name}<br><small>${i.qty} x ${i.rate}</small></td>
+                    <td style="text-align:right; padding:4px 0;">${(i.qty*i.rate).toFixed(2)}</td>
                 </tr>
             `).join('');
 
-            const html = `
-                <div style="width: 78mm; font-family: 'Courier New', monospace; padding: 5px;">
+            const content = `
+                <div style="width: 78mm; font-family: monospace; padding: 10px; font-size:12px;">
                     <div style="text-align:center;">
-                        <h2 style="margin:0; font-size:1.2rem;">${company}</h2>
-                        <div style="font-size:0.8rem;">${settings.address || ''}</div>
-                        <div style="font-size:0.8rem;">Ph: ${settings.phone || ''}</div>
-                        <hr style="border-top: 1px dashed #000; margin: 10px 0;">
-                        <div style="display:flex; justify-content:space-between; font-size:0.8rem;">
+                        <h2 style="margin:0; font-size:16px;">${company}</h2>
+                        <div>${addr}</div>
+                        <div>Ph: ${ph}</div>
+                        <hr style="border: 1px dashed #000;">
+                        <div style="display:flex; justify-content:space-between;">
                             <span>Inv: ${v.voucher_no}</span>
                             <span>${v.date}</span>
                         </div>
-                        <hr style="border-top: 1px dashed #000; margin: 10px 0;">
+                        <hr style="border: 1px dashed #000;">
                     </div>
-                    <table style="width:100%; font-size:0.9rem; border-collapse:collapse;">
+                    <table style="width:100%; border-collapse:collapse;">
                         ${rows}
                     </table>
-                    <hr style="border-top: 1px dashed #000; margin: 10px 0;">
-                    <div style="text-align:right; font-weight:bold; font-size:1.2rem;">
+                    <hr style="border: 1px dashed #000;">
+                    <div style="text-align:right; font-weight:bold; font-size:16px;">
                         TOTAL: ₹${total.toFixed(2)}
                     </div>
-                    ${qrCodeHtml}
-                    <div style="text-align:center; margin-top:10px; font-size:0.8rem;">
-                        Thank You! Visit Again.
-                    </div>
+                    <div style="text-align:center; margin-top:15px;">Thank You!</div>
                 </div>
             `;
 
             const printDiv = document.getElementById('printArea');
-            printDiv.innerHTML = html;
-
-            if(upi) {
-                new QRCode(document.getElementById("qr-code-render"), {
-                    text: `upi://pay?pa=${upi}&pn=${encodeURIComponent(company)}&am=${total}&tn=${v.voucher_no}`,
-                    width: 100, height: 100
-                });
-            }
-
+            printDiv.innerHTML = content;
+            
             setTimeout(() => {
                 window.print();
-                location.reload();
+                setTimeout(() => location.reload(), 500);
             }, 500);
         }
 
@@ -595,27 +568,30 @@
             const sel = document.getElementById('custSelect');
             sel.innerHTML = '<option value="">Walk-in Customer (Cash)</option>';
             
-            // SMART FILTER: Show Debtors (Customers) + Cash/Bank
-            const targetNames = ['Sundry Debtors', 'Cash-in-Hand', 'Bank Accounts'];
-            const allowedGroupIds = groups
-                .filter(g => targetNames.includes(g.name))
-                .map(g => g.id);
+            // Allow Debtors + Creditors (for flexibility)
+            const targetGroups = ['Sundry Debtors', 'Sundry Creditors'];
+            const allowedGids = groups.filter(g => targetGroups.includes(g.name)).map(g => g.id);
 
-            const validParties = ledgers.filter(l => allowedGroupIds.includes(l.group_id));
+            const parties = ledgers.filter(l => allowedGids.includes(l.group_id));
             
-            if(validParties.length > 0) {
-                validParties.sort((a,b) => a.name.localeCompare(b.name));
-                validParties.forEach(l => {
-                    sel.innerHTML += `<option value="${l.id}">${l.name}</option>`;
-                });
-            }
+            parties.sort((a,b) => a.name.localeCompare(b.name));
+            parties.forEach(l => {
+                sel.innerHTML += `<option value="${l.id}">${l.name}</option>`;
+            });
         }
         
         async function generateInvNo() {
             try {
                 const n = await DB.getNextVoucherNo('Sales');
                 document.getElementById('invNo').innerText = `INV-${n}`;
-            } catch(e) { console.error("Voucher No Error", e); }
+            } catch(e) {}
+        }
+        
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.style.display = 'block';
+            setTimeout(() => t.style.display = 'none', 3000);
         }
         
         document.addEventListener('keydown', e => {
