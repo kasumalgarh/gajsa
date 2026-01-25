@@ -2,550 +2,891 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
-    <title>Arth Book - Item Master</title>
+    <title>Arth Book - Item Master (v7.2 Fixed)</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
 
     <style>
-        :root {
-            --sidebar-bg: #0f172a; --sidebar-active: #1e293b; --accent: #0ea5e9;
-            --bg: #f8fafc; --text: #1e293b; --muted: #64748b; --border: #e2e8f0;
-            --green: #10b981; --red: #ef4444; --orange: #f59e0b;
-            --shadow: 0 4px 12px rgba(0,0,0,0.08); --transition: all 0.3s ease;
-        }
+        :root { --sidebar-bg: #0f172a; --sidebar-active: #1e293b; --accent: #0ea5e9; --bg: #f8fafc; --text: #1e293b; --muted: #64748b; --border: #e2e8f0; --green: #10b981; --red: #ef4444; --orange: #f59e0b; --shadow: 0 4px 12px rgba(0,0,0,0.08); --transition: all 0.3s ease; }
         * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
         body { display: flex; height: 100vh; background: var(--bg); color: var(--text); overflow: hidden; }
-
-        /* SIDEBAR */
-        .sidebar { 
-            width: 260px; background: var(--sidebar-bg); padding: 20px; display: flex; 
-            flex-direction: column; flex-shrink: 0; height: 100vh; overflow-y: auto; 
-            transition: var(--transition); z-index: 100;
-        }
-        .brand { font-size: 20px; font-weight: 800; color: white; margin-bottom: 40px; display: flex; align-items: center; gap: 10px; }
+        
+        /* SIDEBAR & LAYOUT */
+        .sidebar { width: 260px; background: var(--sidebar-bg); padding: 20px; display: flex; flex-direction: column; flex-shrink: 0; height: 100vh; overflow-y: auto; transition: var(--transition); z-index: 100; }
+        .brand-logo { font-size: 20px; font-weight: 800; color: white; margin-bottom: 40px; display: flex; align-items: center; gap: 10px; }
         .nav-link { display: flex; align-items: center; gap: 12px; padding: 14px 18px; color: #94a3b8; text-decoration: none; border-radius: 10px; margin-bottom: 6px; font-weight: 500; transition: var(--transition); }
         .nav-link:hover, .nav-link.active { background: var(--sidebar-active); color: white; }
-
-        /* MOBILE MENU */
         .menu-btn { display: none; position: fixed; top: 15px; left: 15px; z-index: 1100; background: none; border: none; font-size: 1.6rem; color: var(--text); cursor: pointer; }
         .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 900; }
-
-        /* MAIN */
         .main { flex: 1; display: flex; padding: 20px; gap: 20px; overflow: hidden; }
-
+        
         /* LIST PANEL */
-        .list-panel { width: 360px; background: white; border-radius: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; box-shadow: var(--shadow); }
+        .list-panel { width: 380px; background: white; border-radius: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; box-shadow: var(--shadow); }
         .search-box { padding: 15px; border-bottom: 1px solid var(--border); background: #f8fafc; border-radius: 12px 12px 0 0; }
         .search-box input { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; }
-
         .filter-tabs { display: flex; border-bottom: 1px solid var(--border); }
-        .ftab { flex: 1; text-align: center; padding: 12px; font-weight: 600; cursor: pointer; transition: var(--transition); }
+        .ftab { flex: 1; text-align: center; padding: 12px; font-weight: 600; cursor: pointer; transition: var(--transition); user-select: none; position: relative; font-size: 13px; }
         .ftab.active { background: #e0f2fe; color: var(--accent); border-bottom: 3px solid var(--accent); }
-
+        .badge { background: var(--red); color: white; border-radius: 10px; padding: 2px 6px; font-size: 10px; margin-left: 5px; display: none; }
+        
         .list-content { flex: 1; overflow-y: auto; }
-        .list-item { padding: 14px 18px; border-bottom: 1px solid var(--border); cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: var(--transition); }
-        .list-item:hover { background: #f0f9ff; }
-        .list-item.low-stock { border-left: 5px solid var(--red); background: #fef2f2; }
-
-        .item-info strong { display: block; font-size: 15px; }
-        .item-info span { font-size: 12px; color: var(--muted); }
-        .stock-info { text-align: right; }
-        .stock-badge { font-size: 14px; font-weight: 700; color: var(--green); }
-        .stock-badge.low { color: var(--red); }
-        .val-badge { font-size: 12px; color: var(--muted); display: block; margin-top: 4px; }
-
-        .list-footer { padding: 12px 18px; background: #f1f5f9; font-size: 13px; display: flex; justify-content: space-between; border-radius: 0 0 12px 12px; }
+        .list-item { padding: 12px 15px; border-bottom: 1px solid var(--border); cursor: pointer; display: flex; gap: 12px; align-items: center; transition: var(--transition); outline: none; }
+        .list-item:hover, .list-item:focus { background: #f0f9ff; border-left: 4px solid var(--accent); padding-left: 11px; }
+        .list-item.low-stock { border-left: 4px solid var(--red); background: #fff1f2; padding-left: 11px; }
+        .list-item.inactive { opacity: 0.6; background: #f8fafc; }
+        
+        .item-thumb { width: 40px; height: 40px; border-radius: 6px; background: #eee; object-fit: cover; border: 1px solid var(--border); flex-shrink: 0; }
+        .item-details { flex: 1; min-width: 0; }
+        .item-details strong { display: block; font-size: 14px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .item-details span { font-size: 11px; color: var(--muted); display: block; }
+        .item-meta { text-align: right; flex-shrink: 0; }
+        .stock-pill { font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 12px; background: #dcfce7; color: var(--green); display: inline-block; }
+        .stock-pill.low { background: #fee2e2; color: var(--red); }
+        
+        .list-footer { padding: 12px; background: #f1f5f9; font-size: 12px; display: flex; justify-content: space-between; align-items: center; border-radius: 0 0 12px 12px; font-weight: 600; color: var(--muted); }
 
         /* FORM PANEL */
-        .form-panel { flex: 1; background: white; border-radius: 12px; border: 1px solid var(--border); padding: 30px; display: flex; flex-direction: column; overflow-y: auto; box-shadow: var(--shadow); }
-        .form-header { font-size: 22px; font-weight: 700; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; }
-
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+        .form-panel { flex: 1; background: white; border-radius: 12px; border: 1px solid var(--border); padding: 30px; display: flex; flex-direction: column; overflow-y: auto; box-shadow: var(--shadow); position: relative; }
+        .form-header { margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; }
+        .form-title h2 { font-size: 20px; margin: 0; }
+        .form-title span { font-size: 12px; color: var(--muted); }
+        
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
         .form-group { margin-bottom: 5px; }
         .full-width { grid-column: 1 / -1; }
-        label { display: block; font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
-        input, select { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; transition: var(--transition); }
-        input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(14,165,233,0.15); }
+        label { display: block; font-size: 12px; font-weight: 700; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+        input, select { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; transition: var(--transition); }
+        input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(14,165,233,0.15); outline: none; }
+        input:disabled { background: #f1f5f9; cursor: not-allowed; color: #94a3b8; }
+        input[readonly] { background-color: #f8fafc; color: #64748b; border-color: #e2e8f0; cursor: default; }
 
-        .btn { padding: 12px 24px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: var(--transition); }
-        .btn:hover { opacity: 0.9; transform: translateY(-2px); box-shadow: var(--shadow); }
+        /* BUTTONS */
+        .btn { padding: 10px 20px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: var(--transition); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+        .btn:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); }
         .btn-save { background: var(--accent); color: white; }
         .btn-new { background: #e2e8f0; color: var(--text); }
         .btn-del { background: #fee2e2; color: var(--red); }
-        .btn-gen { background: var(--accent); color: white; font-size: 12px; padding: 6px 12px; }
+        .btn-adj { background: var(--orange); color: white; }
+        .btn-sec { background: #f1f5f9; color: var(--text); border: 1px solid var(--border); }
+        .btn-gen { background: var(--accent); color: white; font-size: 11px; padding: 6px 12px; }
+        .btn-icon { padding: 8px; border-radius: 6px; border: 1px solid var(--border); background: white; cursor: pointer; color: var(--muted); }
 
-        /* BARCODE */
-        .barcode-area { grid-column: 1 / -1; background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px dashed var(--border); text-align: center; margin-top: 15px; display: none; }
-        #barcodeCanvas { max-width: 100%; height: 80px; }
+        /* IMAGE UPLOAD */
+        .img-container { width: 100px; height: 100px; position: relative; }
+        .img-upload-box { width: 100%; height: 100%; border: 2px dashed var(--border); border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; position: relative; transition: var(--transition); }
+        .img-upload-box img { width: 100%; height: 100%; object-fit: cover; display: none; }
+        .img-upload-box i { font-size: 24px; color: var(--muted); }
+        .img-remove { position: absolute; top: -8px; right: -8px; background: var(--red); color: white; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 10px; display: none; z-index: 10; border: 2px solid white; }
+        
+        /* MODAL */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2000; display: none; justify-content: center; align-items: center; }
+        .modal { background: white; width: 90%; max-width: 500px; max-height: 80vh; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .modal-header { padding: 15px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: #f8fafc; }
+        .modal-body { padding: 20px; overflow-y: auto; }
+        .history-item { padding: 10px; border-bottom: 1px solid var(--border); font-size: 13px; }
+        .history-time { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
 
-        /* TOAST */
-        #toast { position: fixed; top: 20px; right: 20px; background: var(--green); color: white; padding: 14px 28px; border-radius: 8px; font-weight: 600; box-shadow: var(--shadow); display: none; z-index: 2000; }
-
-        /* MOBILE */
-        @media (max-width: 900px) {
-            .menu-btn { display: block; }
-            .sidebar { position: fixed; left: -100%; top: 0; height: 100%; z-index: 1000; box-shadow: var(--shadow); }
-            .sidebar.active { left: 0; }
-            .overlay.active { display: block; }
-            .main { flex-direction: column; padding: 15px; }
-            .list-panel { width: 100%; max-height: 40vh; }
-            .form-panel { flex: 1; }
-            .form-grid { grid-template-columns: 1fr; }
-        }
+        /* UTILS */
+        .barcode-area { grid-column: 1 / -1; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px dashed var(--border); text-align: center; display: none; }
+        #toast { position: fixed; top: 20px; right: 20px; background: var(--green); color: white; padding: 12px 24px; border-radius: 8px; font-weight: 600; box-shadow: var(--shadow); display: none; z-index: 2000; }
+        .toggle-switch { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 12px; font-weight: 600; }
+        
+        @media (max-width: 900px) { .menu-btn { display: block; } .sidebar { position: fixed; left: -100%; top: 0; height: 100%; z-index: 1000; box-shadow: var(--shadow); } .sidebar.active { left: 0; } .overlay.active { display: block; } .main { flex-direction: column; padding: 10px; } .list-panel { width: 100%; max-height: 35vh; } .form-panel { flex: 1; } }
     </style>
 </head>
 <body>
 
-    <button class="menu-btn" onclick="toggleMenu()">☰</button>
+    <button class="menu-btn" onclick="toggleMenu()" aria-label="Toggle Menu">☰</button>
     <div class="overlay" onclick="toggleMenu()"></div>
 
    <div class="sidebar" id="sidebar">
-        <div class="brand-logo" style="padding: 20px; font-size: 20px; font-weight: 800; color: white; display: flex; align-items: center; gap: 10px;">
-            <i class="fas fa-cube"></i> Arth Book
-        </div>
+        <div class="brand-logo"><i class="fas fa-cube"></i> Arth Book</div>
         <ul class="nav-links" style="list-style: none; padding: 0 10px;">
-            <li><a href="index.html"><i class="fas fa-home"></i> Dashboard</a></li>
-            <li><a href="sales_invoice.html"><i class="fas fa-file-invoice"></i> Sales (POS)</a></li>
-            <li><a href="purchase_invoice.html"><i class="fas fa-truck"></i> Purchase</a></li>
-            <li><a href="vouchers.html"><i class="fas fa-receipt"></i> Day Book</a></li>
-            
+            <li><a href="index.html" class="nav-link"><i class="fas fa-home"></i> Dashboard</a></li>
+            <li><a href="sales_invoice.html" class="nav-link"><i class="fas fa-file-invoice"></i> Sales (POS)</a></li>
+            <li><a href="purchase_invoice.html" class="nav-link"><i class="fas fa-truck"></i> Purchase</a></li>
+            <li><a href="vouchers.html" class="nav-link"><i class="fas fa-receipt"></i> Day Book</a></li>
             <li style="margin-top:15px; margin-bottom:5px; font-size:11px; color:#64748b; font-weight:bold; padding-left:15px; text-transform:uppercase;">Masters</li>
-            <li><a href="item_master.html"><i class="fas fa-boxes"></i> Inventory</a></li>
-            <li><a href="ArthBook.html"><i class="fas fa-users"></i> Parties</a></li>
-            <li><a href="coa.html"><i class="fas fa-sitemap"></i> Accounts</a></li>
-            
+            <li><a href="item_master.html" class="nav-link active"><i class="fas fa-boxes"></i> Inventory</a></li>
+            <li><a href="ArthBook.html" class="nav-link"><i class="fas fa-users"></i> Parties</a></li>
+            <li><a href="coa.html" class="nav-link"><i class="fas fa-sitemap"></i> Accounts</a></li>
             <li style="margin-top:15px; margin-bottom:5px; font-size:11px; color:#64748b; font-weight:bold; padding-left:15px; text-transform:uppercase;">Reports & Tax</li>
-            <li><a href="reports.html"><i class="fas fa-chart-line"></i> Reports</a></li>
-            <li><a href="gst_filing.html"><i class="fas fa-university"></i> GST Returns</a></li>
-            <li><a href="taxation.html"><i class="fas fa-calculator"></i> Tax / ITR</a></li>
-            
+            <li><a href="reports.html" class="nav-link"><i class="fas fa-chart-line"></i> Reports</a></li>
+            <li><a href="gst_filing.html" class="nav-link"><i class="fas fa-university"></i> GST Returns</a></li>
+            <li><a href="taxation.html" class="nav-link"><i class="fas fa-calculator"></i> Tax / ITR</a></li>
             <hr style="border:0; border-top:1px solid rgba(255,255,255,0.1); margin:15px 5px;">
-            <li><a href="settings.html"><i class="fas fa-cog"></i> Settings</a></li>
-            <li><a href="help.html"><i class="fas fa-question-circle"></i> Help</a></li>
+            <li><a href="settings.html" class="nav-link"><i class="fas fa-cog"></i> Settings</a></li>
+            <li><a href="help.html" class="nav-link"><i class="fas fa-question-circle"></i> Help</a></li>
         </ul>
-        
-        <div style="padding: 20px; font-size: 11px; color: #64748b; text-align: center; margin-top:auto;">
-            Arth Book v4.0<br>Authorized User
-        </div>
+        <div style="padding: 20px; font-size: 11px; color: #64748b; text-align: center; margin-top:auto;">Arth Book v7.2<br>Fixed Edition</div>
     </div>
 
     <div class="main">
         <div class="list-panel">
             <div class="search-box">
-                <input type="text" id="searchInput" placeholder="🔍 Search by Name, SKU or Category..." onkeyup="renderList()">
+                <input type="text" id="searchInput" placeholder="🔍 Search (e.g. 'Parle 20g')" onkeyup="renderList()" aria-label="Search Items">
+                <div style="margin-top:8px; display:flex; justify-content:space-between; align-items:center;">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="showInactive" onchange="renderList()"> Show Inactive
+                    </label>
+                </div>
             </div>
-            <div class="filter-tabs">
-                <div class="ftab active" onclick="setFilter('all')">All Items</div>
-                <div class="ftab" onclick="setFilter('low')">⚠️ Low Stock</div>
+            <div class="filter-tabs" role="tablist">
+                <div class="ftab active" id="tab-all" role="tab" tabindex="0" onclick="setFilter('all')">All Items</div>
+                <div class="ftab" id="tab-low" role="tab" tabindex="0" onclick="setFilter('low')">
+                    ⚠️ Low Stock <span class="badge" id="lowStockBadge">0</span>
+                </div>
             </div>
-            <div class="list-content" id="itemList"></div>
+            <div class="list-content" id="itemList" role="list"></div>
             <div class="list-footer">
-                <span id="totalCount">0 Items</span>
-                <span id="totalValue">Value: ₹0</span>
+                <div style="font-size:11px;">
+                    <div id="totalCount">0 Items</div>
+                    <div id="totalValue">Value: ₹0</div>
+                </div>
+                <button class="btn-icon" onclick="exportCSV()" title="Export CSV"><i class="fas fa-file-csv"></i></button>
             </div>
         </div>
 
         <div class="form-panel">
             <div class="form-header">
-                <span id="formTitle">New Product</span>
-                <button class="btn btn-new" onclick="newItem()">+ New Item</button>
+                <div class="form-title">
+                    <h2 id="formTitle">New Product</h2>
+                    <span id="lastUpdated" style="display:none;">Last Updated: Never</span>
+                </div>
+                <div style="display:flex; gap:8px;">
+                     <button class="btn btn-sec" id="histBtn" style="display:none;" onclick="showHistory()">📜 History</button>
+                     <button class="btn btn-new" onclick="safeNewItem()">+ New Item</button>
+                </div>
             </div>
-            <input type="hidden" id="itemId">
-
+            
+            <input type="hidden" id="itemId"> 
             <div class="form-grid">
-                <div class="form-group full-width">
+                <div style="grid-row: span 2; display: flex; justify-content: center; align-items: flex-start;">
+                    <div class="img-container">
+                        <div class="img-upload-box" tabindex="0" onclick="document.getElementById('imgInput').click()">
+                            <input type="file" id="imgInput" style="display:none;" accept="image/*" onchange="compressAndPreview(this)">
+                            <img id="imgPreview" alt="Item Image">
+                            <i class="fas fa-camera" id="imgIcon"></i>
+                        </div>
+                        <div class="img-remove" id="imgRemoveBtn" onclick="removeImage()" title="Remove Image"><i class="fas fa-times"></i></div>
+                    </div>
+                </div>
+
+                <div class="form-group" style="grid-column: span 2;">
                     <label>Item Name *</label>
-                    <input type="text" id="name" placeholder="Enter product name" required>
+                    <input type="text" id="name" placeholder="Product Name (Min 2 chars)" required oninput="handleNameInput()">
                 </div>
 
                 <div class="form-group">
                     <label>SKU / Barcode</label>
                     <div style="display:flex; gap:10px;">
-                        <input type="text" id="sku" placeholder="Scan or enter" onchange="previewBarcode()">
-                        <button class="btn-gen" onclick="generateSKU()">Generate</button>
+                        <input type="text" id="sku" placeholder="Scan or enter" onchange="previewBarcode()" oninput="setDirty()">
+                        <button class="btn-gen" onclick="generateSecureSKU()">Auto</button>
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label>Category</label>
-                    <input type="text" id="category" list="catList" placeholder="e.g. Electronics, Groceries">
+                    <input type="text" id="category" list="catList" placeholder="Category" oninput="setDirty()">
                     <datalist id="catList"></datalist>
                 </div>
 
                 <div class="form-group">
                     <label>Unit</label>
-                    <select id="unit">
-                        <option>Pcs</option>
-                        <option>Kg</option>
-                        <option>Box</option>
-                        <option>Mtr</option>
-                        <option>Ltr</option>
-                        <option>Gram</option>
-                        <option>Dozen</option>
+                    <select id="unit" onchange="setDirty()">
+                        <option>Pcs</option><option>Kg</option><option>Box</option>
+                        <option>Mtr</option><option>Ltr</option><option>Pkt</option><option>Doz</option>
+                        <option>Strip</option><option>Tab</option> </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Status</label>
+                    <select id="status" onchange="setDirty()">
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive (Archive)</option>
                     </select>
                 </div>
 
-                <div class="form-group">
-                    <label>GST Rate (%)</label>
-                    <select id="gst">
-                        <option value="0">0% (Exempt)</option>
-                        <option value="5">5%</option>
-                        <option value="12">12%</option>
-                        <option value="18" selected>18%</option>
-                        <option value="28">28%</option>
-                    </select>
+                <div class="form-group full-width" style="border-top:1px solid var(--border); margin-top:10px; padding-top:10px;">
+                    <h4 style="font-size:12px; color:var(--accent); margin-bottom:10px;">Pricing & Tax</h4>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>GST Rate (%)</label>
+                            <select id="gst" onchange="calculateTaxIncl(); setDirty();">
+                                <option value="0">0% (Exempt)</option>
+                                <option value="5">5%</option>
+                                <option value="12">12%</option>
+                                <option value="18" selected>18%</option>
+                                <option value="28">28%</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Sales Price (Base)</label>
+                            <input type="number" id="stdPrice" step="0.01" min="0" value="0" oninput="calculateTaxIncl(); setDirty();">
+                        </div>
+                        <div class="form-group">
+                            <label>Tax-Incl. Price (Calc)</label>
+                            <input type="text" id="calcInclPrice" readonly title="Auto-calculated price for customer">
+                        </div>
+                        <div class="form-group">
+                            <label>MRP (Print Rate)</label>
+                            <input type="number" id="mrp" step="0.01" min="0" placeholder="0.00" oninput="setDirty()">
+                        </div>
+                        <div class="form-group">
+                            <label>Purchase Price</label>
+                            <input type="number" id="stdCost" step="0.01" min="0" value="0" oninput="setDirty()">
+                        </div>
+                         <div class="form-group">
+                            <label>HSN Code</label>
+                            <input type="text" id="hsn" placeholder="4-8 digits" maxlength="8" oninput="setDirty()">
+                        </div>
+                    </div>
                 </div>
 
-                <div class="form-group">
-                    <label>HSN/SAC Code</label>
-                    <input type="text" id="hsn" placeholder="e.g. 8544" maxlength="8">
-                </div>
-
-                <div class="form-group">
-                    <label>Purchase Price (Excl. Tax)</label>
-                    <input type="number" id="stdCost" step="0.01" min="0" value="0">
-                </div>
-
-                <div class="form-group">
-                    <label>Sales Price (Excl. Tax)</label>
-                    <input type="number" id="stdPrice" step="0.01" min="0" value="0">
-                </div>
-
-                <div class="form-group full-width" style="background:#f0f9ff; padding:20px; border-radius:12px; border:1px solid #bae6fd;">
-                    <h4 style="margin-bottom:15px; color:#0284c7;">Stock Settings</h4>
-                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px,1fr)); gap:15px;">
+                <div class="form-group full-width" style="background:#f0f9ff; padding:15px; border-radius:8px; border:1px solid #bae6fd;">
+                    <h4 style="margin-bottom:10px; color:#0284c7; font-size:13px; text-transform:uppercase;">Inventory & Batch (Opening)</h4>
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px,1fr)); gap:15px;">
                         <div>
-                            <label>Opening Quantity</label>
-                            <input type="number" id="opQty" min="0" value="0" step="1">
+                            <label>Opening Qty</label>
+                            <input type="number" id="opQty" min="0" value="0" step="1" title="Locked in Edit Mode" oninput="setDirty()">
                         </div>
                         <div>
                             <label>Reorder Level</label>
-                            <input type="number" id="reorder" min="0" value="5" step="1">
+                            <input type="number" id="reorder" min="0" value="5" step="1" oninput="setDirty()">
                         </div>
                         <div>
-                            <label>Track Expiry / Batch?</label>
-                            <select id="trackExpiry" onchange="toggleExpiryField()">
-                                <option value="No">No</option>
-                                <option value="Yes">Yes</option>
-                            </select>
+                            <label>Batch No (Opt)</label>
+                            <input type="text" id="batchNo" placeholder="e.g. B-101" oninput="setDirty()">
                         </div>
-                        <div id="expiryField" style="display:none;">
-                            <label>Opening Expiry Date</label>
-                            <input type="date" id="opExpiry">
+                        <div>
+                            <label>Expiry Date</label>
+                            <input type="date" id="expDate" oninput="setDirty()">
+                        </div>
+                        <div>
+                            <label>Current Stock</label>
+                            <input type="text" id="currentStockDisplay" value="0" disabled style="font-weight:bold; background:#e2e8f0;">
                         </div>
                     </div>
                 </div>
 
                 <div id="barcodePreview" class="barcode-area">
-                    <h4 style="margin-bottom:10px;">Barcode Preview</h4>
                     <canvas id="barcodeCanvas"></canvas>
-                    <button class="btn btn-gen" style="margin-top:15px;" onclick="printBarcode()">🖨️ Print Label</button>
+                    <br>
+                    <button class="btn btn-gen" style="margin-top:10px;" onclick="printBarcode()">🖨️ Print Label</button>
                 </div>
             </div>
 
-            <div style="margin-top:30px; display:flex; justify-content:space-between; align-items:center;">
-                <button class="btn btn-save" onclick="saveItem()">💾 Save Item</button>
+            <div style="margin-top:30px; display:flex; gap:10px; align-items:center;">
+                <button class="btn btn-save" onclick="saveItem()" disabled>💾 Save Item</button>
+                <button class="btn btn-adj" id="adjBtn" style="display:none;" onclick="adjustStock()">⚙️ Adjust</button>
+                <div style="flex:1;"></div>
                 <button class="btn btn-del" id="deleteBtn" style="display:none;" onclick="deleteItem()">🗑️ Delete</button>
             </div>
         </div>
     </div>
 
-    <div id="toast">Item Saved Successfully!</div>
+    <div class="modal-overlay" id="historyModal" onclick="closeHistory(event)">
+        <div class="modal">
+            <div class="modal-header">
+                <strong>Audit Trail</strong>
+                <button class="btn-icon" onclick="document.getElementById('historyModal').style.display='none'"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body" id="historyContent">Loading...</div>
+        </div>
+    </div>
+
+    <div id="toast">Operation Successful!</div>
 
     <script src="db.js"></script>
     <script>
+        // --- GLOBAL VARIABLES ---
         let allItems = [];
+        let allVouchers = [];
+        let allLogs = [];
         let currentFilter = 'all';
+        let currentImageBase64 = null;
+        let isDbReady = false;
+        let isDirty = false;
+        let barcodeBuffer = "";
+        let barcodeTimer;
 
+        // --- INITIALIZATION ---
         window.onload = async () => {
-            await DB.init();
-            allItems = await DB.getAll('items') || [];
-            populateCategories();
-            renderList();
-            document.getElementById('name').focus();
+            try {
+                await DB.init();
+                isDbReady = true;
+                await refreshData();
+                document.getElementById('name').focus();
+            } catch (e) { 
+                console.error("DB Init Failed", e); 
+                showToast("Database Error: Please Refresh");
+            }
         };
 
-        function toggleMenu() {
-            document.getElementById('mySidebar').classList.toggle('active');
-            document.querySelector('.overlay').classList.toggle('active');
+        // --- GLOBAL BARCODE LISTENER ---
+        document.addEventListener('keydown', (e) => {
+            if (e.target.tagName === 'INPUT') return; // Don't intercept typing
+            if (e.key === 'Enter') {
+                if (barcodeBuffer.length > 5) {
+                    findAndLoadByBarcode(barcodeBuffer);
+                }
+                barcodeBuffer = "";
+            } else if (e.key.length === 1) {
+                barcodeBuffer += e.key;
+                clearTimeout(barcodeTimer);
+                barcodeTimer = setTimeout(() => barcodeBuffer = "", 100);
+            }
+        });
+
+        // --- DATA LOADING ---
+        async function refreshData() {
+            if(!isDbReady) return;
+            try {
+                const results = await Promise.all([
+                    DB.getAll('items'),
+                    DB.getAll('vouchers'),
+                    (DB.db.objectStoreNames.contains('audit_logs') ? DB.getAll('audit_logs') : [])
+                ]);
+                allItems = results[0];
+                allVouchers = results[1];
+                allLogs = results[2];
+                
+                populateCategories();
+                updateBadgeCount();
+                renderList();
+            } catch(e) { console.error("Data Load Error", e); }
         }
 
-        function populateCategories() {
-            const uniqueCats = [...new Set(allItems.map(i => i.category).filter(Boolean))];
-            const datalist = document.getElementById('catList');
-            datalist.innerHTML = uniqueCats.map(c => `<option value="${c}">`).join('');
+        // --- CORE FUNCTIONS ---
+        function sanitizeInput(str) { 
+            return typeof str === 'string' ? str.replace(/[<>]/g, '').trim() : str; 
+        }
+        
+        function setDirty() { isDirty = true; }
+        
+        function handleNameInput() {
+            setDirty();
+            const name = document.getElementById('name').value.trim();
+            // Toggle Save button based on name length
+            const btn = document.querySelector('.btn-save');
+            if(btn) btn.disabled = name.length < 2;
         }
 
-        function setFilter(mode) {
-            currentFilter = mode;
-            document.querySelectorAll('.ftab').forEach(t => t.classList.remove('active'));
-            event.target.classList.add('active');
-            renderList();
+        function calculateTaxIncl() {
+            const base = parseFloat(document.getElementById('stdPrice').value) || 0;
+            const gst = parseFloat(document.getElementById('gst').value) || 0;
+            const incl = base * (1 + gst/100);
+            document.getElementById('calcInclPrice').value = incl.toFixed(2);
         }
 
+        function findAndLoadByBarcode(code) {
+            const item = allItems.find(i => i.sku === code);
+            if (item) { 
+                loadItemSafe(item); 
+                showToast(`Item Loaded: ${item.name}`); 
+            } else { 
+                showToast(`⚠️ Not found: ${code}`); 
+            }
+        }
+
+        // --- RENDERING ---
         function renderList() {
             const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            const terms = query.split(/\s+/).filter(Boolean);
+            const showInactive = document.getElementById('showInactive').checked;
+            
             const list = document.getElementById('itemList');
-            list.innerHTML = '';
+            const fragment = document.createDocumentFragment();
+            list.innerHTML = ''; 
 
             let filtered = allItems.filter(i => {
-                const matches = 
-                    i.name.toLowerCase().includes(query) ||
-                    (i.sku && i.sku.toLowerCase().includes(query)) ||
-                    (i.category && i.category.toLowerCase().includes(query));
+                if (!showInactive && i.status === 'inactive') return false;
+
+                const text = `${i.name} ${i.sku} ${i.category}`.toLowerCase();
+                const matches = terms.every(term => text.includes(term));
                 if (!matches) return false;
+
                 if (currentFilter === 'low') return (i.current_stock || 0) <= (i.reorder_level || 5);
                 return true;
             });
 
             filtered.sort((a, b) => a.name.localeCompare(b.name));
-
-            const totalCount = filtered.length;
-            const totalValue = filtered.reduce((sum, i) => sum + ((i.current_stock || 0) * (i.std_cost || 0)), 0);
+            const totalVal = filtered.reduce((s, i) => s + ((i.current_stock||0) * (i.std_cost||0)), 0);
 
             if (filtered.length === 0) {
                 list.innerHTML = '<div style="padding:40px; text-align:center; color:#94a3b8;">No items found</div>';
             } else {
                 filtered.forEach(item => {
-                    const stock = item.current_stock || 0;
-                    const value = stock * (item.std_cost || 0);
-                    const isLow = stock <= (item.reorder_level || 5);
-
+                    const isLow = (item.current_stock||0) <= (item.reorder_level||5);
+                    const isInactive = item.status === 'inactive';
+                    
                     const div = document.createElement('div');
-                    div.className = `list-item ${isLow ? 'low-stock' : ''}`;
-                    div.onclick = () => loadItem(item);
+                    div.className = `list-item ${isLow ? 'low-stock' : ''} ${isInactive ? 'inactive' : ''}`;
+                    div.tabIndex = 0;
+                    div.onclick = () => loadItemSafe(item);
+                    div.onkeydown = (e) => { if(e.key === 'Enter') loadItemSafe(item); };
 
-                    div.innerHTML = `
-                        <div class="item-info">
-                            <strong>${item.name}</strong>
-                            <span>${item.sku || 'No SKU'} • ${item.category || 'Uncategorized'}</span>
-                        </div>
-                        <div class="stock-info">
-                            <div class="stock-badge ${isLow ? 'low' : ''}">${stock} ${item.unit || 'Pcs'}</div>
-                            <span class="val-badge">₹${value.toLocaleString('en-IN')}</span>
-                        </div>
-                    `;
-                    list.appendChild(div);
+                    const img = document.createElement('img');
+                    img.className = 'item-thumb';
+                    img.src = item.image || 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZTI4ZjAiIHN0cm9rZS13aWR0aD0iMiI+PHBhdGggZD0iTTMgM2gxOHYxOEgzVjN6Ii8+PC9zdmc+';
+                    
+                    const detailsDiv = document.createElement('div');
+                    detailsDiv.className = 'item-details';
+                    const strong = document.createElement('strong');
+                    strong.textContent = item.name + (isInactive ? ' (Archived)' : '');
+                    const span = document.createElement('span');
+                    span.textContent = `${item.sku || 'No SKU'} • ₹${item.std_price}`;
+                    detailsDiv.appendChild(strong);
+                    detailsDiv.appendChild(span);
+
+                    const metaDiv = document.createElement('div');
+                    metaDiv.className = 'item-meta';
+                    const pill = document.createElement('span');
+                    pill.className = `stock-pill ${isLow ? 'low' : ''}`;
+                    pill.textContent = `${item.current_stock || 0} ${item.unit}`;
+                    metaDiv.appendChild(pill);
+
+                    div.appendChild(img);
+                    div.appendChild(detailsDiv);
+                    div.appendChild(metaDiv);
+                    fragment.appendChild(div);
                 });
+                list.appendChild(fragment);
             }
-
-            document.getElementById('totalCount').innerText = `${totalCount} Items`;
-            document.getElementById('totalValue').innerText = `Value: ₹${totalValue.toLocaleString('en-IN')}`;
+            document.getElementById('totalCount').textContent = `${filtered.length} Items`;
+            document.getElementById('totalValue').textContent = `Value: ₹${totalVal.toLocaleString('en-IN')}`;
         }
 
-        function generateSKU() {
-            const random = Math.floor(100000000 + Math.random() * 900000000);
-            document.getElementById('sku').value = random;
-            previewBarcode();
-        }
+        // --- SAVE LOGIC ---
+        async function saveItem() {
+            if (!isDirty) return showToast("ℹ️ No changes to save");
 
-        function previewBarcode() {
-            if (typeof JsBarcode === 'undefined') return console.warn('JsBarcode not loaded');
-            const sku = document.getElementById('sku').value.trim();
-            const preview = document.getElementById('barcodePreview');
-            if (!sku) {
-                preview.style.display = 'none';
+            const id = document.getElementById('itemId').value || null;
+            const name = sanitizeInput(document.getElementById('name').value);
+            const sku = sanitizeInput(document.getElementById('sku').value);
+            const cost = parseFloat(document.getElementById('stdCost').value) || 0;
+            const price = parseFloat(document.getElementById('stdPrice').value) || 0;
+            const mrp = parseFloat(document.getElementById('mrp').value) || 0;
+            const opQty = parseFloat(document.getElementById('opQty').value) || 0;
+            const hsn = sanitizeInput(document.getElementById('hsn').value).replace(/[^0-9]/g, '').slice(0, 8);
+            const status = document.getElementById('status').value;
+            
+            const batchNo = sanitizeInput(document.getElementById('batchNo').value);
+            const expDate = document.getElementById('expDate').value;
+
+            if (!name || name.length < 2) return alert("❌ Error: Name too short (min 2 chars)");
+
+            // Duplicate Check
+            const duplicate = allItems.find(i => i.id != id && (i.name.toLowerCase() === name.toLowerCase() || (sku && i.sku === sku)));
+            if (duplicate) {
+                if(confirm(`⚠️ Item "${duplicate.name}" exists. Do you want to edit it instead?`)) {
+                    loadItem(duplicate);
+                }
                 return;
             }
-            preview.style.display = 'block';
+
+            const data = {
+                name, sku, status,
+                category: sanitizeInput(document.getElementById('category').value) || 'General',
+                unit: document.getElementById('unit').value,
+                gst_rate: parseFloat(document.getElementById('gst').value),
+                hsn: hsn || null,
+                std_cost: cost,
+                std_price: price,
+                mrp: mrp,
+                reorder_level: parseFloat(document.getElementById('reorder').value) || 5,
+                image: currentImageBase64,
+                updated_at: new Date().toISOString(),
+                batch_info: (batchNo || expDate) ? { batch: batchNo, exp: expDate } : null
+            };
+
+            if (id) {
+                // Update
+                data.id = id;
+                const oldItem = await DB.getOne('items', id);
+                if (oldItem) {
+                    data.current_stock = oldItem.current_stock; 
+                    data.op_qty = oldItem.op_qty;
+                    data.created_at = oldItem.created_at;
+                }
+            } else {
+                // New
+                data.id = crypto.randomUUID();
+                data.current_stock = opQty;
+                data.op_qty = opQty;
+                data.created_at = new Date().toISOString();
+            }
+
             try {
-                JsBarcode("#barcodeCanvas", sku, {
-                    format: "CODE128", width: 2, height: 70, displayValue: true, fontSize: 16
-                });
-            } catch (e) {
-                console.error("Barcode generation failed:", e);
-                preview.style.display = 'none';
-            }
+                await DB.saveItem(data);
+                
+                // Audit Log
+                const logEntry = {
+                    timestamp: new Date().toISOString(),
+                    action: id ? "ITEM_UPDATE" : "ITEM_CREATE",
+                    desc: `${name} (${sku}) - ${status}`,
+                    ref_id: data.id
+                };
+                try {
+                    const tx = DB.db.transaction('audit_logs', 'readwrite');
+                    tx.objectStore('audit_logs').add(logEntry);
+                } catch(e){}
+
+                showToast('✅ Item Saved!');
+                isDirty = false;
+                await refreshData();
+                newItem();
+            } catch (err) { alert("Database Error: " + err.message); }
         }
 
-        function printBarcode() {
-            const canvas = document.getElementById('barcodeCanvas');
-            const name = document.getElementById('name').value.trim() || 'Item';
-            const price = document.getElementById('stdPrice').value || '0';
-
-            if (!canvas || canvas.style.display === 'none') {
-                return alert("Please generate a barcode first!");
-            }
-
-            const imgData = canvas.toDataURL("image/png");
-            const win = window.open('', '_blank', 'width=400,height=600');
-            
-            win.document.write('<' + 'html' + '><' + 'head' + '><' + 'title' + '>Barcode</' + 'title' + '>');
-            win.document.write('<' + 'style' + '>body { font-family: sans-serif; text-align: center; padding: 20px; } img { max-width: 100%; height: auto; } .price { font-size: 24px; font-weight: bold; margin-top: 10px; }</' + 'style' + '>');
-            win.document.write('</' + 'head' + '><' + 'body' + '>');
-            
-            win.document.write('<h3>' + name + '</h3>');
-            win.document.write('<img src="' + imgData + '">');
-            win.document.write('<div class="price">₹' + parseFloat(price).toFixed(2) + '</div>');
-            
-            win.document.write('<' + '/body' + '><' + '/html' + '>'); 
-            
-            win.document.close();
-            win.focus();
-
-            setTimeout(function() {
-                win.print();
-                win.close();
-            }, 500);
-        }
-
-        function toggleExpiryField() {
-            document.getElementById('expiryField').style.display = 
-                document.getElementById('trackExpiry').value === 'Yes' ? 'block' : 'none';
-        }
-
-        function newItem() {
-            document.getElementById('itemId').value = '';
-            document.getElementById('name').value = '';
-            document.getElementById('sku').value = '';
-            document.getElementById('category').value = '';
-            document.getElementById('hsn').value = '';
-            document.getElementById('stdCost').value = '0';
-            document.getElementById('stdPrice').value = '0';
-            document.getElementById('opQty').value = '0';
-            document.getElementById('reorder').value = '5';
-            document.getElementById('unit').value = 'Pcs';
-            document.getElementById('gst').value = '18';
-            document.getElementById('trackExpiry').value = 'No';
-            document.getElementById('opExpiry').value = '';
-            
-            document.getElementById('deleteBtn').style.display = 'none';
-            document.getElementById('barcodePreview').style.display = 'none';
-            document.getElementById('formTitle').innerText = 'New Product';
-            toggleExpiryField();
-            document.getElementById('name').focus();
-        }
-
+        // --- FORM ACTIONS ---
         function loadItem(item) {
             document.getElementById('itemId').value = item.id;
-            document.getElementById('name').value = item.name || '';
+            document.getElementById('name').value = item.name;
             document.getElementById('sku').value = item.sku || '';
             document.getElementById('category').value = item.category || '';
             document.getElementById('unit').value = item.unit || 'Pcs';
+            document.getElementById('status').value = item.status || 'active';
             document.getElementById('gst').value = item.gst_rate ?? 18;
             document.getElementById('hsn').value = item.hsn || '';
             document.getElementById('stdCost').value = item.std_cost ?? 0;
             document.getElementById('stdPrice').value = item.std_price ?? 0;
+            document.getElementById('mrp').value = item.mrp ?? 0;
             document.getElementById('opQty').value = item.op_qty ?? 0;
             document.getElementById('reorder').value = item.reorder_level ?? 5;
-            document.getElementById('trackExpiry').value = item.track_expiry || 'No';
-            document.getElementById('opExpiry').value = item.expiry_date || '';
+            document.getElementById('currentStockDisplay').value = item.current_stock ?? 0;
+            
+            if(item.batch_info) {
+                document.getElementById('batchNo').value = item.batch_info.batch || '';
+                document.getElementById('expDate').value = item.batch_info.exp || '';
+            } else {
+                document.getElementById('batchNo').value = '';
+                document.getElementById('expDate').value = '';
+            }
 
-            previewBarcode();
-            toggleExpiryField();
+            if(item.image) {
+                document.getElementById('imgPreview').src = item.image;
+                document.getElementById('imgPreview').style.display = 'block';
+                document.getElementById('imgIcon').style.display = 'none';
+                document.getElementById('imgRemoveBtn').style.display = 'flex';
+                currentImageBase64 = item.image;
+            } else { resetImageUI(); }
+
+            calculateTaxIncl();
+            
+            // Enable/Disable UI elements for Edit Mode
+            const saveBtn = document.querySelector('.btn-save');
+            if(saveBtn) saveBtn.disabled = false;
+            
+            document.getElementById('opQty').disabled = true;
+            document.getElementById('opQty').style.backgroundColor = "#f1f5f9";
             document.getElementById('deleteBtn').style.display = 'block';
-            document.getElementById('formTitle').innerText = 'Edit Product';
+            document.getElementById('adjBtn').style.display = 'block';
+            document.getElementById('histBtn').style.display = 'block';
+            document.getElementById('formTitle').textContent = 'Edit Product';
+            document.getElementById('lastUpdated').style.display = 'inline';
+            const date = item.updated_at ? new Date(item.updated_at).toLocaleDateString() : 'N/A';
+            document.getElementById('lastUpdated').textContent = `Updated: ${date}`;
+            
+            previewBarcode();
+            isDirty = false;
         }
 
-        async function saveItem() {
-            const name = document.getElementById('name').value.trim();
-            if (!name) return alert('Item name is required!');
+        function newItem() {
+            document.querySelectorAll('input').forEach(i => i.value = '');
+            // Set defaults
+            document.getElementById('stdCost').value = '0';
+            document.getElementById('stdPrice').value = '0';
+            document.getElementById('mrp').value = '';
+            document.getElementById('calcInclPrice').value = '';
+            document.getElementById('opQty').value = '0';
+            document.getElementById('reorder').value = '5';
+            document.getElementById('currentStockDisplay').value = '0';
+            document.getElementById('gst').value = '18';
+            document.getElementById('unit').value = 'Pcs';
+            document.getElementById('status').value = 'active';
+            
+            resetImageUI();
 
-            let sku = document.getElementById('sku').value.trim();
-            if (!sku) {
-                generateSKU();
-                sku = document.getElementById('sku').value;
-            }
+            const saveBtn = document.querySelector('.btn-save');
+            if(saveBtn) saveBtn.disabled = true;
 
-            // FIX 1: Duplicate SKU Check (Simplified)
-            const id = document.getElementById('itemId').value;
-            const exists = allItems.find(i => i.sku === sku && i.id != id);
-            if(exists) return alert("Error: SKU/Barcode already exists for item: " + exists.name);
-
-            // Capture Data
-            const data = {
-                name,
-                sku,
-                category: document.getElementById('category').value.trim() || null,
-                unit: document.getElementById('unit').value,
-                gst_rate: parseFloat(document.getElementById('gst').value) || 0,
-                hsn: document.getElementById('hsn').value.trim() || null,
-                std_cost: parseFloat(document.getElementById('stdCost').value) || 0,
-                std_price: parseFloat(document.getElementById('stdPrice').value) || 0,
-                // Logic: If updating, don't overwrite current_stock with opening_qty unless you want to reset
-                op_qty: parseFloat(document.getElementById('opQty').value) || 0,
-                reorder_level: parseFloat(document.getElementById('reorder').value) || 5,
-                track_expiry: document.getElementById('trackExpiry').value,
-                expiry_date: document.getElementById('opExpiry').value || null
-            };
-
-            // Set Current Stock same as Opening if new
-            if(!id) data.current_stock = data.op_qty; 
-
-            // FIX 2: Use Direct Transaction instead of non-existent helpers
-            try {
-                const tx = DB.db.transaction('items', 'readwrite');
-                const store = tx.objectStore('items');
-
-                if (id) {
-                    // Update: Need to preserve current_stock if it changed via sales
-                    data.id = parseInt(id);
-                    // Fetch existing to keep stock sync
-                    const existingReq = store.get(data.id);
-                    existingReq.onsuccess = (e) => {
-                        const old = e.target.result;
-                        // Keep current stock, only update if user manually changed opening qty significantly? 
-                        // For simplicity: We trust the user edits. 
-                        // ideally we don't touch current_stock on edit unless op_qty changed.
-                        // Lets keep existing stock logic simple for now.
-                        data.current_stock = old.current_stock; 
-                        store.put(data);
-                    };
-                } else {
-                    store.add(data);
-                }
-
-                tx.oncomplete = async () => {
-                    showToast('Item Saved Successfully!');
-                    allItems = await DB.getAll('items');
-                    populateCategories();
-                    renderList();
-                    newItem();
-                };
-                
-                tx.onerror = (e) => {
-                    console.error("Save failed:", e);
-                    alert("Error saving item.");
-                };
-
-            } catch (err) {
-                console.error("Transaction failed:", err);
-            }
+            document.getElementById('opQty').disabled = false;
+            document.getElementById('opQty').style.backgroundColor = "white";
+            document.getElementById('deleteBtn').style.display = 'none';
+            document.getElementById('adjBtn').style.display = 'none';
+            document.getElementById('histBtn').style.display = 'none';
+            document.getElementById('barcodePreview').style.display = 'none';
+            document.getElementById('formTitle').textContent = 'New Product';
+            document.getElementById('lastUpdated').style.display = 'none';
+            document.getElementById('name').focus();
+            isDirty = false;
         }
 
+        function resetImageUI() {
+            document.getElementById('imgPreview').src = '';
+            document.getElementById('imgPreview').style.display = 'none';
+            document.getElementById('imgIcon').style.display = 'block';
+            document.getElementById('imgRemoveBtn').style.display = 'none';
+            currentImageBase64 = null;
+            document.getElementById('imgInput').value = '';
+        }
+
+        // --- BARCODE PRINTING (FIXED) ---
+        function printBarcode() {
+            const name = sanitizeInput(document.getElementById('name').value);
+            const mrp = document.getElementById('mrp').value;
+            const exp = document.getElementById('expDate').value;
+            const img = document.getElementById('barcodeCanvas').toDataURL();
+            
+            const win = window.open('','','width=400,height=400');
+            
+            let extraInfo = '';
+            if(mrp) extraInfo += `MRP: ₹${mrp} `;
+            if(exp) extraInfo += `| Exp: ${exp}`;
+
+            // Fix: Split tags to prevent parser confusion
+            const content = `
+                <ht`+`ml>
+                <bo`+`dy style="text-align:center; font-family:sans-serif; margin:0; padding:10px;">
+                    <h5 style="margin:0 0 5px 0; text-transform:uppercase; color:#666;">Arth Book</h5>
+                    <h3 style="margin:0; font-size:16px;">${name}</h3>
+                    <img src="${img}" style="max-width:100%; height:auto;">
+                    <p style="margin:5px 0; font-size:12px; font-weight:bold;">${extraInfo}</p>
+                </bo`+`dy>
+                </ht`+`ml>
+            `;
+
+            win.document.write(content);
+            win.document.close();
+            win.focus();
+            
+            setTimeout(() => {
+                win.print();
+                setTimeout(() => win.close(), 500);
+            }, 500);
+        }
+
+        // --- DELETE & ADJUSTMENT ---
         async function deleteItem() {
             const id = document.getElementById('itemId').value;
-            if (!id || !confirm('Delete this item permanently?')) return;
+            if (!id) return;
+            
+            if(!confirm("⚠️ WARNING:\nAre you sure you want to delete this item?\nThis action cannot be undone.")) return;
 
             try {
-                const tx = DB.db.transaction('items', 'readwrite');
-                tx.objectStore('items').delete(parseInt(id));
+                // Validate Integrity
+                const item = allItems.find(i => i.id == id);
+                if (item.current_stock !== item.op_qty) {
+                    throw new Error("Cannot Delete: Stock has been modified (Transactions exist).");
+                }
                 
+                // Deep scan in vouchers
+                const isUsed = allVouchers.some(v => {
+                    if(v.items && Array.isArray(v.items)) {
+                        return v.items.some(li => li.itemId === id || li.id === id);
+                    }
+                    return false;
+                });
+
+                if (isUsed) throw new Error("Cannot Delete: Item is used in existing Bills/Invoices.");
+
+                // Proceed to Delete
+                const tx = DB.db.transaction('items', 'readwrite');
+                tx.objectStore('items').delete(id);
                 tx.oncomplete = async () => {
-                    showToast('Item Deleted');
-                    allItems = await DB.getAll('items');
-                    renderList();
+                    showToast('🗑️ Item Deleted Successfully');
+                    await refreshData();
                     newItem();
                 };
-            } catch (err) {
-                alert("Error deleting item.");
+            } catch(e) { 
+                alert(`⛔ Error: ${e.message}`); 
             }
         }
 
-        function showToast(message = 'Item Saved Successfully!') {
-            const toast = document.getElementById('toast');
-            toast.innerText = message;
-            toast.style.display = 'block';
-            setTimeout(() => toast.style.display = 'none', 2500);
+        async function adjustStock() {
+            const id = document.getElementById('itemId').value;
+            if(!id) return;
+
+            const current = parseFloat(document.getElementById('currentStockDisplay').value) || 0;
+            const newStockStr = prompt(`Current Stock: ${current}\nEnter NEW Actual Stock:`, current);
+            
+            if(newStockStr === null) return;
+            const newStock = parseFloat(newStockStr);
+
+            if(isNaN(newStock) || newStock < 0) return alert("❌ Invalid Stock Value");
+            if(newStock === current) return;
+
+            const diff = newStock - current;
+            const item = allItems.find(i => i.id == id);
+
+            if(!confirm(`📝 Confirm Adjustment?\n\nItem: ${item.name}\nChange: ${diff > 0 ? '+' : ''}${diff}\nNew Stock: ${newStock}`)) return;
+
+            item.current_stock = newStock;
+            
+            try {
+                await DB.saveItem(item);
+                // Log
+                try {
+                    const tx = DB.db.transaction('audit_logs', 'readwrite');
+                    tx.objectStore('audit_logs').add({
+                        timestamp: new Date().toISOString(),
+                        action: "STOCK_ADJ",
+                        desc: `Adj: ${diff > 0 ? '+' : ''}${diff} -> ${newStock}`,
+                        ref_id: item.id
+                    });
+                } catch(e) {}
+                
+                showToast(`Stock Updated to ${newStock}`);
+                await refreshData();
+                loadItem(item);
+            } catch(e) { alert("Adjustment Failed"); }
         }
 
-        // Keyboard shortcuts
-        document.addEventListener('keydown', e => {
-            if (e.altKey && e.key === 'n') { e.preventDefault(); newItem(); }
-            if (e.altKey && e.key === 's') { e.preventDefault(); saveItem(); }
-        });
+        // --- UTILS ---
+        function safeNewItem() { 
+            if(isDirty && !confirm("⚠️ Unsaved changes will be lost. Create new item anyway?")) return; 
+            newItem(); 
+        }
+        
+        function loadItemSafe(item) { 
+            if(isDirty && !confirm("⚠️ Unsaved changes will be lost. Discard changes?")) return; 
+            loadItem(item); 
+        }
+
+        function generateSecureSKU() {
+            document.getElementById('sku').value = Date.now().toString().slice(-6) + Math.floor(100 + Math.random() * 900);
+            previewBarcode(); 
+            setDirty();
+        }
+
+        function populateCategories() {
+            const cats = [...new Set(allItems.map(i => i.category).filter(Boolean))];
+            const dl = document.getElementById('catList'); 
+            dl.innerHTML = '';
+            cats.forEach(c => { 
+                const opt = document.createElement('option'); 
+                opt.value = c; 
+                dl.appendChild(opt); 
+            });
+        }
+
+        function setFilter(m) { 
+            currentFilter = m; 
+            document.querySelectorAll('.ftab').forEach(t => t.classList.remove('active')); 
+            if(m === 'all') document.getElementById('tab-all').classList.add('active');
+            if(m === 'low') document.getElementById('tab-low').classList.add('active');
+            renderList(); 
+        }
+
+        function previewBarcode() {
+            const sku = document.getElementById('sku').value;
+            const div = document.getElementById('barcodePreview');
+            if(!sku) { div.style.display = 'none'; return; }
+            div.style.display = 'block';
+            try { 
+                JsBarcode("#barcodeCanvas", sku, { format: "CODE128", width: 2, height: 50, displayValue: true, fontSize: 14 }); 
+            } catch(e){}
+        }
+
+        function exportCSV() {
+            if(!allItems.length) return showToast("No items to export");
+            const headers = ['Name,SKU,Category,Unit,GST%,MRP,Stock,Value'];
+            const rows = allItems.map(i => {
+                const stock = i.current_stock || 0;
+                const val = stock * (i.std_cost || 0);
+                return `"${i.name}",${i.sku||''},${i.category||''},${i.unit},${i.gst_rate},${i.mrp||0},${stock},${val.toFixed(2)}`;
+            });
+            const blob = new Blob([headers.concat(rows).join('\n')], { type: 'text/csv' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = `inventory_${new Date().toISOString().slice(0,10)}.csv`;
+            link.click();
+        }
+
+        function updateBadgeCount() {
+            const lowCount = allItems.filter(i => (i.current_stock || 0) <= (i.reorder_level || 5)).length;
+            const badge = document.getElementById('lowStockBadge');
+            badge.innerText = lowCount; 
+            badge.style.display = lowCount > 0 ? 'inline-block' : 'none';
+        }
+
+        // --- HISTORY MODAL ---
+        function showHistory() {
+            const id = document.getElementById('itemId').value;
+            const modal = document.getElementById('historyModal');
+            modal.style.display = 'flex';
+            const itemLogs = allLogs.filter(l => l.ref_id === id).sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
+            const content = document.getElementById('historyContent');
+            
+            if(itemLogs.length) {
+                content.innerHTML = itemLogs.map(l => 
+                    `<div class="history-item">
+                        <div class="history-time">${new Date(l.timestamp).toLocaleString()}</div>
+                        <strong>${l.action}</strong>: ${l.desc}
+                    </div>`
+                ).join('');
+            } else {
+                content.innerHTML = '<div style="text-align:center; color:#94a3b8;">No history found.</div>';
+            }
+        }
+        
+        function closeHistory(e) { 
+            if(e.target.id === 'historyModal') e.target.style.display = 'none'; 
+        }
+
+        // --- IMAGE COMPRESSOR ---
+        function compressAndPreview(input) {
+            const file = input.files[0]; if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const scaleSize = 300 / img.width;
+                    canvas.width = 300; 
+                    canvas.height = img.height * scaleSize;
+                    const ctx = canvas.getContext('2d'); 
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    
+                    currentImageBase64 = canvas.toDataURL('image/jpeg', 0.6); 
+                    if(currentImageBase64.length > 150000) alert("⚠️ Image is large, it may slow down storage.");
+                    
+                    document.getElementById('imgPreview').src = currentImageBase64;
+                    document.getElementById('imgPreview').style.display = 'block';
+                    document.getElementById('imgIcon').style.display = 'none';
+                    document.getElementById('imgRemoveBtn').style.display = 'flex';
+                    setDirty();
+                }
+                img.src = event.target.result;
+            }
+            reader.readAsDataURL(file);
+        }
+
+        function removeImage() {
+            currentImageBase64 = null; 
+            document.getElementById('imgInput').value = '';
+            document.getElementById('imgPreview').style.display = 'none';
+            document.getElementById('imgIcon').style.display = 'block';
+            document.getElementById('imgRemoveBtn').style.display = 'none';
+            setDirty();
+        }
+
+        function showToast(msg) { 
+            const t = document.getElementById('toast'); 
+            t.textContent = msg; 
+            t.style.display = 'block'; 
+            setTimeout(()=>t.style.display='none', 2000); 
+        }
+
+        function toggleMenu() { 
+            document.getElementById('sidebar').classList.toggle('active'); 
+            document.querySelector('.overlay').classList.toggle('active'); 
+        }
     </script>
 </body>
 </html>

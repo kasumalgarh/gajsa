@@ -1,12 +1,12 @@
 /* FILENAME: db.js
-   PURPOSE: Arth Book Core Engine (Ultimate - With Settings & Backup)
-   VERSION: 3.10 (Google Drive Integration Added)
+   PURPOSE: Arth Book Core Engine (Ultimate - Fully Restored & Upgraded)
+   VERSION: 4.0 (Fixed Logic + User Mgmt + Cloud Backup)
 */
 
 class ArthBookDB {
     constructor() {
         this.dbName = "ArthBook_DB";
-        this.dbVersion = 28; // Incremented for Users store
+        this.dbVersion = 28; 
         this.db = null;
         this.currentUser = JSON.parse(sessionStorage.getItem('user_session')) || { role: 'admin', username: 'Owner' };
     }
@@ -38,7 +38,7 @@ class ArthBookDB {
                 if (!db.objectStoreNames.contains("audit_logs")) db.createObjectStore("audit_logs", { keyPath: "id", autoIncrement: true });
                 if (!db.objectStoreNames.contains("settings")) db.createObjectStore("settings", { keyPath: "id" });
                 
-                // NEW: Users Store for Security
+                // User Store
                 if (!db.objectStoreNames.contains("users")) {
                     const s = db.createObjectStore("users", { keyPath: "id", autoIncrement: true });
                     s.createIndex("username", "username", { unique: true });
@@ -54,7 +54,7 @@ class ArthBookDB {
         });
     }
 
-    // --- 2. SETTINGS MANAGER ---
+    // --- 2. SETTINGS ---
     async getSettings() {
         if (!this.db) await this.init();
         return new Promise((resolve) => {
@@ -74,18 +74,15 @@ class ArthBookDB {
         });
     }
 
-    // --- 3. SECURITY & LOGIN ---
+    // --- 3. LOGIN & USER MANAGEMENT ---
     async login(username, password) {
         if (!this.db) await this.init();
         return new Promise((resolve, reject) => {
             const tx = this.db.transaction('users', 'readonly');
             const store = tx.objectStore('users');
-            const request = store.getAll();
-
-            request.onsuccess = (e) => {
+            store.getAll().onsuccess = (e) => {
                 const users = e.target.result;
                 const user = users.find(u => u.username.toLowerCase() === username.toLowerCase() && u.password === password);
-                
                 if (user) {
                     this.currentUser = user;
                     sessionStorage.setItem('user_session', JSON.stringify(user));
@@ -97,7 +94,46 @@ class ArthBookDB {
         });
     }
 
+    async addUser(user) {
+        if (!this.db) await this.init();
+        return new Promise((resolve, reject) => {
+            const tx = this.db.transaction('users', 'readwrite');
+            const check = tx.objectStore('users').index('username').get(user.username);
+            check.onsuccess = (e) => {
+                if (e.target.result) {
+                    reject("Username already exists!");
+                } else {
+                    tx.objectStore('users').add(user);
+                    tx.oncomplete = () => resolve(true);
+                }
+            };
+        });
+    }
+
+    async updateUserPassword(id, newPass) {
+        if (!this.db) await this.init();
+        return new Promise(async (resolve) => {
+            const user = await this.getOne('users', id);
+            if(user) {
+                user.password = newPass;
+                const tx = this.db.transaction('users', 'readwrite');
+                tx.objectStore('users').put(user);
+                tx.oncomplete = () => resolve(true);
+            }
+        });
+    }
+
+    async deleteUser(id) {
+        if (!this.db) await this.init();
+        return new Promise((resolve) => {
+            const tx = this.db.transaction('users', 'readwrite');
+            tx.objectStore('users').delete(id);
+            tx.oncomplete = () => resolve(true);
+        });
+    }
+
     async seedInitialData() {
+        // Seed Groups & Ledgers
         const groups = await this.getAll('groups');
         if (groups.length === 0) {
             const tx = this.db.transaction(['groups', 'ledgers'], 'readwrite');
@@ -136,6 +172,7 @@ class ArthBookDB {
             defaultLedgers.forEach(l => lStore.put(l));
         }
 
+        // Seed Admin User
         const users = await this.getAll('users');
         if (users.length === 0) {
             const uTx = this.db.transaction('users', 'readwrite');
@@ -149,66 +186,7 @@ class ArthBookDB {
         }
     }
 
-    // --- 4. BACKUP & CLOUD MANAGER (NEW & IMPROVED) ---
-    
-    // Original JSON Download Function
-    async exportBackup() {
-        if (!this.db) await this.init();
-        const stores = ['vouchers', 'acct_entries', 'ledgers', 'groups', 'items', 'settings', 'users'];
-        const backup = {};
-        for (const name of stores) { backup[name] = await this.getAll(name); }
-        const blob = new Blob([JSON.stringify(backup, null, 2)], {type : 'application/json'});
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = `ArthBook_Backup_${new Date().toISOString().slice(0,10)}.json`;
-        a.click();
-    }
-
-    // NEW: GOOGLE DRIVE BACKUP ENGINE
-    async backupToGoogleDrive(accessToken) {
-        if (!this.db) await this.init();
-        const stores = ['vouchers', 'acct_entries', 'ledgers', 'groups', 'items', 'settings', 'users'];
-        const backupData = {};
-        
-        for (const name of stores) {
-            backupData[name] = await this.getAll(name);
-        }
-
-        const fileName = `ArthBook_Backup_${new Date().toISOString().slice(0,10)}.json`;
-        const fileContent = JSON.stringify(backupData, null, 2);
-
-        // Google Drive Multipart Upload
-        const metadata = {
-            name: fileName,
-            mimeType: 'application/json'
-        };
-
-        const form = new FormData();
-        form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
-        form.append('file', new Blob([fileContent], { type: 'application/json' }));
-
-        try {
-            const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
-                method: 'POST',
-                headers: { 'Authorization': 'Bearer ' + accessToken },
-                body: form
-            });
-            const result = await response.json();
-            console.log("✅ Drive Backup Success:", result);
-            return result;
-        } catch (err) {
-            console.error("❌ Google Drive Upload Error:", err);
-            throw err;
-        }
-    }
-
-    // Placeholder for Github (Kept as requested)
-    async syncToGithub(token, repo, filename, message) {
-        console.log("Simulating GitHub Sync...", token, repo);
-        return new Promise(r => setTimeout(() => r(true), 1500)); 
-    }
-
-    // --- 5. DATA HANDLING ---
+    // --- 4. DATA OPERATIONS (RESTORED) ---
     async getAll(storeName) {
         if (!this.db) await this.init();
         return new Promise((resolve) => {
@@ -222,6 +200,19 @@ class ArthBookDB {
         return new Promise((resolve) => {
             const tx = this.db.transaction(storeName, 'readonly');
             tx.objectStore(storeName).get(id).onsuccess = (e) => resolve(e.target.result);
+        });
+    }
+
+    // NEW: Save Item (In case you were missing this)
+    async saveItem(itemData) {
+        if (!this.db) await this.init();
+        return new Promise((resolve, reject) => {
+            const tx = this.db.transaction('items', 'readwrite');
+            const store = tx.objectStore('items');
+            const request = itemData.id ? store.put(itemData) : store.add(itemData);
+            
+            request.onsuccess = () => resolve(true);
+            request.onerror = (e) => reject(e.target.error);
         });
     }
 
@@ -357,6 +348,54 @@ class ArthBookDB {
             tx.oncomplete = () => resolve(true);
             tx.onerror = (e) => reject(e.target.error);
         });
+    }
+
+    // --- 5. CLOUD BACKUP ---
+    async backupToGoogleDrive(accessToken) {
+        if (!this.db) await this.init();
+        const stores = ['vouchers', 'acct_entries', 'ledgers', 'groups', 'items', 'settings', 'users'];
+        const backupData = {};
+        
+        for (const name of stores) {
+            backupData[name] = await this.getAll(name);
+        }
+
+        const fileName = `ArthBook_Backup_${new Date().toISOString().slice(0,10)}.json`;
+        const fileContent = JSON.stringify(backupData, null, 2);
+
+        const metadata = {
+            name: fileName,
+            mimeType: 'application/json'
+        };
+
+        const form = new FormData();
+        form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+        form.append('file', new Blob([fileContent], { type: 'application/json' }));
+
+        try {
+            const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + accessToken },
+                body: form
+            });
+            const result = await response.json();
+            return result;
+        } catch (err) {
+            console.error("❌ Google Drive Upload Error:", err);
+            throw err;
+        }
+    }
+
+    async exportBackup() {
+        if (!this.db) await this.init();
+        const stores = ['vouchers', 'acct_entries', 'ledgers', 'groups', 'items', 'settings', 'users'];
+        const backup = {};
+        for (const name of stores) { backup[name] = await this.getAll(name); }
+        const blob = new Blob([JSON.stringify(backup, null, 2)], {type : 'application/json'});
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `ArthBook_Backup_${new Date().toISOString().slice(0,10)}.json`;
+        a.click();
     }
 }
 const DB = new ArthBookDB();
