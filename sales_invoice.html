@@ -333,26 +333,31 @@ td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; }
 
     <div class="main">
         
-        <div class="header-card">
-            <div style="flex:2; min-width: 250px;">
-                <label class="h-label" style="font-size:12px; font-weight:700; color:var(--text-sub); display:block; margin-bottom:5px;">Customer / Party</label>
-                <select id="custSelect" style="width:100%;">
-                    <option value="">Walk-in Customer (Cash)</option>
-                </select>
-            </div>
-            
-            <div style="flex:1; min-width: 150px;">
-                <label class="h-label" style="font-size:12px; font-weight:700; color:var(--text-sub); display:block; margin-bottom:5px;">Invoice Date</label>
-                <input type="date" id="billDate" style="width:100%;">
-            </div>
-            
-            <div style="flex:0.5; min-width: 100px; text-align:right;">
-                <label class="h-label" style="font-size:12px; font-weight:700; color:var(--text-sub); display:block; margin-bottom:5px;">Inv. No</label>
-                <div id="invNo" style="background:var(--bg); padding:10px; border-radius:8px; font-weight:800; color:var(--primary); border:1px solid var(--border); text-align:center;">
-                    ...
-                </div>
-            </div>
+       <div class="header-card">
+    <div style="flex:2; min-width: 250px;">
+        <label class="h-label" style="font-size:12px; font-weight:700; color:var(--text-sub); display:block; margin-bottom:5px;">Customer / Party</label>
+        <div style="display:flex; gap:5px;">
+            <select id="custSelect" style="flex:1; width:100%;">
+                <option value="">Walk-in Customer (Cash)</option>
+            </select>
+            <button class="btn btn-save" style="padding:0 12px;" onclick="openCustModal()" title="New Customer">
+                <i class="fas fa-plus"></i>
+            </button>
         </div>
+    </div>
+    
+    <div style="flex:1; min-width: 150px;">
+        <label class="h-label" style="font-size:12px; font-weight:700; color:var(--text-sub); display:block; margin-bottom:5px;">Invoice Date</label>
+        <input type="date" id="billDate" style="width:100%;">
+    </div>
+    
+    <div style="flex:0.5; min-width: 100px; text-align:right;">
+        <label class="h-label" style="font-size:12px; font-weight:700; color:var(--text-sub); display:block; margin-bottom:5px;">Inv. No</label>
+        <div id="invNo" style="background:var(--bg); padding:10px; border-radius:8px; font-weight:800; color:var(--primary); border:1px solid var(--border); text-align:center;">
+            ...
+        </div>
+    </div>
+</div>
 
         <div class="entry-bar">
             <div class="e-grp" style="position:relative;">
@@ -454,6 +459,31 @@ td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; }
             </div>
         </div>
     </div>
+    <div class="modal-overlay" id="custModal">
+    <div class="modal" style="width:350px;">
+        <div class="modal-header" style="display:flex; justify-content:space-between; margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:10px;">
+            <h3 style="margin:0; color:var(--primary);">New Customer</h3>
+            <button onclick="closeCustModal()" style="border:none; background:none; font-size:20px; cursor:pointer;">&times;</button>
+        </div>
+        
+        <div class="form-group" style="margin-bottom:10px;">
+            <label style="font-weight:bold; font-size:12px;">Customer Name *</label>
+            <input type="text" id="newCustName" placeholder="Enter Name" style="width:100%; padding:10px; margin-top:5px;">
+        </div>
+        
+        <div class="form-group" style="margin-bottom:10px;">
+            <label style="font-weight:bold; font-size:12px;">Mobile Number</label>
+            <input type="text" id="newCustPhone" placeholder="Mobile No" style="width:100%; padding:10px; margin-top:5px;">
+        </div>
+        
+        <div class="form-group" style="margin-bottom:20px;">
+            <label style="font-weight:bold; font-size:12px;">Address (Optional)</label>
+            <input type="text" id="newCustAddr" placeholder="City / Area" style="width:100%; padding:10px; margin-top:5px;">
+        </div>
+        
+        <button class="btn btn-save" onclick="saveNewCustomer()" style="width:100%">Save & Select</button>
+    </div>
+</div>
 
     <div id="printArea"></div>
     <div id="toast"></div>
@@ -521,17 +551,20 @@ td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; }
             document.getElementById('amtDisplay').value = (qty * rate).toFixed(2);
         }
 
-        function addItemRow() {
-            const id = document.getElementById('selItemId').value;
+     function addItemRow() {
+            const idStr = document.getElementById('selItemId').value; // String Value
             const name = document.getElementById('itemSearch').value;
             const qty = parseFloat(document.getElementById('qtyInput').value);
             const rate = parseFloat(document.getElementById('rateInput').value);
             const gst = parseFloat(document.getElementById('selItemGst').value) || 0;
 
-            if(!id || !name) return showToast("⚠️ Select an item");
+            if(!idStr || !name) return showToast("⚠️ Select an item");
             if(qty <= 0) return showToast("⚠️ Invalid Quantity");
 
-            const item = items.find(i => i.id == id);
+            // --- FIX: Convert ID to Number (parseInt) ---
+            const id = parseInt(idStr); 
+
+            const item = items.find(i => i.id === id);
             const itemHsn = item ? item.hsn : '';
             const itemUnit = item ? item.unit : '';
 
@@ -539,7 +572,7 @@ td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; }
                 return showToast(`⚠️ Low Stock! Only ${item.current_stock} left.`);
             }
 
-            const existing = cart.find(c => c.id == id);
+            const existing = cart.find(c => c.id === id);
             if(existing) {
                 existing.qty += qty;
             } else {
@@ -835,6 +868,74 @@ td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; }
             if(e.key === 'F2') { e.preventDefault(); document.getElementById('itemSearch').focus(); }
             if(e.ctrlKey && e.key === 'Enter') openPaymentModal();
         });
+        // --- QUICK CUSTOMER FUNCTIONS (Direct Add) ---
+
+    function openCustModal() {
+        document.getElementById('custModal').style.display = 'flex';
+        document.getElementById('newCustName').focus();
+    }
+
+    function closeCustModal() {
+        document.getElementById('custModal').style.display = 'none';
+        document.getElementById('newCustName').value = '';
+        document.getElementById('newCustPhone').value = '';
+        document.getElementById('newCustAddr').value = '';
+    }
+
+    async function saveNewCustomer() {
+        const name = document.getElementById('newCustName').value.trim();
+        if(!name) return alert("Customer Name is required");
+
+        // 1. 'Sundry Debtors' ग्रुप ढूंढें (Customers के लिए)
+        // ध्यान दें: 'groups' वेरिएबल window.onload से लोड होना चाहिए
+        const debtGroup = groups.find(g => g.name === 'Sundry Debtors');
+        if(!debtGroup) return alert("Error: 'Sundry Debtors' group missing in Masters!");
+
+        // 2. डेटा तैयार करें
+        const newLedger = {
+            name: name,
+            group_id: debtGroup.id,
+            phone: document.getElementById('newCustPhone').value.trim(),
+            address: document.getElementById('newCustAddr').value.trim(),
+            opening_balance: 0,
+            op_date: new Date().toISOString().slice(0,10),
+            reg_type: 'Unregistered'
+        };
+
+        // 3. डेटाबेस में सेव करें
+        try {
+            const tx = DB.db.transaction('ledgers', 'readwrite');
+            const store = tx.objectStore('ledgers');
+            const request = store.add(newLedger);
+
+            request.onsuccess = async (e) => {
+                const newId = e.target.result;
+                
+                // लिस्ट रिफ्रेश करें
+                ledgers = await DB.getAll('ledgers');
+                
+                // ड्रापडाउन को अपडेट करें (यहाँ ID 'custSelect' ही यूज करें)
+                const sel = document.getElementById('custSelect'); 
+                sel.innerHTML = '<option value="">Walk-in Customer (Cash)</option>';
+                
+                // वही फिल्टर लॉजिक जो लोड करते समय यूज होता है
+                const targetNames = ['Sundry Debtors', 'Cash-in-Hand', 'Bank Accounts'];
+                const allowedGroupIds = groups.filter(g => targetNames.includes(g.name)).map(g => g.id);
+                const validParties = ledgers.filter(l => allowedGroupIds.includes(l.group_id));
+                
+                validParties.sort((a,b) => a.name.localeCompare(b.name));
+                validParties.forEach(l => {
+                    const isSelected = (l.id === newId) ? 'selected' : '';
+                    sel.innerHTML += `<option value="${l.id}" ${isSelected}>${l.name}</option>`;
+                });
+
+                alert("✅ Customer Added Successfully!");
+                closeCustModal();
+            };
+        } catch(err) {
+            alert("Error creating customer: " + err.message);
+        }
+    }   
     </script>
 </body>
 </html>

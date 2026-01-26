@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Factory Reset</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding: 50px; background: #fee2e2; color: #991b1b; }
+        button { padding: 15px 30px; font-size: 18px; background: #dc2626; color: white; border: none; border-radius: 8px; cursor: pointer; }
+        button:hover { background: #b91c1c; }
+    </style>
+</head>
+<body>
+    <h1>⚠️ Factory Reset</h1>
+    <p>This will delete ALL Products, Customers, and Bills.</p>
+    <button onclick="wipeData()">🗑️ Delete Everything</button>
+
+    <script>
+        function wipeData() {
+            if(!confirm("Are you 100% sure? This cannot be undone!")) return;
+            
+            const req = indexedDB.deleteDatabase("ArthBook_DB");
+            
+            req.onsuccess = function () {
+                alert("✅ System Cleaned! Starting Fresh...");
+                window.location.href = "index.html";
+            };
+            req.onerror = function () {
+                alert("❌ Error deleting database. Please clear browser cache manually.");
+            };
+            req.onblocked = function () {
+                alert("⚠️ Please close other tabs of Arth Book and try again.");
+            };
+        }
+    </script>
+</body>
+</html>

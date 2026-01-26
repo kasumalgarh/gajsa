@@ -3,570 +3,338 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-     
-    <title>Arth Book - Executive Dashboard</title>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    <title>Arth Book - Smart Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <style>
     /* ==========================================================================
-   ARTH BOOK DASHBOARD THEME (Mobile Ready)
-   ========================================================================== */
+       ARTH BOOK DASHBOARD v10.0 (MARKET STANDARD)
+       ========================================================================== */
+    :root {
+        --primary: #0d47a1; --primary-dark: #002171; --accent: #ffca28;
+        --bg: #f1f5f9; --surface: #ffffff; --text: #1e293b; --text-light: #64748b;
+        --success: #10b981; --danger: #ef4444; --warning: #f59e0b;
+        --sidebar-width: 260px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+    body { display: flex; height: 100vh; background: var(--bg); color: var(--text); overflow: hidden; }
 
-:root {
-    --primary: #0d47a1;       /* Navy */
-    --accent: #ffca28;        /* Gold */
-    --bg: #f1f5f9;
-    --surface: #ffffff;
-    --text-main: #1e293b;
-    --text-sub: #64748b;
-    --border: #e2e8f0;
-    --success: #10b981;
-    --danger: #ef4444;
-    --warning: #f59e0b;
-    --sidebar-width: 260px;
-    --shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-}
-
-/* --- RESET --- */
-* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; outline: none; }
-body { display: flex; height: 100vh; background: var(--bg); color: var(--text-main); overflow: hidden; }
-a { text-decoration: none; }
-ul { list-style: none; }
-
-/* --- SIDEBAR --- */
-.sidebar {
-    width: var(--sidebar-width);
-    background: var(--primary);
-    color: white;
-    display: flex; flex-direction: column; flex-shrink: 0; height: 100vh;
-    overflow-y: auto; z-index: 2000;
-    box-shadow: 4px 0 10px rgba(0,0,0,0.1);
-    transition: all 0.2s ease-in-out;
-}
-
-.brand-logo {
-    padding: 20px; font-size: 20px; font-weight: 800; color: white;
-    display: flex; align-items: center; gap: 10px;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-}
-
-.nav-links { padding: 10px; }
-.nav-links li { margin-bottom: 5px; }
-
-.sidebar a {
-    display: flex; align-items: center; gap: 12px;
-    padding: 12px 15px; margin-bottom: 5px;
-    color: rgba(255,255,255,0.85);
-    text-decoration: none; border-radius: 8px; font-weight: 500; font-size: 14px;
-    transition: all 0.2s;
-}
-
-.sidebar a:hover { background: rgba(255,255,255,0.15); color: #fff; padding-left: 20px; }
-.sidebar a.active { background: var(--accent); color: var(--primary); font-weight: 800; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
-
-/* --- MAIN LAYOUT --- */
-.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; width: 100%; }
-
-.header {
-    background: var(--surface); padding: 15px 20px; 
-    border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: space-between; 
-    flex-wrap: wrap; gap: 15px; flex-shrink: 0;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-    padding-right: 60px; /* Space for menu button */
-}
-
-.header h2 { margin: 0; font-size: 1.2rem; color: var(--primary); font-weight: 800; }
-
-.date-badge {
-    background: #f1f5f9; padding: 8px 16px; border-radius: 20px; 
-    font-size: 0.85rem; color: var(--primary); font-weight: 600; 
-    border: 1px solid var(--border); display: flex; align-items: center; gap: 8px;
-}
-
-.scroll-area { padding: 20px; overflow-y: auto; flex: 1; -webkit-overflow-scrolling: touch; }
-
-/* --- DASHBOARD WIDGETS --- */
-.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 30px; }
-
-.card { 
-    background: var(--surface); border-radius: 16px; padding: 24px; 
-    box-shadow: var(--shadow); border: 1px solid var(--border); 
-    position: relative; cursor: pointer; transition: transform 0.2s;
-}
-.card:hover { transform: translateY(-5px); border-color: var(--accent); }
-
-.card-icon { 
-    position: absolute; top: 20px; right: 20px; width: 45px; height: 45px; 
-    background: #f8fafc; border-radius: 12px; display: flex; align-items: center; justify-content: center; 
-    font-size: 20px; 
-}
-
-.card h3 { font-size: 0.85rem; font-weight: 600; color: var(--text-sub); margin-bottom: 8px; text-transform: uppercase; }
-.value { font-size: 1.8rem; font-weight: 800; color: var(--text-main); margin-bottom: 5px; font-family: 'JetBrains Mono'; }
-.trend { font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 5px; color: var(--text-sub); }
-.trend.up { color: var(--success); }
-
-/* --- CHARTS & LISTS --- */
-.charts-row { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 30px; }
-.chart-card { background: var(--surface); border-radius: 16px; padding: 20px; box-shadow: var(--shadow); border: 1px solid var(--border); height: 350px; }
-.chart-header { display: flex; justify-content: space-between; margin-bottom: 15px; font-weight: 700; color: var(--primary); }
-
-.bottom-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-.list-card { background: var(--surface); border-radius: 16px; box-shadow: var(--shadow); border: 1px solid var(--border); overflow: hidden; }
-.list-header { padding: 15px 20px; background: #f8fafc; border-bottom: 1px solid var(--border); font-weight: 700; display: flex; justify-content: space-between; }
-.list-body { max-height: 300px; overflow-y: auto; }
-
-/* Transaction Item */
-.txn-item { padding: 15px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-.txn-item:hover { background: #f0f9ff; }
-.txn-info strong { display: block; font-size: 14px; color: var(--text-main); }
-.txn-info span { font-size: 12px; color: var(--text-sub); }
-.txn-amt { font-weight: 700; font-family: 'JetBrains Mono'; }
-
-/* Alerts */
-.alert-item { padding: 15px 20px; display: flex; gap: 15px; align-items: center; border-bottom: 1px solid var(--border); }
-.alert-icon { color: var(--danger); font-size: 20px; }
-
-/* Search Bar */
-.search-container { position: relative; margin-bottom: 20px; }
-.search-bar { width: 100%; padding: 12px 15px 12px 45px; border-radius: 12px; border: 1px solid var(--border); box-shadow: var(--shadow); font-size: 1rem; }
-.search-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-sub); }
-#searchResults { position: absolute; top: 105%; left: 0; width: 100%; background: white; z-index: 100; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); border: 1px solid var(--border); display: none; }
-
-/* FAB */
-.fab { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; background: var(--accent); color: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 10px 20px rgba(255, 202, 40, 0.4); z-index: 900; }
-
-/* --- MOBILE RESPONSIVE --- */
-.menu-btn { 
-    display: none; position: absolute; right: 15px; top: 15px; 
-    font-size: 1.5rem; color: var(--primary); background: none; border: none; cursor: pointer; z-index: 100;
-}
-.overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1500; backdrop-filter: blur(2px); }
-
-@media (max-width: 1024px) {
-    .sidebar { position: fixed; left: -100%; top: 0; height: 100%; width: 280px; }
-    .sidebar.active { left: 0; }
+    /* SIDEBAR */
+    .sidebar { width: var(--sidebar-width); background: var(--primary); color: white; display: flex; flex-direction: column; flex-shrink: 0; transition: 0.3s; z-index: 1000; }
+    .brand { padding: 20px; font-size: 22px; font-weight: 800; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 10px; }
+    .nav-links { padding: 15px; list-style: none; overflow-y: auto; flex: 1; }
+    .nav-link { display: flex; align-items: center; gap: 12px; padding: 12px 15px; color: rgba(255,255,255,0.85); text-decoration: none; border-radius: 8px; margin-bottom: 5px; transition: 0.2s; font-size: 14px; font-weight: 500; }
+    .nav-link:hover { background: rgba(255,255,255,0.15); color: white; padding-left: 20px; }
+    .nav-link.active { background: var(--accent); color: var(--primary-dark); font-weight: 700; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
     
-    .menu-btn { display: block; }
-    .overlay.active { display: block; }
+    /* MAIN AREA */
+    .main { flex: 1; display: flex; flex-direction: column; overflow-y: auto; position: relative; }
+    .top-bar { background: var(--surface); padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; position: sticky; top: 0; z-index: 100; }
+    .user-info { display: flex; align-items: center; gap: 10px; }
+    .user-avatar { width: 35px; height: 35px; background: #e0f2fe; color: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+
+    /* DASHBOARD CONTENT */
+    .content { padding: 25px; max-width: 1400px; margin: 0 auto; width: 100%; }
+
+    /* QUICK ACTIONS */
+    .quick-actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; margin-bottom: 25px; }
+    .qa-btn { background: white; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; text-align: center; cursor: pointer; transition: 0.2s; text-decoration: none; color: var(--text); display: flex; flex-direction: column; align-items: center; gap: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+    .qa-btn:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.08); border-color: var(--primary); }
+    .qa-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; color: white; margin-bottom: 5px; }
+
+    /* KPI CARDS */
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 25px; }
+    .kpi-card { background: white; padding: 20px; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid #f1f5f9; position: relative; overflow: hidden; }
+    .kpi-title { font-size: 12px; font-weight: 600; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px; }
+    .kpi-value { font-size: 26px; font-weight: 800; margin-top: 8px; color: var(--text); }
+    .kpi-icon { position: absolute; right: 20px; top: 20px; font-size: 24px; opacity: 0.2; }
+
+    /* SPLIT SECTION (Graph & Lists) */
+    .split-section { display: grid; grid-template-columns: 2fr 1fr; gap: 25px; }
     
-    .main { padding: 0; }
-    .header { padding-right: 60px; }
-    .date-badge span { display: none; }
+    .panel { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid #f1f5f9; display: flex; flex-direction: column; }
+    .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #f1f5f9; }
+    .panel-title { font-weight: 700; font-size: 16px; display: flex; align-items: center; gap: 8px; }
+
+    /* Transaction List */
+    .txn-list { flex: 1; overflow-y: auto; max-height: 350px; }
+    .txn-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px dashed #f1f5f9; }
+    .txn-item:last-child { border-bottom: none; }
+    .txn-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; margin-right: 12px; }
     
-    .kpi-grid { grid-template-columns: 1fr; }
-    .charts-row, .bottom-row { grid-template-columns: 1fr; }
+    /* Low Stock List */
+    .stock-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
+    .stock-warn { background: #fee2e2; color: #991b1b; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; }
+
+    /* MOBILE */
+    .menu-btn { display: none; font-size: 20px; background: none; border: none; cursor: pointer; }
+    .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 900; }
     
-    .chart-card { height: 300px; }
-}
+    @media (max-width: 1024px) {
+        .split-section { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 768px) {
+        .sidebar { position: fixed; left: -100%; height: 100%; }
+        .sidebar.active { left: 0; }
+        .menu-btn { display: block; }
+        .overlay.active { display: block; }
+        .quick-actions { grid-template-columns: repeat(2, 1fr); }
+    }
 </style>
 <body>
 
-    <button class="menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
-    <div class="overlay" onclick="toggleSidebar()"></div>
-
-   
+<div class="overlay" onclick="toggleMenu()"></div>
 
 <div class="sidebar" id="sidebar">
-    <div class="brand-logo">
-        <i class="fas fa-cube"></i> Arth Book
-    </div>
-    
+    <div class="brand"><i class="fas fa-cube"></i> Arth Book</div>
     <ul class="nav-links">
-        <li><a href="index.html" id="nav-dash"><i class="fas fa-home"></i> Dashboard</a></li>
-        
-        <li class="nav-section">Entry</li>
-        <li><a href="sales_invoice.html" id="nav-sales"><i class="fas fa-file-invoice"></i> Sales (POS)</a></li>
-        <li><a href="purchase_invoice.html" id="nav-purchase"><i class="fas fa-truck"></i> Purchase</a></li>
-        <li><a href="vouchers.html" id="nav-vouchers"><i class="fas fa-receipt"></i> Day Book</a></li>
-        
-        <li class="nav-section">Masters</li>
-        <li><a href="item_master.html" id="nav-items"><i class="fas fa-boxes"></i> Inventory</a></li>
-        <li><a href="ArthBook.html" id="nav-parties"><i class="fas fa-users"></i> Parties</a></li>
-        <li><a href="coa.html" id="nav-accounts"><i class="fas fa-sitemap"></i> Accounts</a></li>
-        
-        <li class="nav-section">Reports & Tax</li>
-        <li><a href="reports.html" id="nav-reports"><i class="fas fa-chart-line"></i> Reports</a></li>
-        <li><a href="gst_filing.html" id="nav-gst"><i class="fas fa-university"></i> GST Returns</a></li>
-        <li><a href="taxation.html" id="nav-tax"><i class="fas fa-calculator"></i> Tax / ITR</a></li>
-        
-        <hr class="nav-divider">
-        
-        <li><a href="settings.html" id="nav-settings"><i class="fas fa-cog"></i> Settings</a></li>
-        <li><a href="help.html" id="nav-help"><i class="fas fa-question-circle"></i> Help Guide</a></li>
+        <li><a href="index.html" class="nav-link active"><i class="fas fa-home"></i> Dashboard</a></li>
+        <li><a href="sales_invoice.html" class="nav-link"><i class="fas fa-file-invoice"></i> Sales (POS)</a></li>
+        <li><a href="purchase_invoice.html" class="nav-link"><i class="fas fa-truck"></i> Purchase</a></li>
+        <li><a href="vouchers.html" class="nav-link"><i class="fas fa-receipt"></i> Day Book</a></li>
+        <li><a href="item_master.html" class="nav-link"><i class="fas fa-boxes"></i> Inventory</a></li>
+        <li><a href="ArthBook.html" class="nav-link"><i class="fas fa-users"></i> Parties</a></li>
+        <li><a href="coa.html" class="nav-link"><i class="fas fa-sitemap"></i> Accounts</a></li>
+        <li><a href="reports.html" class="nav-link"><i class="fas fa-chart-line"></i> Reports</a></li>
+        <li><a href="gst_filing.html" class="nav-link"><i class="fas fa-university"></i> GST Returns</a></li>
+        <li><a href="settings.html" class="nav-link"><i class="fas fa-cog"></i> Settings</a></li>
     </ul>
-    
-    <div class="sidebar-footer">
-        Arth Book v5.0<br>Authorized User
+    <div style="padding:20px; font-size:11px; color:rgba(255,255,255,0.4); text-align:center;">
+        Arth Book v10.0 Pro
     </div>
 </div>
 
-    <div class="main">
-        <div class="header">
-            <h2>Executive Overview</h2>
-            <div class="date-badge">
-                <i class="far fa-calendar-alt"></i>
-                <span id="currentDate">Jan 25, 2026</span>
-            </div>
+<div class="main">
+    <div class="top-bar">
+        <div style="display:flex; align-items:center; gap:15px;">
+            <button class="menu-btn" onclick="toggleMenu()"><i class="fas fa-bars"></i></button>
+            <h2 style="margin:0; font-size:18px;">Overview</h2>
         </div>
-
-        <div class="scroll-area">
-            
-            <div class="search-container">
-                <i class="fas fa-search search-icon"></i>
-                <input type="text" class="search-bar" id="globalSearch" placeholder="Search Transactions, Parties, or Items..." onkeyup="performSearch()">
-                <div id="searchResults"></div>
+        <div class="user-info">
+            <div style="text-align:right;">
+                <div style="font-weight:700; font-size:14px;">Admin</div>
+                <div style="font-size:11px; color:var(--text-light);" id="currentDate">Jan 26, 2026</div>
             </div>
-
-            <div class="kpi-grid">
-                <div class="card" onclick="window.location.href='reports.html?type=PL'">
-                    <div class="card-icon" style="color:var(--success);"><i class="fas fa-chart-line"></i></div>
-                    <h3>Gross Profit</h3>
-                    <div class="value" id="grossProfit">₹0.00</div>
-                    <div class="trend up">
-                        <i class="fas fa-arrow-up"></i> Sales Performance
-                    </div>
-                </div>
-
-                <div class="card" onclick="window.location.href='vouchers.html'">
-                    <div class="card-icon" style="color:var(--warning);"><i class="fas fa-wallet"></i></div>
-                    <h3>Cash In Hand</h3>
-                    <div class="value" id="cashBalance">₹0.00</div>
-                    <div class="trend">
-                        <span>Current Balance</span>
-                    </div>
-                </div>
-
-                <div class="card" onclick="window.location.href='reports.html?type=Receivables'">
-                    <div class="card-icon" style="color:var(--primary);"><i class="fas fa-hand-holding-usd"></i></div>
-                    <h3>Receivables (Lena)</h3>
-                    <div class="value" id="receivables">₹0.00</div>
-                    <div class="trend">
-                        <span id="debtorCount">0</span> Parties Pending
-                    </div>
-                </div>
-
-                <div class="card" onclick="window.location.href='gst_filing.html'">
-                    <div class="card-icon" style="color:var(--danger);"><i class="fas fa-balance-scale"></i></div>
-                    <h3>Net GST</h3>
-                    <div class="value" id="gstPayable">₹0.00</div>
-                    <div class="trend" id="gstTrend">
-                        <span>Input vs Output</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="charts-row">
-                <div class="chart-card">
-                    <div class="chart-header">
-                        <span>Sales Trend</span>
-                        <i class="fas fa-ellipsis-h" style="color:var(--text-sub);"></i>
-                    </div>
-                    <canvas id="salesChart"></canvas>
-                </div>
-                <div class="chart-card">
-                    <div class="chart-header">
-                        <span>Tax Breakdown</span>
-                    </div>
-                    <div style="height:250px; display:flex; justify-content:center;">
-                        <canvas id="taxChart"></canvas>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bottom-row">
-                <div class="list-card">
-                    <div class="list-header">
-                        <span>Recent Transactions</span>
-                        <a href="vouchers.html" style="font-size:12px; color:var(--primary); text-decoration:none;">View All</a>
-                    </div>
-                    <div class="list-body" id="recentTxnList">
-                        <div style="padding:20px; text-align:center; color:#94a3b8;">Loading...</div>
-                    </div>
-                </div>
-
-                <div class="list-card">
-                    <div class="list-header">
-                        <span>⚠️ Action Required</span>
-                    </div>
-                    <div class="list-body" id="alertList">
-                        </div>
-                </div>
-            </div>
-
+            <div class="user-avatar">A</div>
         </div>
     </div>
 
-    <a href="sales_invoice.html" class="fab" title="Quick Sale"><i class="fas fa-plus"></i></a>
+    <div class="content">
+        <div class="quick-actions">
+            <a href="sales_invoice.html" class="qa-btn">
+                <div class="qa-icon" style="background:var(--success);"><i class="fas fa-plus"></i></div>
+                <div style="font-weight:600; font-size:13px;">Sale Invoice</div>
+            </a>
+            <a href="purchase_invoice.html" class="qa-btn">
+                <div class="qa-icon" style="background:var(--primary);"><i class="fas fa-shopping-cart"></i></div>
+                <div style="font-weight:600; font-size:13px;">Purchase Bill</div>
+            </a>
+            <a href="item_master.html" class="qa-btn">
+                <div class="qa-icon" style="background:var(--warning);"><i class="fas fa-box-open"></i></div>
+                <div style="font-weight:600; font-size:13px;">Add Item</div>
+            </a>
+            <a href="ArthBook.html" class="qa-btn">
+                <div class="qa-icon" style="background:#8b5cf6;"><i class="fas fa-user-plus"></i></div>
+                <div style="font-weight:600; font-size:13px;">Add Party</div>
+            </a>
+        </div>
 
-    <script src="db.js"></script>
-   <script>
-    // --- 1. SIDEBAR TOGGLE ---
-    function toggleSidebar() {
-        const sidebar = document.getElementById('sidebar');
-        const overlay = document.querySelector('.overlay');
-        if (sidebar) sidebar.classList.toggle('active');
-        if (overlay) overlay.classList.toggle('active');
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-title">To Collect (Receivables)</div>
+                <div class="kpi-value" id="totalRec" style="color:var(--success);">₹0.00</div>
+                <i class="fas fa-hand-holding-usd kpi-icon" style="color:var(--success);"></i>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-title">To Pay (Payables)</div>
+                <div class="kpi-value" id="totalPay" style="color:var(--danger);">₹0.00</div>
+                <i class="fas fa-file-invoice-dollar kpi-icon" style="color:var(--danger);"></i>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-title">Cash in Hand</div>
+                <div class="kpi-value" id="cashBal">₹0.00</div>
+                <i class="fas fa-wallet kpi-icon" style="color:var(--primary);"></i>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-title">Stock Value</div>
+                <div class="kpi-value" id="stockVal" style="color:var(--warning);">₹0.00</div>
+                <i class="fas fa-cubes kpi-icon" style="color:var(--warning);"></i>
+            </div>
+        </div>
+
+        <div class="split-section">
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title"><i class="fas fa-chart-bar" style="color:var(--primary);"></i> Sales vs Purchase</div>
+                </div>
+                <div style="height:200px; width:100%;">
+                    <canvas id="mainChart"></canvas>
+                </div>
+
+                <div class="panel-header" style="margin-top:20px; border-top:1px solid #f1f5f9; padding-top:15px;">
+                    <div class="panel-title"><i class="fas fa-history" style="color:var(--text-light);"></i> Recent Transactions</div>
+                    <a href="vouchers.html" style="font-size:12px; color:var(--primary); font-weight:600;">View All</a>
+                </div>
+                <div class="txn-list" id="txnList">
+                    Loading...
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title"><i class="fas fa-exclamation-triangle" style="color:var(--danger);"></i> Low Stock Alert</div>
+                </div>
+                <div class="txn-list" id="lowStockList">
+                    Loading...
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="db.js"></script>
+<script>
+    // Set Date
+    document.getElementById('currentDate').innerText = new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+    function toggleMenu() {
+        document.getElementById('sidebar').classList.toggle('active');
+        document.querySelector('.overlay').classList.toggle('active');
     }
 
-    // --- 2. DATA CONTAINER ---
-    let dbData = { vouchers: [], ledgers: [], items: [], entries: [], groups: [] };
-    window.taxData = { input: 0, output: 0 };
-
-    // --- 3. INIT (STARTUP) ---
     window.onload = async () => {
-        // Set Date
-        const d = new Date();
-        document.getElementById('currentDate').innerText = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
-
-        // Initialize DB
-        if (typeof DB !== 'undefined') {
-            await DB.init();
-            await loadData(); // Load real data
-            calculateKPIs();  // Calc numbers from real data
-            renderCharts();   // Draw charts with real data
-            renderLists();    // Show recent txns
-        } else {
-            console.error("DB.js not found!");
-        }
+        await DB.init();
+        loadDashboardData();
     };
 
-    // --- 4. LOAD REAL DATA ---
-    async function loadData() {
-        dbData.vouchers = await DB.getAll('vouchers') || [];
-        dbData.ledgers = await DB.getAll('ledgers') || [];
-        dbData.items = await DB.getAll('items') || [];
-        dbData.entries = await DB.getAll('acct_entries') || [];
-        dbData.groups = await DB.getAll('groups') || [];
-    }
+    async function loadDashboardData() {
+        // Fetch all necessary data
+        const [items, ledgers, vouchers, entries, groups] = await Promise.all([
+            DB.getAll('items'),
+            DB.getAll('ledgers'),
+            DB.getAll('vouchers'),
+            DB.getAll('acct_entries'),
+            DB.getAll('groups')
+        ]);
 
-    // --- 5. FORMAT CURRENCY ---
-    function formatCurrency(num) {
-        return '₹' + (parseFloat(num) || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    }
-
-    // --- 6. CALCULATE DASHBOARD NUMBERS (REAL) ---
-    function calculateKPIs() {
-        // A. CASH BALANCE (Real Logic)
-        let cashBal = 0;
-        // Find 'Cash' ledger
-        const cashLedger = dbData.ledgers.find(l => l.name === 'Cash' || l.name === 'Cash-in-Hand');
-        if(cashLedger) {
-            // Sum all entries for Cash: Debit(+) - Credit(-)
-            cashBal = dbData.entries
-                .filter(e => e.ledger_id === cashLedger.id)
-                .reduce((sum, e) => sum + (e.debit || 0) - (e.credit || 0), 0);
-        }
-        document.getElementById('cashBalance').innerText = formatCurrency(Math.max(0, cashBal));
-
-        // B. RECEIVABLES (Udhari Leni Hai)
-        let receivables = 0;
-        const debtorsGroup = dbData.groups.find(g => g.name === 'Sundry Debtors');
-        if(debtorsGroup) {
-            // Find all ledgers in Debtors Group
-            const debtorIds = dbData.ledgers.filter(l => l.group_id === debtorsGroup.id).map(l => l.id);
-            // Sum balances: Debit(+) - Credit(-)
-            dbData.entries.forEach(e => {
-                if(debtorIds.includes(e.ledger_id)) {
-                    receivables += (e.debit || 0) - (e.credit || 0);
-                }
-            });
-        }
-        document.getElementById('receivables').innerText = formatCurrency(Math.max(0, receivables));
-
-        // C. GST & PROFIT (Estimate based on Vouchers)
-        let totalSales = dbData.vouchers.filter(v => v.type === 'Sales').reduce((s, v) => s + (parseFloat(v.amount)||0), 0);
-        let totalPurch = dbData.vouchers.filter(v => v.type === 'Purchase').reduce((s, v) => s + (parseFloat(v.amount)||0), 0);
+        // 1. CALCULATE KPI (Receivables / Payables / Cash)
+        let rec = 0, pay = 0, cash = 0;
+        const debtorGid = groups.find(g => g.name === 'Sundry Debtors')?.id;
+        const creditorGid = groups.find(g => g.name === 'Sundry Creditors')?.id;
         
-        let outputTax = totalSales * 0.18; // Approx 18%
-        let inputTax = totalPurch * 0.18;  // Approx 18%
-        let netTax = outputTax - inputTax;
+        // Find Cash Ledgers
+        const cashIds = ledgers.filter(l => l.name.toLowerCase().includes('cash')).map(l => l.id);
 
-        document.getElementById('gstPayable').innerText = formatCurrency(Math.abs(netTax));
-        document.getElementById('gstTrend').innerHTML = netTax >= 0 ? 
-            '<span style="color:var(--danger)">Payable</span>' : '<span style="color:var(--success)">Credit</span>';
+        ledgers.forEach(l => {
+            // Get balance for this ledger
+            const txns = entries.filter(e => e.ledger_id === l.id);
+            const dr = txns.reduce((s,e)=>s+(e.debit||0),0);
+            const cr = txns.reduce((s,e)=>s+(e.credit||0),0);
+            const net = dr - cr; // Asset perspective
+
+            if(l.group_id === debtorGid) rec += net;
+            if(l.group_id === creditorGid) pay += (cr - dr); // Liability perspective
+            if(cashIds.includes(l.id)) cash += net;
+        });
+
+        document.getElementById('totalRec').innerText = "₹" + Math.max(0, rec).toLocaleString('en-IN');
+        document.getElementById('totalPay').innerText = "₹" + Math.max(0, pay).toLocaleString('en-IN');
+        document.getElementById('cashBal').innerText = "₹" + cash.toLocaleString('en-IN');
+
+        // 2. STOCK VALUE & LOW STOCK
+        let stockValue = 0;
+        let lowStockHtml = '';
         
-        // Gross Profit (Simple: Sales - Purchase)
-        let gp = totalSales - totalPurch;
-        document.getElementById('grossProfit').innerText = formatCurrency(gp);
-
-        window.taxData = { input: inputTax, output: outputTax };
-    }
-
-    // --- 7. RENDER LISTS ---
-    function renderLists() {
-        const list = document.getElementById('recentTxnList');
-        // Get last 10 vouchers
-        const sorted = [...dbData.vouchers].sort((a,b) => b.id - a.id).slice(0, 10);
-
-        if(sorted.length === 0) {
-            list.innerHTML = '<div style="padding:20px; text-align:center; color:#94a3b8;">No transactions found</div>';
-        } else {
-            list.innerHTML = sorted.map(v => {
-                const isCredit = ['Sales', 'Receipt', 'Credit Note'].includes(v.type);
-                const color = isCredit ? 'var(--success)' : 'var(--text-main)';
-                const icon = isCredit ? 'fa-arrow-down' : 'fa-arrow-up';
-                const iconBg = isCredit ? '#dcfce7' : '#f1f5f9';
-                
-                return `
-                <div class="txn-item" onclick="window.location.href='voucher_entry.html?id=${v.id}&mode=view'">
-                    <div style="display:flex; gap:12px; align-items:center;">
-                        <div style="width:35px; height:35px; background:${iconBg}; border-radius:8px; display:flex; align-items:center; justify-content:center; color:${color}">
-                            <i class="fas ${icon}"></i>
+        items.forEach(i => {
+            const stock = i.current_stock || 0;
+            stockValue += stock * (i.std_cost || 0);
+            
+            if(stock <= (i.reorder_level || 5)) {
+                lowStockHtml += `
+                    <div class="stock-item">
+                        <div>
+                            <div style="font-weight:600;">${i.name}</div>
+                            <div style="font-size:11px; color:#64748b;">SKU: ${i.sku||'-'}</div>
                         </div>
-                        <div class="txn-info">
-                            <strong>${v.type} #${v.voucher_no}</strong>
-                            <span>${v.date || '-'}</span>
+                        <div style="text-align:right;">
+                            <div class="stock-warn">${stock} ${i.unit}</div>
+                        </div>
+                    </div>`;
+            }
+        });
+
+        document.getElementById('stockVal').innerText = "₹" + stockValue.toLocaleString('en-IN');
+        document.getElementById('lowStockList').innerHTML = lowStockHtml || '<div style="padding:20px; text-align:center; font-size:13px; color:#94a3b8;">All items are well stocked!</div>';
+
+        // 3. RECENT TRANSACTIONS (FIXED PARTY NAME)
+        const recent = vouchers.sort((a,b) => b.id - a.id).slice(0, 10);
+        let txnHtml = '';
+        
+        // Graph Data Prep
+        let saleTotal = 0;
+        let purchTotal = 0;
+        vouchers.forEach(v => {
+            if(v.type === 'Sales') saleTotal += v.amount;
+            if(v.type === 'Purchase') purchTotal += v.amount;
+        });
+
+        recent.forEach(v => {
+            let partyName = "Cash / Walk-in";
+            // Lookup Party Name properly
+            if(v.party_id && v.party_id !== 0) {
+                const p = ledgers.find(l => l.id === v.party_id);
+                if(p) partyName = p.name;
+            }
+
+            const isSale = v.type === 'Sales';
+            const icon = isSale ? '<i class="fas fa-arrow-up"></i>' : '<i class="fas fa-arrow-down"></i>';
+            const bg = isSale ? '#dcfce7' : '#fee2e2';
+            const color = isSale ? '#166534' : '#991b1b';
+
+            txnHtml += `
+                <div class="txn-item">
+                    <div style="display:flex; align-items:center;">
+                        <div class="txn-icon" style="background:${bg}; color:${color};">${icon}</div>
+                        <div>
+                            <div style="font-weight:600; font-size:14px;">${partyName}</div>
+                            <div style="font-size:11px; color:#64748b;">${v.type} #${v.voucher_no}</div>
                         </div>
                     </div>
-                    <div class="txn-amt" style="color:${color}">
-                        ${isCredit ? '+' : '-'} ${formatCurrency(v.amount)}
+                    <div style="font-weight:700; color:${color};">
+                        ₹${v.amount.toLocaleString('en-IN')}
                     </div>
-                </div>`;
-            }).join('');
-        }
-
-        // ALERTS (Low Stock)
-        const alerts = document.getElementById('alertList');
-        let alertHtml = '';
-        const lowStock = dbData.items.filter(i => (i.current_stock||0) <= (i.reorder_level||5));
-        
-        if(lowStock.length > 0) {
-            alertHtml += `
-            <div class="alert-item">
-                <div class="alert-icon"><i class="fas fa-box-open"></i></div>
-                <div>
-                    <strong style="font-size:13px;">Low Stock Warning</strong>
-                    <div style="font-size:12px; color:var(--text-sub);">${lowStock.length} items below reorder level.</div>
                 </div>
-            </div>`;
-        } else {
-            alertHtml = '<div style="padding:20px; text-align:center; color:var(--success);"><i class="fas fa-check-circle"></i> No pending alerts</div>';
-        }
-        alerts.innerHTML = alertHtml;
+            `;
+        });
+        document.getElementById('txnList').innerHTML = txnHtml || '<div style="padding:20px; text-align:center;">No recent activity</div>';
+
+        // 4. RENDER GRAPH
+        renderChart(saleTotal, purchTotal);
     }
 
-    // --- 8. RENDER CHARTS (REAL DATA) ---
-    function renderCharts() {
-        // A. PREPARE SALES DATA (Last 6 Months)
-        const labels = [];
-        const dataPoints = [];
-        
-        for(let i=5; i>=0; i--) {
-            const d = new Date();
-            d.setMonth(d.getMonth() - i);
-            labels.push(d.toLocaleString('default', { month: 'short' }));
-            
-            // Filter sales for this month
-            const mStart = new Date(d.getFullYear(), d.getMonth(), 1);
-            const mEnd = new Date(d.getFullYear(), d.getMonth() + 1, 0);
-            
-            const val = dbData.vouchers
-                .filter(v => v.type === 'Sales' && new Date(v.date) >= mStart && new Date(v.date) <= mEnd)
-                .reduce((sum, v) => sum + (parseFloat(v.amount)||0), 0);
-            dataPoints.push(val);
-        }
-
-        // B. SALES CHART
-        const ctx = document.getElementById('salesChart').getContext('2d');
+    function renderChart(sales, purchase) {
+        const ctx = document.getElementById('mainChart').getContext('2d');
         new Chart(ctx, {
-            type: 'line',
+            type: 'bar',
             data: {
-                labels: labels,
+                labels: ['Total Sales', 'Total Purchase'],
                 datasets: [{
-                    label: 'Sales',
-                    data: dataPoints, // Real Data
-                    borderColor: '#0d47a1',
-                    backgroundColor: 'rgba(13, 71, 161, 0.1)',
-                    fill: true,
-                    tension: 0.4
+                    label: 'Amount (₹)',
+                    data: [sales, purchase],
+                    backgroundColor: ['#10b981', '#0d47a1'],
+                    borderRadius: 5
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: { legend: { display: false } },
-                scales: { x: { display: false }, y: { display: false } }
-            }
-        });
-
-        // C. TAX CHART
-        const ctx2 = document.getElementById('taxChart').getContext('2d');
-        // Prevent empty chart glitch
-        let tData = [window.taxData.input, window.taxData.output];
-        if(tData[0] === 0 && tData[1] === 0) tData = [0.1, 0.1]; // Tiny placeholder if empty
-
-        new Chart(ctx2, {
-            type: 'doughnut',
-            data: {
-                labels: ['Input', 'Output'],
-                datasets: [{
-                    data: tData,
-                    backgroundColor: ['#10b981', '#ef4444'],
-                    borderWidth: 0
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                cutout: '70%',
-                plugins: { legend: { position: 'bottom' } }
+                scales: { y: { beginAtZero: true, grid: { display: false } }, x: { grid: { display: false } } }
             }
         });
     }
-
-    // --- 9. SEARCH ---
-    function performSearch() {
-        const q = document.getElementById('globalSearch').value.toLowerCase();
-        const resBox = document.getElementById('searchResults');
-        
-        if(q.length > 2) {
-            resBox.style.display = 'block';
-            // Search in Vouchers
-            const hits = dbData.vouchers.filter(v => 
-                (v.voucher_no && v.voucher_no.toString().includes(q)) || 
-                (v.narration && v.narration.toLowerCase().includes(q))
-            ).slice(0, 5);
-            
-            if(hits.length > 0) {
-                resBox.innerHTML = hits.map(v => `
-                    <div style="padding:10px; border-bottom:1px solid #eee; cursor:pointer;" 
-                         onclick="window.location.href='voucher_entry.html?id=${v.id}&mode=view'">
-                        <strong>${v.type} #${v.voucher_no}</strong> - ₹${v.amount}
-                    </div>
-                `).join('');
-            } else {
-                resBox.innerHTML = '<div style="padding:15px; color:#64748b;">No results found</div>';
-            }
-        } else {
-            resBox.style.display = 'none';
-        }
-    }
-
-    // --- 10. CLICK OUTSIDE TO CLOSE SIDEBAR ---
-    document.addEventListener("DOMContentLoaded", function() {
-        const sidebar = document.getElementById('sidebar');
-        const overlay = document.querySelector('.overlay');
-        const links = document.querySelectorAll('.nav-links a');
-
-        links.forEach(link => {
-            link.addEventListener('click', () => {
-                if (window.innerWidth <= 900) {
-                    if (sidebar) sidebar.classList.remove('active');
-                    if (overlay) overlay.classList.remove('active');
-                }
-            });
-        });
-        
-        if (overlay) {
-            overlay.addEventListener('click', toggleSidebar);
-        }
-    });
 </script>
 </body>
 </html>
