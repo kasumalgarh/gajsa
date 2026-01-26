@@ -306,12 +306,21 @@
         document.getElementById('opQty').disabled = false;
     }
 
-    async function deleteItem() {
+ async function deleteItem() {
         const id = document.getElementById('itemId').value;
         if(!confirm("Delete this item?")) return;
         
         const tx = DB.db.transaction('items', 'readwrite');
-        tx.objectStore('items').delete(parseInt(id));
+        const store = tx.objectStore('items');
+
+        // 1. कोशिश करें नंबर मानकर डिलीट करने की (New System)
+        if(!isNaN(parseInt(id))) {
+            store.delete(parseInt(id));
+        }
+        
+        // 2. कोशिश करें टेक्स्ट मानकर डिलीट करने की (Old System Cleanup)
+        store.delete(id);
+        
         tx.oncomplete = async () => {
             showToast("Deleted");
             newItem();
