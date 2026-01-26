@@ -6,733 +6,174 @@
     <title>Purchase Entry - Arth Book</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-
 </head>
 <style>
 /* ==========================================================================
    ARTH BOOK PLATINUM THEME - MASTER STYLESHEET (MOBILE PERFECT)
-   Covers: Dashboard, Sales, Purchase, Vouchers, etc.
    ========================================================================== */
 
 :root {
-    /* --- COLOR PALETTE --- */
-    --primary: #0d47a1;       /* Royal Navy */
-    --primary-dark: #002171;  /* Darker Navy */
-    --accent: #ffca28;        /* Gold */
-    --bg: #f1f5f9;            /* Background */
-    --surface: #ffffff;       /* Card White */
-    --text-main: #1e293b;
-    --text-sub: #64748b;
-    --border: #e2e8f0;
-    
-    /* --- STATUS --- */
-    --success: #10b981;
-    --danger: #ef4444;
-    --warning: #f59e0b;
-    
-    /* --- LAYOUT --- */
-    --sidebar-width: 260px;
-    --shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-    --transition: all 0.2s ease-in-out;
+    --primary: #0d47a1; --primary-dark: #002171; --accent: #ffca28;
+    --bg: #f1f5f9; --surface: #ffffff; --text-main: #1e293b; --text-sub: #64748b;
+    --border: #e2e8f0; --success: #10b981; --danger: #ef4444; --warning: #f59e0b;
+    --sidebar-width: 260px; --shadow: 0 4px 6px -1px rgba(0,0,0,0.05); --transition: all 0.2s ease-in-out;
 }
 
-/* ===========================
-   1. GLOBAL RESET
-   =========================== */
+/* RESET */
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; outline: none; }
 body { display: flex; height: 100vh; background: var(--bg); color: var(--text-main); overflow: hidden; }
-a { text-decoration: none; }
-ul { list-style: none; }
-button { font-family: inherit; }
+a { text-decoration: none; } ul { list-style: none; } button { font-family: inherit; }
 
-/* ===========================
-   2. SIDEBAR & NAVIGATION
-   =========================== */
-.sidebar {
-    width: var(--sidebar-width);
-    background: var(--primary) !important;
-    color: white;
-    display: flex; flex-direction: column; flex-shrink: 0; height: 100vh;
-    overflow-y: auto; z-index: 2000;
-    box-shadow: 4px 0 10px rgba(0,0,0,0.1);
-    transition: var(--transition);
-}
+/* SIDEBAR */
+.sidebar { width: var(--sidebar-width); background: var(--primary) !important; color: white; display: flex; flex-direction: column; flex-shrink: 0; height: 100vh; overflow-y: auto; z-index: 2000; box-shadow: 4px 0 10px rgba(0,0,0,0.1); transition: var(--transition); }
+.brand-logo { padding: 20px; font-size: 20px; font-weight: 800; color: white !important; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 10px; }
+.nav-links { padding: 0 10px; margin: 0; } .nav-links li { margin-bottom: 5px; }
+.sidebar a, .nav-links a, .nav-link { display: flex !important; align-items: center; gap: 12px; padding: 12px 15px; margin-bottom: 5px; color: rgba(255,255,255,0.85) !important; text-decoration: none !important; border-radius: 8px; font-weight: 500; font-size: 14px; transition: var(--transition); background: transparent; cursor: pointer; }
+.sidebar a:hover, .nav-link:hover { background: rgba(255,255,255,0.15) !important; color: #ffffff !important; padding-left: 20px; }
+.sidebar a.active, .nav-link.active { background: var(--accent) !important; color: var(--primary-dark) !important; font-weight: 800; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
 
-.brand-logo {
-    padding: 20px; font-size: 20px; font-weight: 800; color: white !important;
-    display: flex; align-items: center; gap: 10px;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-    margin-bottom: 10px;
-}
-
-/* --- LINKS FIX --- */
-.nav-links { padding: 0 10px; margin: 0; }
-.nav-links li { margin-bottom: 5px; }
-
-.sidebar a, .nav-links a, .nav-link {
-    display: flex !important; align-items: center; gap: 12px;
-    padding: 12px 15px; margin-bottom: 5px;
-    color: rgba(255,255,255,0.85) !important;
-    text-decoration: none !important;
-    border-radius: 8px; font-weight: 500; font-size: 14px;
-    transition: var(--transition);
-    background: transparent; cursor: pointer;
-}
-
-.sidebar a:hover, .nav-link:hover {
-    background: rgba(255,255,255,0.15) !important;
-    color: #ffffff !important;
-    padding-left: 20px;
-}
-
-.sidebar a.active, .nav-link.active {
-    background: var(--accent) !important;
-    color: var(--primary-dark) !important;
-    font-weight: 800;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-}
-
-/* ===========================
-   3. MAIN LAYOUT
-   =========================== */
-.main, .main-content, .main-area { 
-    flex: 1; display: flex; flex-direction: column; 
-    overflow: hidden; position: relative; width: 100%;
-}
-
-.header, .top-bar {
-    background: var(--surface); padding: 15px 20px; 
-    border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: space-between; 
-    flex-wrap: wrap; gap: 15px; flex-shrink: 0;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-    min-height: 60px;
-    padding-right: 60px; /* Space for menu btn */
-    position: relative;
-}
-
+/* MAIN LAYOUT */
+.main, .main-content, .main-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; width: 100%; }
+.header, .top-bar { background: var(--surface); padding: 15px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px; flex-shrink: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.05); min-height: 60px; padding-right: 60px; position: relative; }
 .header h2 { margin: 0; font-size: 1.2rem; color: var(--primary); font-weight: 800; }
-
 .scroll-area { padding: 20px; overflow-y: auto; flex: 1; -webkit-overflow-scrolling: touch; }
 
-/* ===========================
-   4. PURCHASE & SALES ENTRY LAYOUT
-   =========================== */
+/* PURCHASE ENTRY LAYOUT */
+.grid-header { display: grid; grid-template-columns: 1fr 1fr 2fr; gap: 20px; margin-bottom: 20px; }
+.table-container, .table-area { width: 100%; overflow-x: auto; background: white; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 15px; }
+.card { background: var(--surface); border-radius: 12px; box-shadow: var(--shadow); border: 1px solid var(--border); padding: 20px; margin-bottom: 20px; }
 
-/* Header Inputs (Purchase Page) */
-.grid-header { 
-    display: grid; 
-    grid-template-columns: 1fr 1fr 2fr; 
-    gap: 20px; 
-    margin-bottom: 20px; 
-}
-
-/* Header Card (Sales Page) */
-.header-card {
-    background: var(--surface); padding: 15px;
-    border-radius: 12px; border: 1px solid var(--border);
-    display: flex; gap: 15px; flex-wrap: wrap; 
-    margin-bottom: 15px; align-items: end;
-}
-
-/* Entry Bar (Sales Page) */
-.entry-bar {
-    background: #fff; padding: 15px; 
-    border: 1px solid var(--border); border-bottom: none;
-    border-radius: 12px 12px 0 0;
-    display: grid; 
-    grid-template-columns: 3fr 1fr 1fr 1fr 100px;
-    gap: 10px; align-items: end;
-}
-
-/* Table Container (Scrollable) */
-.table-container, .table-area {
-    width: 100%; overflow-x: auto; background: white;
-    border: 1px solid var(--border); border-radius: 8px;
-    margin-bottom: 15px;
-}
-
-/* Card Container */
-.card {
-    background: var(--surface); border-radius: 12px;
-    box-shadow: var(--shadow); border: 1px solid var(--border);
-    padding: 20px; margin-bottom: 20px;
-}
-
-/* ===========================
-   5. COMPONENTS (Inputs, Buttons, Tables)
-   =========================== */
+/* COMPONENTS */
 .form-group label { display: block; font-size: 12px; font-weight: 700; color: var(--text-sub); margin-bottom: 5px; text-transform: uppercase; }
-
-input, select, textarea {
-    width: 100%; padding: 10px 12px; border: 1px solid var(--border);
-    border-radius: 8px; font-size: 14px; outline: none; background: #fff;
-    color: var(--text-main); transition: 0.2s;
-}
+input, select, textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; outline: none; background: #fff; color: var(--text-main); transition: 0.2s; }
 input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(13, 71, 161, 0.1); }
 input[readonly] { background: #f8fafc; color: var(--text-sub); }
 
-/* Tables */
-table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 600px; /* Force Scroll */ }
+table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 600px; }
 th { background: #f8fafc; padding: 12px; text-align: left; font-weight: 700; border-bottom: 2px solid var(--border); white-space: nowrap; }
 td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
 
-/* Buttons */
-.btn {
-    padding: 10px 20px; border-radius: 8px; border: none;
-    font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 14px;
-    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-}
+.btn { padding: 10px 20px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 14px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
 .btn:active { transform: scale(0.98); }
-
 .btn-primary, .btn-save, .btn-add { background: var(--primary); color: white; }
 .btn-success { background: var(--success); color: white; }
 .btn-danger, .btn-del { background: #fee2e2; color: var(--danger); }
 
-/* ===========================
-   6. MOBILE RESPONSIVENESS (IMPORTANT)
-   =========================== */
-.menu-btn { 
-    display: none; position: absolute; right: 15px; top: 15px; 
-    font-size: 1.5rem; color: var(--primary); background: none; border: none; cursor: pointer; 
-}
+/* MOBILE */
+.menu-btn { display: none; position: absolute; right: 15px; top: 15px; font-size: 1.5rem; color: var(--primary); background: none; border: none; cursor: pointer; }
 .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1500; backdrop-filter: blur(2px); }
 
 @media (max-width: 1024px) {
-    /* Sidebar */
     .sidebar { position: fixed; left: -100%; top: 0; height: 100%; width: 280px; }
     .sidebar.active { left: 0; }
-    
-    /* Menu Button Visible */
     .menu-btn { display: block; }
     .overlay.active { display: block; }
-    
-    /* Global Layout */
     .main { padding: 0; }
-    .header { padding-right: 60px; } /* Space for button */
-    
-    /* --- PURCHASE PAGE MOBILE FIX --- */
-    .grid-header {
-        grid-template-columns: 1fr !important; /* Stack Inputs */
-        gap: 15px;
-    }
-    
-    /* --- SALES PAGE MOBILE FIX --- */
-    .header-card, .entry-bar {
-        grid-template-columns: 1fr !important; /* Stack Inputs */
-        flex-direction: column;
-        align-items: stretch;
-        gap: 10px;
-    }
-    
-    /* Full Width Buttons on Mobile */
-    .btn-add, .entry-bar .btn, .header .btn-save {
-        width: 100%; height: 45px; margin-top: 5px;
-    }
-    
-    /* Footer Totals Stack */
-    .totals, .footer-bar, .footer-bar > div {
-        flex-direction: column; align-items: stretch; width: 100%; gap: 10px;
-    }
-    
-    /* Modal Mobile Fix */
+    .header { padding-right: 60px; }
+    .grid-header { grid-template-columns: 1fr !important; gap: 15px; }
+    .btn-add, .entry-bar .btn, .header .btn-save { width: 100%; height: 45px; margin-top: 5px; }
+    .totals { flex-direction: column; align-items: stretch; width: 100%; gap: 10px; }
     .modal { width: 95% !important; padding: 20px !important; }
-    .pay-options { flex-direction: column !important; }
-    .p-opt { padding: 15px; justify-content: flex-start; }
 }
 
-/* ===========================
-   7. UTILITIES & MODAL
-   =========================== */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2500; display: none; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
 .modal { background: white; width: 500px; max-width: 95%; padding: 25px; border-radius: 16px; box-shadow: 0 25px 50px rgba(0,0,0,0.25); }
-
-/* Payment Options (Desktop) */
-.pay-options { display: flex; gap: 15px; margin: 20px 0; }
-.p-opt { flex: 1; padding: 15px; border: 2px solid var(--border); border-radius: 10px; text-align: center; cursor: pointer; background: #f9f9f9; }
-.p-opt.selected { border-color: var(--accent); background: #fffbeb; color: var(--primary-dark); font-weight: bold; }
-
-/* Toast */
 #toast { position: fixed; bottom: 80px; right: 20px; background: var(--success); color: white; padding: 12px 24px; border-radius: 50px; display: none; z-index: 3000; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
-
-/* Print */
-@media print {
-    .sidebar, .menu-btn, .header, .entry-bar, .footer-bar, .btn, .overlay, #toast, .no-print { display: none !important; }
-    .main, .main-content, .table-area { padding: 0; border: none; height: auto; overflow: visible; }
-}    
+@media print { .sidebar, .menu-btn, .header, .entry-bar, .footer-bar, .btn, .overlay, #toast, .no-print { display: none !important; } .main, .main-content, .table-area { padding: 0; border: none; height: auto; overflow: visible; } }    
 </style>
 <body>
 <button class="menu-btn" onclick="toggleMenu()">☰</button>
 <div class="overlay" onclick="toggleMenu()"></div>
 
-
 <div class="sidebar" id="sidebar">
-    <div class="brand-logo">
-        <i class="fas fa-cube"></i> Arth Book
-    </div>
-    
+    <div class="brand-logo"><i class="fas fa-cube"></i> Arth Book</div>
     <ul class="nav-links">
-        <li><a href="index.html" id="nav-dash"><i class="fas fa-home"></i> Dashboard</a></li>
-        
-        <li class="nav-section">Entry</li>
-        <li><a href="sales_invoice.html" id="nav-sales"><i class="fas fa-file-invoice"></i> Sales (POS)</a></li>
-        <li><a href="purchase_invoice.html" id="nav-purchase"><i class="fas fa-truck"></i> Purchase</a></li>
-        <li><a href="vouchers.html" id="nav-vouchers"><i class="fas fa-receipt"></i> Day Book</a></li>
-        
-        <li class="nav-section">Masters</li>
-        <li><a href="item_master.html" id="nav-items"><i class="fas fa-boxes"></i> Inventory</a></li>
-        <li><a href="ArthBook.html" id="nav-parties"><i class="fas fa-users"></i> Parties</a></li>
-        <li><a href="coa.html" id="nav-accounts"><i class="fas fa-sitemap"></i> Accounts</a></li>
-        
-        <li class="nav-section">Reports & Tax</li>
-        <li><a href="reports.html" id="nav-reports"><i class="fas fa-chart-line"></i> Reports</a></li>
-        <li><a href="gst_filing.html" id="nav-gst"><i class="fas fa-university"></i> GST Returns</a></li>
-        <li><a href="taxation.html" id="nav-tax"><i class="fas fa-calculator"></i> Tax / ITR</a></li>
-        
-        <hr class="nav-divider">
-        
-        <li><a href="settings.html" id="nav-settings"><i class="fas fa-cog"></i> Settings</a></li>
-        <li><a href="help.html" id="nav-help"><i class="fas fa-question-circle"></i> Help Guide</a></li>
+        <li><a href="index.html"><i class="fas fa-home"></i> Dashboard</a></li>
+        <li style="margin:15px 0 5px 15px; font-size:11px; opacity:0.5; text-transform:uppercase;">Entry</li>
+        <li><a href="sales_invoice.html"><i class="fas fa-file-invoice"></i> Sales (POS)</a></li>
+        <li><a href="purchase_invoice.html" class="active"><i class="fas fa-truck"></i> Purchase</a></li>
+        <li><a href="vouchers.html"><i class="fas fa-receipt"></i> Day Book</a></li>
+        <li style="margin:15px 0 5px 15px; font-size:11px; opacity:0.5; text-transform:uppercase;">Masters</li>
+        <li><a href="item_master.html"><i class="fas fa-boxes"></i> Inventory</a></li>
+        <li><a href="ArthBook.html"><i class="fas fa-users"></i> Parties</a></li>
+        <li><a href="coa.html"><i class="fas fa-sitemap"></i> Accounts</a></li>
+        <li style="margin:15px 0 5px 15px; font-size:11px; opacity:0.5; text-transform:uppercase;">Reports</li>
+        <li><a href="reports.html"><i class="fas fa-chart-line"></i> Reports</a></li>
+        <li><a href="settings.html"><i class="fas fa-cog"></i> Settings</a></li>
     </ul>
-    
-    <div class="sidebar-footer">
-        Arth Book v5.0<br>Authorized User
-    </div>
 </div>
 
-    <div class="main-content">
-        <div class="header">
-            <div style="display:flex; align-items:center;">
-<i class="fas fa-bars menu-btn" onclick="toggleSidebar()"></i>            <h2><i class="fas fa-truck-loading" style="color:var(--accent);"></i> New Purchase</h2>
-            </div>
-            <button class="btn btn-save" onclick="savePurchase()">
-                <i class="fas fa-save"></i> Save Entry
-            </button>
+<div class="main-content">
+    <div class="header">
+        <div style="display:flex; align-items:center;">
+            <h2><i class="fas fa-truck-loading" style="color:var(--accent);"></i> New Purchase</h2>
         </div>
-
-        <div class="scroll-area">
-            <div class="card">
-                <div class="grid-header">
-                    <div class="form-group">
-                        <label>Invoice No (Bill No)</label>
-                        <input type="text" id="invNo" placeholder="e.g. PUR-001">
-                    </div>
-                    <div class="form-group">
-                        <label>Date</label>
-                        <input type="date" id="invDate">
-                    </div>
-                    <div class="form-group">
-    <label>Supplier (Party)</label>
-    <div style="display:flex; gap:5px;">
-        <select id="partySelect" style="flex:1;"></select>
-        <button class="btn btn-save" style="padding:0 12px;" onclick="openPartyModal()" title="Add New Supplier">
-            <i class="fas fa-plus"></i>
+        <button class="btn btn-save" onclick="savePurchase()">
+            <i class="fas fa-save"></i> Save Entry
         </button>
     </div>
-</div>
-                </div>
 
-                <div class="table-container">
-                    <table id="itemTable">
-                        <thead>
-                            <tr>
-                                <th width="40%">Item / Product</th>
-                                <th width="15%">Qty</th>
-                                <th width="15%">Rate</th>
-                                <th width="10%">Tax %</th>
-                                <th width="15%" style="text-align:right;">Total</th>
-                                <th width="5%"></th>
-                            </tr>
-                        </thead>
-                        <tbody id="rows"></tbody>
-                    </table>
+    <div class="scroll-area">
+        <div class="card">
+            <div class="grid-header">
+                <div class="form-group">
+                    <label>Invoice No (Bill No)</label>
+                    <input type="text" id="invNo" placeholder="e.g. PUR-001">
                 </div>
-                
-                <button class="btn btn-add" onclick="addRow()">
-                    <i class="fas fa-plus-circle"></i> Add Another Line
-                </button>
-
-                <div class="totals">
-                    <div class="total-row"><span>Sub Total:</span> <span id="lblTaxable">0.00</span></div>
-                    <div class="total-row"><span>Input GST:</span> <span id="lblTax">0.00</span></div>
-                    <div class="grand-total"><span>Total:</span> ₹ <span id="lblTotal">0.00</span></div>
+                <div class="form-group">
+                    <label>Date</label>
+                    <input type="date" id="invDate">
+                </div>
+                <div class="form-group">
+                    <label>Supplier (Party)</label>
+                    <div style="display:flex; gap:5px;">
+                        <select id="partySelect" style="flex:1;"></select>
+                        <button class="btn btn-save" style="padding:0 12px;" onclick="openPartyModal()" title="Add New Supplier">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            <div class="recent-section no-print">
-                <h3><i class="fas fa-history"></i> Recent Purchases</h3>
-                <div class="table-container" style="background:white; margin-bottom: 50px;">
-                    <table class="recent-table">
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Inv No</th>
-                                <th>Supplier</th>
-                                <th>Amount</th>
-                                <th style="text-align:right;">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="recentList">
-                        </tbody>
-                    </table>
-                </div>
+            <div class="table-container">
+                <table id="itemTable">
+                    <thead>
+                        <tr>
+                            <th width="40%">Item / Product</th>
+                            <th width="15%">Qty</th>
+                            <th width="15%">Rate</th>
+                            <th width="10%">Tax %</th>
+                            <th width="15%" style="text-align:right;">Total</th>
+                            <th width="5%"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="rows"></tbody>
+                </table>
+            </div>
+            
+            <button class="btn btn-add" onclick="addRow()">
+                <i class="fas fa-plus-circle"></i> Add Another Line
+            </button>
+
+            <div class="totals" style="margin-top:20px; text-align:right;">
+                <div class="total-row"><span>Sub Total:</span> <span id="lblTaxable" style="font-weight:bold;">0.00</span></div>
+                <div class="total-row"><span>Input GST:</span> <span id="lblTax" style="font-weight:bold;">0.00</span></div>
+                <div class="grand-total" style="font-size:18px; color:var(--primary); font-weight:800; margin-top:10px;">Total: ₹ <span id="lblTotal">0.00</span></div>
+            </div>
+        </div>
+
+        <div class="recent-section no-print">
+            <h3><i class="fas fa-history"></i> Recent Purchases</h3>
+            <div class="table-container" style="background:white; margin-bottom: 50px;">
+                <table class="recent-table">
+                    <thead><tr><th>Date</th><th>Inv No</th><th>Supplier</th><th>Amount</th><th style="text-align:right;">Action</th></tr></thead>
+                    <tbody id="recentList"></tbody>
+                </table>
             </div>
         </div>
     </div>
+</div>
 
-    <script src="db.js"></script>
-   <script src="db.js"></script>
-    <script>let items = [], ledgers = [], settings = {}, groups = [];
-
-        window.onload = async () => {
-            await DB.init();
-            
-            // 1. Load All Data safely
-            try {
-                [items, ledgers, settings, groups] = await Promise.all([
-                    DB.getAll('items'),
-                    DB.getAll('ledgers'),
-                    DB.getAll('settings'),
-                    DB.getAll('groups')
-                ]);
-            } catch(e) { console.error("Data load error", e); }
-
-            // 2. Populate Supplier Dropdown (SMART FILTER)
-            const sel = document.getElementById('partySelect');
-            sel.innerHTML = '<option value="">Select Supplier / Party</option>';
-            
-            // A. Find correct Group IDs by Name
-            const targetNames = ['Sundry Creditors', 'Cash-in-Hand', 'Bank Accounts'];
-            const allowedGroupIds = groups
-                .filter(g => targetNames.includes(g.name))
-                .map(g => g.id);
-
-            // B. Filter Ledgers based on allowed IDs
-            const validParties = ledgers.filter(l => allowedGroupIds.includes(l.group_id));
-
-            // C. Show in Dropdown
-            if(validParties.length > 0) {
-                validParties.sort((a,b) => a.name.localeCompare(b.name));
-                validParties.forEach(l => {
-                    const gName = groups.find(g => g.id === l.group_id)?.name || '';
-                    sel.innerHTML += `<option value="${l.id}">${l.name} (${gName})</option>`;
-                });
-            } else {
-                sel.innerHTML = '<option value="">No Suppliers Found (Create in Parties)</option>';
-            }
-
-            document.getElementById('invDate').valueAsDate = new Date();
-            loadRecentList();
-            addRow(); // Default row
-        };
-
-        // Mobile Sidebar Logic (Keep Sidebar hidden on small screens)
-        function toggleMenu() {
-            document.getElementById('sidebar').classList.toggle('active');
-            document.querySelector('.overlay').classList.toggle('active');
-        }
-
-        // ROW MANAGEMENT
-        function addRow() {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>
-                    <select class="item-sel" onchange="fillRow(this)">
-                        <option value="">Select Item</option>
-                        ${items.map(i => `<option value="${i.id}" data-rate="${i.std_cost}" data-gst="${i.gst_rate}">${i.name}</option>`).join('')}
-                    </select>
-                </td>
-                <td><input type="number" class="qty" value="1" min="1" onchange="calc(this)"></td>
-                <td><input type="number" class="rate" value="0" min="0" onchange="calc(this)"></td>
-                <td><input type="number" class="gst" value="0" readonly style="background:#f1f5f9;"></td>
-                <td><input type="text" class="amt" value="0.00" readonly style="background:#f1f5f9; text-align:right; font-weight:bold;"></td>
-                <td style="text-align:center;"><i class="fas fa-trash-alt" onclick="removeRow(this)" style="color:var(--danger-color); cursor:pointer;"></i></td>
-            `;
-            document.getElementById('rows').appendChild(tr);
-        }
-
-        function removeRow(btn) {
-            const rows = document.querySelectorAll('#rows tr');
-            if(rows.length > 1) {
-                btn.closest('tr').remove();
-                calcTotal();
-            } else {
-                // If only 1 row, just clear values
-                const tr = rows[0];
-                tr.querySelector('.item-sel').value = "";
-                tr.querySelector('.qty').value = 1;
-                tr.querySelector('.rate').value = 0;
-                tr.querySelector('.gst').value = 0;
-                tr.querySelector('.amt').value = "0.00";
-                tr.dataset.basic = 0; tr.dataset.tax = 0;
-                calcTotal();
-            }
-        }
-
-        function fillRow(el) {
-            const opt = el.selectedOptions[0];
-            const tr = el.closest('tr');
-            if(opt.value) {
-                tr.querySelector('.rate').value = opt.dataset.rate || 0;
-                tr.querySelector('.gst').value = opt.dataset.gst || 0;
-                calc(el);
-            }
-        }
-
-        function calc(el) {
-            const tr = el.closest('tr');
-            const qty = parseFloat(tr.querySelector('.qty').value) || 0;
-            const rate = parseFloat(tr.querySelector('.rate').value) || 0;
-            const gst = parseFloat(tr.querySelector('.gst').value) || 0;
-
-            const basic = qty * rate;
-            const tax = basic * (gst / 100);
-            
-            tr.querySelector('.amt').value = (basic + tax).toFixed(2);
-            tr.dataset.basic = basic;
-            tr.dataset.tax = tax;
-            calcTotal();
-        }
-
-        function calcTotal() {
-            let taxable = 0, tax = 0;
-            document.querySelectorAll('#rows tr').forEach(tr => {
-                taxable += parseFloat(tr.dataset.basic || 0);
-                tax += parseFloat(tr.dataset.tax || 0);
-            });
-            document.getElementById('lblTaxable').innerText = taxable.toFixed(2);
-            document.getElementById('lblTax').innerText = tax.toFixed(2);
-            document.getElementById('lblTotal').innerText = (taxable + tax).toFixed(2);
-        }
-
-        async function savePurchase() {
-            const pid = document.getElementById('partySelect').value;
-            const date = document.getElementById('invDate').value;
-            const invNo = document.getElementById('invNo').value.trim();
-            
-            if(!invNo) return alert("Enter Bill Number (Invoice No)");
-            if(!pid) return alert("Select Supplier");
-
-            const taxable = parseFloat(document.getElementById('lblTaxable').innerText);
-            const taxTotal = parseFloat(document.getElementById('lblTax').innerText);
-            const grand = parseFloat(document.getElementById('lblTotal').innerText);
-
-            if(grand <= 0) return alert("Total cannot be zero");
-
-            // 1. Prepare Voucher Object
-            const voucher = {
-                voucher_no: invNo,
-                date: date,
-                type: 'Purchase',
-                party_id: parseInt(pid),
-                amount: grand,
-                narration: `Purchase Invoice #${invNo}`
-            };
-
-            // 2. Prepare Accounting Entries
-            const entries = [];
-            
-            // A. Credit the Supplier (We owe them money)
-            entries.push({ ledger_id: parseInt(pid), credit: grand, debit: 0 });
-
-            // B. Debit Purchase Account (Expense)
-            // Logic: Find 'Local Purchase' ledger OR any ledger under 'Purchase Accounts' group
-            let purL = ledgers.find(l => l.name === 'Local Purchase');
-            if(!purL) {
-                const purGroupId = groups.find(g => g.name === 'Purchase Accounts')?.id;
-                if(purGroupId) purL = ledgers.find(l => l.group_id === purGroupId);
-            }
-            const purId = purL ? purL.id : 0; // 0 is fallback if setup is broken
-            
-            entries.push({ ledger_id: purId, debit: taxable, credit: 0 });
-
-            // C. Debit Tax Account (Input GST)
-            if(taxTotal > 0) {
-                let taxL = ledgers.find(l => l.name === 'Input GST');
-                if(!taxL) {
-                     const taxGroupId = groups.find(g => g.name === 'Duties & Taxes')?.id;
-                     if(taxGroupId) taxL = ledgers.find(l => l.group_id === taxGroupId);
-                }
-                if(taxL) entries.push({ ledger_id: taxL.id, debit: taxTotal, credit: 0 });
-            }
-
-            // 3. Prepare Inventory Meta Data (For Stock Update)
-            // We create dummy entries to carry stock movement data for DB.js to process
-            document.querySelectorAll('#rows tr').forEach(tr => {
-                const itemId = tr.querySelector('.item-sel').value;
-                if(itemId) {
-                    const qty = parseFloat(tr.querySelector('.qty').value);
-                    const rate = parseFloat(tr.querySelector('.rate').value);
-                    
-                    entries.push({
-                        ledger_id: purId, 
-                        debit: 0, credit: 0, // Zero value, just carrying info
-                        meta_data: { item_id: parseInt(itemId), qty: qty, rate: rate }
-                    });
-                }
-            });
-
-            try {
-                // DB.js handles transaction & stock update automatically
-                await DB.saveVoucherTransaction(voucher, entries);
-                alert("✅ Purchase Saved Successfully! Stock Updated.");
-                location.reload();
-            } catch(e) {
-                console.error(e);
-                alert("Error saving: " + e.message);
-            }
-        }
-
-        async function loadRecentList() {
-            const vouchers = await DB.getAll('vouchers');
-            const tbody = document.getElementById('recentList');
-            
-            // Filter Purchases & Sort by Date Descending
-            const purchases = vouchers.filter(v => v.type === 'Purchase').sort((a,b) => b.id - a.id);
-            
-            if(purchases.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" class="text-center" style="padding:20px; color:#94a3b8;">No recent purchases</td></tr>';
-                return;
-            }
-
-            tbody.innerHTML = purchases.slice(0, 5).map(v => {
-                const party = ledgers.find(l => l.id == v.party_id)?.name || 'Unknown Party';
-                return `
-                    <tr>
-                        <td>${v.date}</td>
-                        <td><span style="font-weight:600; color:var(--primary-color);">${v.voucher_no}</span></td>
-                        <td>${party}</td>
-                        <td style="font-family:monospace; font-weight:600;">₹${v.amount.toFixed(2)}</td>
-                        <td class="text-right">
-                            <button class="btn" style="padding:6px 10px; background:#fee2e2; color:#ef4444; font-size:12px; border-radius:4px; border:none; cursor:pointer;" onclick="deleteBill(${v.id})">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
-        }
-
-        async function deleteBill(id) {
-            if(confirm("⚠️ Warning: Deleting this bill will REDUCE the stock that was added. Continue?")) {
-                try {
-                    await DB.deleteVoucher(id);
-                    loadRecentList();
-                } catch(e) {
-                    alert("Delete Failed: " + e);
-                }
-            }
-        } </script>
-        <script>
-    // 1. मेनू खोलने और बंद करने का मास्टर फंक्शन
-    function toggleSidebar() {
-        const sidebar = document.getElementById('sidebar');
-        const overlay = document.querySelector('.overlay');
-        
-        // साइडबार और काली स्क्रीन (Overlay) दोनों को एक साथ ON/OFF करें
-        if (sidebar) sidebar.classList.toggle('active');
-        if (overlay) overlay.classList.toggle('active');
-    }
-
-    // 2. ऑटोमेटिक बंद करने का लॉजिक (Auto Close)
-    document.addEventListener("DOMContentLoaded", function() {
-        const sidebar = document.getElementById('sidebar');
-        const overlay = document.querySelector('.overlay');
-        
-        // A. सारे लिंक्स को ढूंढो
-        const links = document.querySelectorAll('.sidebar a, .nav-links a');
-
-        // B. हर लिंक पर क्लिक करने पर साइडबार बंद करो
-        links.forEach(link => {
-            link.addEventListener('click', () => {
-                // यह सिर्फ मोबाइल स्क्रीन (1024px से कम) पर चलेगा
-                if (window.innerWidth <= 1024) {
-                    if (sidebar) sidebar.classList.remove('active');
-                    if (overlay) overlay.classList.remove('active');
-                }
-            });
-        });
-
-        // C. अगर काली स्क्रीन (बाहर) पर क्लिक किया, तो भी बंद करो
-        if (overlay) {
-            overlay.addEventListener('click', () => {
-                if (sidebar) sidebar.classList.remove('active');
-                overlay.classList.remove('active');
-            });
-        }
-    });
-    
-// --- QUICK PARTY FUNCTIONS ---
-
-function openPartyModal() {
-    document.getElementById('partyModal').style.display = 'flex';
-    document.getElementById('newPartyName').focus();
-}
-
-function closePartyModal() {
-    document.getElementById('partyModal').style.display = 'none';
-    document.getElementById('newPartyName').value = '';
-    document.getElementById('newPartyPhone').value = '';
-    document.getElementById('newPartyGst').value = '';
-}
-
-async function saveNewParty() {
-    const name = document.getElementById('newPartyName').value.trim();
-    if(!name) return alert("Party Name is required");
-
-    // 1. Find 'Sundry Creditors' Group ID (suppliers belong here)
-    const credGroup = groups.find(g => g.name === 'Sundry Creditors');
-    if(!credGroup) return alert("Error: 'Sundry Creditors' group missing in Masters!");
-
-    // 2. Prepare Data
-    const newLedger = {
-        name: name,
-        group_id: credGroup.id,
-        phone: document.getElementById('newPartyPhone').value.trim(),
-        gstin: document.getElementById('newPartyGst').value.trim(),
-        opening_balance: 0,
-        op_date: new Date().toISOString().slice(0,10),
-        reg_type: 'Unregistered'
-    };
-
-    // 3. Save to DB
-    try {
-        const tx = DB.db.transaction('ledgers', 'readwrite');
-        const store = tx.objectStore('ledgers');
-        const request = store.add(newLedger);
-
-        request.onsuccess = async (e) => {
-            const newId = e.target.result; // ID of newly created party
-            
-            // Refresh Ledgers List
-            ledgers = await DB.getAll('ledgers');
-            
-            // Refresh Dropdown
-            const sel = document.getElementById('partySelect');
-            sel.innerHTML = '<option value="">Select Supplier / Party</option>';
-            
-            // Filter logic (Same as onload)
-            const targetNames = ['Sundry Creditors', 'Cash-in-Hand', 'Bank Accounts'];
-            const allowedGroupIds = groups.filter(g => targetNames.includes(g.name)).map(g => g.id);
-            const validParties = ledgers.filter(l => allowedGroupIds.includes(l.group_id));
-            
-            validParties.sort((a,b) => a.name.localeCompare(b.name));
-            validParties.forEach(l => {
-                const gName = groups.find(g => g.id === l.group_id)?.name || '';
-                // Auto-select the new party
-                const isSelected = (l.id === newId) ? 'selected' : '';
-                sel.innerHTML += `<option value="${l.id}" ${isSelected}>${l.name} (${gName})</option>`;
-            });
-
-            alert("✅ Party Created Successfully!");
-            closePartyModal();
-        };
-    } catch(err) {
-        alert("Error creating party: " + err.message);
-    }
-}
-</script>
 <div class="modal-overlay" id="partyModal">
     <div class="modal" style="width:350px;">
         <div class="modal-header" style="display:flex; justify-content:space-between; margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:10px;">
@@ -749,6 +190,14 @@ async function saveNewParty() {
             <label>Mobile Number</label>
             <input type="text" id="newPartyPhone" placeholder="Mobile No">
         </div>
+
+        <div class="form-group" style="margin-bottom:10px;">
+            <label>State * (For IGST Logic)</label>
+            <select id="newPartyState">
+                <option value="">Select State</option>
+                <option value="Andhra Pradesh">Andhra Pradesh</option><option value="Arunachal Pradesh">Arunachal Pradesh</option><option value="Assam">Assam</option><option value="Bihar">Bihar</option><option value="Chhattisgarh">Chhattisgarh</option><option value="Goa">Goa</option><option value="Gujarat">Gujarat</option><option value="Haryana">Haryana</option><option value="Himachal Pradesh">Himachal Pradesh</option><option value="Jharkhand">Jharkhand</option><option value="Karnataka">Karnataka</option><option value="Kerala">Kerala</option><option value="Madhya Pradesh">Madhya Pradesh</option><option value="Maharashtra">Maharashtra</option><option value="Manipur">Manipur</option><option value="Meghalaya">Meghalaya</option><option value="Mizoram">Mizoram</option><option value="Nagaland">Nagaland</option><option value="Odisha">Odisha</option><option value="Punjab">Punjab</option><option value="Rajasthan">Rajasthan</option><option value="Sikkim">Sikkim</option><option value="Tamil Nadu">Tamil Nadu</option><option value="Telangana">Telangana</option><option value="Tripura">Tripura</option><option value="Uttar Pradesh">Uttar Pradesh</option><option value="Uttarakhand">Uttarakhand</option><option value="West Bengal">West Bengal</option><option value="Delhi">Delhi</option>
+            </select>
+        </div>
         
         <div class="form-group" style="margin-bottom:20px;">
             <label>GSTIN (Optional)</label>
@@ -758,5 +207,240 @@ async function saveNewParty() {
         <button class="btn btn-save" onclick="saveNewParty()" style="width:100%">Save & Select</button>
     </div>
 </div>
+
+<script src="db.js"></script>
+<script>
+    let items = [], ledgers = [], settings = {}, groups = [];
+
+    window.onload = async () => {
+        await DB.init();
+        try {
+            [items, ledgers, settings, groups] = await Promise.all([
+                DB.getAll('items'), DB.getAll('ledgers'), DB.getAll('settings'), DB.getAll('groups')
+            ]);
+            if(Array.isArray(settings) && settings.length > 0) settings = settings[0];
+        } catch(e) { console.error("Data load error", e); }
+
+        const sel = document.getElementById('partySelect');
+        sel.innerHTML = '<option value="">Select Supplier / Party</option>';
+        const targetNames = ['Sundry Creditors', 'Cash-in-Hand', 'Bank Accounts'];
+        const allowedGroupIds = groups.filter(g => targetNames.includes(g.name)).map(g => g.id);
+        const validParties = ledgers.filter(l => allowedGroupIds.includes(l.group_id));
+
+        if(validParties.length > 0) {
+            validParties.sort((a,b) => a.name.localeCompare(b.name));
+            validParties.forEach(l => {
+                sel.innerHTML += `<option value="${l.id}">${l.name}</option>`;
+            });
+        }
+
+        document.getElementById('invDate').valueAsDate = new Date();
+        loadRecentList();
+        addRow();
+    };
+
+    function toggleMenu() {
+        document.getElementById('sidebar').classList.toggle('active');
+        document.querySelector('.overlay').classList.toggle('active');
+    }
+
+    function addRow() {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td><select class="item-sel" onchange="fillRow(this)"><option value="">Select Item</option>${items.map(i => `<option value="${i.id}" data-rate="${i.std_cost}" data-gst="${i.gst_rate}">${i.name}</option>`).join('')}</select></td>
+            <td><input type="number" class="qty" value="1" min="1" onchange="calc(this)"></td>
+            <td><input type="number" class="rate" value="0" min="0" onchange="calc(this)"></td>
+            <td><input type="number" class="gst" value="0" readonly style="background:#f1f5f9;"></td>
+            <td><input type="text" class="amt" value="0.00" readonly style="background:#f1f5f9; text-align:right; font-weight:bold;"></td>
+            <td style="text-align:center;"><i class="fas fa-trash-alt" onclick="removeRow(this)" style="color:var(--danger); cursor:pointer;"></i></td>
+        `;
+        document.getElementById('rows').appendChild(tr);
+    }
+
+    function removeRow(btn) {
+        const rows = document.querySelectorAll('#rows tr');
+        if(rows.length > 1) { btn.closest('tr').remove(); calcTotal(); }
+        else { 
+            const tr = rows[0]; tr.querySelector('.item-sel').value = ""; tr.querySelector('.qty').value = 1; tr.querySelector('.rate').value = 0; tr.querySelector('.gst').value = 0; tr.querySelector('.amt').value = "0.00";
+            tr.dataset.basic = 0; tr.dataset.tax = 0; calcTotal();
+        }
+    }
+
+    function fillRow(el) {
+        const opt = el.selectedOptions[0];
+        const tr = el.closest('tr');
+        if(opt.value) {
+            tr.querySelector('.rate').value = opt.dataset.rate || 0;
+            tr.querySelector('.gst').value = opt.dataset.gst || 0;
+            calc(el);
+        }
+    }
+
+    function calc(el) {
+        const tr = el.closest('tr');
+        const qty = parseFloat(tr.querySelector('.qty').value) || 0;
+        const rate = parseFloat(tr.querySelector('.rate').value) || 0;
+        const gst = parseFloat(tr.querySelector('.gst').value) || 0;
+        const basic = qty * rate;
+        const tax = basic * (gst / 100);
+        tr.querySelector('.amt').value = (basic + tax).toFixed(2);
+        tr.dataset.basic = basic; tr.dataset.tax = tax;
+        calcTotal();
+    }
+
+    function calcTotal() {
+        let taxable = 0, tax = 0;
+        document.querySelectorAll('#rows tr').forEach(tr => {
+            taxable += parseFloat(tr.dataset.basic || 0);
+            tax += parseFloat(tr.dataset.tax || 0);
+        });
+        document.getElementById('lblTaxable').innerText = taxable.toFixed(2);
+        document.getElementById('lblTax').innerText = tax.toFixed(2);
+        document.getElementById('lblTotal').innerText = (taxable + tax).toFixed(2);
+    }
+
+    // --- GST PURCHASE LOGIC ---
+    async function savePurchase() {
+        const pid = document.getElementById('partySelect').value;
+        const date = document.getElementById('invDate').value;
+        const invNo = document.getElementById('invNo').value.trim();
+        
+        if(!invNo) return alert("Enter Bill Number (Invoice No)");
+        if(!pid) return alert("Select Supplier");
+
+        const taxable = parseFloat(document.getElementById('lblTaxable').innerText);
+        const taxTotal = parseFloat(document.getElementById('lblTax').innerText);
+        const grand = parseFloat(document.getElementById('lblTotal').innerText);
+
+        if(grand <= 0) return alert("Total cannot be zero");
+
+        // 1. Determine State Logic
+        const companyState = (settings && settings.state) ? settings.state.toLowerCase() : '';
+        let partyState = companyState; // Default to local
+        
+        const party = ledgers.find(l => l.id == pid);
+        if(party && party.state) partyState = party.state.toLowerCase();
+
+        const isInterState = (companyState && partyState && companyState !== partyState);
+
+        const voucher = {
+            voucher_no: invNo,
+            date: date,
+            type: 'Purchase',
+            party_id: parseInt(pid),
+            amount: grand,
+            narration: `Purchase Inv# ${invNo} (${isInterState ? 'IGST' : 'Local'})`
+        };
+
+        const entries = [];
+        
+        // A. Credit Supplier
+        entries.push({ ledger_id: parseInt(pid), credit: grand, debit: 0 });
+
+        // B. Debit Purchase Account (Local vs Inter-State)
+        let purLName = isInterState ? 'Inter-State Purchase' : 'Local Purchase';
+        let purL = ledgers.find(l => l.name === purLName);
+        if(!purL) purL = ledgers.find(l => l.group_id === 7); // Fallback: Purchase Accounts Group
+        const purId = purL ? purL.id : 0;
+        
+        entries.push({ ledger_id: purId, debit: taxable, credit: 0 });
+
+        // C. Debit Input Tax
+        if(taxTotal > 0) {
+            if(isInterState) {
+                // IGST
+                let taxL = ledgers.find(l => l.name === 'Input IGST') || ledgers.find(l => l.group_id === 11);
+                if(taxL) entries.push({ ledger_id: taxL.id, debit: taxTotal, credit: 0 });
+            } else {
+                // CGST + SGST (Split 50-50)
+                let cgstL = ledgers.find(l => l.name === 'Input CGST') || ledgers.find(l => l.group_id === 11);
+                let sgstL = ledgers.find(l => l.name === 'Input SGST') || ledgers.find(l => l.group_id === 11);
+                
+                if(cgstL) entries.push({ ledger_id: cgstL.id, debit: taxTotal/2, credit: 0 });
+                if(sgstL) entries.push({ ledger_id: sgstL.id, debit: taxTotal/2, credit: 0 });
+            }
+        }
+
+        // D. Stock Updates (Meta Data)
+        document.querySelectorAll('#rows tr').forEach(tr => {
+            const itemId = tr.querySelector('.item-sel').value;
+            if(itemId) {
+                const qty = parseFloat(tr.querySelector('.qty').value);
+                const rate = parseFloat(tr.querySelector('.rate').value);
+                entries.push({
+                    ledger_id: purId, 
+                    debit: 0, credit: 0,
+                    meta_data: { item_id: parseInt(itemId), qty: qty, rate: rate }
+                });
+            }
+        });
+
+        try {
+            await DB.saveVoucherTransaction(voucher, entries);
+            alert("✅ Purchase Saved! Stock & Tax Updated.");
+            location.reload();
+        } catch(e) { alert("Error: " + e.message); }
+    }
+
+    // --- QUICK PARTY FUNCTIONS ---
+    function openPartyModal() { document.getElementById('partyModal').style.display = 'flex'; document.getElementById('newPartyName').focus(); }
+    function closePartyModal() { document.getElementById('partyModal').style.display = 'none'; }
+
+    async function saveNewParty() {
+        const name = document.getElementById('newPartyName').value.trim();
+        const state = document.getElementById('newPartyState').value;
+        if(!name) return alert("Name is required");
+        if(!state) return alert("State is required for GST Logic");
+
+        const credGroup = groups.find(g => g.name === 'Sundry Creditors');
+        const newLedger = {
+            name: name,
+            group_id: credGroup.id,
+            phone: document.getElementById('newPartyPhone').value.trim(),
+            gstin: document.getElementById('newPartyGst').value.trim(),
+            state: state, // Save State
+            opening_balance: 0,
+            op_date: new Date().toISOString().slice(0,10),
+            reg_type: 'Unregistered'
+        };
+
+        try {
+            const tx = DB.db.transaction('ledgers', 'readwrite');
+            const request = tx.objectStore('ledgers').add(newLedger);
+            request.onsuccess = async (e) => {
+                ledgers = await DB.getAll('ledgers');
+                const sel = document.getElementById('partySelect');
+                sel.innerHTML = '<option value="">Select Supplier</option>';
+                const valid = ledgers.filter(l => l.group_id === credGroup.id || l.group_id === 14 || l.group_id === 15);
+                valid.sort((a,b) => a.name.localeCompare(b.name));
+                valid.forEach(l => {
+                    sel.innerHTML += `<option value="${l.id}" ${l.id === e.target.result ? 'selected' : ''}>${l.name}</option>`;
+                });
+                alert("✅ Supplier Added!");
+                closePartyModal();
+            };
+        } catch(err) { alert("Error: " + err.message); }
+    }
+
+    async function loadRecentList() {
+        const vouchers = await DB.getAll('vouchers');
+        const purchases = vouchers.filter(v => v.type === 'Purchase').sort((a,b) => b.id - a.id);
+        const tbody = document.getElementById('recentList');
+        if(purchases.length === 0) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px; color:#94a3b8;">No purchases</td></tr>'; return; }
+        
+        tbody.innerHTML = purchases.slice(0, 5).map(v => {
+            const party = ledgers.find(l => l.id == v.party_id)?.name || 'Unknown';
+            return `<tr><td>${v.date}</td><td><strong>${v.voucher_no}</strong></td><td>${party}</td><td>₹${v.amount.toFixed(2)}</td>
+            <td style="text-align:right;"><button class="btn" onclick="deleteBill(${v.id})" style="background:#fee2e2; color:red; padding:5px 10px;"><i class="fas fa-trash"></i></button></td></tr>`;
+        }).join('');
+    }
+
+    async function deleteBill(id) {
+        if(confirm("Delete this bill? Stock will reduce.")) {
+            await DB.deleteVoucher(id); // Ensure DB.js has this or handle manually if using old DB.js
+            loadRecentList();
+        }
+    }
+</script>
 </body>
 </html>

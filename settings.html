@@ -3,224 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <title>Control Center - Arth Book</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-
-
 </head>
 <style>
-    /* ==========================================================================
-   ARTH BOOK - CONTROL CENTER (SETTINGS) ROYAL STYLE
-   ========================================================================== */
-
-:root {
-    --primary: #0d47a1;       /* Royal Navy */
-    --primary-dark: #002171;
-    --accent: #ffca28;        /* Gold */
-    --bg: #f1f5f9;
-    --surface: #ffffff;
-    --text-main: #1e293b;
-    --text-sub: #64748b;
-    --border: #e2e8f0;
-    --success: #16a34a;
-    --danger: #dc2626;
-    --sidebar-width: 260px;
-}
-
-/* --- RESET --- */
-* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; outline: none; }
-body { display: flex; height: 100vh; background: var(--bg); color: var(--text-main); overflow: hidden; }
-
-/* --- SIDEBAR FIX (Royal Blue + White Text) --- */
-.sidebar {
-    width: var(--sidebar-width); background: var(--primary) !important;
-    color: white; display: flex; flex-direction: column; flex-shrink: 0; height: 100vh;
-    overflow-y: auto; z-index: 2000; box-shadow: 4px 0 10px rgba(0,0,0,0.1);
-}
-.brand-logo { padding: 25px 20px; font-size: 22px; font-weight: 800; border-bottom: 1px solid rgba(255,255,255,0.1); color: white !important; }
-.nav-links { padding: 10px; list-style: none; }
-.nav-links li { margin-bottom: 5px; }
-.sidebar a {
-    display: flex !important; align-items: center; gap: 12px;
-    padding: 12px 15px; color: rgba(255,255,255,0.85) !important;
-    text-decoration: none !important; border-radius: 8px; font-weight: 500; font-size: 14px; transition: 0.2s;
-}
-.sidebar a:hover { background: rgba(255,255,255,0.15) !important; color: #fff !important; padding-left: 20px; }
-.sidebar a.active { background: var(--accent) !important; color: var(--primary-dark) !important; font-weight: 800; }
-
-/* --- MAIN LAYOUT --- */
-.main-setting { flex: 1; display: flex; flex-direction: column; overflow-y: auto; background: var(--bg); }
-
-.setting-header {
-    background: var(--surface); padding: 20px 30px; border-bottom: 1px solid var(--border);
-    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;
-    position: sticky; top: 0; z-index: 100;
-}
-.setting-header h1 { font-size: 1.5rem; font-weight: 800; color: var(--primary); }
-
-/* --- TABS --- */
-.tabs {
-    display: flex; background: #fff; padding: 0 30px; border-bottom: 1px solid var(--border);
-    gap: 20px; overflow-x: auto; white-space: nowrap; scrollbar-width: none;
-}
-.tab {
-    padding: 18px 5px; cursor: pointer; font-size: 14px; font-weight: 600;
-    color: var(--text-sub); border-bottom: 3px solid transparent; transition: 0.2s;
-}
-.tab.active { color: var(--primary); border-bottom-color: var(--primary); }
-
-/* --- CARDS & FORMS --- */
-.tab-content { display: none; padding: 30px; max-width: 1000px; margin: 0 auto; width: 100%; }
-.tab-content.active { display: block; }
-
-.card {
-    background: #fff; border-radius: 16px; padding: 25px; margin-bottom: 25px;
-    border: 1px solid var(--border); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-}
-.card h3 { font-size: 1rem; font-weight: 700; color: var(--primary); margin-bottom: 20px; border-left: 4px solid var(--accent); padding-left: 12px; }
-
-.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
-.form-group { display: flex; flex-direction: column; gap: 8px; }
-.form-group label { font-size: 12px; font-weight: 700; color: var(--text-sub); text-transform: uppercase; }
-
-input, select, textarea {
-    padding: 12px; border: 1px solid var(--border); border-radius: 8px;
-    font-size: 14px; background: #f8fafc; transition: 0.2s; width: 100%;
-}
-input:focus, textarea:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 3px rgba(13, 71, 161, 0.1); }
-
-/* --- IMAGE PREVIEW --- */
-.img-preview-box {
-    width: 120px; height: 120px; border: 2px dashed var(--border); border-radius: 12px;
-    margin-top: 10px; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden;
-}
-.img-preview-box img { width: 100%; height: 100%; object-fit: contain; }
-.remove-img {
-    position: absolute; top: 5px; right: 5px; background: var(--danger); color: white;
-    border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; display: none;
-}
-
-/* --- BUTTONS --- */
-.btn-primary {
-    padding: 12px 24px; border: none; border-radius: 8px; background: var(--primary);
-    color: white; font-weight: 700; cursor: pointer; transition: 0.2s; font-size: 14px;
-}
-.btn-primary:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(13, 71, 161, 0.2); }
-.btn-danger { background: #fee2e2; color: var(--danger); border: 1px solid #fecaca; padding: 12px 24px; border-radius: 8px; font-weight: 700; cursor: pointer; }
-.btn-google { background: #fff; color: #444; border: 1px solid var(--border); }
-
-/* --- TOGGLE SWITCH --- */
-.switch { position: relative; display: inline-block; width: 50px; height: 26px; }
-.switch input { opacity: 0; width: 0; height: 0; }
-.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e1; transition: .4s; border-radius: 34px; }
-.slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
-input:checked + .slider { background-color: var(--success); }
-input:checked + .slider:before { transform: translateX(24px); }
-
-/* --- STATUS BADGES --- */
-.status-badge { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
-.status-ok { background: #dcfce7; color: #166534; }
-.status-fail { background: #fee2e2; color: #991b1b; }
-
-/* --- MOBILE RESPONSIVE --- */
-@media (max-width: 900px) {
-    .sidebar { position: fixed; left: -100%; transition: 0.3s; }
-    .sidebar.active { left: 0; }
-    
-    .setting-header { padding: 60px 20px 20px; flex-direction: column; align-items: stretch; text-align: center; }
-    .setting-header h1 { font-size: 1.2rem; }
-    
-    .tabs { padding: 0 10px; }
-    .tab { padding: 15px 10px; font-size: 13px; }
-    
-    .tab-content { padding: 15px; }
-    .card { padding: 20px; border-radius: 12px; }
-    .form-grid { grid-template-columns: 1fr; }
-    
-    .btn-primary, .btn-danger { width: 100%; text-align: center; }
-}/* --- SETTINGS PAGE MENU BUTTON FIX --- */
-@media (max-width: 900px) {
-    .menu-btn {
-        display: flex !important; /* मोबाइल पर दिखाओ */
-        position: fixed !important;
-        top: 15px !important;
-        right: 15px !important; /* राइट साइड में */
-        z-index: 9999 !important; /* सबसे ऊपरी लेयर */
-        background: #0d47a1 !important; /* डार्क ब्लू */
-        color: white !important;
-        width: 45px;
-        height: 45px;
-        border-radius: 8px;
-        border: none;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.5rem;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    /* ARTH BOOK - SETTINGS ROYAL STYLE */
+    :root {
+        --primary: #0d47a1; --primary-dark: #002171; --accent: #ffca28;
+        --bg: #f1f5f9; --surface: #ffffff; --text-main: #1e293b; --text-sub: #64748b;
+        --border: #e2e8f0; --success: #16a34a; --danger: #dc2626; --sidebar-width: 260px;
     }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; outline: none; }
+    body { display: flex; height: 100vh; background: var(--bg); color: var(--text-main); overflow: hidden; }
 
-    .sidebar {
-        position: fixed;
-        left: -280px; /* डिफ़ॉल्ट बंद */
-        transition: 0.3s ease-in-out;
-        z-index: 3000;
-    }
+    /* SIDEBAR */
+    .sidebar { width: var(--sidebar-width); background: var(--primary) !important; color: white; display: flex; flex-direction: column; flex-shrink: 0; height: 100vh; overflow-y: auto; z-index: 2000; box-shadow: 4px 0 10px rgba(0,0,0,0.1); }
+    .brand-logo { padding: 25px 20px; font-size: 22px; font-weight: 800; border-bottom: 1px solid rgba(255,255,255,0.1); color: white !important; }
+    .nav-links { padding: 10px; list-style: none; } .nav-links li { margin-bottom: 5px; }
+    .sidebar a { display: flex !important; align-items: center; gap: 12px; padding: 12px 15px; color: rgba(255,255,255,0.85) !important; text-decoration: none !important; border-radius: 8px; font-weight: 500; font-size: 14px; transition: 0.2s; }
+    .sidebar a:hover { background: rgba(255,255,255,0.15) !important; color: #fff !important; padding-left: 20px; }
+    .sidebar a.active { background: var(--accent) !important; color: var(--primary-dark) !important; font-weight: 800; }
 
-    .sidebar.active {
-        left: 0; /* खुलने पर */
-    }
+    /* MAIN */
+    .main-setting { flex: 1; display: flex; flex-direction: column; overflow-y: auto; background: var(--bg); }
+    .setting-header { background: var(--surface); padding: 20px 30px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; position: sticky; top: 0; z-index: 100; }
+    .setting-header h1 { font-size: 1.5rem; font-weight: 800; color: var(--primary); }
 
-    .overlay.active {
-        display: block !important;
-        position: fixed;
-        inset: 0;
-        background: rgba(0,0,0,0.5);
-        z-index: 2500;
+    /* TABS */
+    .tabs { display: flex; background: #fff; padding: 0 30px; border-bottom: 1px solid var(--border); gap: 20px; overflow-x: auto; white-space: nowrap; }
+    .tab { padding: 18px 5px; cursor: pointer; font-size: 14px; font-weight: 600; color: var(--text-sub); border-bottom: 3px solid transparent; transition: 0.2s; }
+    .tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+    .tab-content { display: none; padding: 30px; max-width: 1000px; margin: 0 auto; width: 100%; }
+    .tab-content.active { display: block; }
+
+    /* CARDS */
+    .card { background: #fff; border-radius: 16px; padding: 25px; margin-bottom: 25px; border: 1px solid var(--border); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+    .card h3 { font-size: 1rem; font-weight: 700; color: var(--primary); margin-bottom: 20px; border-left: 4px solid var(--accent); padding-left: 12px; }
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+    .form-group { display: flex; flex-direction: column; gap: 8px; }
+    .form-group label { font-size: 12px; font-weight: 700; color: var(--text-sub); text-transform: uppercase; }
+    input, select, textarea { padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; background: #f8fafc; transition: 0.2s; width: 100%; }
+    
+    /* IMAGES & BUTTONS */
+    .img-preview-box { width: 120px; height: 120px; border: 2px dashed var(--border); border-radius: 12px; margin-top: 10px; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .img-preview-box img { width: 100%; height: 100%; object-fit: contain; }
+    .remove-img { position: absolute; top: 5px; right: 5px; background: var(--danger); color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; display: none; }
+    .btn-primary { padding: 12px 24px; border: none; border-radius: 8px; background: var(--primary); color: white; font-weight: 700; cursor: pointer; transition: 0.2s; font-size: 14px; }
+    .btn-danger { background: #fee2e2; color: var(--danger); border: 1px solid #fecaca; padding: 12px 24px; border-radius: 8px; font-weight: 700; cursor: pointer; }
+    
+    /* TOGGLE */
+    .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e1; transition: .4s; border-radius: 34px; }
+    .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+    input:checked + .slider { background-color: var(--success); }
+    input:checked + .slider:before { transform: translateX(24px); }
+    .status-badge { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    .status-ok { background: #dcfce7; color: #166534; }
+    .status-fail { background: #fee2e2; color: #991b1b; }
+
+    /* MOBILE */
+    .menu-btn { display: none; font-size: 1.5rem; color: white; background: var(--primary); border: none; cursor: pointer; position: fixed; top: 15px; right: 15px; z-index: 3000; width: 45px; height: 45px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+    .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2500; }
+    @media (max-width: 900px) {
+        .menu-btn { display: flex; align-items: center; justify-content: center; }
+        .sidebar { position: fixed; left: -100%; transition: 0.3s; }
+        .sidebar.active { left: 0; }
+        .overlay.active { display: block; }
+        .setting-header { flex-direction: column; align-items: stretch; text-align: center; padding-top: 70px; }
+        .form-grid { grid-template-columns: 1fr; }
     }
-}
 </style>
-<body><button class="menu-btn" onclick="toggleMenu()">☰</button>
-<div class="overlay" onclick="toggleMenu()"></div>
-<button class="menu-btn" onclick="toggleMenu()">☰</button>
-<div class="overlay" onclick="toggleMenu()"></div>
+<body>
+    <button class="menu-btn" onclick="toggleMenu()">☰</button>
+    <div class="overlay" onclick="toggleMenu()"></div>
 
-<div class="sidebar" id="sidebar">
-    <div class="brand-logo">
-        <i class="fas fa-cube"></i> Arth Book
+    <div class="sidebar" id="sidebar">
+        <div class="brand-logo"><i class="fas fa-cube"></i> Arth Book</div>
+        <ul class="nav-links">
+            <li><a href="index.html"><i class="fas fa-home"></i> Dashboard</a></li>
+            <li style="margin:15px 0 5px 15px; font-size:11px; opacity:0.5; text-transform:uppercase;">Entry</li>
+            <li><a href="sales_invoice.html"><i class="fas fa-file-invoice"></i> Sales</a></li>
+            <li><a href="purchase_invoice.html"><i class="fas fa-truck"></i> Purchase</a></li>
+            <li><a href="vouchers.html"><i class="fas fa-receipt"></i> Day Book</a></li>
+            <li style="margin:15px 0 5px 15px; font-size:11px; opacity:0.5; text-transform:uppercase;">Masters</li>
+            <li><a href="item_master.html"><i class="fas fa-boxes"></i> Inventory</a></li>
+            <li><a href="ArthBook.html"><i class="fas fa-users"></i> Parties</a></li>
+            <li><a href="coa.html"><i class="fas fa-sitemap"></i> Accounts</a></li>
+            <li style="margin:15px 0 5px 15px; font-size:11px; opacity:0.5; text-transform:uppercase;">Reports</li>
+            <li><a href="reports.html"><i class="fas fa-chart-line"></i> Reports</a></li>
+            <li><a href="gst_filing.html"><i class="fas fa-university"></i> GST Returns</a></li>
+            <li><a href="settings.html" class="active"><i class="fas fa-cog"></i> Settings</a></li>
+        </ul>
     </div>
-    
-    <ul class="nav-links">
-        <li><a href="index.html" id="nav-dash"><i class="fas fa-home"></i> Dashboard</a></li>
-        
-        <li class="nav-section">Entry</li>
-        <li><a href="sales_invoice.html" id="nav-sales"><i class="fas fa-file-invoice"></i> Sales (POS)</a></li>
-        <li><a href="purchase_invoice.html" id="nav-purchase"><i class="fas fa-truck"></i> Purchase</a></li>
-        <li><a href="vouchers.html" id="nav-vouchers"><i class="fas fa-receipt"></i> Day Book</a></li>
-        
-        <li class="nav-section">Masters</li>
-        <li><a href="item_master.html" id="nav-items"><i class="fas fa-boxes"></i> Inventory</a></li>
-        <li><a href="ArthBook.html" id="nav-parties"><i class="fas fa-users"></i> Parties</a></li>
-        <li><a href="coa.html" id="nav-accounts"><i class="fas fa-sitemap"></i> Accounts</a></li>
-        
-        <li class="nav-section">Reports & Tax</li>
-        <li><a href="reports.html" id="nav-reports"><i class="fas fa-chart-line"></i> Reports</a></li>
-        <li><a href="gst_filing.html" id="nav-gst"><i class="fas fa-university"></i> GST Returns</a></li>
-        <li><a href="taxation.html" id="nav-tax"><i class="fas fa-calculator"></i> Tax / ITR</a></li>
-        
-        <hr class="nav-divider">
-        
-        <li><a href="settings.html" id="nav-settings"><i class="fas fa-cog"></i> Settings</a></li>
-        <li><a href="help.html" id="nav-help"><i class="fas fa-question-circle"></i> Help Guide</a></li>
-    </ul>
-    
-    <div class="sidebar-footer">
-        Arth Book v5.0<br>Authorized User
-    </div>
-</div>
 
     <div class="main-setting">
         <div class="setting-header">
@@ -245,6 +123,13 @@ input:checked + .slider:before { transform: translateX(24px); }
                         <input type="text" id="compName" placeholder="e.g. Laxmi Traders">
                     </div>
                     <div class="form-group">
+                        <label>State (Required for GST) *</label>
+                        <select id="compState">
+                            <option value="">Select State</option>
+                            <option value="Andhra Pradesh">Andhra Pradesh</option><option value="Arunachal Pradesh">Arunachal Pradesh</option><option value="Assam">Assam</option><option value="Bihar">Bihar</option><option value="Chhattisgarh">Chhattisgarh</option><option value="Goa">Goa</option><option value="Gujarat">Gujarat</option><option value="Haryana">Haryana</option><option value="Himachal Pradesh">Himachal Pradesh</option><option value="Jharkhand">Jharkhand</option><option value="Karnataka">Karnataka</option><option value="Kerala">Kerala</option><option value="Madhya Pradesh">Madhya Pradesh</option><option value="Maharashtra">Maharashtra</option><option value="Manipur">Manipur</option><option value="Meghalaya">Meghalaya</option><option value="Mizoram">Mizoram</option><option value="Nagaland">Nagaland</option><option value="Odisha">Odisha</option><option value="Punjab">Punjab</option><option value="Rajasthan">Rajasthan</option><option value="Sikkim">Sikkim</option><option value="Tamil Nadu">Tamil Nadu</option><option value="Telangana">Telangana</option><option value="Tripura">Tripura</option><option value="Uttar Pradesh">Uttar Pradesh</option><option value="Uttarakhand">Uttarakhand</option><option value="West Bengal">West Bengal</option><option value="Delhi">Delhi</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
                         <label>GSTIN</label>
                         <input type="text" id="compGST" placeholder="15 Digit GSTIN">
                     </div>
@@ -265,22 +150,10 @@ input:checked + .slider:before { transform: translateX(24px); }
             <div class="card">
                 <h3>Bank Details (For Bill Print)</h3>
                 <div class="form-grid">
-                    <div class="form-group">
-                        <label>Bank Name</label>
-                        <input type="text" id="bankName">
-                    </div>
-                    <div class="form-group">
-                        <label>Account Number</label>
-                        <input type="text" id="bankAcc">
-                    </div>
-                    <div class="form-group">
-                        <label>IFSC Code</label>
-                        <input type="text" id="bankIFSC">
-                    </div>
-                    <div class="form-group">
-                        <label>UPI ID (For QR Code)</label>
-                        <input type="text" id="upiId" placeholder="e.g. 9876543210@ybl">
-                    </div>
+                    <div class="form-group"><label>Bank Name</label><input type="text" id="bankName"></div>
+                    <div class="form-group"><label>Account Number</label><input type="text" id="bankAcc"></div>
+                    <div class="form-group"><label>IFSC Code</label><input type="text" id="bankIFSC"></div>
+                    <div class="form-group"><label>UPI ID</label><input type="text" id="upiId"></div>
                 </div>
             </div>
         </div>
@@ -290,7 +163,7 @@ input:checked + .slider:before { transform: translateX(24px); }
                 <h3>Branding</h3>
                 <div class="form-grid">
                     <div class="form-group">
-                        <label>Company Logo (Max 500KB)</label>
+                        <label>Company Logo</label>
                         <input type="file" id="logoInput" accept="image/*" onchange="handleImage(this, 'logo')">
                         <div class="img-preview-box" id="logoBox">
                             <span style="color:#94a3b8; font-size:12px;">No Logo</span>
@@ -298,9 +171,8 @@ input:checked + .slider:before { transform: translateX(24px); }
                             <button class="remove-img" onclick="clearImage('logo')" id="btnRmLogo">×</button>
                         </div>
                     </div>
-                    
                     <div class="form-group">
-                        <label>Authorized Signature (Max 500KB)</label>
+                        <label>Signature</label>
                         <input type="file" id="signInput" accept="image/*" onchange="handleImage(this, 'sign')">
                         <div class="img-preview-box" id="signBox">
                             <span style="color:#94a3b8; font-size:12px;">No Signature</span>
@@ -310,12 +182,11 @@ input:checked + .slider:before { transform: translateX(24px); }
                     </div>
                 </div>
             </div>
-
             <div class="card">
                 <h3>Bill Content</h3>
                 <div class="form-group">
-                    <label>Terms & Conditions (Printed on Invoice)</label>
-                    <textarea id="terms" rows="6" placeholder="1. Goods once sold will not be taken back..."></textarea>
+                    <label>Terms & Conditions</label>
+                    <textarea id="terms" rows="6"></textarea>
                 </div>
             </div>
         </div>
@@ -323,58 +194,29 @@ input:checked + .slider:before { transform: translateX(24px); }
         <div id="cloud" class="tab-content">
             <div class="card" style="border-left: 5px solid #4285F4;">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <div>
-                        <h3>Google Drive Auto-Sync</h3>
-                        <p style="color:#64748b; font-size:13px; margin-top:-15px;">Your data is securely backed up to your personal Google Drive account.</p>
-                    </div>
-                    <label class="switch">
-                        <input type="checkbox" id="autoBackup">
-                        <span class="slider"></span>
-                    </label>
+                    <div><h3>Google Drive Sync</h3><p style="color:#64748b; font-size:13px; margin-top:-15px;">Auto backup enabled.</p></div>
+                    <label class="switch"><input type="checkbox" id="autoBackup"><span class="slider"></span></label>
                 </div>
             </div>
-
             <div class="card">
                 <h3>Google Drive Connection</h3>
                 <div style="display:flex; gap:15px; align-items:center; flex-wrap:wrap;">
-                    <button class="btn-primary btn-google" onclick="handleAuthClick()">
-                        <i class="fab fa-google"></i> Link Google Account
-                    </button>
-                    <button class="btn-primary" style="background:#16a34a;" onclick="runManualDriveBackup()">
-                        <i class="fas fa-cloud-upload-alt"></i> Backup Now to Drive
-                    </button>
+                    <button class="btn-primary" style="background:white; color:#444; border:1px solid #ddd;" onclick="handleAuthClick()"><i class="fab fa-google"></i> Link Account</button>
+                    <button class="btn-primary" style="background:#16a34a;" onclick="runManualDriveBackup()"><i class="fas fa-cloud-upload-alt"></i> Backup Now</button>
                     <span id="driveStatus" class="status-badge status-fail">Not Linked</span>
                 </div>
-                
-                <div id="lastBackupInfo" style="margin-top:20px; font-size:12px; color:#64748b;">
-                    Last Cloud Sync: <span id="lastSyncTime">Never</span>
-                </div>
+                <div id="lastBackupInfo" style="margin-top:20px; font-size:12px; color:#64748b;">Last Sync: <span id="lastSyncTime">Never</span></div>
             </div>
         </div>
 
         <div id="gst" class="tab-content">
             <div class="card">
-                <h3>e-Invoicing Credentials (GSP)</h3>
+                <h3>e-Invoicing (API)</h3>
                 <div class="form-grid">
-                    <div class="form-group">
-                        <label>API Environment</label>
-                        <select id="apiEnv">
-                            <option value="sandbox">Sandbox (Testing)</option>
-                            <option value="production">Production (Live)</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>GSP Client ID</label>
-                        <input type="text" id="gspId">
-                    </div>
-                    <div class="form-group">
-                        <label>GSP Client Secret</label>
-                        <input type="password" id="gspSecret">
-                    </div>
-                    <div class="form-group">
-                        <label>GST Portal Username</label>
-                        <input type="text" id="gstUser">
-                    </div>
+                    <div class="form-group"><label>Environment</label><select id="apiEnv"><option value="sandbox">Sandbox</option><option value="production">Live</option></select></div>
+                    <div class="form-group"><label>GSP Client ID</label><input type="text" id="gspId"></div>
+                    <div class="form-group"><label>GSP Secret</label><input type="password" id="gspSecret"></div>
+                    <div class="form-group"><label>Portal Username</label><input type="text" id="gstUser"></div>
                 </div>
             </div>
         </div>
@@ -382,21 +224,14 @@ input:checked + .slider:before { transform: translateX(24px); }
         <div id="data" class="tab-content">
             <div class="card">
                 <h3>Export Data</h3>
-                <div style="display:flex; gap:15px; flex-wrap:wrap;">
-                    <button class="btn-primary" style="background:#16a34a;" onclick="TallyExport.exportToTally('2025-01-01', '2026-12-31')">
-                        <i class="fas fa-file-excel"></i> Export to Tally XML
-                    </button>
-                    <button class="btn-primary" onclick="DB.exportBackup()">
-                        <i class="fas fa-download"></i> Download Full Backup (JSON)
-                    </button>
+                <div style="display:flex; gap:15px;">
+                    <button class="btn-primary" style="background:#16a34a;" onclick="TallyExport.exportToTally('2025-01-01', '2026-12-31')"><i class="fas fa-file-excel"></i> Export Tally XML</button>
+                    <button class="btn-primary" onclick="DB.exportBackup()"><i class="fas fa-download"></i> Full Backup (JSON)</button>
                 </div>
             </div>
-
-            <div class="card" style="border-color: var(--danger-color);">
-                <h3 style="color:var(--danger-color);">Danger Zone</h3>
-                <button class="btn-danger" onclick="factoryReset()">
-                    <i class="fas fa-trash"></i> Factory Reset (Wipe All Data)
-                </button>
+            <div class="card" style="border-color: var(--danger);">
+                <h3 style="color:var(--danger);">Danger Zone</h3>
+                <button class="btn-danger" onclick="factoryReset()"><i class="fas fa-trash"></i> Factory Reset</button>
             </div>
         </div>
     </div>
@@ -409,10 +244,8 @@ input:checked + .slider:before { transform: translateX(24px); }
         const CLIENT_ID = '32983669609-i8c1qe1iqvtitq7nqmm9i186djsiqehm.apps.googleusercontent.com';
         const SCOPES = 'https://www.googleapis.com/auth/drive.file';
 
-        let tokenClient;
-        let accessToken = null;
-        let logoBase64 = null;
-        let signBase64 = null;
+        let tokenClient, accessToken = null;
+        let logoBase64 = null, signBase64 = null;
 
         function showTab(id) {
             document.querySelectorAll('.tab-content').forEach(d => d.classList.remove('active'));
@@ -424,13 +257,13 @@ input:checked + .slider:before { transform: translateX(24px); }
         window.onload = async () => {
             await DB.init();
             let s = await DB.getSettings();
-            
             if(Array.isArray(s) && s.length > 0) s = s[0];
             if(!s) s = {};
 
-            // 1. Company Profile
+            // 1. Company
             document.getElementById('compName').value = s.company_name || '';
             document.getElementById('compGST').value = s.gstin || '';
+            document.getElementById('compState').value = s.state || ''; // NEW: Load State
             document.getElementById('compAddr').value = s.address || '';
             document.getElementById('compPhone').value = s.phone || '';
             document.getElementById('compEmail').value = s.email || '';
@@ -440,10 +273,10 @@ input:checked + .slider:before { transform: translateX(24px); }
             document.getElementById('bankIFSC').value = s.bank_ifsc || '';
             document.getElementById('upiId').value = s.upi_id || '';
 
-            // 2. Invoice Settings
+            // 2. Invoice
             logoBase64 = s.logo || null;
             signBase64 = s.signature || null;
-            document.getElementById('terms').value = s.terms || "1. Goods once sold will not be taken back.\n2. Interest @18% p.a. will be charged if not paid by due date.\n3. Subject to local jurisdiction.";
+            document.getElementById('terms').value = s.terms || "1. Goods once sold will not be taken back.\n2. Interest @18% p.a. will be charged if not paid by due date.";
 
             if(logoBase64) showImg('logo', logoBase64);
             if(signBase64) showImg('sign', signBase64);
@@ -459,27 +292,15 @@ input:checked + .slider:before { transform: translateX(24px); }
             initGoogleAuth();
         };
 
-        // --- UPDATED IMAGE HANDLER (Limit: 500KB) ---
         function handleImage(input, type) {
             const file = input.files[0];
             if(!file) return;
-            
-            if(file.size > 512000) { // Limit increased to 500KB (512,000 bytes)
-                alert("⚠️ Image is too large! Please use a smaller image (under 500KB).");
-                input.value = "";
-                return;
-            }
-
+            if(file.size > 512000) { alert("⚠️ Image too large (Max 500KB)"); input.value=""; return; }
             const reader = new FileReader();
             reader.onload = function(e) {
                 const base64 = e.target.result;
-                if(type === 'logo') {
-                    logoBase64 = base64;
-                    showImg('logo', base64);
-                } else {
-                    signBase64 = base64;
-                    showImg('sign', base64);
-                }
+                if(type === 'logo') { logoBase64 = base64; showImg('logo', base64); }
+                else { signBase64 = base64; showImg('sign', base64); }
             };
             reader.readAsDataURL(file);
         }
@@ -487,20 +308,18 @@ input:checked + .slider:before { transform: translateX(24px); }
         function showImg(type, src) {
             document.getElementById(type + 'Preview').src = src;
             document.getElementById(type + 'Preview').style.display = 'block';
-            document.getElementById('btnRm' + (type.charAt(0).toUpperCase() + type.slice(1))).style.display = 'block';
+            document.getElementById('btnRm' + (type==='logo'?'Logo':'Sign')).style.display = 'block';
             document.querySelector('#' + type + 'Box span').style.display = 'none';
         }
 
         function clearImage(type) {
             if(type === 'logo') {
-                logoBase64 = null;
-                document.getElementById('logoInput').value = '';
+                logoBase64 = null; document.getElementById('logoInput').value = '';
                 document.getElementById('logoPreview').style.display = 'none';
                 document.querySelector('#logoBox span').style.display = 'block';
                 document.getElementById('btnRmLogo').style.display = 'none';
             } else {
-                signBase64 = null;
-                document.getElementById('signInput').value = '';
+                signBase64 = null; document.getElementById('signInput').value = '';
                 document.getElementById('signPreview').style.display = 'none';
                 document.querySelector('#signBox span').style.display = 'block';
                 document.getElementById('btnRmSign').style.display = 'none';
@@ -508,9 +327,13 @@ input:checked + .slider:before { transform: translateX(24px); }
         }
 
         async function saveSettings() {
+            const state = document.getElementById('compState').value;
+            if(!state) return alert("⚠️ Please select Company State for GST.");
+
             const settings = {
                 company_name: document.getElementById('compName').value,
                 gstin: document.getElementById('compGST').value,
+                state: state, // NEW: Saving State
                 address: document.getElementById('compAddr').value,
                 phone: document.getElementById('compPhone').value,
                 email: document.getElementById('compEmail').value,
@@ -518,11 +341,9 @@ input:checked + .slider:before { transform: translateX(24px); }
                 bank_account: document.getElementById('bankAcc').value,
                 bank_ifsc: document.getElementById('bankIFSC').value,
                 upi_id: document.getElementById('upiId').value,
-
                 logo: logoBase64,
                 signature: signBase64,
                 terms: document.getElementById('terms').value,
-
                 auto_backup_enabled: document.getElementById('autoBackup').checked,
                 last_sync: document.getElementById('lastSyncTime').innerText,
                 api_env: document.getElementById('apiEnv').value,
@@ -539,74 +360,24 @@ input:checked + .slider:before { transform: translateX(24px); }
             try {
                 tokenClient = google.accounts.oauth2.initTokenClient({
                     client_id: CLIENT_ID, scope: SCOPES,
-                    callback: (tokenResponse) => {
-                        if (tokenResponse && tokenResponse.access_token) {
-                            accessToken = tokenResponse.access_token;
-                            document.getElementById('driveStatus').innerText = "Linked ✅";
-                            document.getElementById('driveStatus').className = "status-badge status-ok";
-                            alert("✅ Google Drive successfully linked!");
-                        }
-                    },
+                    callback: (r) => { if (r.access_token) { accessToken = r.access_token; document.getElementById('driveStatus').innerText = "Linked ✅"; document.getElementById('driveStatus').className = "status-badge status-ok"; alert("Google Drive Linked!"); } }
                 });
-            } catch (e) { console.error("Google Auth Init Failed:", e); }
+            } catch (e) {}
         }
-
-        function handleAuthClick() {
-            if (tokenClient) tokenClient.requestAccessToken();
-            else alert("Google Library not loaded. Check internet.");
-        }
-
+        function handleAuthClick() { if (tokenClient) tokenClient.requestAccessToken(); else alert("Internet check karein."); }
         async function runManualDriveBackup() {
             if (!accessToken) return handleAuthClick();
-            const btn = event.currentTarget;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
-            btn.disabled = true;
-            try {
-                await DB.backupToGoogleDrive(accessToken);
-                const now = new Date().toLocaleString();
-                document.getElementById('lastSyncTime').innerText = now;
-                const s = await DB.getSettings();
-                s.last_sync = now;
-                await DB.saveSettings(s);
-                alert("✅ Backup saved to Google Drive!");
-            } catch (e) { alert("❌ Backup Failed."); } 
-            finally { btn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Backup Now to Drive'; btn.disabled = false; }
+            try { await DB.backupToGoogleDrive(accessToken); alert("Backup Uploaded!"); } catch(e){ alert("Backup Failed"); }
         }
-
         function factoryReset() {
-            if(confirm("⚠️ CRITICAL: This will wipe ALL data. Confirm?")) {
-                const req = indexedDB.deleteDatabase('ArthBook_DB');
-                req.onsuccess = () => {
-                    localStorage.clear(); sessionStorage.clear();
-                    alert("Reset Complete. Reloading...");
-                    window.location.href = "login.html";
-                };
+            if(confirm("⚠️ CRITICAL: Wipe ALL data?")) {
+                indexedDB.deleteDatabase('ArthBook_DB').onsuccess = () => { location.href="login.html"; };
             }
         }
-        // --- MENU TOGGLE FUNCTION ---
-function toggleMenu() {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.querySelector('.overlay');
-    
-    if (sidebar) sidebar.classList.toggle('active');
-    if (overlay) overlay.classList.toggle('active');
-}
-
-// --- AUTO CLOSE ON LINK CLICK ---
-document.addEventListener("DOMContentLoaded", function() {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.querySelector('.overlay');
-    const links = document.querySelectorAll('.nav-links a');
-
-    links.forEach(link => {
-        link.addEventListener('click', () => {
-            if (window.innerWidth <= 900) {
-                if (sidebar) sidebar.classList.remove('active');
-                if (overlay) overlay.classList.remove('active');
-            }
-        });
-    });
-});
+        function toggleMenu() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.querySelector('.overlay').classList.toggle('active');
+        }
     </script>
 </body>
 </html>

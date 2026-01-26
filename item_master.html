@@ -3,483 +3,302 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/x-icon" href="favicon.ico">
-    <title>Arth Book - Inventory Master (Final)</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Item Master - Arth Book</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
 </head>
 <style>
-    /* ==========================================================================
-       ARTH BOOK - INVENTORY MASTER STYLE (v8.2 Fixed)
-       ========================================================================== */
-    :root {
-        --primary: #0d47a1; --primary-dark: #002171; --accent: #ffca28;
-        --bg: #f1f5f9; --surface: #ffffff; --text-main: #1e293b; --text-sub: #64748b;
-        --border: #e2e8f0; --success: #10b981; --danger: #ef4444;
-        --sidebar-width: 260px; --list-width: 320px;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; outline: none; }
-    body { display: flex; height: 100vh; background: var(--bg); color: var(--text-main); overflow: hidden; }
-    
+    /* ARTH BOOK ITEM MASTER STYLE */
+    :root { --primary: #0d47a1; --bg: #f1f5f9; --text: #1e293b; --sidebar-width: 260px; }
+    body { display: flex; height: 100vh; margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); overflow: hidden; }
+
     /* SIDEBAR */
-    .sidebar { width: var(--sidebar-width); background: var(--primary); color: white; display: flex; flex-direction: column; height: 100vh; overflow-y: auto; transition: 0.2s; z-index: 2000; box-shadow: 4px 0 10px rgba(0,0,0,0.1); }
-    .brand-logo { padding: 20px; font-size: 20px; font-weight: 800; border-bottom: 1px solid rgba(255,255,255,0.1); }
-    .nav-links { padding: 10px; list-style: none; } .nav-links li { margin-bottom: 5px; }
-    .nav-link { display: flex; align-items: center; gap: 12px; padding: 12px 15px; color: rgba(255,255,255,0.85); border-radius: 8px; font-weight: 500; text-decoration: none; transition: 0.2s; }
-    .nav-link:hover { background: rgba(255,255,255,0.15); color: #fff; padding-left: 20px; }
-    .nav-link.active { background: var(--accent); color: var(--primary-dark); font-weight: 800; }
+    .sidebar { width: var(--sidebar-width); background: var(--primary); color: white; display: flex; flex-direction: column; flex-shrink: 0; }
+    .nav-links { padding: 10px; list-style: none; }
+    .nav-link { display: flex; align-items: center; gap: 10px; padding: 12px; color: rgba(255,255,255,0.8); text-decoration: none; border-radius: 8px; margin-bottom: 5px; }
+    .nav-link:hover, .nav-link.active { background: rgba(255,255,255,0.15); color: white; font-weight: bold; }
 
-    /* LAYOUT */
-    .main { flex: 1; display: flex; height: 100vh; overflow: hidden; }
+    /* MAIN */
+    .main { flex: 1; display: flex; gap: 20px; padding: 20px; overflow: hidden; }
     
-    /* LIST PANEL */
-    .list-panel { width: var(--list-width); background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
-    .search-box { padding: 15px; border-bottom: 1px solid var(--border); background: #fff; }
-    .search-box input { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: #f8fafc; }
-    .list-content { flex: 1; overflow-y: auto; }
-    .list-item { display: flex; gap: 10px; padding: 12px 15px; border-bottom: 1px solid var(--border); cursor: pointer; align-items: center; transition:0.2s; }
-    .list-item:hover { background: #f0f9ff; }
-    .list-item.active-item { background: #e0f2fe; border-left: 4px solid var(--primary); }
-    .item-thumb { width: 40px; height: 40px; border-radius: 6px; background: #f1f5f9; object-fit: cover; border: 1px solid var(--border); }
-    .stock-pill { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 12px; background: #dcfce7; color: #166534; }
-    .stock-pill.low { background: #fee2e2; color: #991b1b; }
-
-    /* FORM PANEL */
-    .form-panel { flex: 1; background: var(--bg); display: flex; flex-direction: column; overflow: hidden; }
-    .form-header { padding: 15px 25px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-    .form-grid { flex: 1; overflow-y: auto; padding: 25px; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; align-content: start; }
-    .form-group { display: flex; flex-direction: column; gap: 5px; }
-    .form-group label { font-size: 12px; font-weight: 700; color: var(--text-sub); text-transform: uppercase; }
-    input, select { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; background: #fff; }
+    /* LEFT LIST */
+    .list-box { flex: 1; background: white; border-radius: 12px; display: flex; flex-direction: column; border: 1px solid #e2e8f0; }
+    .search-bar { padding: 15px; border-bottom: 1px solid #e2e8f0; }
+    .search-bar input { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; }
+    .item-list { flex: 1; overflow-y: auto; padding: 0; }
+    .item-row { display: flex; align-items: center; padding: 12px 15px; border-bottom: 1px solid #f1f5f9; cursor: pointer; transition: 0.2s; }
+    .item-row:hover, .item-row.active { background: #e0f2fe; }
+    .item-img { width: 40px; height: 40px; border-radius: 6px; background: #f1f5f9; object-fit: cover; margin-right: 12px; border: 1px solid #e2e8f0; }
     
-    /* IMAGE */
-    .img-container { position: relative; width: 120px; height: 120px; }
-    .img-upload-box { width: 100%; height: 100%; border: 2px dashed var(--border); border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; background: #fff; }
-    .img-upload-box img { width: 100%; height: 100%; object-fit: cover; display: none; }
+    /* RIGHT FORM */
+    .form-box { width: 400px; background: white; border-radius: 12px; display: flex; flex-direction: column; border: 1px solid #e2e8f0; overflow-y: auto; }
+    .form-header { padding: 15px; border-bottom: 1px solid #e2e8f0; font-weight: bold; font-size: 18px; color: var(--primary); display: flex; justify-content: space-between; align-items: center; }
+    .form-body { padding: 20px; display: flex; flex-direction: column; gap: 15px; }
     
-    /* BUTTONS */
-    .btn { padding: 8px 16px; border: none; border-radius: 6px; font-weight: 600; font-size: 13px; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+    label { font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 4px; display: block; }
+    input, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
+    input:focus, select:focus { border-color: var(--primary); outline: none; }
+    
+    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    .btn { padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; }
     .btn-save { background: var(--primary); color: white; }
-    .btn-new { background: var(--success); color: white; }
-    .btn-del { background: #fee2e2; color: var(--danger); }
-    .btn-sec { background: white; border: 1px solid var(--border); color: var(--text-main); }
-    .btn-adj { background: var(--accent); color: var(--primary-dark); }
+    .btn-new { background: #10b981; color: white; }
+    
+    /* IMAGE UPLOAD */
+    .img-upload { width: 100px; height: 100px; border: 2px dashed #cbd5e1; border-radius: 8px; margin: 0 auto; display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; position: relative; }
+    .img-upload img { width: 100%; height: 100%; object-fit: cover; display: none; }
+    .img-upload:hover { border-color: var(--primary); background: #f8fafc; }
 
-    /* MODAL */
-    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2500; display: none; align-items: center; justify-content: center; }
-    .modal { background: white; width: 400px; padding: 20px; border-radius: 12px; max-height: 80vh; overflow-y: auto; }
+    /* BARCODE */
+    #barcodeCanvas { width: 100%; height: 60px; margin-top: 10px; display: none; }
 
-    /* MOBILE */
-    .menu-btn, .overlay { display: none; }
-    @media (max-width: 900px) {
-        .sidebar { position: fixed; left: -100%; top: 0; height: 100%; }
-        .sidebar.active { left: 0; }
-        .menu-btn { display: block; position: absolute; left: 15px; top: 15px; z-index: 2001; background: var(--primary); color: white; border: none; padding: 8px; border-radius: 4px; }
-        .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1500; }
-        .overlay.active { display: block; }
-        .main { flex-direction: column; }
-        .list-panel { width: 100%; height: 40vh; border-right: none; border-bottom: 1px solid var(--border); }
-        .form-panel { height: 60vh; }
-    }
+    @media (max-width: 900px) { .sidebar { display: none; } .main { flex-direction: column; } .form-box { width: 100%; } }
 </style>
 <body>
 
-<button class="menu-btn" onclick="toggleMenu()">☰</button>
-<div class="overlay" onclick="toggleMenu()"></div>
-
-<div class="sidebar" id="sidebar">
-    <div class="brand-logo"><i class="fas fa-cube"></i> Arth Book</div>
+<div class="sidebar">
+    <div style="padding:20px; font-size:20px; font-weight:800; border-bottom:1px solid rgba(255,255,255,0.1);">Arth Book</div>
     <ul class="nav-links">
         <li><a href="index.html" class="nav-link"><i class="fas fa-home"></i> Dashboard</a></li>
-        <li><a href="sales_invoice.html" class="nav-link"><i class="fas fa-file-invoice"></i> Sales (POS)</a></li>
-        <li><a href="purchase_invoice.html" class="nav-link"><i class="fas fa-truck"></i> Purchase</a></li>
         <li><a href="item_master.html" class="nav-link active"><i class="fas fa-boxes"></i> Inventory</a></li>
-        <li><a href="ArthBook.html" class="nav-link"><i class="fas fa-users"></i> Parties</a></li>
         <li><a href="reports.html" class="nav-link"><i class="fas fa-chart-line"></i> Reports</a></li>
-        <li><a href="settings.html" class="nav-link"><i class="fas fa-cog"></i> Settings</a></li>
     </ul>
 </div>
 
 <div class="main">
-    <div class="list-panel">
-        <div class="search-box">
-            <input type="text" id="searchInput" placeholder="🔍 Search Items..." onkeyup="renderList()">
-            <div style="display:flex; justify-content:space-between; margin-top:10px; font-size:12px;">
-                <label><input type="checkbox" id="showLowStock" onchange="renderList()"> Low Stock Only</label>
-                <button class="btn-sec" onclick="exportCSV()" style="padding:4px 8px; font-size:11px;">📥 Export CSV</button>
-            </div>
+    <div class="list-box">
+        <div class="search-bar">
+            <input type="text" id="search" placeholder="🔍 Search Item / SKU..." onkeyup="renderList()">
         </div>
-        <div class="list-content" id="itemList"></div>
-        <div style="padding:10px; font-size:12px; text-align:center; color:#64748b; border-top:1px solid #e2e8f0;">
-            <span id="totalCount">0 Items</span>
-        </div>
+        <div class="item-list" id="itemList">Loading...</div>
     </div>
 
-    <div class="form-panel">
+    <div class="form-box">
         <div class="form-header">
-            <h2 id="formTitle">New Product</h2>
-            <div style="display:flex; gap:10px;">
-                <button class="btn btn-sec" id="histBtn" style="display:none;" onclick="showHistory()">📜 History</button>
-                <button class="btn btn-new" onclick="newItem()">+ New Item</button>
-            </div>
+            <span id="formTitle">New Item</span>
+            <button onclick="newItem()" style="background:none; border:none; color:#64748b; cursor:pointer;"><i class="fas fa-plus-circle"></i> New</button>
         </div>
-        
-        <input type="hidden" id="itemId"> <div class="form-grid">
-            <div style="grid-row: span 2; display: flex; flex-direction:column; align-items:center; justify-content: flex-start; gap:10px;">
-                <div class="img-container">
-                    <div class="img-upload-box" onclick="document.getElementById('imgInput').click()">
-                        <input type="file" id="imgInput" style="display:none;" accept="image/*" onchange="compressAndPreview(this)">
-                        <img id="imgPreview" alt="Preview">
-                        <i class="fas fa-camera" id="imgIcon"></i>
-                    </div>
-                </div>
-                <button class="btn-sec" onclick="removeImage()" style="font-size:11px; padding:4px 8px;">Remove Img</button>
+        <div class="form-body">
+            <input type="hidden" id="itemId">
+            
+            <div class="img-upload" onclick="document.getElementById('fileInput').click()">
+                <span id="uploadText" style="font-size:12px; color:#94a3b8; text-align:center;">Click to<br>Upload</span>
+                <img id="previewImg">
+                <input type="file" id="fileInput" hidden accept="image/*" onchange="handleImage(this)">
             </div>
 
-            <div class="form-group" style="grid-column: span 2;">
+            <div>
                 <label>Item Name *</label>
-                <input type="text" id="name" placeholder="e.g. Maggi" oninput="setDirty()">
+                <input type="text" id="name" placeholder="e.g. Maggi Small">
             </div>
 
-            <div class="form-group">
-                <label>SKU / Barcode</label>
-                <div style="display:flex; gap:5px;">
-                    <input type="text" id="sku" placeholder="Scan or Enter" oninput="previewBarcode()">
-                    <button class="btn-sec" onclick="generateSKU()" title="Auto Generate"><i class="fas fa-magic"></i></button>
+            <div class="row-2">
+                <div>
+                    <label>SKU / Barcode</label>
+                    <input type="text" id="sku" placeholder="Scan or Type" oninput="genBarcode(this.value)">
+                </div>
+                <div>
+                    <label>Unit</label>
+                    <select id="unit">
+                        <option value="Pcs">Pcs</option><option value="Kg">Kg</option><option value="Box">Box</option><option value="Ltr">Ltr</option><option value="Mtr">Mtr</option>
+                    </select>
                 </div>
             </div>
 
-            <div class="form-group">
-                <label>Category</label>
-                <input type="text" id="category" list="catList" placeholder="General">
-                <datalist id="catList"></datalist>
-            </div>
-
-            <div class="form-group">
-                <label>Unit</label>
-                <select id="unit">
-                    <option>Pcs</option><option>Kg</option><option>Box</option><option>Pkt</option><option>Ltr</option><option>Mtr</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label>GST Rate (%)</label>
-                <select id="gst">
-                    <option value="0">0%</option><option value="5">5%</option><option value="12">12%</option><option value="18" selected>18%</option><option value="28">28%</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label>Sales Price</label>
-                <input type="number" id="stdPrice" step="0.01" value="0">
-            </div>
-
-            <div class="form-group">
-                <label>Purchase Price</label>
-                <input type="number" id="stdCost" step="0.01" value="0">
-            </div>
-
-            <div class="form-group full-width" style="background:#f0f9ff; padding:15px; border-radius:8px; grid-column:1/-1; display:flex; gap:15px; border:1px solid #bae6fd;">
-                <div style="flex:1;">
-                    <label style="font-size:11px; font-weight:bold; color:#0369a1;">OPENING STOCK</label>
-                    <input type="number" id="opQty" value="0" style="border-color:#bae6fd;">
+            <div class="row-2" style="background:#f0fdf4; padding:10px; border-radius:6px; border:1px solid #bbf7d0;">
+                <div>
+                    <label>HSN Code</label>
+                    <input type="text" id="hsn" placeholder="e.g. 1902">
                 </div>
-                <div style="flex:1;">
-                    <label style="font-size:11px; font-weight:bold; color:#0369a1;">MIN LEVEL</label>
-                    <input type="number" id="reorder" value="5" style="border-color:#bae6fd;">
-                </div>
-                <div style="flex:1;">
-                    <label style="font-size:11px; font-weight:bold; color:#64748b;">CURRENT (Locked)</label>
-                    <input type="text" id="currentStockDisplay" value="0" disabled style="background:#e2e8f0; font-weight:bold;">
+                <div>
+                    <label>GST Rate (%)</label>
+                    <select id="gstRate">
+                        <option value="0">0% (Exempt)</option>
+                        <option value="5">5%</option>
+                        <option value="12">12%</option>
+                        <option value="18">18%</option>
+                        <option value="28">28%</option>
+                    </select>
                 </div>
             </div>
 
-            <div style="grid-column:1/-1; text-align:center; padding:10px; border:1px solid #e2e8f0; border-radius:8px; display:none;" id="bcContainer">
-                <svg id="barcode"></svg>
-                <br>
-                <button class="btn btn-sec" onclick="printBarcode()">🖨️ Print Label</button>
+            <div class="row-2">
+                <div>
+                    <label>Purchase Price (Ex. Tax)</label>
+                    <input type="number" id="cost" placeholder="0.00">
+                </div>
+                <div>
+                    <label>Sale Price (Inc. Tax)</label>
+                    <input type="number" id="price" placeholder="0.00">
+                </div>
             </div>
-        </div>
 
-        <div style="padding:20px; border-top:1px solid var(--border); display:flex; gap:10px;">
+            <div class="row-2">
+                <div>
+                    <label>Current Stock</label>
+                    <input type="number" id="stock" placeholder="0">
+                </div>
+                <div>
+                    <label>Low Stock Alert</label>
+                    <input type="number" id="minStock" value="5">
+                </div>
+            </div>
+
+            <canvas id="barcodeCanvas"></canvas>
+
             <button class="btn btn-save" onclick="saveItem()">💾 Save Item</button>
-            <button class="btn btn-adj" id="adjBtn" style="display:none;" onclick="adjustStock()">⚙️ Adjust Stock</button>
-            <div style="flex:1;"></div>
-            <button class="btn btn-del" id="deleteBtn" style="display:none;" onclick="deleteItem()">🗑️ Delete</button>
+            <button class="btn btn-new" onclick="deleteItem()" style="background:#fee2e2; color:#ef4444; margin-top:5px; display:none;" id="btnDelete">🗑️ Delete</button>
         </div>
     </div>
 </div>
-
-<div class="modal-overlay" id="histModal" onclick="closeModal(event)">
-    <div class="modal">
-        <h3>History & Audit</h3>
-        <div id="histContent" style="font-size:13px; color:#333;">Loading...</div>
-        <button class="btn btn-sec" onclick="document.getElementById('histModal').style.display='none'" style="margin-top:20px; width:100%">Close</button>
-    </div>
-</div>
-
-<div id="toast" style="position:fixed; bottom:20px; right:20px; background:#333; color:white; padding:10px 20px; border-radius:20px; display:none;">Saved!</div>
 
 <script src="db.js"></script>
 <script>
-    let allItems = [];
-    let allLogs = [];
-    let isDirty = false;
-    let currentImageBase64 = null;
+    let items = [];
+    let currentImgBase64 = null;
 
     window.onload = async () => {
-        try {
-            await DB.init();
-            await refreshData();
-        } catch(e) { console.error("DB Error", e); }
+        await DB.init();
+        renderList();
     };
 
-    async function refreshData() {
-        allItems = await DB.getAll('items');
-        allLogs = await DB.getAll('audit_logs');
-        populateCategories();
-        renderList();
-    }
-
-    function renderList() {
-        const q = document.getElementById('searchInput').value.toLowerCase();
-        const showLow = document.getElementById('showLowStock').checked;
+    async function renderList() {
+        items = await DB.getAll('items');
+        const q = document.getElementById('search').value.toLowerCase();
         const list = document.getElementById('itemList');
         list.innerHTML = '';
+
+        const filtered = items.filter(i => i.name.toLowerCase().includes(q) || (i.sku && i.sku.includes(q)));
         
-        const filtered = allItems.filter(i => {
-            const matchText = i.name.toLowerCase().includes(q) || (i.sku && i.sku.includes(q));
-            const isLow = (i.current_stock||0) <= (i.reorder_level||5);
-            return matchText && (!showLow || isLow);
-        });
-        
+        if(filtered.length === 0) {
+            list.innerHTML = '<div style="padding:20px; text-align:center; color:#94a3b8;">No items found</div>';
+            return;
+        }
+
         filtered.forEach(i => {
             const div = document.createElement('div');
-            div.className = 'list-item';
+            div.className = 'item-row';
             div.onclick = () => loadItem(i);
-            
-            const isLow = (i.current_stock||0) <= (i.reorder_level||0);
-            
             div.innerHTML = `
-                <img src="${i.image || ''}" class="item-thumb" onerror="this.style.display='none'">
+                <img src="${i.image || 'https://via.placeholder.com/40'}" class="item-img">
                 <div style="flex:1;">
-                    <div style="font-weight:600; font-size:13px;">${i.name}</div>
-                    <div style="font-size:11px; color:#64748b;">SKU: ${i.sku || '-'}</div>
+                    <div style="font-weight:600;">${i.name}</div>
+                    <div style="font-size:12px; color:#64748b;">Stock: ${i.current_stock} ${i.unit} | ₹${i.std_price}</div>
                 </div>
-                <div class="stock-pill ${isLow ? 'low' : ''}">${i.current_stock||0} ${i.unit}</div>
+                <div style="font-size:11px; font-weight:bold; color:${(i.current_stock<=i.reorder_level)?'red':'green'};">
+                    ${(i.current_stock<=i.reorder_level)?'LOW':'OK'}
+                </div>
             `;
             list.appendChild(div);
         });
-        document.getElementById('totalCount').innerText = `${filtered.length} Items`;
-    }
-
-    async function saveItem() {
-        const idVal = document.getElementById('itemId').value;
-        const name = document.getElementById('name').value.trim();
-        if(!name) return alert("Enter Item Name");
-
-        const data = {
-            name: name,
-            sku: document.getElementById('sku').value,
-            category: document.getElementById('category').value || 'General',
-            unit: document.getElementById('unit').value,
-            gst_rate: parseFloat(document.getElementById('gst').value)||0,
-            std_price: parseFloat(document.getElementById('stdPrice').value)||0,
-            std_cost: parseFloat(document.getElementById('stdCost').value)||0,
-            op_qty: parseFloat(document.getElementById('opQty').value)||0,
-            reorder_level: parseFloat(document.getElementById('reorder').value)||5,
-            image: currentImageBase64,
-            updated_at: new Date().toISOString()
-        };
-
-        // --- ID LOGIC (CRITICAL) ---
-        if(idVal) {
-            data.id = parseInt(idVal); // Ensure Integer
-            const old = allItems.find(i => i.id == idVal);
-            if(old) data.current_stock = old.current_stock;
-        } else {
-            // New Item: Let DB auto-increment ID
-            data.current_stock = data.op_qty;
-            data.created_at = new Date().toISOString();
-        }
-
-        await DB.saveItem(data);
-        showToast("✅ Item Saved!");
-        newItem();
-        await refreshData();
     }
 
     function loadItem(i) {
         document.getElementById('itemId').value = i.id;
         document.getElementById('name').value = i.name;
-        document.getElementById('sku').value = i.sku||'';
-        document.getElementById('category').value = i.category||'';
-        document.getElementById('unit').value = i.unit;
-        document.getElementById('gst').value = i.gst_rate || 18;
-        document.getElementById('stdPrice').value = i.std_price;
-        document.getElementById('stdCost').value = i.std_cost;
-        document.getElementById('opQty').value = i.op_qty;
-        document.getElementById('reorder').value = i.reorder_level;
-        document.getElementById('currentStockDisplay').value = i.current_stock;
+        document.getElementById('sku').value = i.sku || '';
+        document.getElementById('unit').value = i.unit || 'Pcs';
+        document.getElementById('hsn').value = i.hsn || '';
+        document.getElementById('gstRate').value = i.gst_rate || 0;
+        document.getElementById('cost').value = i.std_cost || '';
+        document.getElementById('price').value = i.std_price || '';
+        document.getElementById('stock').value = i.current_stock || 0;
+        document.getElementById('minStock').value = i.reorder_level || 5;
         
+        currentImgBase64 = i.image;
         if(i.image) {
-            document.getElementById('imgPreview').src = i.image;
-            document.getElementById('imgPreview').style.display = 'block';
-            document.getElementById('imgIcon').style.display = 'none';
-            currentImageBase64 = i.image;
-        } else resetImg();
+            document.getElementById('previewImg').src = i.image;
+            document.getElementById('previewImg').style.display = 'block';
+            document.getElementById('uploadText').style.display = 'none';
+        } else {
+            resetImg();
+        }
 
         document.getElementById('formTitle').innerText = "Edit Item";
-        document.getElementById('deleteBtn').style.display = 'block';
-        document.getElementById('adjBtn').style.display = 'block';
-        document.getElementById('histBtn').style.display = 'block';
-        document.getElementById('opQty').disabled = true;
-        previewBarcode();
+        document.getElementById('btnDelete').style.display = 'block';
+        genBarcode(i.sku);
+        
+        // Highlight active
+        document.querySelectorAll('.item-row').forEach(r => r.classList.remove('active'));
+        event.currentTarget.classList.add('active');
     }
 
     function newItem() {
         document.querySelectorAll('input').forEach(i => i.value = '');
         document.getElementById('itemId').value = '';
-        document.getElementById('stdPrice').value = 0;
-        document.getElementById('stdCost').value = 0;
-        document.getElementById('opQty').value = 0;
-        document.getElementById('reorder').value = 5;
-        document.getElementById('currentStockDisplay').value = 0;
+        document.getElementById('unit').value = 'Pcs';
+        document.getElementById('gstRate').value = 0;
+        document.getElementById('stock').value = 0;
+        document.getElementById('minStock').value = 5;
         resetImg();
-        document.getElementById('formTitle').innerText = "New Product";
-        document.getElementById('deleteBtn').style.display = 'none';
-        document.getElementById('adjBtn').style.display = 'none';
-        document.getElementById('histBtn').style.display = 'none';
-        document.getElementById('bcContainer').style.display = 'none';
-        document.getElementById('opQty').disabled = false;
+        document.getElementById('formTitle').innerText = "New Item";
+        document.getElementById('btnDelete').style.display = 'none';
+        document.getElementById('barcodeCanvas').style.display = 'none';
+    }
+
+    async function saveItem() {
+        const name = document.getElementById('name').value;
+        if(!name) return alert("Item Name is required");
+
+        const data = {
+            name: name,
+            sku: document.getElementById('sku').value,
+            unit: document.getElementById('unit').value,
+            hsn: document.getElementById('hsn').value,
+            gst_rate: parseFloat(document.getElementById('gstRate').value) || 0,
+            std_cost: parseFloat(document.getElementById('cost').value) || 0,
+            std_price: parseFloat(document.getElementById('price').value) || 0,
+            current_stock: parseFloat(document.getElementById('stock').value) || 0,
+            reorder_level: parseFloat(document.getElementById('minStock').value) || 5,
+            image: currentImgBase64
+        };
+
+        const id = document.getElementById('itemId').value;
+        if(id) data.id = parseInt(id);
+
+        await DB.saveItem(data);
+        alert("✅ Item Saved!");
+        renderList();
+        newItem();
     }
 
     async function deleteItem() {
-        const id = document.getElementById('itemId').value;
         if(!confirm("Delete this item?")) return;
-        
+        const id = parseInt(document.getElementById('itemId').value);
         const tx = DB.db.transaction('items', 'readwrite');
-        if(!isNaN(parseInt(id))) tx.objectStore('items').delete(parseInt(id)); // Num ID
-        else tx.objectStore('items').delete(id); // String ID (Fallback)
+        tx.objectStore('items').delete(id);
+        tx.oncomplete = () => { renderList(); newItem(); };
+    }
+
+    // IMAGE LOGIC
+    function handleImage(input) {
+        const file = input.files[0];
+        if(!file) return;
+        if(file.size > 100000) return alert("Image too big! Max 100KB"); // Keep it small for IndexedDB
         
-        tx.oncomplete = async () => {
-            showToast("Deleted");
-            newItem();
-            await refreshData();
-        };
-    }
-
-    async function adjustStock() {
-        const id = document.getElementById('itemId').value;
-        const current = parseFloat(document.getElementById('currentStockDisplay').value);
-        const newVal = prompt(`Current: ${current}\nEnter NEW Actual Stock:`, current);
-        
-        if(newVal !== null) {
-            const num = parseFloat(newVal);
-            if(!isNaN(num)) {
-                const item = allItems.find(i => i.id == id);
-                item.current_stock = num;
-                await DB.saveItem(item);
-                
-                // Add Log
-                const tx = DB.db.transaction('audit_logs', 'readwrite');
-                tx.objectStore('audit_logs').add({
-                    timestamp: new Date().toISOString(),
-                    action: "STOCK_ADJ",
-                    desc: `${item.name}: ${current} -> ${num}`,
-                    user: "User"
-                });
-                
-                showToast("Stock Adjusted");
-                await refreshData();
-                loadItem(item);
-            }
-        }
-    }
-
-    // --- BARCODE & EXPORT ---
-    function previewBarcode() {
-        const sku = document.getElementById('sku').value;
-        if(sku) {
-            document.getElementById('bcContainer').style.display = 'block';
-            try { JsBarcode("#barcode", sku, { height:40, displayValue:true }); } catch(e){}
-        } else {
-            document.getElementById('bcContainer').style.display = 'none';
-        }
-    }
-    
-    // --- 100% SAFE PRINT FUNCTION ---
-    function printBarcode() {
-        const div = document.getElementById('bcContainer').innerHTML;
-        const win = window.open('', '', 'width=300,height=300');
-        // This splits the tags so browser doesn't get confused
-        const content = '<' + 'html' + '><' + 'body style="text-align:center;"' + '>' + div + '<' + '/body' + '><' + '/html' + '>';
-        win.document.write(content);
-        win.print();
-    }
-
-    function generateSKU() {
-        document.getElementById('sku').value = Date.now().toString().slice(-8);
-        previewBarcode();
-    }
-    function exportCSV() {
-        const rows = [["Name", "SKU", "Category", "Stock", "Price"]];
-        allItems.forEach(i => rows.push([i.name, i.sku, i.category, i.current_stock, i.std_price]));
-        const csv = rows.map(r => r.join(",")).join("\n");
-        const a = document.createElement("a");
-        a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
-        a.download = "Inventory.csv";
-        a.click();
-    }
-
-    // --- HISTORY ---
-    function showHistory() {
-        const name = document.getElementById('name').value;
-        const logs = allLogs.filter(l => l.desc && l.desc.includes(name));
-        const div = document.getElementById('histContent');
-        if(logs.length) {
-            div.innerHTML = logs.map(l => `<div style="padding:5px; border-bottom:1px solid #eee;"><b>${l.action}</b>: ${l.desc} <br><small>${new Date(l.timestamp).toLocaleString()}</small></div>`).join('');
-        } else div.innerHTML = "No history found for this item.";
-        document.getElementById('histModal').style.display='flex';
-    }
-    function closeModal(e) { if(e.target.id === 'histModal') e.target.style.display = 'none'; }
-
-    // --- UTILS ---
-    function setDirty() { isDirty = true; }
-    function showToast(m) { const t=document.getElementById('toast'); t.innerText=m; t.style.display='block'; setTimeout(()=>t.style.display='none', 2000); }
-    function populateCategories() {
-        const cats = [...new Set(allItems.map(i => i.category).filter(Boolean))];
-        document.getElementById('catList').innerHTML = cats.map(c => `<option value="${c}">`).join('');
-    }
-    function compressAndPreview(input) {
-        const file = input.files[0]; if(!file) return;
         const reader = new FileReader();
         reader.onload = (e) => {
-            const img = new Image();
-            img.onload = () => {
-                const cvs = document.createElement('canvas');
-                cvs.width = 150; cvs.height = 150 * (img.height/img.width);
-                cvs.getContext('2d').drawImage(img,0,0,cvs.width,cvs.height);
-                currentImageBase64 = cvs.toDataURL('image/jpeg', 0.5);
-                document.getElementById('imgPreview').src = currentImageBase64;
-                document.getElementById('imgPreview').style.display='block';
-                document.getElementById('imgIcon').style.display='none';
-            };
-            img.src = e.target.result;
+            currentImgBase64 = e.target.result;
+            document.getElementById('previewImg').src = currentImgBase64;
+            document.getElementById('previewImg').style.display = 'block';
+            document.getElementById('uploadText').style.display = 'none';
         };
         reader.readAsDataURL(file);
     }
+
     function resetImg() {
-        currentImageBase64 = null;
-        document.getElementById('imgPreview').style.display='none';
-        document.getElementById('imgIcon').style.display='block';
+        currentImgBase64 = null;
+        document.getElementById('previewImg').style.display = 'none';
+        document.getElementById('uploadText').style.display = 'block';
     }
-    function removeImage() {
-        document.getElementById('imgInput').value = '';
-        resetImg();
+
+    // BARCODE LOGIC
+    function genBarcode(val) {
+        if(!val) { document.getElementById('barcodeCanvas').style.display='none'; return; }
+        document.getElementById('barcodeCanvas').style.display='block';
+        JsBarcode("#barcodeCanvas", val, { format: "CODE128", height: 40, displayValue: true });
     }
-    function toggleMenu() { document.getElementById('sidebar').classList.toggle('active'); document.querySelector('.overlay').classList.toggle('active'); }
 </script>
 </body>
 </html>

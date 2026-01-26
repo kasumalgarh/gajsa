@@ -327,7 +327,7 @@ td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; }
         </ul>
         
         <div style="padding: 20px; font-size: 11px; color: rgba(255,255,255,0.5); text-align: center; margin-top:auto;">
-            Arth Book v5.0<br>POS Edition
+            Arth Book v11.0<br>GST Edition
         </div>
     </div>
 
@@ -552,7 +552,7 @@ td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; }
         }
 
      function addItemRow() {
-            const idStr = document.getElementById('selItemId').value; // String Value
+            const idStr = document.getElementById('selItemId').value; 
             const name = document.getElementById('itemSearch').value;
             const qty = parseFloat(document.getElementById('qtyInput').value);
             const rate = parseFloat(document.getElementById('rateInput').value);
@@ -561,7 +561,6 @@ td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; }
             if(!idStr || !name) return showToast("⚠️ Select an item");
             if(qty <= 0) return showToast("⚠️ Invalid Quantity");
 
-            // --- FIX: Convert ID to Number (parseInt) ---
             const id = parseInt(idStr); 
 
             const item = items.find(i => i.id === id);
@@ -579,7 +578,6 @@ td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; }
                 cart.push({ id: id, name: name, qty: qty, rate: rate, gst: gst, hsn: itemHsn, unit: itemUnit });
             }
 
-            // Reset Fields
             document.getElementById('itemSearch').value = '';
             document.getElementById('selItemId').value = '';
             document.getElementById('qtyInput').value = 1;
@@ -708,7 +706,7 @@ td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; }
             el.style.backgroundColor = '#fffbeb';
         }
 
-        // --- SAVE & PRINT LOGIC ---
+        // --- GST LOGIC SAVE FUNCTION ---
         async function saveBill(shouldPrint) {
             const pid = document.getElementById('custSelect').value;
             const invNo = document.getElementById('invNo').innerText;
@@ -730,6 +728,19 @@ td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; }
                 narration: `POS Sale - ${selectedMode}`
             };
 
+            // --- GST LOGIC START ---
+            // 1. Determine States
+            const companyState = (settings && settings.state) ? settings.state.toLowerCase() : '';
+            let partyState = companyState; // Default to local
+            
+            if(pid) {
+                const party = ledgers.find(l => l.id == pid);
+                if(party && party.state) partyState = party.state.toLowerCase();
+            }
+
+            const isInterState = (companyState && partyState && companyState !== partyState);
+            // -----------------------
+
             const entries = [];
             
             // 1. Party Debit
@@ -745,17 +756,23 @@ td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; }
             }
             if (debitLedgerId) entries.push({ ledger_id: debitLedgerId, debit: grand, credit: 0 });
 
-            // 2. Sales Credit & Item Data
-            let salesL = ledgers.find(l => l.name === 'Local Sales');
-            if (!salesL) salesL = ledgers.find(l => l.group_id === 9); 
+            // 2. Sales Credit & Tax Calculation
+            let salesL = isInterState ? ledgers.find(l => l.name === 'Inter-State Sales') : ledgers.find(l => l.name === 'Local Sales');
+            if (!salesL) salesL = ledgers.find(l => l.group_id === 6); 
             const salesId = salesL ? salesL.id : 0;
 
-            let totalTax = 0;
+            let totalCGST = 0, totalSGST = 0, totalIGST = 0;
 
             cart.forEach(c => {
                 const taxable = c.qty * c.rate;
                 const taxAmt = taxable * (c.gst / 100);
-                totalTax += taxAmt;
+
+                if (isInterState) {
+                    totalIGST += taxAmt;
+                } else {
+                    totalCGST += taxAmt / 2;
+                    totalSGST += taxAmt / 2;
+                }
 
                 entries.push({
                     ledger_id: salesId,
@@ -765,17 +782,24 @@ td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; }
                 });
             });
 
-            // 3. Tax Credit
-            if(totalTax > 0) {
-                let taxL = ledgers.find(l => l.name === 'Output GST');
-                if(!taxL) taxL = ledgers.find(l => l.group_name === 'Duties & Taxes');
-                const taxId = taxL ? taxL.id : 0;
-                if(taxId) entries.push({ ledger_id: taxId, debit: 0, credit: totalTax });
+            // 3. Tax Credit Ledgers
+            if (isInterState && totalIGST > 0) {
+                const igstL = ledgers.find(l => l.name === 'Output IGST') || ledgers.find(l => l.group_id === 11);
+                if(igstL) entries.push({ ledger_id: igstL.id, debit: 0, credit: totalIGST });
+            } else {
+                if(totalCGST > 0) {
+                    const cgstL = ledgers.find(l => l.name === 'Output CGST') || ledgers.find(l => l.group_id === 11);
+                    if(cgstL) entries.push({ ledger_id: cgstL.id, debit: 0, credit: totalCGST });
+                }
+                if(totalSGST > 0) {
+                    const sgstL = ledgers.find(l => l.name === 'Output SGST') || ledgers.find(l => l.group_id === 11);
+                    if(sgstL) entries.push({ ledger_id: sgstL.id, debit: 0, credit: totalSGST });
+                }
             }
 
             try {
                 await DB.saveVoucherTransaction(voucher, entries);
-                if (shouldPrint) printReceipt(voucher, cart, grand);
+                if (shouldPrint) printReceipt(voucher, cart, grand, isInterState);
                 else {
                     showToast("✅ Sale Saved!");
                     setTimeout(() => location.reload(), 1000);
@@ -783,8 +807,8 @@ td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; }
             } catch (e) { alert("Failed: " + e.message); }
         }
 
-        // --- PRINT RECEIPT (Standardized) ---
-        function printReceipt(v, items, total) {
+        // --- PRINT RECEIPT (Updated with Tax Breakup) ---
+        function printReceipt(v, items, total, isInterState) {
             const companyName = (settings && settings.company_name) ? settings.company_name : "Arth Book User";
             const companyAddr = (settings && settings.address) ? settings.address : "India";
             const companyGST = (settings && settings.gst_user) ? settings.gst_user : "Unregistered";
@@ -799,18 +823,37 @@ td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; }
             }
 
             const amountInWords = numToWords(Math.round(total));
+            
             let rows = '';
+            let totalTaxable = 0, totalTaxAmt = 0;
+
             items.forEach((i, idx) => {
                 const base = i.qty * i.rate;
+                const taxAmt = base * (i.gst / 100);
+                const lineTotal = base + taxAmt;
+                
+                totalTaxable += base;
+                totalTaxAmt += taxAmt;
+
                 rows += `
                     <tr>
                         <td style="border:1px solid #000; padding:5px; text-align:center;">${idx+1}</td>
-                        <td style="border:1px solid #000; padding:5px;">${i.name}</td>
+                        <td style="border:1px solid #000; padding:5px;">${i.name} <span style="font-size:10px;">(${i.gst}%)</span></td>
                         <td style="border:1px solid #000; padding:5px; text-align:center;">${i.qty}</td>
                         <td style="border:1px solid #000; padding:5px; text-align:right;">${i.rate.toFixed(2)}</td>
                         <td style="border:1px solid #000; padding:5px; text-align:right;">${base.toFixed(2)}</td>
+                        <td style="border:1px solid #000; padding:5px; text-align:right;">${lineTotal.toFixed(2)}</td>
                     </tr>`;
             });
+
+            // Tax Summary Logic
+            let taxRow = '';
+            if(isInterState) {
+                taxRow = `<div>IGST: ₹${totalTaxAmt.toFixed(2)}</div>`;
+            } else {
+                taxRow = `<div>CGST: ₹${(totalTaxAmt/2).toFixed(2)}</div>
+                          <div>SGST: ₹${(totalTaxAmt/2).toFixed(2)}</div>`;
+            }
 
             const content = `
                 <div style="width:210mm; padding:20px; font-family:Arial; margin:auto; background:white;">
@@ -837,16 +880,25 @@ td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; }
                                 <th style="border:1px solid #000; padding:5px;">Item</th>
                                 <th style="border:1px solid #000; padding:5px;">Qty</th>
                                 <th style="border:1px solid #000; padding:5px;">Rate</th>
+                                <th style="border:1px solid #000; padding:5px;">Taxable</th>
                                 <th style="border:1px solid #000; padding:5px;">Total</th>
                             </tr>
                             ${rows}
                             <tr>
-                                <td colspan="4" style="border:1px solid #000; text-align:right; font-weight:bold; padding:5px;">Grand Total</td>
+                                <td colspan="5" style="border:1px solid #000; text-align:right; font-weight:bold; padding:5px;">Grand Total</td>
                                 <td style="border:1px solid #000; text-align:right; font-weight:bold; padding:5px;">₹${total.toFixed(2)}</td>
                             </tr>
                         </table>
-                        <div style="padding:10px; font-size:12px;">
-                            Amount (in words): <b>${amountInWords} Only</b>
+                        
+                        <div style="display:flex; border-top:1px solid #000;">
+                            <div style="flex:1; padding:10px; font-size:12px; border-right:1px solid #000;">
+                                <b>Amount in Words:</b><br>${amountInWords} Only
+                            </div>
+                            <div style="flex:1; padding:10px; font-size:12px; text-align:right;">
+                                <b>Tax Summary:</b><br>
+                                <div>Taxable: ₹${totalTaxable.toFixed(2)}</div>
+                                ${taxRow}
+                            </div>
                         </div>
                     </div>
                 </div>`;
@@ -858,8 +910,7 @@ td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; }
         function numToWords(n) {
             if (n === 0) return "Zero";
             const units = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"];
-            const tens = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
-            // Simplified logic for demo
+            // Simplified logic placeholder - full logic can be added if needed
             return n + ""; 
         }
 
@@ -868,74 +919,66 @@ td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; }
             if(e.key === 'F2') { e.preventDefault(); document.getElementById('itemSearch').focus(); }
             if(e.ctrlKey && e.key === 'Enter') openPaymentModal();
         });
-        // --- QUICK CUSTOMER FUNCTIONS (Direct Add) ---
-
-    function openCustModal() {
-        document.getElementById('custModal').style.display = 'flex';
-        document.getElementById('newCustName').focus();
-    }
-
-    function closeCustModal() {
-        document.getElementById('custModal').style.display = 'none';
-        document.getElementById('newCustName').value = '';
-        document.getElementById('newCustPhone').value = '';
-        document.getElementById('newCustAddr').value = '';
-    }
-
-    async function saveNewCustomer() {
-        const name = document.getElementById('newCustName').value.trim();
-        if(!name) return alert("Customer Name is required");
-
-        // 1. 'Sundry Debtors' ग्रुप ढूंढें (Customers के लिए)
-        // ध्यान दें: 'groups' वेरिएबल window.onload से लोड होना चाहिए
-        const debtGroup = groups.find(g => g.name === 'Sundry Debtors');
-        if(!debtGroup) return alert("Error: 'Sundry Debtors' group missing in Masters!");
-
-        // 2. डेटा तैयार करें
-        const newLedger = {
-            name: name,
-            group_id: debtGroup.id,
-            phone: document.getElementById('newCustPhone').value.trim(),
-            address: document.getElementById('newCustAddr').value.trim(),
-            opening_balance: 0,
-            op_date: new Date().toISOString().slice(0,10),
-            reg_type: 'Unregistered'
-        };
-
-        // 3. डेटाबेस में सेव करें
-        try {
-            const tx = DB.db.transaction('ledgers', 'readwrite');
-            const store = tx.objectStore('ledgers');
-            const request = store.add(newLedger);
-
-            request.onsuccess = async (e) => {
-                const newId = e.target.result;
-                
-                // लिस्ट रिफ्रेश करें
-                ledgers = await DB.getAll('ledgers');
-                
-                // ड्रापडाउन को अपडेट करें (यहाँ ID 'custSelect' ही यूज करें)
-                const sel = document.getElementById('custSelect'); 
-                sel.innerHTML = '<option value="">Walk-in Customer (Cash)</option>';
-                
-                // वही फिल्टर लॉजिक जो लोड करते समय यूज होता है
-                const targetNames = ['Sundry Debtors', 'Cash-in-Hand', 'Bank Accounts'];
-                const allowedGroupIds = groups.filter(g => targetNames.includes(g.name)).map(g => g.id);
-                const validParties = ledgers.filter(l => allowedGroupIds.includes(l.group_id));
-                
-                validParties.sort((a,b) => a.name.localeCompare(b.name));
-                validParties.forEach(l => {
-                    const isSelected = (l.id === newId) ? 'selected' : '';
-                    sel.innerHTML += `<option value="${l.id}" ${isSelected}>${l.name}</option>`;
-                });
-
-                alert("✅ Customer Added Successfully!");
-                closeCustModal();
-            };
-        } catch(err) {
-            alert("Error creating customer: " + err.message);
+        
+        // --- QUICK CUSTOMER FUNCTIONS ---
+        function openCustModal() {
+            document.getElementById('custModal').style.display = 'flex';
+            document.getElementById('newCustName').focus();
         }
-    }   
+
+        function closeCustModal() {
+            document.getElementById('custModal').style.display = 'none';
+            document.getElementById('newCustName').value = '';
+            document.getElementById('newCustPhone').value = '';
+            document.getElementById('newCustAddr').value = '';
+        }
+
+        async function saveNewCustomer() {
+            const name = document.getElementById('newCustName').value.trim();
+            if(!name) return alert("Customer Name is required");
+
+            const debtGroup = groups.find(g => g.name === 'Sundry Debtors');
+            if(!debtGroup) return alert("Error: 'Sundry Debtors' group missing!");
+
+            const newLedger = {
+                name: name,
+                group_id: debtGroup.id,
+                phone: document.getElementById('newCustPhone').value.trim(),
+                address: document.getElementById('newCustAddr').value.trim(),
+                opening_balance: 0,
+                op_date: new Date().toISOString().slice(0,10),
+                reg_type: 'Unregistered'
+            };
+
+            try {
+                const tx = DB.db.transaction('ledgers', 'readwrite');
+                const store = tx.objectStore('ledgers');
+                const request = store.add(newLedger);
+
+                request.onsuccess = async (e) => {
+                    const newId = e.target.result;
+                    ledgers = await DB.getAll('ledgers');
+                    
+                    const sel = document.getElementById('custSelect'); 
+                    sel.innerHTML = '<option value="">Walk-in Customer (Cash)</option>';
+                    
+                    const targetNames = ['Sundry Debtors', 'Cash-in-Hand', 'Bank Accounts'];
+                    const allowedGroupIds = groups.filter(g => targetNames.includes(g.name)).map(g => g.id);
+                    const validParties = ledgers.filter(l => allowedGroupIds.includes(l.group_id));
+                    
+                    validParties.sort((a,b) => a.name.localeCompare(b.name));
+                    validParties.forEach(l => {
+                        const isSelected = (l.id === newId) ? 'selected' : '';
+                        sel.innerHTML += `<option value="${l.id}" ${isSelected}>${l.name}</option>`;
+                    });
+
+                    alert("✅ Customer Added Successfully!");
+                    closeCustModal();
+                };
+            } catch(err) {
+                alert("Error creating customer: " + err.message);
+            }
+        }   
     </script>
 </body>
 </html>

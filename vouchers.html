@@ -9,700 +9,454 @@
     <link rel="icon" type="image/x-icon" href="favicon.ico">
 </head>
 <style>
-    /* ==========================================================================
-    ARTH BOOK PLATINUM THEME - MASTER STYLESHEET v9.0 (FINAL)
-    Covers: All Pages + Mobile Voucher Entry
-    ========================================================================== */
+    /* ARTH BOOK MASTER STYLESHEET v9.0 */
+    :root { --primary: #0d47a1; --primary-dark: #002171; --accent: #ffca28; --bg: #f1f5f9; --surface: #ffffff; --text-main: #1e293b; --text-sub: #64748b; --border: #e2e8f0; --success: #10b981; --danger: #ef4444; --warning: #f59e0b; --sidebar-width: 260px; --shadow: 0 4px 6px -1px rgba(0,0,0,0.05); --transition: all 0.2s ease-in-out; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; outline: none; }
+    body { display: flex; height: 100vh; background: var(--bg); color: var(--text-main); overflow: hidden; }
+    a { text-decoration: none; } ul { list-style: none; } button { font-family: inherit; }
 
-:root {
-    /* --- COLORS --- */
-    --primary: #0d47a1;       /* Royal Navy */
-    --primary-dark: #002171;  /* Darker Navy */
-    --accent: #ffca28;        /* Gold */
-    --bg: #f1f5f9;            /* Background */
-    --surface: #ffffff;       /* Card White */
-    --text-main: #1e293b;
-    --text-sub: #64748b;
-    --border: #e2e8f0;
+    /* SIDEBAR */
+    .sidebar { width: var(--sidebar-width); background: var(--primary) !important; color: white; display: flex; flex-direction: column; flex-shrink: 0; height: 100vh; overflow-y: auto; z-index: 2000; box-shadow: 4px 0 10px rgba(0,0,0,0.1); transition: var(--transition); }
+    .brand-logo { padding: 20px; font-size: 20px; font-weight: 800; color: white !important; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 10px; }
+    .nav-links { padding: 0 10px; margin: 0; } .nav-links li { margin-bottom: 5px; }
+    .sidebar a, .nav-links a, .nav-link { display: flex !important; align-items: center; gap: 12px; padding: 12px 15px; margin-bottom: 5px; color: rgba(255,255,255,0.85) !important; text-decoration: none !important; border-radius: 8px; font-weight: 500; font-size: 14px; transition: var(--transition); background: transparent; cursor: pointer; }
+    .sidebar a:hover, .nav-link:hover { background: rgba(255,255,255,0.15) !important; color: #ffffff !important; padding-left: 20px; }
+    .sidebar a.active, .nav-link.active { background: var(--accent) !important; color: var(--primary-dark) !important; font-weight: 800; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+
+    /* MAIN */
+    .main, .main-content, .main-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; width: 100%; }
+    .header, .top-bar { background: var(--surface); padding: 15px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px; flex-shrink: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.05); min-height: 60px; padding-right: 60px; position: relative; }
+    .header h2 { margin: 0; font-size: 1.2rem; color: var(--primary); font-weight: 800; }
+    .scroll-area, .content-scroll { padding: 20px; overflow-y: auto; flex: 1; -webkit-overflow-scrolling: touch; }
+
+    /* INPUTS & BUTTONS */
+    input, select, textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; outline: none; background: #fff; color: var(--text-main); transition: 0.2s; }
+    input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(13, 71, 161, 0.1); }
+    .btn { padding: 10px 20px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 14px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; }
+    .btn-new { background: var(--primary); color: white; }
+    .btn-refresh { background: white; border: 1px solid var(--border); color: var(--text-main); width: 40px; height: 40px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+    /* FILTERS */
+    .filters { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .filter-input { width: 150px; }
+    .search-grp { position: relative; }
+    .search-grp i { position: absolute; left: 10px; top: 12px; color: var(--text-sub); }
+    .search-box { padding-left: 35px; width: 200px; }
+
+    /* TABLE */
+    .table-container { width: 100%; overflow-x: auto; background: white; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 15px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 800px; }
+    th { background: #f8fafc; padding: 12px; text-align: left; font-weight: 700; border-bottom: 2px solid var(--border); white-space: nowrap; }
+    td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
     
-    /* --- STATUS --- */
-    --success: #10b981;
-    --danger: #ef4444;
-    --warning: #f59e0b;
-    
-    /* --- LAYOUT --- */
-    --sidebar-width: 260px;
-    --shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-    --transition: all 0.2s ease-in-out;
-}
+    /* BADGES & UTILS */
+    .vtype-badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; color: white; text-transform: uppercase; }
+    .badge-Sales { background: var(--primary); } .badge-Purchase { background: #d946ef; } .badge-Receipt { background: #10b981; } .badge-Payment { background: #f59e0b; }
+    .amount { font-family: 'JetBrains Mono', monospace; font-weight: 600; }
+    .amt-in { color: var(--success); } .amt-out { color: var(--text-main); }
+    .actions button { background: none; border: none; cursor: pointer; font-size: 14px; padding: 5px; color: var(--text-sub); transition: 0.2s; }
+    .actions button:hover { color: var(--primary); transform: scale(1.1); }
 
-/* ===========================
-   1. GLOBAL RESET
-   =========================== */
-* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; outline: none; }
-body { display: flex; height: 100vh; background: var(--bg); color: var(--text-main); overflow: hidden; }
-a { text-decoration: none; }
-ul { list-style: none; }
-button { font-family: inherit; }
+    /* MOBILE */
+    .menu-btn { display: none; position: absolute; right: 15px; top: 15px; font-size: 1.5rem; color: var(--primary); background: none; border: none; cursor: pointer; z-index: 100; }
+    .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1500; backdrop-filter: blur(2px); }
 
-/* ===========================
-   2. SIDEBAR
-   =========================== */
-.sidebar {
-    width: var(--sidebar-width);
-    background: var(--primary) !important;
-    color: white;
-    display: flex; flex-direction: column; flex-shrink: 0; height: 100vh;
-    overflow-y: auto; z-index: 2000;
-    box-shadow: 4px 0 10px rgba(0,0,0,0.1);
-    transition: var(--transition);
-}
-
-.brand-logo {
-    padding: 20px; font-size: 20px; font-weight: 800; color: white !important;
-    display: flex; align-items: center; gap: 10px;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-    margin-bottom: 10px;
-}
-
-.nav-links { padding: 0 10px; margin: 0; }
-.nav-links li { margin-bottom: 5px; }
-
-.sidebar a, .nav-links a, .nav-link {
-    display: flex !important; align-items: center; gap: 12px;
-    padding: 12px 15px; margin-bottom: 5px;
-    color: rgba(255,255,255,0.85) !important;
-    text-decoration: none !important;
-    border-radius: 8px; font-weight: 500; font-size: 14px;
-    transition: var(--transition);
-    background: transparent; cursor: pointer;
-}
-
-.sidebar a:hover, .nav-link:hover {
-    background: rgba(255,255,255,0.15) !important;
-    color: #ffffff !important;
-    padding-left: 20px;
-}
-
-.sidebar a.active, .nav-link.active {
-    background: var(--accent) !important;
-    color: var(--primary-dark) !important;
-    font-weight: 800;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-}
-
-/* ===========================
-   3. MAIN LAYOUT & HEADERS
-   =========================== */
-.main, .main-content, .main-area { 
-    flex: 1; display: flex; flex-direction: column; 
-    overflow: hidden; position: relative; width: 100%;
-}
-
-.header, .top-bar {
-    background: var(--surface); padding: 15px 20px; 
-    border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: space-between; 
-    flex-wrap: wrap; gap: 15px; flex-shrink: 0;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-    min-height: 60px;
-    padding-right: 60px; /* Space for menu btn */
-    position: relative;
-}
-
-.header h2 { margin: 0; font-size: 1.2rem; color: var(--primary); font-weight: 800; }
-
-.scroll-area, .content-scroll { padding: 20px; overflow-y: auto; flex: 1; -webkit-overflow-scrolling: touch; }
-
-/* ===========================
-   4. PAGE SPECIFIC LAYOUTS
-   =========================== */
-
-/* --- SALES & PURCHASE --- */
-.header-card, .grid-header {
-    background: var(--surface); padding: 15px;
-    border-radius: 12px; border: 1px solid var(--border);
-    display: flex; gap: 15px; flex-wrap: wrap; 
-    margin-bottom: 15px; align-items: end;
-}
-
-.entry-bar {
-    background: #fff; padding: 15px; 
-    border: 1px solid var(--border); border-bottom: none;
-    border-radius: 12px 12px 0 0;
-    display: grid; 
-    grid-template-columns: 3fr 1fr 1fr 1fr 100px;
-    gap: 10px; align-items: end;
-}
-
-/* --- VOUCHER ENTRY (Dr/Cr Rows) --- */
-.entry-row {
-    display: grid; 
-    grid-template-columns: 80px 1fr 100px 150px 50px; /* Desktop Grid */
-    gap: 15px; align-items: center;
-    background: var(--surface); border: 1px solid var(--border); 
-    border-radius: 10px; padding: 12px 15px; margin-bottom: 12px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-}
-
-.entry-row input, .entry-row select { 
-    border: 1px solid transparent; background: transparent; padding: 8px;
-}
-.entry-row input:focus, .entry-row select:focus {
-    background: #fff; border-color: var(--primary); box-shadow: 0 0 0 2px rgba(13,71,161,0.1);
-}
-.entry-row .amt { text-align: right; background: #f8fafc; border-radius: 6px; font-weight: bold; }
-
-/* --- TABLES --- */
-.table-container {
-    width: 100%; overflow-x: auto; background: white;
-    border: 1px solid var(--border); border-radius: 8px;
-    margin-bottom: 15px;
-}
-
-table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 700px; /* Scroll on mobile */ }
-th { background: #f8fafc; padding: 12px; text-align: left; font-weight: 700; border-bottom: 2px solid var(--border); white-space: nowrap; }
-td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
-
-/* ===========================
-   5. COMPONENTS
-   =========================== */
-.form-group label { display: block; font-size: 12px; font-weight: 700; color: var(--text-sub); margin-bottom: 5px; text-transform: uppercase; }
-
-input, select, textarea {
-    width: 100%; padding: 10px 12px; border: 1px solid var(--border);
-    border-radius: 8px; font-size: 14px; outline: none; background: #fff;
-    color: var(--text-main); transition: 0.2s;
-}
-input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(13, 71, 161, 0.1); }
-
-/* Buttons */
-.btn {
-    padding: 10px 20px; border-radius: 8px; border: none;
-    font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 14px;
-    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-    text-decoration: none;
-}
-.btn:active { transform: scale(0.98); }
-
-.btn-primary, .btn-save, .btn-add, .btn-new { background: var(--primary); color: white; }
-.btn-success { background: var(--success); color: white; }
-.btn-danger, .btn-del { background: #fee2e2; color: var(--danger); }
-.btn-refresh { background: white; border: 1px solid var(--border); color: var(--text-main); }
-
-/* Card */
-.card { background: var(--surface); border-radius: 12px; box-shadow: var(--shadow); border: 1px solid var(--border); padding: 20px; margin-bottom: 20px; }
-
-/* ===========================
-   6. MOBILE RESPONSIVENESS (THE FIX)
-   =========================== */
-.menu-btn { 
-    display: none; position: absolute; right: 15px; top: 15px; 
-    font-size: 1.5rem; color: var(--primary); background: none; border: none; cursor: pointer; z-index: 100;
-}
-.overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1500; backdrop-filter: blur(2px); }
-
-@media (max-width: 1024px) {
-    /* Sidebar */
-    .sidebar { position: fixed; left: -100%; top: 0; height: 100%; width: 280px; }
-    .sidebar.active { left: 0; }
-    
-    .menu-btn { display: block; }
-    .overlay.active { display: block; }
-    
-    .main { padding: 0; }
-    .header { padding-right: 60px; } 
-    
-    /* Stack Inputs on Mobile */
-    .grid-header, .header-card, .entry-bar {
-        grid-template-columns: 1fr !important;
-        gap: 10px;
+    @media (max-width: 1024px) {
+        .sidebar { position: fixed; left: -100%; top: 0; height: 100%; width: 280px; }
+        .sidebar.active { left: 0; }
+        .menu-btn { display: block; }
+        .overlay.active { display: block; }
+        .main { padding: 0; }
+        .header { padding-right: 60px; }
+        .filters { width: 100%; }
+        .filter-input, .search-box { width: 100%; }
+        .tb-header { width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
     }
     
-    /* VOUCHER ENTRY MOBILE FIX */
-    .entry-row {
-        grid-template-columns: 80px 1fr 50px !important; /* Type | Ledger | Del */
-        grid-template-rows: auto auto; /* Two Rows */
-        gap: 10px; padding: 15px; border-left: 4px solid var(--primary);
-    }
-    /* Grid Placement for Voucher Mobile */
-    .entry-row select:first-child { grid-column: 1; grid-row: 1; } /* Dr/Cr */
-    .entry-row select:nth-child(2) { grid-column: 2; grid-row: 1; font-weight: bold; } /* Ledger */
-    .entry-row i.fa-trash { grid-column: 3; grid-row: 1; text-align: center; } /* Delete */
-    .entry-row input.amt { grid-column: 2 / span 2; grid-row: 2; font-size: 16px; margin-top: 5px; } /* Amount */
-    .entry-row .bal-ind { grid-column: 1; grid-row: 2; font-size: 10px; color: #999; } /* Balance */
-
-    /* Buttons */
-    .btn-add, .entry-bar .btn, .header .btn-save, .footer-bar .btn {
-        width: 100%; height: 45px; margin-top: 5px;
-    }
-    
-    /* Modal & Pay Options */
-    .modal { width: 95% !important; padding: 20px !important; }
-    .pay-options { flex-direction: column !important; }
-    .p-opt { padding: 15px; justify-content: flex-start; }
-}
-
-/* ===========================
-   7. UTILITIES
-   =========================== */
-.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2500; display: none; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
-.modal { background: white; width: 500px; max-width: 95%; padding: 25px; border-radius: 16px; box-shadow: 0 25px 50px rgba(0,0,0,0.25); display: flex; flex-direction: column; }
-
-/* Payment Options (Desktop) */
-.pay-options { display: flex; gap: 15px; margin: 20px 0; }
-.p-opt { flex: 1; padding: 15px; border: 2px solid var(--border); border-radius: 10px; text-align: center; cursor: pointer; background: #f9f9f9; display: flex; align-items: center; justify-content: center; gap: 10px; }
-.p-opt.selected { border-color: var(--accent); background: #fffbeb; color: var(--primary-dark); font-weight: bold; }
-
-/* Badge */
-.vtype-badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; color: white; text-transform: uppercase; }
-.badge-Sales { background: var(--primary); }
-.badge-Purchase { background: #d946ef; }
-.badge-Receipt { background: #10b981; }
-.badge-Payment { background: #f59e0b; }
-
-#toast { position: fixed; bottom: 80px; right: 20px; background: var(--success); color: white; padding: 12px 24px; border-radius: 50px; display: none; z-index: 3000; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
-
-@media print {
-    .sidebar, .menu-btn, .header, .entry-bar, .footer-bar, .btn, .overlay, #toast, .no-print { display: none !important; }
-    .main, .main-content, .table-area { padding: 0; border: none; height: auto; overflow: visible; }
-}
+    @media print { .sidebar, .menu-btn, .top-bar, .overlay, .no-print { display: none !important; } .main, .content-scroll, .table-container { padding: 0; border: none; height: auto; overflow: visible; } }
 </style>
 <body>
 <button class="menu-btn" onclick="toggleMenu()">☰</button>
 <div class="overlay" onclick="toggleMenu()"></div>
 
 <div class="sidebar" id="sidebar">
-    <div class="brand-logo">
-        <i class="fas fa-cube"></i> Arth Book
-    </div>
-    
+    <div class="brand-logo"><i class="fas fa-cube"></i> Arth Book</div>
     <ul class="nav-links">
-        <li><a href="index.html" id="nav-dash"><i class="fas fa-home"></i> Dashboard</a></li>
-        
-        <li class="nav-section">Entry</li>
-        <li><a href="sales_invoice.html" id="nav-sales"><i class="fas fa-file-invoice"></i> Sales (POS)</a></li>
-        <li><a href="purchase_invoice.html" id="nav-purchase"><i class="fas fa-truck"></i> Purchase</a></li>
-        <li><a href="vouchers.html" id="nav-vouchers"><i class="fas fa-receipt"></i> Day Book</a></li>
-        
-        <li class="nav-section">Masters</li>
-        <li><a href="item_master.html" id="nav-items"><i class="fas fa-boxes"></i> Inventory</a></li>
-        <li><a href="ArthBook.html" id="nav-parties"><i class="fas fa-users"></i> Parties</a></li>
-        <li><a href="coa.html" id="nav-accounts"><i class="fas fa-sitemap"></i> Accounts</a></li>
-        
-        <li class="nav-section">Reports & Tax</li>
-        <li><a href="reports.html" id="nav-reports"><i class="fas fa-chart-line"></i> Reports</a></li>
-        <li><a href="gst_filing.html" id="nav-gst"><i class="fas fa-university"></i> GST Returns</a></li>
-        <li><a href="taxation.html" id="nav-tax"><i class="fas fa-calculator"></i> Tax / ITR</a></li>
-        
-        <hr class="nav-divider">
-        
-        <li><a href="settings.html" id="nav-settings"><i class="fas fa-cog"></i> Settings</a></li>
-        <li><a href="help.html" id="nav-help"><i class="fas fa-question-circle"></i> Help Guide</a></li>
+        <li><a href="index.html"><i class="fas fa-home"></i> Dashboard</a></li>
+        <li style="margin:15px 0 5px 15px; font-size:11px; opacity:0.5; text-transform:uppercase;">Entry</li>
+        <li><a href="sales_invoice.html"><i class="fas fa-file-invoice"></i> Sales (POS)</a></li>
+        <li><a href="purchase_invoice.html"><i class="fas fa-truck"></i> Purchase</a></li>
+        <li><a href="vouchers.html" class="active"><i class="fas fa-receipt"></i> Day Book</a></li>
+        <li style="margin:15px 0 5px 15px; font-size:11px; opacity:0.5; text-transform:uppercase;">Masters</li>
+        <li><a href="item_master.html"><i class="fas fa-boxes"></i> Inventory</a></li>
+        <li><a href="ArthBook.html"><i class="fas fa-users"></i> Parties</a></li>
+        <li><a href="coa.html"><i class="fas fa-sitemap"></i> Accounts</a></li>
+        <li style="margin:15px 0 5px 15px; font-size:11px; opacity:0.5; text-transform:uppercase;">Reports</li>
+        <li><a href="reports.html"><i class="fas fa-chart-line"></i> Reports</a></li>
+        <li><a href="settings.html"><i class="fas fa-cog"></i> Settings</a></li>
     </ul>
-    
-    <div class="sidebar-footer">
-        Arth Book v5.0<br>Authorized User
+</div>
+
+<div class="main-area">
+    <div class="top-bar">
+        <div class="tb-header">
+            <h2>Day Book</h2>
+            </div>
+        <div class="filters">
+            <input type="date" id="dateFrom" class="filter-input">
+            <input type="date" id="dateTo" class="filter-input">
+            <select id="typeFilter" class="filter-input">
+                <option value="All">All Vouchers</option>
+                <option value="Sales">Sales</option>
+                <option value="Purchase">Purchase</option>
+                <option value="Receipt">Receipt</option>
+                <option value="Payment">Payment</option>
+            </select>
+            <div class="search-grp">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchBox" class="search-box" placeholder="Search Vch No...">
+            </div>
+            <button class="btn-refresh" onclick="renderVouchers()"><i class="fas fa-sync-alt"></i></button>
+        </div>
+    </div>
+
+    <div class="content-scroll">
+        <div id="loading" style="text-align:center; padding:40px; display:none;">Loading...</div>
+        <div id="noData" style="text-align:center; padding:40px; display:none; color:#64748b;">No Vouchers Found</div>
+        <div class="table-container" id="tableWrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th width="15%">Date</th>
+                        <th width="15%">Voucher No</th>
+                        <th>Narration</th>
+                        <th width="10%">Type</th>
+                        <th width="15%" style="text-align:right;">Amount</th>
+                        <th width="15%" style="text-align:center;">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="voucherTable"></tbody>
+            </table>
+        </div>
     </div>
 </div>
 
-    <div class="main-area">
-        <div class="top-bar">
-            <div class="tb-header">
-                <h2>Day Book</h2>
-                <a href="voucher_entry.html" class="btn-new"><i class="fas fa-plus"></i> New Entry</a>
-            </div>
-            <div class="filters">
-                <input type="date" id="dateFrom" class="filter-input">
-                <input type="date" id="dateTo" class="filter-input">
-                <select id="typeFilter" class="filter-input">
-                    <option value="All">All Vouchers</option>
-                    <option value="Sales">Sales</option>
-                    <option value="Purchase">Purchase</option>
-                    <option value="Payment">Payment</option>
-                    <option value="Receipt">Receipt</option>
-                    <option value="Contra">Contra</option>
-                    <option value="Journal">Journal</option>
-                </select>
-                <div class="search-grp">
-                    <i class="fas fa-search"></i>
-                    <input type="text" id="searchBox" class="search-box" placeholder="Search Vch No, Amount...">
-                </div>
-                <button class="btn-refresh" onclick="renderVouchers()"><i class="fas fa-sync-alt"></i></button>
-            </div>
-        </div>
+<div id="printArea"></div>
 
-        <div class="content-scroll">
-            <div id="loading" style="text-align:center; padding:40px; display:none;">Loading...</div>
-            <div id="noData" style="text-align:center; padding:40px; display:none; color:#64748b;">No Vouchers Found</div>
-            <div class="table-container" id="tableWrap">
-                <table>
-                    <thead>
-                        <tr>
-                            <th width="15%">Date</th>
-                            <th width="15%">Voucher No</th>
-                            <th>Narration</th>
-                            <th width="10%">Type</th>
-                            <th width="15%" style="text-align:right;">Amount</th>
-                            <th width="15%" style="text-align:center;">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="voucherTable"></tbody>
-                </table>
-            </div>
-        </div>
-    </div>
+<script src="db.js"></script>
+<script>
+    let ledgers = [], items = [], settings = {};
+    const DEFAULT_LOGO = "https://cdn-icons-png.flaticon.com/512/1041/1041888.png"; 
 
-    <div id="printArea"></div>
+    window.onload = async () => {
+        try {
+            await DB.init();
+            [ledgers, items, settings] = await Promise.all([
+                DB.getAll('ledgers'), DB.getAll('items'), DB.getAll('settings')
+            ]);
+            
+            if(Array.isArray(settings) && settings.length > 0) settings = settings[0];
+            if(!settings) settings = {};
 
-    <script src="db.js"></script>
-    <script>
-        let ledgers = [], items = [], settings = {};
-        
-        // DEFAULT LOGO (If none uploaded)
-        const DEFAULT_LOGO = "https://cdn-icons-png.flaticon.com/512/1041/1041888.png"; 
+            const date = new Date();
+            document.getElementById('dateFrom').valueAsDate = new Date(date.getFullYear(), date.getMonth(), 1);
+            document.getElementById('dateTo').valueAsDate = new Date(date.getFullYear(), date.getMonth() + 1, 0);
 
-        window.onload = async () => {
-            try {
-                await DB.init();
-                [ledgers, items, settings] = await Promise.all([
-                    DB.getAll('ledgers'), DB.getAll('items'), DB.getAll('settings')
-                ]);
+            renderVouchers();
+
+            // Event Listeners
+            document.getElementById('typeFilter').addEventListener('change', renderVouchers);
+            document.getElementById('dateFrom').addEventListener('change', renderVouchers);
+            document.getElementById('dateTo').addEventListener('change', renderVouchers);
+            document.getElementById('searchBox').addEventListener('keyup', (e) => setTimeout(renderVouchers, 300));
+        } catch (e) { console.error(e); }
+    };
+
+    function toggleMenu() {
+        document.getElementById('sidebar').classList.toggle('active');
+        document.querySelector('.overlay').classList.toggle('active');
+    }
+
+    async function renderVouchers() {
+        document.getElementById('loading').style.display = 'block';
+        document.getElementById('tableWrap').style.display = 'none';
+        document.getElementById('noData').style.display = 'none';
+
+        try {
+            const vData = await DB.getAll('vouchers');
+            const from = document.getElementById('dateFrom').value;
+            const to = document.getElementById('dateTo').value;
+            const type = document.getElementById('typeFilter').value;
+            const search = document.getElementById('searchBox').value.toLowerCase();
+
+            const filtered = vData.filter(v => {
+                const matchDate = (!from || v.date >= from) && (!to || v.date <= to);
+                const matchType = type === 'All' || v.type === type;
+                const matchSearch = String(v.voucher_no).toLowerCase().includes(search) || 
+                                    (v.narration && v.narration.toLowerCase().includes(search));
+                return matchDate && matchType && matchSearch;
+            });
+
+            filtered.sort((a,b) => b.date.localeCompare(a.date) || b.id - a.id);
+
+            const tbody = document.getElementById('voucherTable');
+            tbody.innerHTML = '';
+            document.getElementById('loading').style.display = 'none';
+
+            if (filtered.length === 0) {
+                document.getElementById('noData').style.display = 'block';
+                return;
+            }
+
+            document.getElementById('tableWrap').style.display = 'block';
+
+            filtered.forEach(v => {
+                const isIn = ['Receipt', 'Sales', 'Credit Note'].includes(v.type);
+                const amtClass = isIn ? 'amt-in' : 'amt-out';
                 
-                if(Array.isArray(settings) && settings.length > 0) settings = settings[0];
-                if(!settings) settings = {};
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${v.date.split('-').reverse().join('-')}</td>
+                    <td style="font-weight:600;">${v.voucher_no}</td>
+                    <td style="color:#64748b; font-size:12px;">${v.narration || '-'}</td>
+                    <td><span class="vtype-badge badge-${v.type.replace(/\s/g,'')}">${v.type}</span></td>
+                    <td class="amount ${amtClass}">₹${parseFloat(v.amount).toFixed(2)}</td>
+                    <td class="actions" style="text-align:center;">
+                        <button onclick="printVoucher(${v.id})" title="Print Invoice"><i class="fas fa-print"></i></button>
+                        <button onclick="deleteVoucher(${v.id})"><i class="fas fa-trash-alt"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        } catch(e) { console.error(e); }
+    }
 
-                // Update Sidebar Logo from Settings if available
-                if(settings.logo) document.getElementById('appLogo').src = settings.logo;
-
-                const date = new Date();
-                document.getElementById('dateFrom').valueAsDate = new Date(date.getFullYear(), date.getMonth(), 1);
-                document.getElementById('dateTo').valueAsDate = new Date(date.getFullYear(), date.getMonth() + 1, 0);
-
-                renderVouchers();
-
-                document.getElementById('typeFilter').addEventListener('change', renderVouchers);
-                document.getElementById('dateFrom').addEventListener('change', renderVouchers);
-                document.getElementById('dateTo').addEventListener('change', renderVouchers);
-                document.getElementById('searchBox').addEventListener('keyup', (e) => setTimeout(renderVouchers, 300));
-            } catch (e) { console.error(e); }
-        };
-
-        // --- MOBILE MENU TOGGLE (NEW) ---
-        function toggleMenu() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.querySelector('.overlay');
-            sidebar.classList.toggle('active');
-            overlay.classList.toggle('active');
+    async function deleteVoucher(id) {
+        if(confirm("Are you sure? This will reverse stock and ledger effects.")) {
+            try { await DB.deleteVoucher(id); renderVouchers(); } catch(e) { alert(e.message); }
         }
+    }
 
-        async function renderVouchers() {
-            document.getElementById('loading').style.display = 'block';
-            document.getElementById('tableWrap').style.display = 'none';
-            document.getElementById('noData').style.display = 'none';
+    // --- MASTER PRINT LOGIC (GST UPGRADED) ---
+    async function printVoucher(id) {
+        try {
+            const v = await DB.getOne('vouchers', id);
+            if(!v) return alert("Voucher Not Found!");
 
-            try {
-                const vData = await DB.getAll('vouchers');
-                const from = document.getElementById('dateFrom').value;
-                const to = document.getElementById('dateTo').value;
-                const type = document.getElementById('typeFilter').value;
-                const search = document.getElementById('searchBox').value.toLowerCase();
+            const allEntries = await DB.getAll('acct_entries');
+            const entries = allEntries.filter(e => e.voucher_id === id);
 
-                const filtered = vData.filter(v => {
-                    const matchDate = (!from || v.date >= from) && (!to || v.date <= to);
-                    const matchType = type === 'All' || v.type === type;
-                    const matchSearch = String(v.voucher_no).toLowerCase().includes(search) || 
-                                        (v.narration && v.narration.toLowerCase().includes(search));
-                    return matchDate && matchType && matchSearch;
+            if (v.type === 'Sales' || v.type === 'Purchase') {
+                let printItems = [];
+                
+                // Reconstruct Items from Metadata
+                entries.forEach(e => {
+                    if (e.meta_data && e.meta_data.item_id) {
+                        const item = items.find(i => i.id == e.meta_data.item_id);
+                        printItems.push({
+                            name: item ? item.name : "Unknown Item",
+                            hsn: item ? item.hsn : '',
+                            qty: e.meta_data.qty || 0,
+                            rate: e.meta_data.rate || 0,
+                            unit: item ? item.unit : '',
+                            gst: item ? (item.gst_rate || 0) : 0
+                        });
+                    }
                 });
 
-                filtered.sort((a,b) => b.date.localeCompare(a.date) || b.id - a.id);
-
-                const tbody = document.getElementById('voucherTable');
-                tbody.innerHTML = '';
-                document.getElementById('loading').style.display = 'none';
-
-                if (filtered.length === 0) {
-                    document.getElementById('noData').style.display = 'block';
-                    return;
-                }
-
-                document.getElementById('tableWrap').style.display = 'block';
-
-                filtered.forEach(v => {
-                    const isIn = ['Receipt', 'Sales', 'Credit Note'].includes(v.type);
-                    const amtClass = isIn ? 'amt-in' : 'amt-out';
-                    
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td>${v.date.split('-').reverse().join('-')}</td>
-                        <td style="font-weight:600;">${v.voucher_no}</td>
-                        <td style="color:#64748b; font-size:12px;">${v.narration || '-'}</td>
-                        <td><span class="vtype-badge badge-${v.type.replace(/\s/g,'')}">${v.type}</span></td>
-                        <td class="amount ${amtClass}">₹${parseFloat(v.amount).toFixed(2)}</td>
-                        <td class="actions" style="text-align:center;">
-                            <button onclick="editVoucher(${v.id})" title="Edit Entry" style="margin-right:5px;"><i class="fas fa-edit"></i></button>
-                            <button onclick="printVoucher(${v.id})" title="Print Invoice"><i class="fas fa-print"></i></button>
-                            <button onclick="deleteVoucher(${v.id})"><i class="fas fa-trash-alt"></i></button>
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-            } catch(e) { console.error(e); }
-        }
-
-        // --- MASTER PRINT LOGIC ---
-        async function printVoucher(id) {
-            try {
-                const v = await DB.getOne('vouchers', id);
-                if(!v) return alert("Voucher Not Found!");
-
-                const allEntries = await DB.getAll('acct_entries');
-                const entries = allEntries.filter(e => e.voucher_id === id);
-
-                if (v.type === 'Sales' || v.type === 'Purchase') {
-                    let printItems = [];
-                    // Try Metadata first
+                // Fallback for non-inventory lines
+                if(printItems.length === 0) {
                     entries.forEach(e => {
-                        if (e.meta_data && e.meta_data.item_id) {
-                            const item = items.find(i => i.id == e.meta_data.item_id);
+                        const l = ledgers.find(x => x.id === e.ledger_id);
+                        const isTax = l && (l.group_name === 'Duties & Taxes' || l.name.includes('GST'));
+                        // Skip tax ledgers and party ledgers to find the "Item/Sales" ledger
+                        if(l && !isTax && l.id !== v.party_id) {
                             printItems.push({
-                                name: item ? item.name : "Unknown Item",
-                                hsn: item ? item.hsn : '',
-                                qty: e.meta_data.qty || 0,
-                                rate: e.meta_data.rate || 0,
-                                unit: item ? item.unit : '',
-                                gst: item ? (item.gst_rate || 0) : 0
+                                name: l.name, hsn: '', unit: '', qty: 1, 
+                                rate: e.credit || e.debit, gst: 0
                             });
                         }
                     });
-
-                    // Fallback to Ledger Name
-                    if(printItems.length === 0) {
-                        entries.forEach(e => {
-                            const l = ledgers.find(x => x.id === e.ledger_id);
-                            const isItemEntry = (v.type === 'Sales' && e.credit > 0) || (v.type === 'Purchase' && e.debit > 0);
-                            const isTax = l && (l.group_name === 'Duties & Taxes' || l.name.includes('GST'));
-                            if(l && isItemEntry && !isTax) {
-                                printItems.push({
-                                    name: l.name, hsn: '', unit: '', qty: 1, 
-                                    rate: e.credit || e.debit, gst: 0
-                                });
-                            }
-                        });
-                    }
-                    renderA4Invoice(v, printItems);
-                } else {
-                    renderSimpleVoucher(v, entries);
                 }
-            } catch(e) { console.error(e); alert("Print Error: " + e.message); }
-        }
+                renderA4Invoice(v, printItems);
+            } else {
+                renderSimpleVoucher(v, entries);
+            }
+        } catch(e) { console.error(e); alert("Print Error: " + e.message); }
+    }
 
-        function renderA4Invoice(v, printItems) {
-            const companyName = settings.company_name || "My Company";
-            const companyAddr = settings.address || "";
-            const companyGST = settings.gstin || settings.gst_user || "";
+    function renderA4Invoice(v, printItems) {
+        const companyName = settings.company_name || "My Company";
+        const companyAddr = settings.address || "";
+        const companyGST = settings.gstin || settings.gst_user || "";
+        const logoSrc = settings.logo || DEFAULT_LOGO; 
+        const signSrc = settings.signature || "";
+
+        // --- GST LOGIC FOR PRINT ---
+        const companyState = (settings.state || '').toLowerCase();
+        
+        const party = ledgers.find(l => l.id == v.party_id);
+        const buyerName = party ? party.name : "Cash Sale";
+        const buyerAddr = (party && party.address) ? party.address : "";
+        const buyerGST = (party && party.gstin) ? party.gstin : "";
+        const buyerState = (party && party.state) ? party.state.toLowerCase() : companyState;
+
+        // Determine if Inter-state (IGST) or Intra-state (CGST/SGST)
+        const isIGST = (companyState && buyerState && companyState !== buyerState);
+
+        let rows = '';
+        let totalTaxable = 0, totalCGST = 0, totalSGST = 0, totalIGST = 0;
+
+        printItems.forEach((i, idx) => {
+            const amt = i.qty * i.rate;
+            const taxAmt = amt * (i.gst / 100);
             
-            // USE LOGO FROM SETTINGS OR DEFAULT
-            const logoSrc = settings.logo || DEFAULT_LOGO; 
-            const signSrc = settings.signature || "";
+            totalTaxable += amt;
 
-            const party = ledgers.find(l => l.id == v.party_id);
-            const buyerName = party ? party.name : "Cash Sale";
-            const buyerAddr = (party && party.address) ? party.address : "";
-            const buyerGST = (party && party.gstin) ? party.gstin : "";
-
-            let rows = '';
-            let totalTaxable = 0;
-            let totalCGST = 0; 
-            let totalSGST = 0;
-
-            printItems.forEach((i, idx) => {
-                const amt = i.qty * i.rate;
-                const taxAmt = amt * (i.gst / 100);
+            let taxCols = '';
+            if(isIGST) {
+                totalIGST += taxAmt;
+                taxCols = `<td style="text-align:right; border-right:1px solid #000;">${i.gst}%<br><small>${taxAmt.toFixed(2)}</small></td>`;
+            } else {
                 const halfTax = taxAmt / 2;
-                const halfRate = i.gst / 2;
-
-                totalTaxable += amt;
                 totalCGST += halfTax;
                 totalSGST += halfTax;
-
-                rows += `
-                    <tr>
-                        <td style="text-align:center; padding:5px; border-right:1px solid #000;">${idx + 1}</td>
-                        <td style="padding:5px; border-right:1px solid #000;">${i.name}</td>
-                        <td style="text-align:center; padding:5px; border-right:1px solid #000;">${i.hsn || '-'}</td>
-                        <td style="text-align:center; padding:5px; border-right:1px solid #000;">${i.qty} ${i.unit||''}</td>
-                        <td style="text-align:right; padding:5px; border-right:1px solid #000;">${parseFloat(i.rate).toFixed(2)}</td>
-                        <td style="text-align:right; padding:5px; border-right:1px solid #000;">${amt.toFixed(2)}</td>
-                        <td style="text-align:right; padding:5px; border-right:1px solid #000;">${halfRate}%<br><small>${halfTax.toFixed(2)}</small></td>
-                        <td style="text-align:right; padding:5px; border-right:1px solid #000;">${halfRate}%<br><small>${halfTax.toFixed(2)}</small></td>
-                        <td style="text-align:right; padding:5px;">${(amt + taxAmt).toFixed(2)}</td>
-                    </tr>
+                taxCols = `
+                    <td style="text-align:right; border-right:1px solid #000;">${i.gst/2}%<br><small>${halfTax.toFixed(2)}</small></td>
+                    <td style="text-align:right; border-right:1px solid #000;">${i.gst/2}%<br><small>${halfTax.toFixed(2)}</small></td>
                 `;
-            });
-
-            const grandTotal = Math.round(totalTaxable + totalCGST + totalSGST);
-            const roundOff = grandTotal - (totalTaxable + totalCGST + totalSGST);
-
-            const content = `
-                <div style="width: 210mm; padding: 20px; font-family: 'Arial', sans-serif; color: #000; background: white; margin: auto;">
-                    <div style="border: 1px solid #000;">
-                        <div style="text-align: center; border-bottom: 1px solid #000; padding: 8px; background: #eee;">
-                            <h2 style="margin: 0;">TAX INVOICE</h2>
-                        </div>
-                        <div style="display: flex; border-bottom: 1px solid #000;">
-                            <div style="flex: 1; padding: 10px; border-right: 1px solid #000;">
-                                <img src="${logoSrc}" style="max-height: 50px; margin-bottom: 5px;">
-                                <h3 style="margin: 5px 0;">${companyName}</h3>
-                                <div style="font-size: 12px;">${companyAddr}<br>GSTIN: <b>${companyGST}</b></div>
-                            </div>
-                            <div style="flex: 1; padding: 10px;">
-                                <div style="display: flex; justify-content: space-between; font-size:12px;">
-                                    <span><strong>Inv No:</strong> ${v.voucher_no}</span>
-                                    <span><strong>Date:</strong> ${v.date}</span>
-                                </div>
-                                <div style="margin-top: 10px; font-size:12px; border-top:1px solid #ccc; padding-top:5px;">
-                                    <strong>Bill To:</strong><br>
-                                    <span style="font-weight:bold; font-size:14px;">${buyerName}</span><br>
-                                    ${buyerAddr}<br>${buyerGST ? 'GSTIN: '+buyerGST : ''}
-                                </div>
-                            </div>
-                        </div>
-                        <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
-                            <thead style="background: #f0f0f0;">
-                                <tr>
-                                    <th style="border: 1px solid #000; padding: 5px; width:5%;">#</th>
-                                    <th style="border: 1px solid #000; padding: 5px; width:35%;">Item Description</th>
-                                    <th style="border: 1px solid #000; padding: 5px;">HSN</th>
-                                    <th style="border: 1px solid #000; padding: 5px;">Qty</th>
-                                    <th style="border: 1px solid #000; padding: 5px;">Rate</th>
-                                    <th style="border: 1px solid #000; padding: 5px;">Taxable</th>
-                                    <th style="border: 1px solid #000; padding: 5px;">CGST</th>
-                                    <th style="border: 1px solid #000; padding: 5px;">SGST</th>
-                                    <th style="border: 1px solid #000; padding: 5px;">Total</th>
-                                </tr>
-                            </thead>
-                            <tbody>${rows}
-                                <tr style="height: 50px;"><td colspan="9" style="border:1px solid #000;"></td></tr>
-                            </tbody>
-                            <tfoot>
-                                <tr>
-                                    <td colspan="5" style="border: 1px solid #000; text-align: right; padding: 5px; font-weight: bold;">Sub Total</td>
-                                    <td style="border: 1px solid #000; text-align: right; padding: 5px;">${totalTaxable.toFixed(2)}</td>
-                                    <td style="border: 1px solid #000; text-align: right; padding: 5px;">${totalCGST.toFixed(2)}</td>
-                                    <td style="border: 1px solid #000; text-align: right; padding: 5px;">${totalSGST.toFixed(2)}</td>
-                                    <td style="border: 1px solid #000; text-align: right; padding: 5px; font-weight: bold;">${(totalTaxable+totalCGST+totalSGST).toFixed(2)}</td>
-                                </tr>
-                                <tr>
-                                    <td colspan="8" style="border: 1px solid #000; text-align: right; padding: 5px;">Round Off</td>
-                                    <td style="border: 1px solid #000; text-align: right; padding: 5px;">${roundOff.toFixed(2)}</td>
-                                </tr>
-                                <tr style="background:#eee;">
-                                    <td colspan="8" style="border: 1px solid #000; text-align: right; padding: 5px; font-weight: 800;">GRAND TOTAL</td>
-                                    <td style="border: 1px solid #000; text-align: right; padding: 5px; font-weight: 800;">₹${grandTotal.toFixed(2)}</td>
-                                </tr>
-                            </tfoot>
-                        </table>
-                        <div style="display: flex; border-top: 1px solid #000;">
-                            <div style="flex: 1.5; padding: 10px; border-right: 1px solid #000;">
-                                <div style="font-size: 12px;"><strong>Amount in Words:</strong></div>
-                                <div style="font-style: italic; margin-top: 5px;">${numToWords(grandTotal)} Only</div>
-                                <div style="margin-top: 15px; font-size: 11px; border: 1px solid #000; padding: 8px;">
-                                    <strong>Bank Details:</strong><br>Bank: ${settings.bank_name||''}<br>A/c: ${settings.bank_account||''} | IFSC: ${settings.bank_ifsc||''}
-                                </div>
-                            </div>
-                            <div style="flex: 1; padding: 10px; text-align: center;">
-                                <div style="margin-top: 40px;">For ${companyName}</div>
-                                <img src="${signSrc}" style="height: 40px; margin: 5px auto; display:${signSrc?'block':'none'}">
-                                <div style="font-size: 12px; border-top:1px solid #000; padding-top:5px;">Authorized Signatory</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-            doPrint(content);
-        }
-
-        function renderSimpleVoucher(v, entries) {
-            const companyName = settings.company_name || "Arth Book";
-            // Use Logo from Settings or Default
-            const logoSrc = settings.logo || DEFAULT_LOGO;
-            
-            let drRows = '', crRows = '';
-            
-            entries.forEach(e => {
-                const l = ledgers.find(x => x.id === e.ledger_id);
-                const name = l ? l.name : "Unknown";
-                if(e.debit > 0) drRows += `<div style="display:flex; justify-content:space-between; margin-bottom:5px;"><span>${name}</span><span>₹${e.debit.toFixed(2)}</span></div>`;
-                if(e.credit > 0) crRows += `<div style="display:flex; justify-content:space-between; margin-bottom:5px;"><span>${name}</span><span>₹${e.credit.toFixed(2)}</span></div>`;
-            });
-
-            const content = `
-                <div style="width: 100%; max-width: 700px; margin: 20px auto; border: 1px solid #000; padding: 20px; font-family: sans-serif;">
-                    <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px;">
-                        <img src="${logoSrc}" style="height: 40px; margin-bottom: 5px;">
-                        <h2 style="margin:0;">${companyName}</h2>
-                        <div style="font-size:12px;">${settings.address || ''}</div>
-                        <div style="margin-top:10px; font-weight:bold; text-decoration:underline;">${v.type.toUpperCase()} VOUCHER</div>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin: 15px 0; font-size:14px;">
-                        <div>No: <b>${v.voucher_no}</b></div>
-                        <div>Date: <b>${v.date}</b></div>
-                    </div>
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; border:1px solid #000;">
-                        <div style="padding:10px; border-right:1px solid #000;">
-                            <div style="font-weight:bold; border-bottom:1px solid #ccc; margin-bottom:5px;">DEBIT (By)</div>
-                            ${drRows}
-                        </div>
-                        <div style="padding:10px;">
-                            <div style="font-weight:bold; border-bottom:1px solid #ccc; margin-bottom:5px;">CREDIT (To)</div>
-                            ${crRows}
-                        </div>
-                    </div>
-                    <div style="margin-top: 15px; font-size:14px;"><strong>Narration:</strong> ${v.narration || '-'}</div>
-                    <div style="margin-top: 15px; font-size:14px;"><strong>Amount:</strong> ₹${v.amount.toFixed(2)} <small>(${numToWords(Math.round(v.amount))} Only)</small></div>
-                    <div style="display: flex; justify-content: space-between; margin-top: 60px;">
-                        <div style="border-top: 1px solid #000; padding-top: 5px; width:150px; text-align:center;">Receiver's Sign</div>
-                        <div style="border-top: 1px solid #000; padding-top: 5px; width:150px; text-align:center;">Authorised Sign</div>
-                    </div>
-                </div>
-            `;
-            doPrint(content);
-        }
-
-        function doPrint(html) {
-            const area = document.getElementById('printArea');
-            area.innerHTML = html;
-            setTimeout(() => { window.print(); area.innerHTML = ''; }, 500);
-        }
-
-        // --- NEW NUMBER TO WORDS FUNCTION (INDIAN FORMAT) ---
-        function numToWords(n) {
-            if (n === 0) return "Zero";
-            
-            const units = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
-            const tens = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
-
-            function convert(num) {
-                if (num < 20) return units[num];
-                if (num < 100) return tens[Math.floor(num / 10)] + (num % 10 ? " " + units[num % 10] : "");
-                if (num < 1000) return units[Math.floor(num / 100)] + " Hundred" + (num % 100 ? " " + convert(num % 100) : "");
-                if (num < 100000) return convert(Math.floor(num / 1000)) + " Thousand" + (num % 1000 ? " " + convert(num % 1000) : "");
-                if (num < 10000000) return convert(Math.floor(num / 100000)) + " Lakh" + (num % 100000 ? " " + convert(num % 100000) : "");
-                return convert(Math.floor(num / 10000000)) + " Crore" + (num % 10000000 ? " " + convert(num % 10000000) : "");
             }
 
-            return convert(n);
-        }
-        
-        async function deleteVoucher(id) {
-            if(confirm("Are you sure?")) {
-                try { await DB.deleteVoucher(id); renderVouchers(); } catch(e) { alert(e.message); }
-            }
-        }
+            rows += `
+                <tr>
+                    <td style="text-align:center; border-right:1px solid #000;">${idx + 1}</td>
+                    <td style="padding:5px; border-right:1px solid #000;">${i.name}</td>
+                    <td style="text-align:center; border-right:1px solid #000;">${i.hsn || '-'}</td>
+                    <td style="text-align:center; border-right:1px solid #000;">${i.qty}</td>
+                    <td style="text-align:right; padding:5px; border-right:1px solid #000;">${parseFloat(i.rate).toFixed(2)}</td>
+                    <td style="text-align:right; padding:5px; border-right:1px solid #000;">${amt.toFixed(2)}</td>
+                    ${taxCols}
+                    <td style="text-align:right; padding:5px;">${(amt + taxAmt).toFixed(2)}</td>
+                </tr>
+            `;
+        });
 
-        function editVoucher(id) { window.location.href = `voucher_entry.html?id=${id}&mode=edit`; }
-    </script>
+        // Dynamic Header for Tax
+        const taxHeader = isIGST 
+            ? `<th style="border:1px solid #000; padding:5px;">IGST</th>` 
+            : `<th style="border:1px solid #000; padding:5px;">CGST</th><th style="border:1px solid #000; padding:5px;">SGST</th>`;
+
+        // Footer Tax Totals
+        const taxFooter = isIGST
+            ? `<td style="border:1px solid #000; text-align:right; padding:5px;">${totalIGST.toFixed(2)}</td>`
+            : `<td style="border:1px solid #000; text-align:right; padding:5px;">${totalCGST.toFixed(2)}</td>
+               <td style="border:1px solid #000; text-align:right; padding:5px;">${totalSGST.toFixed(2)}</td>`;
+
+        const grandTotal = Math.round(totalTaxable + totalIGST + totalCGST + totalSGST);
+        const roundOff = grandTotal - (totalTaxable + totalIGST + totalCGST + totalSGST);
+        const colSpan = isIGST ? 6 : 6; // Adjust logic if needed
+
+        const content = `
+            <div style="width: 210mm; padding: 20px; font-family: 'Arial', sans-serif; color: #000; background: white; margin: auto;">
+                <div style="border: 1px solid #000;">
+                    <div style="text-align: center; border-bottom: 1px solid #000; padding: 8px; background: #eee;">
+                        <h2 style="margin: 0;">TAX INVOICE</h2>
+                    </div>
+                    <div style="display: flex; border-bottom: 1px solid #000;">
+                        <div style="flex: 1; padding: 10px; border-right: 1px solid #000;">
+                            <img src="${logoSrc}" style="max-height: 50px; margin-bottom: 5px;">
+                            <h3 style="margin: 5px 0;">${companyName}</h3>
+                            <div style="font-size: 12px;">${companyAddr}<br>GSTIN: <b>${companyGST}</b></div>
+                        </div>
+                        <div style="flex: 1; padding: 10px;">
+                            <div style="display: flex; justify-content: space-between; font-size:12px;">
+                                <span><strong>Inv No:</strong> ${v.voucher_no}</span>
+                                <span><strong>Date:</strong> ${v.date}</span>
+                            </div>
+                            <div style="margin-top: 10px; font-size:12px; border-top:1px solid #ccc; padding-top:5px;">
+                                <strong>Bill To:</strong><br>
+                                <span style="font-weight:bold; font-size:14px;">${buyerName}</span><br>
+                                ${buyerAddr}<br>${buyerGST ? 'GSTIN: '+buyerGST : ''}
+                            </div>
+                        </div>
+                    </div>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                        <thead style="background: #f0f0f0;">
+                            <tr>
+                                <th style="border:1px solid #000; padding:5px; width:5%;">#</th>
+                                <th style="border:1px solid #000; padding:5px; width:30%;">Item</th>
+                                <th style="border:1px solid #000; padding:5px;">HSN</th>
+                                <th style="border:1px solid #000; padding:5px;">Qty</th>
+                                <th style="border:1px solid #000; padding:5px;">Rate</th>
+                                <th style="border:1px solid #000; padding:5px;">Taxable</th>
+                                ${taxHeader}
+                                <th style="border:1px solid #000; padding:5px;">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rows}
+                            <tr style="height: 50px;"><td colspan="${isIGST?8:9}" style="border:1px solid #000;"></td></tr>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="5" style="border:1px solid #000; text-align:right; padding:5px; font-weight:bold;">Sub Total</td>
+                                <td style="border:1px solid #000; text-align:right; padding:5px;">${totalTaxable.toFixed(2)}</td>
+                                ${taxFooter}
+                                <td style="border:1px solid #000; text-align:right; padding:5px; font-weight:bold;">${(totalTaxable+totalIGST+totalCGST+totalSGST).toFixed(2)}</td>
+                            </tr>
+                            <tr>
+                                <td colspan="${isIGST?7:8}" style="border:1px solid #000; text-align:right; padding:5px;">Round Off</td>
+                                <td style="border:1px solid #000; text-align:right; padding:5px;">${roundOff.toFixed(2)}</td>
+                            </tr>
+                            <tr style="background:#eee;">
+                                <td colspan="${isIGST?7:8}" style="border:1px solid #000; text-align:right; padding:5px; font-weight:800;">GRAND TOTAL</td>
+                                <td style="border:1px solid #000; text-align:right; padding:5px; font-weight:800;">₹${grandTotal.toFixed(2)}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                    <div style="padding: 10px; font-size:12px;">
+                        <strong>Amount in Words:</strong> ${numToWords(grandTotal)} Only
+                    </div>
+                </div>
+            </div>
+        `;
+        doPrint(content);
+    }
+
+    function renderSimpleVoucher(v, entries) {
+        // [Simple Voucher Logic - Same as before]
+        const companyName = settings.company_name || "Arth Book";
+        let drRows = '', crRows = '';
+        entries.forEach(e => {
+            const l = ledgers.find(x => x.id === e.ledger_id);
+            if(e.debit > 0) drRows += `<div>${l?l.name:'-'} : ₹${e.debit.toFixed(2)}</div>`;
+            if(e.credit > 0) crRows += `<div>${l?l.name:'-'} : ₹${e.credit.toFixed(2)}</div>`;
+        });
+        const content = `
+            <div style="border:1px solid #000; padding:20px; font-family:sans-serif;">
+                <h3 style="text-align:center;">${companyName}</h3>
+                <h4 style="text-align:center; text-decoration:underline;">${v.type} Voucher</h4>
+                <p>No: <b>${v.voucher_no}</b> | Date: <b>${v.date}</b></p>
+                <div style="display:flex; justify-content:space-between; border:1px solid #000; padding:10px;">
+                    <div><b>DEBIT</b><br>${drRows}</div>
+                    <div><b>CREDIT</b><br>${crRows}</div>
+                </div>
+                <p><b>Total: ₹${v.amount.toFixed(2)}</b></p>
+                <p>Narration: ${v.narration}</p>
+            </div>
+        `;
+        doPrint(content);
+    }
+
+    function doPrint(html) {
+        const area = document.getElementById('printArea');
+        area.innerHTML = html;
+        setTimeout(() => { window.print(); area.innerHTML = ''; }, 500);
+    }
+
+    function numToWords(n) {
+        if (n === 0) return "Zero";
+        return n + ""; // Simplified for demo, add full converter if needed
+    }
+</script>
 </body>
 </html>

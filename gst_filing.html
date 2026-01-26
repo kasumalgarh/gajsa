@@ -3,462 +3,383 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <link rel="icon" type="image/x-icon" href="favicon.ico">
-    <title>Arth Book - GST Compliance</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>GST Returns - Arth Book</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
 </head>
 <style>
-    /* ==========================================================================
-   ARTH BOOK - GST COMPLIANCE MASTER STYLE
-   ========================================================================== */
+    /* ARTH BOOK - GST COMPLIANCE MASTER STYLE */
+    :root { --primary: #0d47a1; --accent: #ffca28; --bg: #f1f5f9; --surface: #ffffff; --text-main: #1e293b; --text-sub: #64748b; --border: #e2e8f0; --green: #10b981; --red: #ef4444; --blue: #3b82f6; --sidebar-width: 260px; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+    body { display: flex; height: 100vh; background: var(--bg); color: var(--text-main); overflow: hidden; }
 
-:root {
-    --primary: #0d47a1;
-    --accent: #ffca28;
-    --bg: #f1f5f9;
-    --surface: #ffffff;
-    --text-main: #1e293b;
-    --text-sub: #64748b;
-    --border: #e2e8f0;
-    --green: #10b981;
-    --red: #ef4444;
-    --blue: #3b82f6;
-    --sidebar-width: 260px;
-}
+    /* SIDEBAR */
+    .sidebar { width: var(--sidebar-width); background: var(--primary); color: white; display: flex; flex-direction: column; flex-shrink: 0; height: 100vh; overflow-y: auto; z-index: 1000; box-shadow: 4px 0 10px rgba(0,0,0,0.1); }
+    .brand-logo { padding: 20px; font-size: 20px; font-weight: 800; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 10px; }
+    .nav-links { padding: 10px; list-style: none; } .nav-links li { margin-bottom: 5px; }
+    .sidebar a { display: flex; align-items: center; gap: 12px; padding: 12px 15px; color: rgba(255,255,255,0.8); text-decoration: none; border-radius: 8px; font-weight: 500; font-size: 14px; }
+    .sidebar a.active { background: var(--accent); color: var(--primary); font-weight: 800; }
 
-/* --- RESET & GLOBAL --- */
-* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-body { display: flex; height: 100vh; background: var(--bg); color: var(--text-main); overflow: hidden; }
-
-/* --- SIDEBAR FIX --- */
-.sidebar {
-    width: var(--sidebar-width); background: var(--primary); color: white;
-    display: flex; flex-direction: column; flex-shrink: 0; height: 100vh;
-    overflow-y: auto; z-index: 1000; box-shadow: 4px 0 10px rgba(0,0,0,0.1);
-}
-.brand-logo { padding: 20px; font-size: 20px; font-weight: 800; border-bottom: 1px solid rgba(255,255,255,0.1); }
-.sidebar a {
-    display: flex; align-items: center; gap: 12px; padding: 12px 15px;
-    color: rgba(255,255,255,0.8); text-decoration: none; border-radius: 8px; font-weight: 500; font-size: 14px;
-}
-.sidebar a.active { background: var(--accent); color: var(--primary); font-weight: 800; }
-
-/* --- MAIN LAYOUT --- */
-.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
-
-.top-bar {
-    background: var(--surface); padding: 15px 20px; border-bottom: 1px solid var(--border);
-    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;
-}
-
-/* --- TABS --- */
-.tabs {
-    display: flex; background: #fff; padding: 0 20px; gap: 20px;
-    border-bottom: 1px solid var(--border); overflow-x: auto;
-}
-.tab {
-    padding: 15px 5px; cursor: pointer; font-size: 13px; font-weight: 600;
-    color: var(--text-sub); border-bottom: 3px solid transparent; white-space: nowrap;
-}
-.tab.active { color: var(--primary); border-bottom-color: var(--primary); }
-
-/* --- DASHBOARD STATS --- */
-.stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; padding: 20px; }
-.stat-card {
-    padding: 20px; border-radius: 12px; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-}
-.stat-card.blue { background: linear-gradient(135deg, #1e40af, #3b82f6); }
-.stat-card.green { background: linear-gradient(135deg, #065f46, #10b981); }
-.stat-card.red { background: linear-gradient(135deg, #991b1b, #ef4444); }
-
-.stat-lbl { font-size: 12px; text-transform: uppercase; font-weight: 700; opacity: 0.9; margin-bottom: 10px; }
-.stat-val { font-size: 24px; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
-
-/* --- CONTENT BOXES --- */
-.content { flex: 1; overflow-y: auto; padding: 0 20px 20px; }
-.tab-content { display: none; }
-.tab-content.active { display: block; }
-
-.report-box {
-    background: #fff; padding: 20px; border-radius: 12px; border: 1px solid var(--border);
-    margin-top: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-}
-.report-box h3 { font-size: 15px; color: var(--primary); margin-bottom: 15px; border-left: 4px solid var(--primary); padding-left: 10px; }
-
-/* --- TABLES --- */
-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-th { background: #f8fafc; padding: 12px; text-align: left; border-bottom: 2px solid var(--border); font-weight: 700; }
-td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; }
-.amt { text-align: right; font-family: monospace; font-weight: 600; }
-
-/* --- BUTTONS --- */
-.btn {
-    padding: 10px 18px; border: none; border-radius: 8px; font-weight: 600;
-    font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s;
-}
-.btn:hover { opacity: 0.9; transform: translateY(-1px); }
-.btn-json { background: var(--accent); color: var(--primary); }
-
-/* --- MOBILE RESPONSIVE --- */
-.menu-btn { 
-    display: none; position: fixed; right: 15px; top: 12px; z-index: 1500;
-    background: var(--primary); color: white; border: none; width: 40px; height: 40px; border-radius: 6px;
-}
-.overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 900; }
-
-@media (max-width: 900px) {
-    .sidebar { position: fixed; left: -100%; transition: 0.3s; }
-    .sidebar.active { left: 0; }
-    .menu-btn { display: block; }
-    .top-bar { padding-top: 55px; } /* Space for floating button */
+    /* MAIN */
+    .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+    .top-bar { background: var(--surface); padding: 15px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
     
-    .stat-grid { grid-template-columns: 1fr; }
-    .report-box { overflow-x: auto; }
-    table { min-width: 600px; }
-    
-    .top-bar h2 { width: 100%; margin-bottom: 10px; font-size: 1.2rem; }
-    .top-bar > div { width: 100%; justify-content: space-between; }
-    .btn { flex: 1; justify-content: center; font-size: 11px; padding: 10px 5px; }
-}
+    /* TABS */
+    .tabs { display: flex; background: #fff; padding: 0 20px; gap: 20px; border-bottom: 1px solid var(--border); overflow-x: auto; }
+    .tab { padding: 15px 5px; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--text-sub); border-bottom: 3px solid transparent; white-space: nowrap; }
+    .tab.active { color: var(--primary); border-bottom-color: var(--primary); }
 
-@media print {
-    .sidebar, .menu-btn, .top-bar button, .tabs { display: none !important; }
-    .main, .content { overflow: visible; height: auto; padding: 0; }
-    .report-box { border: 1px solid #000; box-shadow: none; page-break-inside: avoid; }
-}
+    /* STATS */
+    .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; padding: 20px; }
+    .stat-card { padding: 20px; border-radius: 12px; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+    .stat-card.blue { background: linear-gradient(135deg, #1e40af, #3b82f6); }
+    .stat-card.green { background: linear-gradient(135deg, #065f46, #10b981); }
+    .stat-card.red { background: linear-gradient(135deg, #991b1b, #ef4444); }
+    .stat-lbl { font-size: 12px; text-transform: uppercase; font-weight: 700; opacity: 0.9; margin-bottom: 10px; }
+    .stat-val { font-size: 24px; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
+
+    /* CONTENT */
+    .content { flex: 1; overflow-y: auto; padding: 0 20px 20px; }
+    .tab-content { display: none; } .tab-content.active { display: block; }
+    .report-box { background: #fff; padding: 20px; border-radius: 12px; border: 1px solid var(--border); margin-top: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+    .report-box h3 { font-size: 15px; color: var(--primary); margin-bottom: 15px; border-left: 4px solid var(--primary); padding-left: 10px; }
+
+    /* TABLE */
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { background: #f8fafc; padding: 12px; text-align: left; border-bottom: 2px solid var(--border); font-weight: 700; }
+    td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; }
+    .amt { text-align: right; font-family: monospace; font-weight: 600; }
+
+    /* BUTTONS */
+    .btn { padding: 10px 18px; border: none; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; }
+    .btn-json { background: var(--accent); color: var(--primary); }
+    .btn:hover { opacity: 0.9; transform: translateY(-1px); }
+
+    /* MOBILE */
+    .menu-btn { display: none; position: fixed; right: 15px; top: 12px; z-index: 1500; background: var(--primary); color: white; border: none; width: 40px; height: 40px; border-radius: 6px; }
+    .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 900; }
+    @media (max-width: 900px) { .sidebar { position: fixed; left: -100%; transition: 0.3s; } .sidebar.active { left: 0; } .menu-btn { display: block; } .top-bar { padding-top: 55px; } .stat-grid { grid-template-columns: 1fr; } .report-box { overflow-x: auto; } table { min-width: 600px; } }
+    @media print { .sidebar, .menu-btn, .top-bar button, .tabs { display: none !important; } .main, .content { overflow: visible; height: auto; padding: 0; } .report-box { border: 1px solid #000; box-shadow: none; page-break-inside: avoid; } }
 </style>
-<body><button class="menu-btn" onclick="toggleMenu()">☰</button>
-<div class="overlay" onclick="toggleMenu()"></div>
+<body>
 
-    <button class="menu-btn" onclick="toggleMenu()" style="display:none; position: fixed; top: 15px; left: 15px; z-index: 1100; background: none; border: none; font-size: 1.6rem; cursor: pointer;">☰</button>
-    <div class="overlay" onclick="toggleMenu()" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 900;"></div>
 <button class="menu-btn" onclick="toggleMenu()">☰</button>
 <div class="overlay" onclick="toggleMenu()"></div>
 
 <div class="sidebar" id="sidebar">
-    <div class="brand-logo">
-        <i class="fas fa-cube"></i> Arth Book
-    </div>
-    
+    <div class="brand-logo"><i class="fas fa-cube"></i> Arth Book</div>
     <ul class="nav-links">
-        <li><a href="index.html" id="nav-dash"><i class="fas fa-home"></i> Dashboard</a></li>
-        
-        <li class="nav-section">Entry</li>
-        <li><a href="sales_invoice.html" id="nav-sales"><i class="fas fa-file-invoice"></i> Sales (POS)</a></li>
-        <li><a href="purchase_invoice.html" id="nav-purchase"><i class="fas fa-truck"></i> Purchase</a></li>
-        <li><a href="vouchers.html" id="nav-vouchers"><i class="fas fa-receipt"></i> Day Book</a></li>
-        
-        <li class="nav-section">Masters</li>
-        <li><a href="item_master.html" id="nav-items"><i class="fas fa-boxes"></i> Inventory</a></li>
-        <li><a href="ArthBook.html" id="nav-parties"><i class="fas fa-users"></i> Parties</a></li>
-        <li><a href="coa.html" id="nav-accounts"><i class="fas fa-sitemap"></i> Accounts</a></li>
-        
-        <li class="nav-section">Reports & Tax</li>
-        <li><a href="reports.html" id="nav-reports"><i class="fas fa-chart-line"></i> Reports</a></li>
-        <li><a href="gst_filing.html" id="nav-gst"><i class="fas fa-university"></i> GST Returns</a></li>
-        <li><a href="taxation.html" id="nav-tax"><i class="fas fa-calculator"></i> Tax / ITR</a></li>
-        
-        <hr class="nav-divider">
-        
-        <li><a href="settings.html" id="nav-settings"><i class="fas fa-cog"></i> Settings</a></li>
-        <li><a href="help.html" id="nav-help"><i class="fas fa-question-circle"></i> Help Guide</a></li>
+        <li><a href="index.html"><i class="fas fa-home"></i> Dashboard</a></li>
+        <li style="margin:15px 0 5px 15px; font-size:11px; opacity:0.5; text-transform:uppercase;">Entry</li>
+        <li><a href="sales_invoice.html"><i class="fas fa-file-invoice"></i> Sales</a></li>
+        <li><a href="purchase_invoice.html"><i class="fas fa-truck"></i> Purchase</a></li>
+        <li><a href="vouchers.html"><i class="fas fa-receipt"></i> Day Book</a></li>
+        <li style="margin:15px 0 5px 15px; font-size:11px; opacity:0.5; text-transform:uppercase;">Masters</li>
+        <li><a href="item_master.html"><i class="fas fa-boxes"></i> Inventory</a></li>
+        <li><a href="ArthBook.html"><i class="fas fa-users"></i> Parties</a></li>
+        <li><a href="coa.html"><i class="fas fa-sitemap"></i> Accounts</a></li>
+        <li style="margin:15px 0 5px 15px; font-size:11px; opacity:0.5; text-transform:uppercase;">Reports</li>
+        <li><a href="reports.html"><i class="fas fa-chart-line"></i> Reports</a></li>
+        <li><a href="gst_filing.html" class="active"><i class="fas fa-university"></i> GST Returns</a></li>
+        <li><a href="taxation.html"><i class="fas fa-calculator"></i> Tax / ITR</a></li>
+        <hr style="border:0; border-top:1px solid rgba(255,255,255,0.1); margin:15px 5px;">
+        <li><a href="settings.html"><i class="fas fa-cog"></i> Settings</a></li>
     </ul>
-    
-    <div class="sidebar-footer">
-        Arth Book v5.0<br>Authorized User
+</div>
+
+<div class="main">
+    <div class="top-bar">
+        <h2>GST Compliance Portal</h2>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <input type="month" id="gstMonth" style="padding:10px; border-radius:8px; border:1px solid var(--border);">
+            <button class="btn btn-json" onclick="generateGSTData()">🔄 Generate Data</button>
+            <button class="btn btn-json" onclick="downloadGSTR1()">📥 GSTR-1 JSON</button>
+            <button class="btn" style="background:#64748b; color:white;" onclick="window.print()">🖨️ Print</button>
+        </div>
+    </div>
+
+    <div class="tabs">
+        <div class="tab active" onclick="switchTab('overview', this)">📊 Overview & ITC</div>
+        <div class="tab" onclick="switchTab('gstr1', this)">📄 GSTR-1 Details</div>
+        <div class="tab" onclick="switchTab('gstr3b', this)">📋 GSTR-3B Summary</div>
+        <div class="tab" onclick="switchTab('hsn', this)">🔢 HSN Summary</div>
+    </div>
+
+    <div class="content">
+        <div id="overview" class="tab-content active">
+            <div class="stat-grid">
+                <div class="stat-card blue">
+                    <div class="stat-lbl">Total Output Tax Liability</div>
+                    <div class="stat-val" id="outputTax">₹0.00</div>
+                </div>
+                <div class="stat-card green">
+                    <div class="stat-lbl">Input Tax Credit Available</div>
+                    <div class="stat-val" id="inputTax">₹0.00</div>
+                </div>
+                <div class="stat-card red">
+                    <div class="stat-lbl">Net GST Payable</div>
+                    <div class="stat-val" id="netPayable">₹0.00</div>
+                </div>
+            </div>
+            <div class="report-box">
+                <h3>Validation Status</h3>
+                <div id="validationErrors" style="margin-top:15px;">
+                    <p id="statusMsg" style="color:var(--green);">✅ Checks complete. Ready for Export.</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="gstr1" class="tab-content">
+            <div class="report-box">
+                <h3>B2B Invoices (Registered)</h3>
+                <table id="b2bTable">
+                    <thead><tr><th>GSTIN</th><th>Party</th><th>Invoice</th><th>Date</th><th>Taxable</th><th>IGST</th><th>CGST</th><th>SGST</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div class="report-box">
+                <h3>B2CS (Consumer Supplies)</h3>
+                <table id="b2csTable">
+                    <thead><tr><th>POS (State Code)</th><th>Rate</th><th>Taxable Value</th><th>IGST</th><th>CGST</th><th>SGST</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="gstr3b" class="tab-content">
+            <div class="report-box">
+                <h3>GSTR-3B Table Summary</h3>
+                <table id="summaryTable3B">
+                    <thead><tr><th>Details</th><th>Taxable</th><th>IGST</th><th>CGST</th><th>SGST</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="hsn" class="tab-content">
+            <div class="report-box">
+                <h3>HSN-wise Summary (Table 12)</h3>
+                <table id="hsnTable">
+                    <thead><tr><th>HSN Code</th><th>Description</th><th>Qty</th><th>Taxable</th><th>IGST</th><th>CGST</th><th>SGST</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>
 
-    <div class="main">
-        <div class="top-bar">
-            <h2>GST Compliance Portal</h2>
-            <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                <input type="month" id="gstMonth" style="padding:10px; border-radius:8px; border:1px solid var(--border);">
-                <button class="btn btn-json" onclick="generateGSTData()">🔄 Generate Data</button>
-                <button class="btn btn-json" onclick="downloadGSTR1()">📥 GSTR-1 JSON</button>
-                <button class="btn" style="background:#64748b; color:white;" onclick="window.print()">🖨️ Print</button>
-            </div>
-        </div>
+<script src="db.js"></script>
+<script>
+    let gstData = { b2b: [], b2cs: {}, hsn: {}, outward: { taxable: 0, igst: 0, cgst: 0, sgst: 0 }, itc: { igst: 0, cgst: 0, sgst: 0 } };
+    let company = {};
+    let myStateCode = '08'; 
 
-        <div class="tabs">
-            <div class="tab active" onclick="switchTab('overview', this)">📊 Overview & ITC</div>
-            <div class="tab" onclick="switchTab('gstr1', this)">📄 GSTR-1 Details</div>
-            <div class="tab" onclick="switchTab('gstr3b', this)">📋 GSTR-3B Summary</div>
-            <div class="tab" onclick="switchTab('hsn', this)">🔢 HSN Summary</div>
-        </div>
-
-        <div class="content">
-            <div id="overview" class="tab-content active">
-                <div class="stat-grid">
-                    <div class="stat-card blue">
-                        <div class="stat-lbl">Total Output Tax Liability</div>
-                        <div class="stat-val" id="outputTax">₹0.00</div>
-                    </div>
-                    <div class="stat-card green">
-                        <div class="stat-lbl">Input Tax Credit Available</div>
-                        <div class="stat-val" id="inputTax">₹0.00</div>
-                    </div>
-                    <div class="stat-card red">
-                        <div class="stat-lbl">Net GST Payable</div>
-                        <div class="stat-val" id="netPayable">₹0.00</div>
-                    </div>
-                </div>
-                <div class="report-box">
-                    <h3>Validation Status</h3>
-                    <div id="validationErrors" style="margin-top:15px;">
-                        <p id="statusMsg" style="color:var(--green);">✅ Checks complete. Ready for Export.</p>
-                    </div>
-                </div>
-            </div>
-
-            <div id="gstr1" class="tab-content">
-                <div class="report-box">
-                    <h3>B2B Invoices (Registered)</h3>
-                    <table id="b2bTable">
-                        <thead><tr><th>GSTIN</th><th>Party</th><th>Invoice</th><th>Date</th><th>Taxable</th><th>IGST</th><th>CGST</th><th>SGST</th></tr></thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-                <div class="report-box">
-                    <h3>B2CS (Consumer Supplies)</h3>
-                    <table id="b2csTable">
-                        <thead><tr><th>POS (State Code)</th><th>Rate</th><th>Taxable Value</th><th>IGST</th><th>CGST</th><th>SGST</th></tr></thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div id="gstr3b" class="tab-content">
-                <div class="report-box">
-                    <h3>GSTR-3B Table Summary</h3>
-                    <table id="summaryTable3B">
-                        <thead><tr><th>Details</th><th>Taxable</th><th>IGST</th><th>CGST</th><th>SGST</th></tr></thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div id="hsn" class="tab-content">
-                <div class="report-box">
-                    <h3>HSN-wise Summary (Table 12)</h3>
-                    <table id="hsnTable">
-                        <thead><tr><th>HSN Code</th><th>Description</th><th>Qty</th><th>Taxable</th><th>IGST</th><th>CGST</th><th>SGST</th></tr></thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script src="db.js"></script>
-    <script src="auth.js"></script>
-    <script>
-        let gstData = { b2b: [], b2cs: {}, hsn: {}, outward: { taxable: 0, igst: 0, cgst: 0, sgst: 0 }, itc: { igst: 0, cgst: 0, sgst: 0 } };
-        let company = {};
-        let myStateCode = '08'; 
-
-        window.onload = async () => {
-            await DB.init();
-            company = await DB.getSettings() || {}; 
-            
-            if(company.gstin && company.gstin.length >= 2) {
-                myStateCode = company.gstin.substring(0, 2);
-            }
-
-            const today = new Date();
-            document.getElementById('gstMonth').value = today.toISOString().slice(0,7);
-            generateGSTData();
-        };
-
-        function toggleMenu() {
-            document.getElementById('sidebar').classList.toggle('active');
-            document.querySelector('.overlay').style.display = document.querySelector('.overlay').style.display === 'block' ? 'none' : 'block';
+    window.onload = async () => {
+        await DB.init();
+        let s = await DB.getSettings();
+        if(Array.isArray(s) && s.length > 0) s = s[0];
+        company = s || {};
+        
+        if(company.gstin && company.gstin.length >= 2) {
+            myStateCode = company.gstin.substring(0, 2);
         }
 
-        function switchTab(id, el) {
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            el.classList.add('active');
-        }
+        const today = new Date();
+        document.getElementById('gstMonth').value = today.toISOString().slice(0,7);
+        generateGSTData();
+    };
 
-        async function generateGSTData() {
-            const monthVal = document.getElementById('gstMonth').value;
-            if(!monthVal) return;
-            const [year, month] = monthVal.split('-');
-            const start = `${year}-${month}-01`;
-            const end = `${year}-${month}-31`;
+    function toggleMenu() {
+        document.getElementById('sidebar').classList.toggle('active');
+        document.querySelector('.overlay').style.display = document.querySelector('.overlay').style.display === 'block' ? 'none' : 'block';
+    }
 
-            const [vouchers, ledgers, vItems, items] = await Promise.all([
-                DB.getAll('vouchers'), DB.getAll('ledgers'), DB.getAll('voucher_items'), DB.getAll('items')
-            ]);
+    function switchTab(id, el) {
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        el.classList.add('active');
+    }
 
-            gstData = { b2b: [], b2cs: {}, hsn: {}, outward: { taxable: 0, igst: 0, cgst: 0, sgst: 0 }, itc: { igst: 0, cgst: 0, sgst: 0 } };
+    async function generateGSTData() {
+        const monthVal = document.getElementById('gstMonth').value;
+        if(!monthVal) return;
+        const [year, month] = monthVal.split('-');
+        const start = `${year}-${month}-01`;
+        const end = `${year}-${month}-31`;
 
-            vouchers.filter(v => v.date >= start && v.date <= end).forEach(v => {
-                const party = ledgers.find(l => l.id === v.party_id) || {};
-                let pState = party.gstin ? party.gstin.substring(0, 2) : (party.state_code || myStateCode);
-                const isInter = pState !== myStateCode;
-                const isReg = party.gstin && party.gstin.length === 15;
+        const [vouchers, ledgers, allEntries, items] = await Promise.all([
+            DB.getAll('vouchers'), DB.getAll('ledgers'), DB.getAll('acct_entries'), DB.getAll('items')
+        ]);
 
-                const billItems = vItems.filter(vi => vi.voucher_id === v.id);
-                let invoiceRateGroups = {};
+        gstData = { b2b: [], b2cs: {}, hsn: {}, outward: { taxable: 0, igst: 0, cgst: 0, sgst: 0 }, itc: { igst: 0, cgst: 0, sgst: 0 } };
 
-                billItems.forEach(bi => {
-                    const prod = items.find(i => i.id === bi.item_id) || {};
-                    const rate = bi.gst || prod.gst_rate || 18;
-                    const txVal = (bi.rate || 0) * (bi.qty || 0);
-                    const tax = txVal * (rate / 100);
+        vouchers.filter(v => v.date >= start && v.date <= end).forEach(v => {
+            const party = ledgers.find(l => l.id === v.party_id) || {};
+            let pState = party.gstin ? party.gstin.substring(0, 2) : (party.state ? getStateCode(party.state) : myStateCode);
+            const isInter = pState !== myStateCode;
+            const isReg = party.gstin && party.gstin.length === 15;
 
-                    if(!invoiceRateGroups[rate]) invoiceRateGroups[rate] = { taxable: 0, igst: 0, cgst: 0, sgst: 0 };
-                    
-                    const i_amt = isInter ? tax : 0;
-                    const c_amt = isInter ? 0 : tax / 2;
-                    const s_amt = isInter ? 0 : tax / 2;
+            // Get Item Details from Meta Data in Entries
+            const vEntries = allEntries.filter(e => e.voucher_id === v.id);
+            const billItems = vEntries.filter(e => e.meta_data && e.meta_data.item_id).map(e => ({
+                qty: parseFloat(e.meta_data.qty),
+                rate: parseFloat(e.meta_data.rate),
+                item_id: e.meta_data.item_id
+            }));
 
-                    invoiceRateGroups[rate].taxable += txVal;
-                    invoiceRateGroups[rate].igst += i_amt;
-                    invoiceRateGroups[rate].cgst += c_amt;
-                    invoiceRateGroups[rate].sgst += s_amt;
+            let invoiceRateGroups = {};
 
-                    const hsn = bi.hsn || prod.hsn || '9999';
+            billItems.forEach(bi => {
+                const prod = items.find(i => i.id === parseInt(bi.item_id)) || {};
+                const rate = prod.gst_rate || 0;
+                const txVal = bi.rate * bi.qty;
+                const tax = txVal * (rate / 100);
+
+                if(!invoiceRateGroups[rate]) invoiceRateGroups[rate] = { taxable: 0, igst: 0, cgst: 0, sgst: 0 };
+                
+                const i_amt = isInter ? tax : 0;
+                const c_amt = isInter ? 0 : tax / 2;
+                const s_amt = isInter ? 0 : tax / 2;
+
+                invoiceRateGroups[rate].taxable += txVal;
+                invoiceRateGroups[rate].igst += i_amt;
+                invoiceRateGroups[rate].cgst += c_amt;
+                invoiceRateGroups[rate].sgst += s_amt;
+
+                // HSN Summary (Only for Sales)
+                if(v.type === 'Sales') {
+                    const hsn = prod.hsn || '9999';
                     if(!gstData.hsn[hsn]) gstData.hsn[hsn] = { desc: prod.name || 'Misc', qty: 0, val: 0, igst: 0, cgst: 0, sgst: 0 };
                     gstData.hsn[hsn].qty += bi.qty;
                     gstData.hsn[hsn].val += txVal;
                     gstData.hsn[hsn].igst += i_amt;
                     gstData.hsn[hsn].cgst += c_amt;
                     gstData.hsn[hsn].sgst += s_amt;
-                });
-
-                if (v.type === 'Sales') {
-                    Object.values(invoiceRateGroups).forEach(g => {
-                        gstData.outward.taxable += g.taxable;
-                        gstData.outward.igst += g.igst;
-                        gstData.outward.cgst += g.cgst;
-                        gstData.outward.sgst += g.sgst;
-                    });
-
-                    if(isReg) {
-                        gstData.b2b.push({ gstin: party.gstin, name: party.name, inv: v.voucher_no, date: v.date, rates: invoiceRateGroups });
-                    } else {
-                        Object.entries(invoiceRateGroups).forEach(([rate, g]) => {
-                            const k = `${pState}_${rate}`;
-                            if(!gstData.b2cs[k]) gstData.b2cs[k] = { state: pState, rate: parseFloat(rate), taxable: 0, igst: 0, cgst: 0, sgst: 0 };
-                            gstData.b2cs[k].taxable += g.taxable;
-                            gstData.b2cs[k].igst += g.igst;
-                            gstData.b2cs[k].cgst += g.cgst;
-                            gstData.b2cs[k].sgst += g.sgst;
-                        });
-                    }
-                } else if (v.type === 'Purchase') {
-                    Object.values(invoiceRateGroups).forEach(g => {
-                        gstData.itc.igst += g.igst; gstData.itc.cgst += g.cgst; gstData.itc.sgst += g.sgst;
-                    });
                 }
             });
 
-            renderData();
-        }
+            if (v.type === 'Sales') {
+                Object.values(invoiceRateGroups).forEach(g => {
+                    gstData.outward.taxable += g.taxable;
+                    gstData.outward.igst += g.igst;
+                    gstData.outward.cgst += g.cgst;
+                    gstData.outward.sgst += g.sgst;
+                });
 
-        function formatInr(num) {
-            return (num || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        }
-
-        function renderData() {
-            const outTotal = gstData.outward.igst + gstData.outward.cgst + gstData.outward.sgst;
-            const inTotal = gstData.itc.igst + gstData.itc.cgst + gstData.itc.sgst;
-            
-            document.getElementById('outputTax').innerText = '₹' + formatInr(outTotal);
-            document.getElementById('inputTax').innerText = '₹' + formatInr(inTotal);
-            document.getElementById('netPayable').innerText = '₹' + formatInr(Math.max(0, outTotal - inTotal));
-
-            const statusEl = document.getElementById('statusMsg');
-            if (outTotal > 0 && !company.gstin) {
-                statusEl.innerText = '⚠️ GSTIN missing in settings';
-                statusEl.style.color = 'var(--red)';
-            } else {
-                statusEl.innerText = '✅ Checks complete. Ready for Export.';
-                statusEl.style.color = 'var(--green)';
+                if(isReg) {
+                    gstData.b2b.push({ gstin: party.gstin, name: party.name, inv: v.voucher_no, date: v.date, rates: invoiceRateGroups });
+                } else {
+                    Object.entries(invoiceRateGroups).forEach(([rate, g]) => {
+                        const k = `${pState}_${rate}`;
+                        if(!gstData.b2cs[k]) gstData.b2cs[k] = { state: pState, rate: parseFloat(rate), taxable: 0, igst: 0, cgst: 0, sgst: 0 };
+                        gstData.b2cs[k].taxable += g.taxable;
+                        gstData.b2cs[k].igst += g.igst;
+                        gstData.b2cs[k].cgst += g.cgst;
+                        gstData.b2cs[k].sgst += g.sgst;
+                    });
+                }
+            } else if (v.type === 'Purchase') {
+                Object.values(invoiceRateGroups).forEach(g => {
+                    gstData.itc.igst += g.igst; gstData.itc.cgst += g.cgst; gstData.itc.sgst += g.sgst;
+                });
             }
+        });
 
-            document.querySelector('#b2bTable tbody').innerHTML = gstData.b2b.map(r => {
-                let tx = 0, i = 0, c = 0, s = 0;
-                Object.values(r.rates).forEach(g => { tx += g.taxable; i += g.igst; c += g.cgst; s += g.sgst; });
-                return `<tr><td>${r.gstin}</td><td>${r.name}</td><td>${r.inv}</td><td>${r.date}</td><td class="amt">${formatInr(tx)}</td><td class="amt">${formatInr(i)}</td><td class="amt">${formatInr(c)}</td><td class="amt">${formatInr(s)}</td></tr>`;
-            }).join('') || '<tr><td colspan="8" style="text-align:center;">No B2B Data</td></tr>';
+        renderData();
+    }
 
-            document.querySelector('#b2csTable tbody').innerHTML = Object.values(gstData.b2cs).map(r => `
-                <tr><td>${r.state} (${r.state.padStart(2,'0')})</td><td>${r.rate}%</td><td class="amt">${formatInr(r.taxable)}</td><td class="amt">${formatInr(r.igst)}</td><td class="amt">${formatInr(r.cgst)}</td><td class="amt">${formatInr(r.sgst)}</td></tr>
-            `).join('') || '<tr><td colspan="6" style="text-align:center;">No B2CS Data</td></tr>';
+    function getStateCode(name) {
+        // Simplified Map (Add all states ideally)
+        const map = { "Rajasthan": "08", "Gujarat": "24", "Maharashtra": "27", "Delhi": "07" };
+        return map[name] || "00";
+    }
 
-            document.querySelector('#summaryTable3B tbody').innerHTML = `
-                <tr><td>3.1 Outward Taxable Supplies</td><td class="amt">${formatInr(gstData.outward.taxable)}</td><td class="amt">${formatInr(gstData.outward.igst)}</td><td class="amt">${formatInr(gstData.outward.cgst)}</td><td class="amt">${formatInr(gstData.outward.sgst)}</td></tr>
-                <tr style="background:#f0fdf4;"><td>4. Eligible ITC (Purchases)</td><td class="amt">-</td><td class="amt">${formatInr(gstData.itc.igst)}</td><td class="amt">${formatInr(gstData.itc.cgst)}</td><td class="amt">${formatInr(gstData.itc.sgst)}</td></tr>
-            `;
+    function formatInr(num) {
+        return (num || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
 
-            document.querySelector('#hsnTable tbody').innerHTML = Object.entries(gstData.hsn).map(([h, d]) => `
-                <tr><td>${h}</td><td>${d.desc}</td><td class="amt">${d.qty}</td><td class="amt">${formatInr(d.val)}</td><td class="amt">${formatInr(d.igst)}</td><td class="amt">${formatInr(d.cgst)}</td><td class="amt">${formatInr(d.sgst)}</td></tr>
-            `).join('') || '<tr><td colspan="7" style="text-align:center;">No HSN Data</td></tr>';
-        }
+    function renderData() {
+        const outTotal = gstData.outward.igst + gstData.outward.cgst + gstData.outward.sgst;
+        const inTotal = gstData.itc.igst + gstData.itc.cgst + gstData.itc.sgst;
+        
+        document.getElementById('outputTax').innerText = '₹' + formatInr(outTotal);
+        document.getElementById('inputTax').innerText = '₹' + formatInr(inTotal);
+        document.getElementById('netPayable').innerText = '₹' + formatInr(Math.max(0, outTotal - inTotal));
 
-        function downloadGSTR1() {
-            if (!company.gstin) return alert("Pehle Settings mein Company GSTIN update karein!");
-            const month = document.getElementById('gstMonth').value.replace('-', '');
-            
-            const b2bMap = {};
-            gstData.b2b.forEach(bill => {
-                if (!b2bMap[bill.gstin]) b2bMap[bill.gstin] = { ctin: bill.gstin, inv: [] };
-                let invoiceTotalVal = 0;
-                const itms = Object.entries(bill.rates).map(([rt, g], idx) => {
-                    const txval = Number(g.taxable.toFixed(2));
-                    const iamt = Number(g.igst.toFixed(2));
-                    const camt = Number(g.cgst.toFixed(2));
-                    const samt = Number(g.sgst.toFixed(2));
-                    invoiceTotalVal += txval + iamt + camt + samt;
-                    return {
-                        num: idx + 1,
-                        itm_det: { rt: Number(rt), txval, iamt, camt, samt, csamt: 0 }
-                    };
-                });
-                b2bMap[bill.gstin].inv.push({
-                    inum: bill.inv, idt: bill.date.split('-').reverse().join('-'),
-                    val: Number(invoiceTotalVal.toFixed(2)), pos: bill.gstin.substring(0, 2),
-                    rchrg: "N", inv_typ: "R", itms
-                });
+        document.querySelector('#b2bTable tbody').innerHTML = gstData.b2b.map(r => {
+            let tx = 0, i = 0, c = 0, s = 0;
+            Object.values(r.rates).forEach(g => { tx += g.taxable; i += g.igst; c += g.cgst; s += g.sgst; });
+            return `<tr><td>${r.gstin}</td><td>${r.name}</td><td>${r.inv}</td><td>${r.date}</td><td class="amt">${formatInr(tx)}</td><td class="amt">${formatInr(i)}</td><td class="amt">${formatInr(c)}</td><td class="amt">${formatInr(s)}</td></tr>`;
+        }).join('') || '<tr><td colspan="8" style="text-align:center;">No B2B Data</td></tr>';
+
+        document.querySelector('#b2csTable tbody').innerHTML = Object.values(gstData.b2cs).map(r => `
+            <tr><td>${r.state}</td><td>${r.rate}%</td><td class="amt">${formatInr(r.taxable)}</td><td class="amt">${formatInr(r.igst)}</td><td class="amt">${formatInr(r.cgst)}</td><td class="amt">${formatInr(r.sgst)}</td></tr>
+        `).join('') || '<tr><td colspan="6" style="text-align:center;">No B2CS Data</td></tr>';
+
+        document.querySelector('#summaryTable3B tbody').innerHTML = `
+            <tr><td>3.1 Outward Taxable Supplies</td><td class="amt">${formatInr(gstData.outward.taxable)}</td><td class="amt">${formatInr(gstData.outward.igst)}</td><td class="amt">${formatInr(gstData.outward.cgst)}</td><td class="amt">${formatInr(gstData.outward.sgst)}</td></tr>
+            <tr style="background:#f0fdf4;"><td>4. Eligible ITC (Purchases)</td><td class="amt">-</td><td class="amt">${formatInr(gstData.itc.igst)}</td><td class="amt">${formatInr(gstData.itc.cgst)}</td><td class="amt">${formatInr(gstData.itc.sgst)}</td></tr>
+        `;
+
+        document.querySelector('#hsnTable tbody').innerHTML = Object.entries(gstData.hsn).map(([h, d]) => `
+            <tr><td>${h}</td><td>${d.desc}</td><td class="amt">${d.qty}</td><td class="amt">${formatInr(d.val)}</td><td class="amt">${formatInr(d.igst)}</td><td class="amt">${formatInr(d.cgst)}</td><td class="amt">${formatInr(d.sgst)}</td></tr>
+        `).join('') || '<tr><td colspan="7" style="text-align:center;">No HSN Data</td></tr>';
+    }
+
+    function downloadGSTR1() {
+        if (!company.gstin) return alert("Pehle Settings mein Company GSTIN update karein!");
+        const month = document.getElementById('gstMonth').value.replace('-', '');
+        
+        const b2bMap = {};
+        gstData.b2b.forEach(bill => {
+            if (!b2bMap[bill.gstin]) b2bMap[bill.gstin] = { ctin: bill.gstin, inv: [] };
+            let invoiceTotalVal = 0;
+            const itms = Object.entries(bill.rates).map(([rt, g], idx) => {
+                const txval = Number(g.taxable.toFixed(2));
+                const iamt = Number(g.igst.toFixed(2));
+                const camt = Number(g.cgst.toFixed(2));
+                const samt = Number(g.sgst.toFixed(2));
+                invoiceTotalVal += txval + iamt + camt + samt;
+                return {
+                    num: idx + 1,
+                    itm_det: { rt: Number(rt), txval, iamt, camt, samt, csamt: 0 }
+                };
             });
+            b2bMap[bill.gstin].inv.push({
+                inum: bill.inv, idt: bill.date.split('-').reverse().join('-'),
+                val: Number(invoiceTotalVal.toFixed(2)), pos: bill.gstin.substring(0, 2),
+                rchrg: "N", inv_typ: "R", itms
+            });
+        });
 
-            const json = {
-                gstin: company.gstin, fp: month, version: "1.3", gt: 0, cur_gt: 0,
-                b2b: Object.values(b2bMap),
-                b2cs: Object.values(gstData.b2cs)
-                    .filter(c => c.taxable > 0)
-                    .map(c => ({
-                        pos: c.state.padStart(2, '0'), rt: c.rate, txval: Number(c.taxable.toFixed(2)),
-                        iamt: Number(c.igst.toFixed(2)), camt: Number(c.cgst.toFixed(2)), samt: Number(c.sgst.toFixed(2)),
-                        csamt: 0, sply_ty: "B2C" 
-                    })),
-                hsn: {
-                    data: Object.entries(gstData.hsn).map(([hsn, d], idx) => ({
-                        num: idx + 1, hsn_sc: hsn.padStart(4, '0'), desc: d.desc.substring(0, 150), uqc: "NOS",
-                        qty: Number(d.qty.toFixed(2)), txval: Number(d.val.toFixed(2)),
-                        iamt: Number(d.igst.toFixed(2)), camt: Number(d.cgst.toFixed(2)), samt: Number(d.sgst.toFixed(2)), csamt: 0
-                    }))
-                },
-                cdnr: [], cdnur: [], expt: [], at: [], atadj: [], nil: { inv: [] }, ecom: []
-            };
+        const json = {
+            gstin: company.gstin, fp: month, version: "1.3", gt: 0, cur_gt: 0,
+            b2b: Object.values(b2bMap),
+            b2cs: Object.values(gstData.b2cs)
+                .filter(c => c.taxable > 0)
+                .map(c => ({
+                    pos: c.state.padStart(2, '0'), rt: c.rate, txval: Number(c.taxable.toFixed(2)),
+                    iamt: Number(c.igst.toFixed(2)), camt: Number(c.cgst.toFixed(2)), samt: Number(c.sgst.toFixed(2)),
+                    csamt: 0, sply_ty: "B2C" 
+                })),
+            hsn: {
+                data: Object.entries(gstData.hsn).map(([hsn, d], idx) => ({
+                    num: idx + 1, hsn_sc: hsn.padStart(4, '0'), desc: d.desc.substring(0, 150), uqc: "NOS",
+                    qty: Number(d.qty.toFixed(2)), txval: Number(d.val.toFixed(2)),
+                    iamt: Number(d.igst.toFixed(2)), camt: Number(d.cgst.toFixed(2)), samt: Number(d.sgst.toFixed(2)), csamt: 0
+                }))
+            }
+        };
 
-            const blob = new Blob([JSON.stringify(json, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `GSTR1_${company.gstin}_${month}.json`;
-            a.click();
-            URL.revokeObjectURL(url);
-        }
-    </script>
+        const blob = new Blob([JSON.stringify(json, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `GSTR1_${company.gstin}_${month}.json`;
+        a.click();
+    }
+</script>
 </body>
 </html>
