@@ -3,7 +3,7 @@
    VERSION: 2.5 (Fully Loaded for Platinum Edition)
 */
 
-const CACHE_NAME = 'ArthBook-v2.5';
+const CACHE_NAME = 'ArthBook-v2.6-StockFix';
 
 const STATIC_ASSETS = [
   './', 
