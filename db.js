@@ -1,6 +1,6 @@
 /* FILENAME: db.js
    PURPOSE: Arth Book Core Engine (Ultimate - Fully Restored & Upgraded)
-   VERSION: 4.0 (Fixed Logic + User Mgmt + Cloud Backup)
+   VERSION: 4.1 (Fixed Stock Calculation Logic + All Features Preserved)
 */
 
 class ArthBookDB {
@@ -203,7 +203,6 @@ class ArthBookDB {
         });
     }
 
-    // NEW: Save Item (In case you were missing this)
     async saveItem(itemData) {
         if (!this.db) await this.init();
         return new Promise((resolve, reject) => {
@@ -251,6 +250,7 @@ class ArthBookDB {
         });
     }
 
+    // --- MAIN FIX IS HERE (Stock Calculation Logic Corrected) ---
     async saveVoucherTransaction(voucherData, entriesData) {
         if (!this.db) await this.init();
         if (voucherData.date && voucherData.date.length === 6) {
@@ -263,9 +263,11 @@ class ArthBookDB {
             const eStore = tx.objectStore("acct_entries");
             const iStore = tx.objectStore("items");
 
+            // Clean previous entries if editing
             if(voucherData.id) { 
                 eStore.index("voucher_id").getAll(voucherData.id).onsuccess = (ev) => {
                     ev.target.result.forEach(entry => {
+                        // REVERSE OLD STOCK EFFECT BEFORE DELETING
                         if(entry.meta_data) {
                             let meta = typeof entry.meta_data === 'string' ? JSON.parse(entry.meta_data) : entry.meta_data;
                             if(meta.item_id) {
@@ -273,6 +275,7 @@ class ArthBookDB {
                                     const item = iEv.target.result;
                                     if(item) {
                                         const qty = parseFloat(meta.qty) || 0;
+                                        // Reverse Logic: If it was Sales (-), now Add (+). If Purchase (+), now Subtract (-)
                                         if(voucherData.type === 'Sales') item.current_stock += qty;
                                         else if(voucherData.type === 'Purchase') item.current_stock -= qty;
                                         iStore.put(item);
@@ -290,15 +293,27 @@ class ArthBookDB {
                 const voucherId = voucherData.id || e.target.result;
                 entriesData.forEach(entry => {
                     entry.voucher_id = voucherId;
+                    
+                    // NEW STOCK LOGIC (Corrected)
                     let meta = entry.meta_data;
+                    if(typeof meta === 'string') { try { meta = JSON.parse(meta); } catch(e){} }
+
                     if(meta && meta.item_id) {
                         const qty = parseFloat(meta.qty) || 0;
                         iStore.get(meta.item_id).onsuccess = (iEv) => {
                             const item = iEv.target.result;
                             if(item) {
-                                if(voucherData.type === 'Sales') item.current_stock -= qty;
-                                else if(voucherData.type === 'Purchase') item.current_stock += qty;
+                                let current = parseFloat(item.current_stock) || 0; // Force Number
+                                
+                                // LOGIC FIXED: Sales = Decrease, Purchase = Increase
+                                if(voucherData.type === 'Sales') current -= qty;
+                                else if(voucherData.type === 'Purchase') current += qty;
+                                else if(voucherData.type === 'Sales Return') current += qty;
+                                else if(voucherData.type === 'Purchase Return') current -= qty;
+
+                                item.current_stock = current;
                                 iStore.put(item);
+                                console.log(`Stock Updated for ${item.name}: New Qty = ${current}`);
                             }
                         };
                     }
@@ -332,6 +347,7 @@ class ArthBookDB {
                                     const item = iEv.target.result;
                                     if(item) {
                                         const qty = parseFloat(meta.qty);
+                                        // LOGIC FIXED: Reverse of Sales (-) is (+)
                                         if(voucher.type === 'Sales') item.current_stock += qty;
                                         else if(voucher.type === 'Purchase') item.current_stock -= qty;
                                         iStore.put(item);
@@ -350,7 +366,7 @@ class ArthBookDB {
         });
     }
 
-    // --- 5. CLOUD BACKUP ---
+    // --- 5. CLOUD BACKUP (Preserved) ---
     async backupToGoogleDrive(accessToken) {
         if (!this.db) await this.init();
         const stores = ['vouchers', 'acct_entries', 'ledgers', 'groups', 'items', 'settings', 'users'];
