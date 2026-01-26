@@ -1,4 +1,4 @@
-// FILE: js/app.js (Complete Accounting + GST + Settings + Date Filters + Excel Export)
+// FILE: js/app.js (Complete Accounting + GST + Settings + Excel + Credit/Debit Note)
 const App = {
     state: { currentScreen: 'gateway', cart: [], tempVouchers: [] },
 
@@ -80,6 +80,9 @@ const App = {
                         <div class="menu-item" onclick="App.navigate('purchase')"><span class="label"><span class="hotkey">F9</span> Purchase Bill</span></div>
                         <div class="menu-item" onclick="App.navigate('receipt')"><span class="label"><span class="hotkey">F6</span> Receipt (In)</span></div>
                         <div class="menu-item" onclick="App.navigate('payment')"><span class="label"><span class="hotkey">F5</span> Payment (Out)</span></div>
+                        <div class="menu-item" onclick="App.navigate('credit_note')" style="border-top:1px dashed #cbd5e1; margin-top:5px; padding-top:5px;"><span class="label" style="color:#059669;">↩️ Credit Note (Sales Return)</span></div>
+                        <div class="menu-item" onclick="App.navigate('debit_note')"><span class="label" style="color:#ea580c;">↪️ Debit Note (Pur Return)</span></div>
+
                         <div class="menu-head">REPORTS</div>
                         <div class="menu-item" onclick="App.navigate('report_gst')"><span class="label" style="color:#7c3aed; font-weight:bold;">🏛️ GST Report (GSTR-1)</span></div>
                         <div class="menu-item" onclick="App.navigate('report_pnl')"><span class="label" style="color:#0f766e; font-weight:bold;">📈 Profit & Loss</span></div>
@@ -136,6 +139,28 @@ const App = {
             setTimeout(()=>document.getElementById('p-party').focus(), 100);
         }
 
+        // ➤ [NEW] CREDIT NOTE (SALES RETURN)
+        else if(page === 'credit_note') {
+            App.state.cart = [];
+            const ledgers = await ArthDB.getAll('ledgers');
+            const items = await ArthDB.getAll('items');
+            const parties = ledgers.filter(l => (l.group && l.group.includes('Debtor')) || l.group === 'Cash-in-hand').map(l=>`<option value="${l.name}">`).join('');
+            const stockItems = items.map(i=>`<option value="${i.name}">`).join('');
+            document.querySelector('.workspace').innerHTML = `<div class="panel"><div class="panel-head" style="background:#ecfdf5; color:#065f46;">Credit Note (Sales Return) <span style="float:right; cursor:pointer" onclick="location.reload()">[ESC]</span></div><div class="panel-body" style="padding:20px;"><div style="display:flex; justify-content:space-between; margin-bottom:15px; background:#ecfdf5; padding:10px; border:1px solid #a7f3d0;"><div>CN No: <b>${Date.now().toString().slice(-4)}</b></div><div>Date: <b>${new Date().toLocaleDateString('en-IN')}</b></div></div><div style="margin-bottom:20px;"><label style="font-weight:600; color:#065f46;">Party Name (Original Customer)</label><input list="parties" id="inv-party" placeholder="Select Customer" autofocus style="width:100%; border:1px solid #cbd5e1; padding:8px;"><datalist id="parties">${parties}</datalist></div><table style="border:1px solid #e2e8f0;"><thead><tr><th>Item Name</th><th style="width:80px; text-align:right">Qty</th><th style="width:100px; text-align:right">Rate</th><th style="width:60px; text-align:right">GST%</th><th style="width:120px; text-align:right">Total</th></tr></thead><tbody id="inv-rows"><tr><td><input list="items" id="i-name" placeholder="Item" onchange="App.Logic.itemSelected(this.value)" style="border:none; width:100%; outline:none;"></td><td><input type="number" id="i-qty" placeholder="1" class="text-right" onchange="App.Logic.calcRow()" style="border:none; width:100%; outline:none;"></td><td><input type="number" id="i-rate" placeholder="0" class="text-right" onchange="App.Logic.calcRow()" style="border:none; width:100%; outline:none;"></td><td><input type="number" id="i-tax" placeholder="0" class="text-right" readonly style="border:none; width:100%; outline:none; background:#f1f5f9;"></td><td class="text-right" id="i-amt" style="padding-right:12px; font-weight:bold;">0.00</td></tr></tbody><datalist id="items">${stockItems}</datalist></table><div id="added-list" style="height:150px; overflow-y:auto; border:1px solid #e2e8f0; border-top:none; background:#fff;"></div></div><div style="padding:15px; background:#ecfdf5; text-align:right; font-size:16px; font-weight:bold; border-top:1px solid #a7f3d0;">Return Total: ₹ <span id="inv-total">0.00</span><div style="margin-top:10px;"><button onclick="App.Logic.saveCreditNote()" class="action-btn" style="background:#059669; color:white;">SAVE CREDIT NOTE</button></div></div></div>`;
+            setTimeout(()=>document.getElementById('inv-party').focus(), 100);
+        }
+
+        // ➤ [NEW] DEBIT NOTE (PURCHASE RETURN)
+        else if(page === 'debit_note') {
+            App.state.cart = [];
+            const ledgers = await ArthDB.getAll('ledgers');
+            const items = await ArthDB.getAll('items');
+            const parties = ledgers.filter(l => (l.group && l.group.includes('Creditor')) || l.group === 'Cash-in-hand').map(l=>`<option value="${l.name}">`).join('');
+            const stockItems = items.map(i=>`<option value="${i.name}">`).join('');
+            document.querySelector('.workspace').innerHTML = `<div class="panel"><div class="panel-head" style="background:#fff1f2; color:#9f1239;">Debit Note (Purchase Return) <span style="float:right; cursor:pointer" onclick="location.reload()">[ESC]</span></div><div class="panel-body" style="padding:20px;"><div style="display:flex; justify-content:space-between; margin-bottom:15px; background:#fff1f2; padding:10px; border:1px solid #fecdd3;"><div>DN No: <b>${Date.now().toString().slice(-4)}</b></div><div>Date: <b>${new Date().toLocaleDateString('en-IN')}</b></div></div><div style="margin-bottom:20px;"><label style="font-weight:600; color:#9f1239;">Party Name (Supplier)</label><input list="parties" id="inv-party" placeholder="Select Supplier" autofocus style="width:100%; border:1px solid #cbd5e1; padding:8px;"><datalist id="parties">${parties}</datalist></div><table style="border:1px solid #e2e8f0;"><thead><tr><th>Item Name</th><th style="width:80px; text-align:right">Qty</th><th style="width:100px; text-align:right">Rate</th><th style="width:60px; text-align:right">GST%</th><th style="width:120px; text-align:right">Total</th></tr></thead><tbody id="inv-rows"><tr><td><input list="items" id="i-name" placeholder="Item" onchange="App.Logic.itemSelected(this.value)" style="border:none; width:100%; outline:none;"></td><td><input type="number" id="i-qty" placeholder="1" class="text-right" onchange="App.Logic.calcRow()" style="border:none; width:100%; outline:none;"></td><td><input type="number" id="i-rate" placeholder="0" class="text-right" onchange="App.Logic.calcRow()" style="border:none; width:100%; outline:none;"></td><td><input type="number" id="i-tax" placeholder="0" class="text-right" readonly style="border:none; width:100%; outline:none; background:#f1f5f9;"></td><td class="text-right" id="i-amt" style="padding-right:12px; font-weight:bold;">0.00</td></tr></tbody><datalist id="items">${stockItems}</datalist></table><div id="added-list" style="height:150px; overflow-y:auto; border:1px solid #e2e8f0; border-top:none; background:#fff;"></div></div><div style="padding:15px; background:#fff1f2; text-align:right; font-size:16px; font-weight:bold; border-top:1px solid #fecdd3;">Return Total: ₹ <span id="inv-total">0.00</span><div style="margin-top:10px;"><button onclick="App.Logic.saveDebitNote()" class="action-btn" style="background:#be123c; color:white;">SAVE DEBIT NOTE</button></div></div></div>`;
+            setTimeout(()=>document.getElementById('inv-party').focus(), 100);
+        }
+
         // --- PROFIT & LOSS REPORT ---
         else if(page === 'report_pnl') {
             document.querySelector('.workspace').innerHTML = `
@@ -153,7 +178,7 @@ const App = {
             App.Logic.renderPnL();
         }
 
-        // ➤ [UPDATED] GST REPORT (With Excel)
+        // --- GST REPORT SCREEN ---
         else if(page === 'report_gst') {
             document.querySelector('.workspace').innerHTML = `
                 <div class="panel">
@@ -171,7 +196,7 @@ const App = {
             App.Logic.renderGST();
         }
 
-        // ➤ [UPDATED] LEDGER REPORT (With Excel)
+        // --- LEDGER REPORT ---
         else if(page === 'report_ledger') {
             const ledgers = await ArthDB.getAll('ledgers');
             const parties = ledgers.map(l=>`<option value="${l.name}">`).join('');
@@ -196,7 +221,7 @@ const App = {
             setTimeout(()=>document.getElementById('rep-party').focus(), 100);
         }
 
-        // ➤ [UPDATED] STOCK SUMMARY (With Excel)
+        // --- STOCK SUMMARY ---
         else if(page === 'stock') {
             const items = await ArthDB.getAll('items');
             document.querySelector('.workspace').innerHTML = `
@@ -222,7 +247,7 @@ const App = {
             document.querySelector('.workspace').innerHTML = `<div class="panel"><div class="panel-head">Company Settings & Branding <span onclick="location.reload()" style="float:right; cursor:pointer">[ESC]</span></div><div class="panel-body" style="padding:30px; max-width:600px; margin:auto;"><div style="margin-bottom:15px;"><label style="font-weight:bold;">Company Name</label><input id="c-name" value="${p.name}" style="width:100%; padding:10px; border:1px solid #cbd5e1;"></div><div style="margin-bottom:15px;"><label style="font-weight:bold;">Address</label><input id="c-addr" value="${p.address}" style="width:100%; padding:10px; border:1px solid #cbd5e1;"></div><div style="display:flex; gap:10px; margin-bottom:15px;"><div style="flex:1;"><label style="font-weight:bold;">Mobile</label><input id="c-mob" value="${p.mobile}" style="width:100%; padding:10px; border:1px solid #cbd5e1;"></div><div style="flex:1;"><label style="font-weight:bold;">GSTIN</label><input id="c-gst" value="${p.gstin}" style="width:100%; padding:10px; border:1px solid #cbd5e1;"></div></div><div style="margin-bottom:15px;"><label style="font-weight:bold;">Company Logo (Image)</label><input type="file" id="c-logo" accept="image/*" style="width:100%;"><div style="font-size:11px; color:grey;">Leave empty to keep current logo.</div></div><div style="margin-bottom:20px;"><label style="font-weight:bold;">Digital Signature (Image)</label><input type="file" id="c-sign" accept="image/*" style="width:100%;"></div><div style="text-align:right;"><button onclick="App.Logic.saveSettings()" class="action-btn" style="background:#2563eb; color:white; padding:10px 20px;">SAVE SETTINGS</button></div></div></div>`;
         }
 
-        // ➤ [UPDATED] DAYBOOK (With Excel)
+        // --- DAYBOOK ---
         else if(page === 'daybook') {
             const vchs = await ArthDB.getAll('vouchers');
             document.querySelector('.workspace').innerHTML = `
@@ -257,22 +282,18 @@ const App = {
     },
 
     Logic: {
-        // --- HELPER: DATE PARSER & EXPORTER ---
         parseDate: (dStr) => { const [d, m, y] = dStr.split('/'); return new Date(`${y}-${m}-${d}`); },
         exportToCSV: (filename, rows) => {
             const csvContent = "data:text/csv;charset=utf-8," + rows.map(e => e.map(field => `"${String(field).replace(/"/g, '""')}"`).join(",")).join("\n");
             const link = document.createElement("a"); link.setAttribute("href", encodeURI(csvContent)); link.setAttribute("download", filename);
             document.body.appendChild(link); link.click(); document.body.removeChild(link);
         },
-
-        // --- EXPORT FUNCTIONS ---
         exportDaybook: () => {
             const rows = [["Date", "Particulars", "Vch No", "Type", "Amount"]];
             App.state.tempVouchers.forEach(v => rows.push([v.date, v.rows[0].ledger, v.no, v.type, v.total.toFixed(2)]));
             App.Logic.exportToCSV("Daybook.csv", rows);
         },
         exportGST: async () => {
-            // Re-calc logic for export
             const vchs = await ArthDB.getAll('vouchers');
             const ledgers = await ArthDB.getAll('ledgers');
             const fDate = document.getElementById('gst-from') ? document.getElementById('gst-from').value : '';
@@ -321,7 +342,6 @@ const App = {
             App.Logic.exportToCSV("Stock_Summary.csv", rows);
         },
 
-        // --- EXISTING LOGIC ---
         itemSelected: async (name) => { const i = (await ArthDB.getAll('items')).find(x => x.name === name); if(i) { document.getElementById('i-rate').value = i.rate; document.getElementById('i-tax').value = i.tax || 0; document.getElementById('i-qty').focus(); } },
         calcRow: () => { const q = parseFloat(document.getElementById('i-qty').value)||0, r = parseFloat(document.getElementById('i-rate').value)||0, t = parseFloat(document.getElementById('i-tax').value)||0; document.getElementById('i-amt').innerText = ((q*r) + (q*r*(t/100))).toFixed(2); },
         addItem: () => {
@@ -365,6 +385,31 @@ const App = {
             await ArthDB.add('vouchers', {id: `vpymt_${Date.now()}`, no: 'NA', date: new Date().toLocaleDateString('en-IN'), type: 'Payment', total: amt, rows: [{ledger: party, type: 'Dr', amount: amt}, {ledger: ac, type: 'Cr', amount: amt}], narration: nar});
             alert("Payment Saved! ✅"); location.reload();
         },
+        
+        // --- NEW LOGIC: CREDIT NOTE ---
+        saveCreditNote: async () => {
+            const party = document.getElementById('inv-party').value;
+            const iName = document.getElementById('i-name').value; if(iName) App.Logic.addItem();
+            if(!party || !App.state.cart.length) return alert("Error: Data Missing!");
+            const total = App.state.cart.reduce((a,b)=>a+b.total,0);
+            await ArthDB.add('vouchers', {id:`vcn_${Date.now()}`, no:Date.now().toString().slice(-4), date:new Date().toLocaleDateString('en-IN'), type:'Credit Note', total, rows:[{ledger:'Sales Return', type:'Dr', amount:total}, {ledger:party, type:'Cr', amount:total}], inventory:App.state.cart});
+            // STOCK EFFECT: SALES RETURN => STOCK INCREASES (+)
+            const items = await ArthDB.getAll('items'); for(let l of App.state.cart) { const i = items.find(x=>x.name===l.name); if(i) { i.qty = (parseFloat(i.qty)||0) + parseFloat(l.qty); await ArthDB.update('items', i); }}
+            alert("Credit Note Saved! Stock Increased. ✅"); location.reload();
+        },
+
+        // --- NEW LOGIC: DEBIT NOTE ---
+        saveDebitNote: async () => {
+            const party = document.getElementById('inv-party').value;
+            const iName = document.getElementById('i-name').value; if(iName) App.Logic.addItem();
+            if(!party || !App.state.cart.length) return alert("Error: Data Missing!");
+            const total = App.state.cart.reduce((a,b)=>a+b.total,0);
+            await ArthDB.add('vouchers', {id:`vdn_${Date.now()}`, no:Date.now().toString().slice(-4), date:new Date().toLocaleDateString('en-IN'), type:'Debit Note', total, rows:[{ledger:party, type:'Dr', amount:total}, {ledger:'Purchase Return', type:'Cr', amount:total}], inventory:App.state.cart});
+            // STOCK EFFECT: PURCHASE RETURN => STOCK DECREASES (-)
+            const items = await ArthDB.getAll('items'); for(let l of App.state.cart) { const i = items.find(x=>x.name===l.name); if(i) { i.qty = (parseFloat(i.qty)||0) - parseFloat(l.qty); await ArthDB.update('items', i); }}
+            alert("Debit Note Saved! Stock Decreased. ✅"); location.reload();
+        },
+
         saveSettings: async () => {
             const profile = JSON.parse(localStorage.getItem('company_profile')) || {};
             profile.name = document.getElementById('c-name').value; profile.address = document.getElementById('c-addr').value; profile.mobile = document.getElementById('c-mob').value; profile.gstin = document.getElementById('c-gst').value;
@@ -374,21 +419,17 @@ const App = {
             localStorage.setItem('company_profile', JSON.stringify(profile)); alert("Settings Saved!"); location.reload();
         },
 
-        // --- RENDER GST (With Filters) ---
         renderGST: async () => {
             const vchs = await ArthDB.getAll('vouchers');
             const ledgers = await ArthDB.getAll('ledgers');
             const fDate = document.getElementById('gst-from') ? document.getElementById('gst-from').value : '';
             const tDate = document.getElementById('gst-to') ? document.getElementById('gst-to').value : '';
-
-            // Filter Vouchers
             const salesVchs = vchs.filter(v => {
                 if(v.type !== 'Sales') return false;
                 if(fDate && App.Logic.parseDate(v.date) < new Date(fDate)) return false;
                 if(tDate && App.Logic.parseDate(v.date) > new Date(tDate)) return false;
                 return true;
             });
-
             const taxBuckets = {'0':{t:0,i:0,c:0,s:0,tot:0}, '5':{t:0,i:0,c:0,s:0,tot:0}, '12':{t:0,i:0,c:0,s:0,tot:0}, '18':{t:0,i:0,c:0,s:0,tot:0}, '28':{t:0,i:0,c:0,s:0,tot:0}};
             salesVchs.forEach(v => {
                 if(!v.inventory) return;
@@ -403,7 +444,6 @@ const App = {
             document.getElementById('gst-content').innerHTML = `<table style="width:100%; border:1px solid #e2e8f0; font-size:14px; border-collapse:collapse;"><thead style="background:#f1f5f9; font-weight:bold;"><tr><td style="padding:10px;">Rate</td><td style="text-align:right;">Taxable</td><td style="text-align:right;">IGST</td><td style="text-align:right;">CGST</td><td style="text-align:right;">SGST</td><td style="text-align:right;">Total</td></tr></thead><tbody>${rows || '<tr><td colspan="6" style="padding:20px;text-align:center;">No Data</td></tr>'}</tbody></table>`;
         },
 
-        // --- RENDER DAYBOOK (With Filters) ---
         renderDaybookRows: (list) => {
             const safeTotal = (amt) => (parseFloat(amt) || 0).toFixed(2);
             document.getElementById('db-rows').innerHTML = list.map(v => `
@@ -420,7 +460,6 @@ const App = {
             const q = document.getElementById('db-search').value.toLowerCase();
             const fDate = document.getElementById('db-from').value;
             const tDate = document.getElementById('db-to').value;
-            
             const filtered = App.state.tempVouchers.filter(v => {
                 const matchesText = v.rows[0].ledger.toLowerCase().includes(q) || v.no.toLowerCase().includes(q) || v.type.toLowerCase().includes(q);
                 let matchesDate = true;
@@ -437,7 +476,14 @@ const App = {
                 const items = await ArthDB.getAll('items');
                 for(let l of v.inventory) {
                     const i = items.find(x => x.name === l.name);
-                    if(i) { if(v.type === 'Sales') i.qty += parseFloat(l.qty); if(v.type === 'Purchase') i.qty -= parseFloat(l.qty); await ArthDB.update('items', i); }
+                    if(i) { 
+                        if(v.type === 'Sales') i.qty += parseFloat(l.qty); 
+                        if(v.type === 'Purchase') i.qty -= parseFloat(l.qty); 
+                        // Logic update for CN/DN
+                        if(v.type === 'Credit Note') i.qty -= parseFloat(l.qty); // Reversing Return (Stock was +, now -)
+                        if(v.type === 'Debit Note') i.qty += parseFloat(l.qty);  // Reversing Return (Stock was -, now +)
+                        await ArthDB.update('items', i); 
+                    }
                 }
             }
             const req = indexedDB.open('ArthBook_Ent_DB', 1);
@@ -445,67 +491,47 @@ const App = {
         },
         editVoucher: async (id) => { if(confirm("Edit mode requires deleting first. Continue?")) await App.Logic.deleteVoucher(id); },
 
-        // --- RENDER P&L (With Filters) ---
         renderPnL: async () => {
             const vchs = await ArthDB.getAll('vouchers');
             const items = await ArthDB.getAll('items');
             const fDate = document.getElementById('pnl-from') ? document.getElementById('pnl-from').value : '';
             const tDate = document.getElementById('pnl-to') ? document.getElementById('pnl-to').value : '';
-
             let sales = 0, purchase = 0;
             let closingStock = items.reduce((acc, i) => acc + ((parseFloat(i.qty)||0) * (parseFloat(i.rate)||0)), 0);
-
             vchs.forEach(v => {
                 if(fDate && App.Logic.parseDate(v.date) < new Date(fDate)) return;
                 if(tDate && App.Logic.parseDate(v.date) > new Date(tDate)) return;
-
                 v.rows.forEach(r => {
                     if(r.ledger === 'Sales Account' && r.type === 'Cr') sales += parseFloat(r.amount);
                     if(r.ledger === 'Purchase Account' && r.type === 'Dr') purchase += parseFloat(r.amount);
+                    // Handle Returns in P&L (Simplified)
+                    if(r.ledger === 'Sales Return' && r.type === 'Dr') sales -= parseFloat(r.amount);
+                    if(r.ledger === 'Purchase Return' && r.type === 'Cr') purchase -= parseFloat(r.amount);
                 });
             });
-
             const grossProfit = (sales + closingStock) - purchase;
             const color = grossProfit >= 0 ? 'green' : 'red';
-
-            document.getElementById('pnl-content').innerHTML = `
-                <table style="width:100%; border:1px solid #e2e8f0; font-size:16px;">
-                    <tr style="background:#f8fafc;"><td style="padding:10px;">Sales</td><td style="text-align:right; padding:10px;">${sales.toFixed(2)}</td></tr>
-                    <tr style="background:#f8fafc;"><td style="padding:10px;">Purchase</td><td style="text-align:right; padding:10px;">(-) ${purchase.toFixed(2)}</td></tr>
-                    <tr style="background:#f1f5f9; font-weight:bold;"><td style="padding:10px;">Closing Stock</td><td style="text-align:right; padding:10px;">(+) ${closingStock.toFixed(2)}</td></tr>
-                    <tr style="background:${grossProfit>=0?'#dcfce7':'#fee2e2'}; font-weight:bold; font-size:20px; color:${color};"><td style="padding:20px;">NET PROFIT</td><td style="text-align:right; padding:20px;">₹ ${grossProfit.toFixed(2)}</td></tr>
-                </table>`;
+            document.getElementById('pnl-content').innerHTML = `<table style="width:100%; border:1px solid #e2e8f0; font-size:16px;"><tr style="background:#f8fafc;"><td style="padding:10px;">Sales (Net)</td><td style="text-align:right; padding:10px;">${sales.toFixed(2)}</td></tr><tr style="background:#f8fafc;"><td style="padding:10px;">Purchase (Net)</td><td style="text-align:right; padding:10px;">(-) ${purchase.toFixed(2)}</td></tr><tr style="background:#f1f5f9; font-weight:bold;"><td style="padding:10px;">Closing Stock</td><td style="text-align:right; padding:10px;">(+) ${closingStock.toFixed(2)}</td></tr><tr style="background:${grossProfit>=0?'#dcfce7':'#fee2e2'}; font-weight:bold; font-size:20px; color:${color};"><td style="padding:20px;">NET PROFIT</td><td style="text-align:right; padding:20px;">₹ ${grossProfit.toFixed(2)}</td></tr></table>`;
         },
 
-        // --- LEDGER REPORT (With Date & Opening Balance Calculation) ---
         generateLedgerReport: async () => {
             const partyName = document.getElementById('rep-party').value;
             const fDateStr = document.getElementById('rep-from').value;
             const tDateStr = document.getElementById('rep-to').value;
-            
             if(!partyName) return;
-
             const vchs = await ArthDB.getAll('vouchers');
             const ledgers = await ArthDB.getAll('ledgers');
             const ledgerMeta = ledgers.find(l=>l.name === partyName);
             if(!ledgerMeta) return;
-
-            // 1. Calculate Previous Balance (Transactions before From Date)
             let prevBal = ledgerMeta.openingBalance || 0;
             const fDate = fDateStr ? new Date(fDateStr) : null;
             const tDate = tDateStr ? new Date(tDateStr) : null;
-
             vchs.forEach(v => {
                 if(fDate && App.Logic.parseDate(v.date) < fDate) {
                     const row = v.rows.find(r => r.ledger === partyName);
-                    if(row) {
-                        if(row.type === 'Dr') prevBal += parseFloat(row.amount);
-                        else prevBal -= parseFloat(row.amount);
-                    }
+                    if(row) { if(row.type === 'Dr') prevBal += parseFloat(row.amount); else prevBal -= parseFloat(row.amount); }
                 }
             });
-
-            // 2. Filter Current Period Transactions
             const partyVouchers = vchs.filter(v => {
                 if(!v.rows.some(r => r.ledger === partyName)) return false;
                 const vDate = App.Logic.parseDate(v.date);
@@ -513,30 +539,19 @@ const App = {
                 if(tDate && vDate > tDate) return false;
                 return true;
             });
-
             let html = `<table style="width:100%; border-collapse:collapse; font-size:13px;"><thead style="background:#f1f5f9; color:#475569;"><tr><th style="padding:8px; border:1px solid #e2e8f0;">Date</th><th style="padding:8px; border:1px solid #e2e8f0;">Particulars</th><th style="padding:8px; border:1px solid #e2e8f0;">Type</th><th style="padding:8px; border:1px solid #e2e8f0; text-align:right;">Debit</th><th style="padding:8px; border:1px solid #e2e8f0; text-align:right;">Credit</th></tr></thead><tbody>`;
-            
-            // Show Brought Forward Balance
             html += `<tr style="background:#fffbeb;"><td colspan="3" style="padding:8px; font-weight:bold;">B/F Balance</td><td class="text-right" style="padding:8px; font-weight:bold;">${prevBal > 0 ? prevBal.toFixed(2) : ''}</td><td class="text-right" style="padding:8px; font-weight:bold;">${prevBal < 0 ? Math.abs(prevBal).toFixed(2) : ''}</td></tr>`;
-
-            let runningBal = prevBal;
-            let totalDr = prevBal > 0 ? prevBal : 0;
-            let totalCr = prevBal < 0 ? Math.abs(prevBal) : 0;
-
+            let runningBal = prevBal; let totalDr = prevBal > 0 ? prevBal : 0; let totalCr = prevBal < 0 ? Math.abs(prevBal) : 0;
             partyVouchers.forEach(v => {
                 const row = v.rows.find(r => r.ledger === partyName);
                 let dr = 0, cr = 0;
                 if(row.type === 'Dr') { dr = parseFloat(row.amount); runningBal += dr; totalDr += dr; }
                 else { cr = parseFloat(row.amount); runningBal -= cr; totalCr += cr; }
-                
                 html += `<tr><td style="padding:8px; border:1px solid #e2e8f0;">${v.date}</td><td style="padding:8px; border:1px solid #e2e8f0;">${v.type} <span style="color:grey;font-size:10px">(${v.no})</span></td><td style="padding:8px; border:1px solid #e2e8f0;">${v.type}</td><td style="padding:8px; border:1px solid #e2e8f0; text-align:right;">${dr ? dr.toFixed(2) : ''}</td><td style="padding:8px; border:1px solid #e2e8f0; text-align:right;">${cr ? cr.toFixed(2) : ''}</td></tr>`;
             });
-
             html += `<tr style="background:#f8fafc; font-weight:bold;"><td colspan="3" style="padding:8px; text-align:right;">Total:</td><td style="padding:8px; text-align:right;">${totalDr.toFixed(2)}</td><td style="padding:8px; text-align:right;">${totalCr.toFixed(2)}</td></tr></tbody></table>`;
-            
             document.getElementById('rep-data').innerHTML = html;
-            const suffix = runningBal >= 0 ? 'Dr (Receivable)' : 'Cr (Payable)';
-            const color = runningBal >= 0 ? '#16a34a' : '#dc2626';
+            const suffix = runningBal >= 0 ? 'Dr (Receivable)' : 'Cr (Payable)'; const color = runningBal >= 0 ? '#16a34a' : '#dc2626';
             document.getElementById('rep-bal').innerHTML = `<span style="color:${color}">₹ ${Math.abs(runningBal).toFixed(2)} ${suffix}</span>`;
         },
 
@@ -574,6 +589,8 @@ const App = {
                 if (App.state.currentScreen === 'create') App.Logic.saveLedgerAux();
                 if (App.state.currentScreen === 'create_item') App.Logic.saveItemAux();
                 if (App.state.currentScreen === 'settings') App.Logic.saveSettings();
+                if (App.state.currentScreen === 'credit_note') App.Logic.saveCreditNote();
+                if (App.state.currentScreen === 'debit_note') App.Logic.saveDebitNote();
             }
             if (e.key === 'Enter' && e.target.id === 'i-rate') App.Logic.addItem();
             const isTyping = e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT';
