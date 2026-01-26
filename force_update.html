@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>System Update</title>
+    <style>body{font-family:sans-serif; text-align:center; padding:50px; background:#f0f9ff; color:#0d47a1;}</style>
+</head>
+<body>
+    <h1>Updating Arth Book...</h1>
+    <p>Please wait while we clear old files.</p>
+    <script>
+        async function cleanUp() {
+            // 1. Service Worker को हटाओ
+            if(navigator.serviceWorker) {
+                const regs = await navigator.serviceWorker.getRegistrations();
+                for(let reg of regs) { await reg.unregister(); }
+            }
+            
+            // 2. पुरानी Cache फाइलों को डिलीट करो
+            const keys = await caches.keys();
+            for(let key of keys) { await caches.delete(key); }
+            
+            alert("✅ System Updated Successfully!\nअब नया कोड लोड होगा।");
+            window.location.href = "index.html"; // वापस डैशबोर्ड पर भेजें
+        }
+        cleanUp();
+    </script>
+</body>
+</html>
