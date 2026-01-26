@@ -323,9 +323,14 @@ td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; vertical-align: middl
                         <input type="date" id="invDate">
                     </div>
                     <div class="form-group">
-                        <label>Supplier (Party)</label>
-                        <select id="partySelect"></select>
-                    </div>
+    <label>Supplier (Party)</label>
+    <div style="display:flex; gap:5px;">
+        <select id="partySelect" style="flex:1;"></select>
+        <button class="btn btn-save" style="padding:0 12px;" onclick="openPartyModal()" title="Add New Supplier">
+            <i class="fas fa-plus"></i>
+        </button>
+    </div>
+</div>
                 </div>
 
                 <div class="table-container">
@@ -658,7 +663,100 @@ td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; vertical-align: middl
         }
     });
     
-</script>
+// --- QUICK PARTY FUNCTIONS ---
 
+function openPartyModal() {
+    document.getElementById('partyModal').style.display = 'flex';
+    document.getElementById('newPartyName').focus();
+}
+
+function closePartyModal() {
+    document.getElementById('partyModal').style.display = 'none';
+    document.getElementById('newPartyName').value = '';
+    document.getElementById('newPartyPhone').value = '';
+    document.getElementById('newPartyGst').value = '';
+}
+
+async function saveNewParty() {
+    const name = document.getElementById('newPartyName').value.trim();
+    if(!name) return alert("Party Name is required");
+
+    // 1. Find 'Sundry Creditors' Group ID (suppliers belong here)
+    const credGroup = groups.find(g => g.name === 'Sundry Creditors');
+    if(!credGroup) return alert("Error: 'Sundry Creditors' group missing in Masters!");
+
+    // 2. Prepare Data
+    const newLedger = {
+        name: name,
+        group_id: credGroup.id,
+        phone: document.getElementById('newPartyPhone').value.trim(),
+        gstin: document.getElementById('newPartyGst').value.trim(),
+        opening_balance: 0,
+        op_date: new Date().toISOString().slice(0,10),
+        reg_type: 'Unregistered'
+    };
+
+    // 3. Save to DB
+    try {
+        const tx = DB.db.transaction('ledgers', 'readwrite');
+        const store = tx.objectStore('ledgers');
+        const request = store.add(newLedger);
+
+        request.onsuccess = async (e) => {
+            const newId = e.target.result; // ID of newly created party
+            
+            // Refresh Ledgers List
+            ledgers = await DB.getAll('ledgers');
+            
+            // Refresh Dropdown
+            const sel = document.getElementById('partySelect');
+            sel.innerHTML = '<option value="">Select Supplier / Party</option>';
+            
+            // Filter logic (Same as onload)
+            const targetNames = ['Sundry Creditors', 'Cash-in-Hand', 'Bank Accounts'];
+            const allowedGroupIds = groups.filter(g => targetNames.includes(g.name)).map(g => g.id);
+            const validParties = ledgers.filter(l => allowedGroupIds.includes(l.group_id));
+            
+            validParties.sort((a,b) => a.name.localeCompare(b.name));
+            validParties.forEach(l => {
+                const gName = groups.find(g => g.id === l.group_id)?.name || '';
+                // Auto-select the new party
+                const isSelected = (l.id === newId) ? 'selected' : '';
+                sel.innerHTML += `<option value="${l.id}" ${isSelected}>${l.name} (${gName})</option>`;
+            });
+
+            alert("✅ Party Created Successfully!");
+            closePartyModal();
+        };
+    } catch(err) {
+        alert("Error creating party: " + err.message);
+    }
+}
+</script>
+<div class="modal-overlay" id="partyModal">
+    <div class="modal" style="width:350px;">
+        <div class="modal-header" style="display:flex; justify-content:space-between; margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:10px;">
+            <h3 style="margin:0; color:var(--primary);">New Supplier</h3>
+            <button onclick="closePartyModal()" style="border:none; background:none; font-size:20px; cursor:pointer;">&times;</button>
+        </div>
+        
+        <div class="form-group" style="margin-bottom:10px;">
+            <label>Party Name *</label>
+            <input type="text" id="newPartyName" placeholder="Enter Name">
+        </div>
+        
+        <div class="form-group" style="margin-bottom:10px;">
+            <label>Mobile Number</label>
+            <input type="text" id="newPartyPhone" placeholder="Mobile No">
+        </div>
+        
+        <div class="form-group" style="margin-bottom:20px;">
+            <label>GSTIN (Optional)</label>
+            <input type="text" id="newPartyGst" placeholder="GST Number">
+        </div>
+        
+        <button class="btn btn-save" onclick="saveNewParty()" style="width:100%">Save & Select</button>
+    </div>
+</div>
 </body>
 </html>
