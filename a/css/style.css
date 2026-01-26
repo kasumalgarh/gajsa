@@ -1,0 +1,97 @@
+/* FILE: css/style.css */
+
+/* ENTERPRISE THEME (Tally Prime Inspired) */
+:root {
+    --top-bar: #fbd34d; /* Tally Gold */
+    --header-bg: #1b3a57; /* Deep Blue */
+    --sidebar-bg: #ffffff;
+    --main-bg: #e2e8f0;
+    --text-main: #1e293b;
+    --accent: #0ea5e9;
+    --border: #cbd5e1;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; user-select: none; }
+body { height: 100vh; display: flex; flex-direction: column; overflow: hidden; font-size: 13px; background: var(--main-bg); }
+
+/* 1. TOP GOLD BAR (Info Strip) */
+.top-strip {
+    height: 28px; background: var(--top-bar); display: flex; align-items: center; padding: 0 15px;
+    font-weight: bold; color: #374151; font-size: 12px; justify-content: space-between;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 10;
+}
+.top-menu { display: flex; gap: 20px; }
+.top-menu span { cursor: pointer; }
+.top-menu span:hover { text-decoration: underline; }
+
+/* 2. HEADER (Brand & Action) */
+.app-header {
+    height: 50px; background: var(--header-bg); color: white; display: flex; align-items: center;
+    padding: 0 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+}
+.logo { font-size: 18px; font-weight: 700; letter-spacing: 0.5px; margin-right: 40px; }
+.nav-links { display: flex; gap: 5px; }
+.nav-btn {
+    background: rgba(255,255,255,0.1); border: none; color: #e2e8f0; padding: 6px 15px;
+    border-radius: 4px; cursor: pointer; font-size: 13px; transition: 0.2s;
+}
+.nav-btn:hover, .nav-btn.active { background: var(--top-bar); color: #000; font-weight: bold; }
+
+/* 3. MAIN LAYOUT */
+.layout { display: flex; flex: 1; overflow: hidden; }
+
+/* SIDEBAR (Gateway) */
+.gateway {
+    width: 280px; background: white; border-right: 1px solid var(--border); display: flex; flex-direction: column;
+}
+.gateway-header {
+    background: #f1f5f9; padding: 10px 15px; font-weight: bold; border-bottom: 1px solid var(--border);
+    text-transform: uppercase; color: #475569; letter-spacing: 1px; font-size: 11px;
+}
+.menu-list { flex: 1; overflow-y: auto; padding: 10px 0; }
+.menu-item {
+    padding: 8px 20px; cursor: pointer; color: var(--text-main); display: flex; justify-content: space-between;
+    border-left: 3px solid transparent;
+}
+.menu-item:hover { background: #f0f9ff; color: var(--accent); }
+.menu-item.active { background: #e0f2fe; border-left-color: var(--accent); font-weight: 600; }
+.hotkey { color: #dc2626; font-weight: bold; } /* Red Letter Shortcuts */
+
+/* DASHBOARD AREA */
+.workspace { flex: 1; padding: 20px; overflow-y: auto; display: flex; gap: 20px; }
+
+/* WIDGETS */
+.panel {
+    background: white; border: 1px solid var(--border); flex: 1; border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; flex-direction: column;
+}
+.panel-head {
+    background: #f8fafc; padding: 10px 15px; font-weight: 700; color: #334151;
+    border-bottom: 1px solid var(--border); display: flex; justify-content: space-between;
+}
+.panel-body { padding: 0; flex: 1; overflow: hidden; }
+
+/* DATA TABLE (Dense) */
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; background: #f1f5f9; padding: 8px 15px; color: #64748b; font-size: 11px; text-transform: uppercase; }
+td { padding: 8px 15px; border-bottom: 1px solid #eee; color: #334155; }
+tr:hover { background: #f8fafc; cursor: pointer; }
+.amt { text-align: right; font-family: 'Consolas', monospace; font-weight: 600; }
+
+/* RIGHT ACTION BAR (Tally Style) */
+.actions-bar {
+    width: 140px; background: #1e293b; color: white; display: flex; flex-direction: column;
+}
+.action-btn {
+    background: #334155; border: none; border-bottom: 1px solid #475569; color: #fff;
+    padding: 12px 10px; text-align: left; cursor: pointer; font-size: 12px;
+}
+.action-btn:hover { background: var(--top-bar); color: black; }
+.k-hint { font-weight: bold; margin-right: 5px; color: #93c5fd; }
+.action-btn:hover .k-hint { color: #000; }
+
+/* FOOTER */
+.footer {
+    height: 30px; background: #fff; border-top: 1px solid var(--border); display: flex; align-items: center;
+    padding: 0 15px; font-size: 11px; color: #64748b; justify-content: space-between;
+}
