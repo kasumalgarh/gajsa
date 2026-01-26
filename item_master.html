@@ -2,153 +2,488 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Item Master - Arth Book</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Item Master Pro - Arth Book</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
 </head>
 <style>
-    /* ARTH BOOK ITEM MASTER STYLE */
-    :root { --primary: #0d47a1; --bg: #f1f5f9; --text: #1e293b; --sidebar-width: 260px; }
-    body { display: flex; height: 100vh; margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); overflow: hidden; }
+    /* ENTERPRISE LEVEL STYLING */
+    :root { 
+        --primary: #1e3a8a; 
+        --bg: #f1f5f9; 
+        --border: #cbd5e1; 
+        --text: #0f172a; 
+        --sidebar-w: 240px; /* Desktop Sidebar Width */
+        --header-h: 50px;   /* Mobile Header Height */
+    }
+    
+    * { box-sizing: border-box; }
 
-    /* SIDEBAR */
-    .sidebar { width: var(--sidebar-width); background: var(--primary); color: white; display: flex; flex-direction: column; flex-shrink: 0; }
-    .nav-links { padding: 10px; list-style: none; }
-    .nav-link { display: flex; align-items: center; gap: 10px; padding: 12px; color: rgba(255,255,255,0.8); text-decoration: none; border-radius: 8px; margin-bottom: 5px; }
-    .nav-link:hover, .nav-link.active { background: rgba(255,255,255,0.15); color: white; font-weight: bold; }
+    body { 
+        display: flex; 
+        height: 100vh; 
+        margin: 0; 
+        font-family: 'Inter', sans-serif; 
+        background: var(--bg); 
+        color: var(--text); 
+        overflow: hidden; 
+    }
 
-    /* MAIN */
-    .main { flex: 1; display: flex; gap: 20px; padding: 20px; overflow: hidden; }
+    /* --- SIDEBAR NAVIGATION --- */
+    .sidebar {
+        width: var(--sidebar-w);
+        background: #0f172a; /* Dark Blue/Black */
+        color: white;
+        display: flex;
+        flex-direction: column;
+        flex-shrink: 0;
+        z-index: 1000;
+        transition: transform 0.3s ease;
+    }
     
-    /* LEFT LIST */
-    .list-box { flex: 1; background: white; border-radius: 12px; display: flex; flex-direction: column; border: 1px solid #e2e8f0; }
-    .search-bar { padding: 15px; border-bottom: 1px solid #e2e8f0; }
-    .search-bar input { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; }
-    .item-list { flex: 1; overflow-y: auto; padding: 0; }
-    .item-row { display: flex; align-items: center; padding: 12px 15px; border-bottom: 1px solid #f1f5f9; cursor: pointer; transition: 0.2s; }
-    .item-row:hover, .item-row.active { background: #e0f2fe; }
-    .item-img { width: 40px; height: 40px; border-radius: 6px; background: #f1f5f9; object-fit: cover; margin-right: 12px; border: 1px solid #e2e8f0; }
+    .logo-area {
+        height: 60px;
+        display: flex;
+        align-items: center;
+        padding: 0 20px;
+        font-size: 20px;
+        font-weight: 700;
+        border-bottom: 1px solid #334155;
+        background: #1e293b;
+    }
     
-    /* RIGHT FORM */
-    .form-box { width: 400px; background: white; border-radius: 12px; display: flex; flex-direction: column; border: 1px solid #e2e8f0; overflow-y: auto; }
-    .form-header { padding: 15px; border-bottom: 1px solid #e2e8f0; font-weight: bold; font-size: 18px; color: var(--primary); display: flex; justify-content: space-between; align-items: center; }
-    .form-body { padding: 20px; display: flex; flex-direction: column; gap: 15px; }
-    
-    label { font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 4px; display: block; }
-    input, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
-    input:focus, select:focus { border-color: var(--primary); outline: none; }
-    
-    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-    .btn { padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; }
-    .btn-save { background: var(--primary); color: white; }
-    .btn-new { background: #10b981; color: white; }
-    
-    /* IMAGE UPLOAD */
-    .img-upload { width: 100px; height: 100px; border: 2px dashed #cbd5e1; border-radius: 8px; margin: 0 auto; display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; position: relative; }
-    .img-upload img { width: 100%; height: 100%; object-fit: cover; display: none; }
-    .img-upload:hover { border-color: var(--primary); background: #f8fafc; }
+    .nav-links {
+        flex: 1;
+        padding: 10px 0;
+        overflow-y: auto;
+    }
 
-    /* BARCODE */
-    #barcodeCanvas { width: 100%; height: 60px; margin-top: 10px; display: none; }
+    .nav-item {
+        display: flex;
+        align-items: center;
+        padding: 12px 20px;
+        color: #94a3b8;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: 0.2s;
+    }
 
-    @media (max-width: 900px) { .sidebar { display: none; } .main { flex-direction: column; } .form-box { width: 100%; } }
+    .nav-item:hover, .nav-item.active {
+        background: #1e3a8a;
+        color: white;
+        border-right: 3px solid #60a5fa;
+    }
+
+    .nav-item i { width: 25px; text-align: center; margin-right: 10px; }
+
+    /* --- MAIN CONTENT WRAPPER --- */
+    .app-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* MOBILE HEADER (Visible only on Mobile) */
+    .mobile-header {
+        display: none; /* Hidden on Desktop */
+        height: var(--header-h);
+        background: white;
+        border-bottom: 1px solid var(--border);
+        align-items: center;
+        padding: 0 15px;
+        justify-content: space-between;
+        z-index: 500;
+    }
+    .mh-left { display: flex; align-items: center; gap: 15px; }
+    .mh-title { font-weight: 700; font-size: 16px; color: var(--primary); }
+    .icon-btn { border: none; background: none; font-size: 18px; color: #333; cursor: pointer; padding: 5px; }
+
+    /* --- LAYOUT CONTAINER --- */
+    .main-container { 
+        display: flex; 
+        flex: 1; 
+        width: 100%; 
+        height: 100%; 
+        overflow: hidden; 
+        position: relative;
+    }
+    
+    /* LEFT: LIST VIEW */
+    .list-panel { 
+        width: 320px; 
+        background: white; 
+        border-right: 1px solid var(--border); 
+        display: flex; 
+        flex-direction: column; 
+        height: 100%;
+        flex-shrink: 0;
+        transition: transform 0.3s ease;
+    }
+    
+    .search-header { padding: 15px; border-bottom: 1px solid var(--border); background: #f8fafc; }
+    .search-header input { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; }
+    
+    .item-list { flex: 1; overflow-y: auto; }
+    .item-row { padding: 15px; border-bottom: 1px solid #f1f5f9; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+    .item-row:hover, .item-row.active { background: #eff6ff; border-left: 4px solid var(--primary); }
+    .stock-badge { font-size: 11px; padding: 3px 8px; background: #dcfce7; color: #166534; border-radius: 10px; font-weight: bold; }
+
+    /* RIGHT: FORM AREA */
+    .form-panel { 
+        flex: 1; 
+        display: flex; 
+        flex-direction: column; 
+        background: #fff; 
+        height: 100%; 
+        overflow: hidden;
+    }
+    
+    .form-header { 
+        padding: 15px 25px; 
+        border-bottom: 1px solid var(--border); 
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center; 
+        background: #fff; 
+        flex-shrink: 0;
+    }
+    .form-title { font-size: 18px; font-weight: 700; color: var(--primary); }
+    
+    /* TABS */
+    .tabs { 
+        display: flex; 
+        gap: 20px; 
+        padding: 0 25px; 
+        border-bottom: 1px solid var(--border); 
+        background: #f8fafc; 
+        overflow-x: auto; /* Scrollable tabs on mobile */
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+    .tabs::-webkit-scrollbar { height: 0px; } /* Hide scrollbar */
+    .tab { padding: 12px 5px; cursor: pointer; font-size: 13px; font-weight: 600; color: #64748b; border-bottom: 3px solid transparent; }
+    .tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+    /* FORM CONTENT */
+    .form-content { flex: 1; overflow-y: auto; padding: 25px; }
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; animation: fadeIn 0.3s; }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* GRIDS & INPUTS */
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 20px; }
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 5px; }
+    input, select, textarea { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 4px; font-size: 14px; background: #fff; }
+    input:focus, select:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 2px rgba(30, 58, 138, 0.1); }
+
+    /* SECTIONS */
+    .section-head { font-size: 13px; font-weight: 700; color: var(--primary); margin-bottom: 15px; padding-bottom: 5px; border-bottom: 1px dashed var(--border); margin-top: 10px; }
+    
+    /* TOGGLE SWITCH */
+    .toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #f8fafc; border: 1px solid var(--border); border-radius: 6px; margin-bottom: 10px; }
+    .toggle-label { font-size: 13px; font-weight: 500; }
+    
+    /* BUTTONS */
+    .btn-bar { padding: 15px 25px; border-top: 1px solid var(--border); background: #f8fafc; display: flex; justify-content: flex-end; gap: 10px; flex-shrink: 0; }
+    .btn { padding: 12px 20px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; font-size: 13px; display: flex; align-items: center; justify-content: center; gap: 5px; }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-sec { background: white; border: 1px solid var(--border); color: #333; }
+    .btn-danger { background: #fee2e2; color: #ef4444; }
+
+    /* OPENING STOCK TABLE */
+    .os-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 10px; min-width: 500px; /* Horizontal scroll fix */ }
+    .os-table-wrapper { overflow-x: auto; border: 1px solid var(--border); border-radius: 4px; }
+    .os-table th { background: #f1f5f9; padding: 8px; text-align: left; border: 1px solid var(--border); }
+    .os-table td { padding: 5px; border: 1px solid var(--border); }
+    .os-table input { border: none; padding: 5px; background: transparent; width: 100%; }
+
+    /* --- MOBILE RESPONSIVENESS (The Magic) --- */
+    @media (max-width: 900px) {
+        .sidebar {
+            position: absolute;
+            height: 100%;
+            transform: translateX(-100%);
+            box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+        }
+        .sidebar.open { transform: translateX(0); }
+        
+        .mobile-header { display: flex; } /* Show header */
+
+        .main-container { position: relative; }
+
+        /* LIST & FORM STACKING */
+        .list-panel { width: 100%; position: absolute; z-index: 10; height: 100%; }
+        .form-panel { width: 100%; position: absolute; z-index: 20; height: 100%; transform: translateX(100%); transition: transform 0.3s ease; }
+        
+        /* When Form is Active */
+        body.form-active .form-panel { transform: translateX(0); }
+        body.form-active .list-panel { transform: translateX(-20%); opacity: 0.5; }
+
+        .btn-bar { padding: 10px; flex-direction: row-reverse; justify-content: space-between; }
+        .btn { flex: 1; }
+        .tabs { padding: 0 10px; }
+        .form-content { padding: 15px; }
+        
+        /* Hide Desktop Form Header Elements that are in Mobile Header */
+        .form-header { display: none; } 
+    }
+    
+    /* Overlay for mobile sidebar */
+    .overlay {
+        position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.5); z-index: 900;
+        display: none;
+    }
+    .overlay.active { display: block; }
+
 </style>
 <body>
 
-<div class="sidebar">
-    <div style="padding:20px; font-size:20px; font-weight:800; border-bottom:1px solid rgba(255,255,255,0.1);">Arth Book</div>
+<div class="overlay" onclick="toggleSidebar()"></div>
+
+<div class="sidebar" id="sidebar">
+    <div class="brand"><i class="fas fa-cube"></i> Arth Book</div>
     <ul class="nav-links">
-        <li><a href="index.html" class="nav-link"><i class="fas fa-home"></i> Dashboard</a></li>
-        <li><a href="item_master.html" class="nav-link active"><i class="fas fa-boxes"></i> Inventory</a></li>
+        <li><a href="index.html" class="nav-link active"><i class="fas fa-home"></i> Dashboard</a></li>
+        <li><a href="sales_invoice.html" class="nav-link"><i class="fas fa-file-invoice"></i> Sales (POS)</a></li>
+        <li><a href="purchase_invoice.html" class="nav-link"><i class="fas fa-truck"></i> Purchase</a></li>
+        <li><a href="vouchers.html" class="nav-link"><i class="fas fa-receipt"></i> Day Book</a></li>
+        <li><a href="item_master.html" class="nav-link"><i class="fas fa-boxes"></i> Inventory</a></li>
+        <li><a href="ArthBook.html" class="nav-link"><i class="fas fa-users"></i> Parties</a></li>
+        <li><a href="coa.html" class="nav-link"><i class="fas fa-sitemap"></i> Accounts</a></li>
         <li><a href="reports.html" class="nav-link"><i class="fas fa-chart-line"></i> Reports</a></li>
+        <li><a href="gst_filing.html" class="nav-link"><i class="fas fa-university"></i> GST Returns</a></li>
+        <li><a href="settings.html" class="nav-link"><i class="fas fa-cog"></i> Settings</a></li>
     </ul>
+    <div style="padding:20px; font-size:11px; color:rgba(255,255,255,0.4); text-align:center;">
+        Arth Book v10.0 Pro
+    </div>
 </div>
 
-<div class="main">
-    <div class="list-box">
-        <div class="search-bar">
-            <input type="text" id="search" placeholder="🔍 Search Item / SKU..." onkeyup="renderList()">
+
+<div class="app-content">
+    
+    <div class="mobile-header">
+        <div class="mh-left">
+            <button class="icon-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+            <span class="mh-title">Item Master</span>
         </div>
-        <div class="item-list" id="itemList">Loading...</div>
+        <button class="icon-btn" id="mobileBackBtn" onclick="closeMobileForm()" style="display:none;">
+            <i class="fas fa-arrow-left"></i> Back
+        </button>
     </div>
 
-    <div class="form-box">
-        <div class="form-header">
-            <span id="formTitle">New Item</span>
-            <button onclick="newItem()" style="background:none; border:none; color:#64748b; cursor:pointer;"><i class="fas fa-plus-circle"></i> New</button>
+    <div class="main-container">
+        <div class="list-panel">
+            <div class="search-header">
+                <input type="text" id="searchBox" placeholder="🔍 Search Item..." onkeyup="renderList()">
+            </div>
+            <div class="item-list" id="itemList">
+                </div>
+            <div style="padding:15px; border-top:1px solid #e2e8f0; background:#fff;">
+                <button class="btn btn-primary" style="width:100%" onclick="newItem()">
+                    <i class="fas fa-plus"></i> New Item (F2)
+                </button>
+            </div>
         </div>
-        <div class="form-body">
-            <input type="hidden" id="itemId">
-            
-            <div class="img-upload" onclick="document.getElementById('fileInput').click()">
-                <span id="uploadText" style="font-size:12px; color:#94a3b8; text-align:center;">Click to<br>Upload</span>
-                <img id="previewImg">
-                <input type="file" id="fileInput" hidden accept="image/*" onchange="handleImage(this)">
-            </div>
 
-            <div>
-                <label>Item Name *</label>
-                <input type="text" id="name" placeholder="e.g. Maggi Small">
-            </div>
-
-            <div class="row-2">
+        <div class="form-panel">
+            <div class="form-header">
                 <div>
-                    <label>SKU / Barcode</label>
-                    <input type="text" id="sku" placeholder="Scan or Type" oninput="genBarcode(this.value)">
-                </div>
-                <div>
-                    <label>Unit</label>
-                    <select id="unit">
-                        <option value="Pcs">Pcs</option><option value="Kg">Kg</option><option value="Box">Box</option><option value="Ltr">Ltr</option><option value="Mtr">Mtr</option>
-                    </select>
+                    <span class="form-title" id="pageTitle">New Item Creation</span>
+                    <div style="font-size:11px; color:#64748b;">Arth Book v13.0 (Enterprise)</div>
                 </div>
             </div>
 
-            <div class="row-2" style="background:#f0fdf4; padding:10px; border-radius:6px; border:1px solid #bbf7d0;">
-                <div>
-                    <label>HSN Code</label>
-                    <input type="text" id="hsn" placeholder="e.g. 1902">
+            <div class="tabs">
+                <div class="tab active" onclick="showTab('tab-general', this)">General</div>
+                <div class="tab" onclick="showTab('tab-pricing', this)">Pricing</div>
+                <div class="tab" onclick="showTab('tab-advanced', this)">Advanced</div>
+                <div class="tab" onclick="showTab('tab-opening', this)">Stock</div>
+            </div>
+
+            <div class="form-content">
+                <input type="hidden" id="itemId">
+
+                <div id="tab-general" class="tab-pane active">
+                    <div class="form-grid">
+                        <div class="form-group" style="grid-column: span 2;">
+                            <label>Item Name *</label>
+                            <input type="text" id="itemName" placeholder="Product Name (e.g. Dolo 650mg)">
+                        </div>
+                        <div class="form-group">
+                            <label>Print Name (Alias)</label>
+                            <input type="text" id="itemAlias" placeholder="Short Name for Bill">
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Category / Group</label>
+                            <input type="text" id="itemCat" list="catList" placeholder="Select Group">
+                            <datalist id="catList"></datalist>
+                        </div>
+                        <div class="form-group">
+                            <label>Brand / Manufacturer</label>
+                            <input type="text" id="itemBrand" placeholder="e.g. Samsung">
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Base Unit</label>
+                            <select id="itemUnit">
+                                <option value="Pcs">Pcs</option><option value="Kg">Kg</option><option value="Box">Box</option><option value="Ltr">Ltr</option><option value="Mtr">Mtr</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Alt Unit (Optional)</label>
+                            <div style="display:flex; gap:5px; align-items:center;">
+                                <input type="number" id="convFactor" placeholder="1" style="width:60px;">
+                                <select id="altUnit" style="flex:1;">
+                                    <option value="">None</option><option value="Box">Box</option><option value="Carton">Carton</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>SKU / Barcode</label>
+                            <div style="display:flex; gap:5px;">
+                                <input type="text" id="itemSku" placeholder="Scan Barcode">
+                                <button class="btn btn-sec" onclick="genSku()" title="Auto Generate"><i class="fas fa-magic"></i></button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Location / Rack No</label>
+                            <input type="text" id="itemRack" placeholder="e.g. Rack A-1">
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <label>GST Rate (%)</label>
-                    <select id="gstRate">
-                        <option value="0">0% (Exempt)</option>
-                        <option value="5">5%</option>
-                        <option value="12">12%</option>
-                        <option value="18">18%</option>
-                        <option value="28">28%</option>
-                    </select>
+
+                <div id="tab-pricing" class="tab-pane">
+                    <div class="section-head">Tax Configuration</div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>HSN / SAC Code</label>
+                            <input type="text" id="itemHsn">
+                        </div>
+                        <div class="form-group">
+                            <label>Taxability</label>
+                            <select id="taxType">
+                                <option value="Taxable">Taxable</option>
+                                <option value="Exempt">Exempt</option>
+                                <option value="Nil Rated">Nil Rated</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>GST Rate (%)</label>
+                            <select id="gstRate">
+                                <option value="0">0%</option>
+                                <option value="5">5%</option>
+                                <option value="12">12%</option>
+                                <option value="18">18%</option>
+                                <option value="28">28%</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="section-head">Standard Rates</div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>MRP</label>
+                            <input type="number" id="mrp" placeholder="0.00">
+                        </div>
+                        <div class="form-group">
+                            <label>Sale Price</label>
+                            <input type="number" id="salePrice" placeholder="0.00">
+                        </div>
+                        <div class="form-group">
+                            <label>Purchase Price</label>
+                            <input type="number" id="purPrice" placeholder="0.00">
+                        </div>
+                        <div class="form-group">
+                            <label>Min Sale Price</label>
+                            <input type="number" id="minSalePrice" placeholder="0.00">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tab-advanced" class="tab-pane">
+                    <div class="section-head">Inventory Maintenance Features</div>
+                    
+                    <div class="toggle-row">
+                        <span class="toggle-label">Maintain Batch Wise Details?</span>
+                        <input type="checkbox" id="trackBatch" style="width:auto;">
+                    </div>
+                    
+                    <div class="toggle-row">
+                        <span class="toggle-label">Maintain Manufacturing Date?</span>
+                        <input type="checkbox" id="trackMfg" style="width:auto;">
+                    </div>
+
+                    <div class="toggle-row">
+                        <span class="toggle-label">Maintain Expiry Date?</span>
+                        <input type="checkbox" id="trackExp" style="width:auto;">
+                    </div>
+
+                    <div class="toggle-row">
+                        <span class="toggle-label">Track Serial Numbers (IMEI)?</span>
+                        <input type="checkbox" id="trackSerial" style="width:auto;">
+                    </div>
+
+                    <div class="form-group" style="margin-top:20px;">
+                        <label>Re-order Level (Low Stock Alert)</label>
+                        <input type="number" id="reorderLvl" value="10" style="width:100px;">
+                    </div>
+                </div>
+
+                <div id="tab-opening" class="tab-pane">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Total Opening Qty</label>
+                            <input type="number" id="opQty" readonly placeholder="Auto Calc" style="background:#f1f5f9;">
+                        </div>
+                        <div class="form-group">
+                            <label>Total Value</label>
+                            <input type="number" id="opVal" readonly placeholder="Auto Calc" style="background:#f1f5f9;">
+                        </div>
+                    </div>
+
+                    <div class="section-head">Batch-wise Breakup</div>
+                    <div class="os-table-wrapper">
+                        <table class="os-table">
+                            <thead>
+                                <tr>
+                                    <th>Godown</th>
+                                    <th>Batch No</th>
+                                    <th>Expiry</th>
+                                    <th width="80">Qty</th>
+                                    <th width="100">Rate</th>
+                                    <th width="30"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="osRows"></tbody>
+                        </table>
+                    </div>
+                    <button class="btn btn-sec" style="margin-top:10px; width:100%;" onclick="addOsRow()">+ Add Batch Line</button>
                 </div>
             </div>
 
-            <div class="row-2">
-                <div>
-                    <label>Purchase Price (Ex. Tax)</label>
-                    <input type="number" id="cost" placeholder="0.00">
-                </div>
-                <div>
-                    <label>Sale Price (Inc. Tax)</label>
-                    <input type="number" id="price" placeholder="0.00">
-                </div>
+            <div class="btn-bar">
+                <button class="btn btn-primary" onclick="saveItem()">Save <span style="font-size:10px">(Ctrl+S)</span></button>
+                <button class="btn btn-sec" onclick="resetForm()">Reset</button>
+                <button class="btn btn-danger" id="btnDel" onclick="deleteItem()" style="display:none;">Delete</button>
             </div>
-
-            <div class="row-2">
-                <div>
-                    <label>Current Stock</label>
-                    <input type="number" id="stock" placeholder="0">
-                </div>
-                <div>
-                    <label>Low Stock Alert</label>
-                    <input type="number" id="minStock" value="5">
-                </div>
-            </div>
-
-            <canvas id="barcodeCanvas"></canvas>
-
-            <button class="btn btn-save" onclick="saveItem()">💾 Save Item</button>
-            <button class="btn btn-new" onclick="deleteItem()" style="background:#fee2e2; color:#ef4444; margin-top:5px; display:none;" id="btnDelete">🗑️ Delete</button>
         </div>
     </div>
 </div>
@@ -156,148 +491,250 @@
 <script src="db.js"></script>
 <script>
     let items = [];
-    let currentImgBase64 = null;
 
     window.onload = async () => {
         await DB.init();
         renderList();
+        addOsRow();
+        
+        // Key Shortcuts
+        document.addEventListener('keydown', (e) => {
+            if(e.ctrlKey && e.key === 's') { e.preventDefault(); saveItem(); }
+            if(e.key === 'F2') { e.preventDefault(); newItem(); }
+        });
     };
+
+    // --- NAVIGATION LOGIC ---
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('open');
+        document.querySelector('.overlay').classList.toggle('active');
+    }
+
+    function openMobileForm() {
+        // Only affects mobile via CSS class
+        document.body.classList.add('form-active');
+        document.getElementById('mobileBackBtn').style.display = 'block';
+    }
+
+    function closeMobileForm() {
+        document.body.classList.remove('form-active');
+        document.getElementById('mobileBackBtn').style.display = 'none';
+        
+        // Optional: Reset form when going back? 
+        // No, keep state so user doesn't lose data accidentally.
+    }
+
+    // --- TABS & FORM ---
+    function showTab(id, el) {
+        document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        el.classList.add('active');
+    }
 
     async function renderList() {
         items = await DB.getAll('items');
-        const q = document.getElementById('search').value.toLowerCase();
+        const q = document.getElementById('searchBox').value.toLowerCase();
         const list = document.getElementById('itemList');
         list.innerHTML = '';
 
-        const filtered = items.filter(i => i.name.toLowerCase().includes(q) || (i.sku && i.sku.includes(q)));
-        
-        if(filtered.length === 0) {
-            list.innerHTML = '<div style="padding:20px; text-align:center; color:#94a3b8;">No items found</div>';
-            return;
-        }
+        const filtered = items.filter(i => 
+            i.name.toLowerCase().includes(q) || 
+            (i.sku && i.sku.toLowerCase().includes(q))
+        );
+
+        if(filtered.length === 0) { list.innerHTML = "<div style='padding:20px; color:#94a3b8; text-align:center;'>No Items</div>"; return; }
 
         filtered.forEach(i => {
             const div = document.createElement('div');
             div.className = 'item-row';
             div.onclick = () => loadItem(i);
             div.innerHTML = `
-                <img src="${i.image || 'https://via.placeholder.com/40'}" class="item-img">
-                <div style="flex:1;">
-                    <div style="font-weight:600;">${i.name}</div>
-                    <div style="font-size:12px; color:#64748b;">Stock: ${i.current_stock} ${i.unit} | ₹${i.std_price}</div>
+                <div>
+                    <div style="font-weight:600; font-size:14px;">${i.name}</div>
+                    <div style="font-size:11px; color:#64748b;">MRP: ₹${i.mrp || '-'} | SKU: ${i.sku || '-'}</div>
                 </div>
-                <div style="font-size:11px; font-weight:bold; color:${(i.current_stock<=i.reorder_level)?'red':'green'};">
-                    ${(i.current_stock<=i.reorder_level)?'LOW':'OK'}
-                </div>
+                <div class="stock-badge">${i.current_stock} ${i.unit}</div>
             `;
             list.appendChild(div);
         });
     }
 
-    function loadItem(i) {
-        document.getElementById('itemId').value = i.id;
-        document.getElementById('name').value = i.name;
-        document.getElementById('sku').value = i.sku || '';
-        document.getElementById('unit').value = i.unit || 'Pcs';
-        document.getElementById('hsn').value = i.hsn || '';
-        document.getElementById('gstRate').value = i.gst_rate || 0;
-        document.getElementById('cost').value = i.std_cost || '';
-        document.getElementById('price').value = i.std_price || '';
-        document.getElementById('stock').value = i.current_stock || 0;
-        document.getElementById('minStock').value = i.reorder_level || 5;
-        
-        currentImgBase64 = i.image;
-        if(i.image) {
-            document.getElementById('previewImg').src = i.image;
-            document.getElementById('previewImg').style.display = 'block';
-            document.getElementById('uploadText').style.display = 'none';
-        } else {
-            resetImg();
-        }
-
-        document.getElementById('formTitle').innerText = "Edit Item";
-        document.getElementById('btnDelete').style.display = 'block';
-        genBarcode(i.sku);
-        
-        // Highlight active
-        document.querySelectorAll('.item-row').forEach(r => r.classList.remove('active'));
-        event.currentTarget.classList.add('active');
+    // --- OPENING STOCK ---
+    function addOsRow() {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td><input type="text" placeholder="Main Loc" class="os-loc"></td>
+            <td><input type="text" placeholder="Batch" class="os-batch"></td>
+            <td><input type="date" class="os-exp"></td>
+            <td><input type="number" class="os-qty" oninput="calcOsTotal()"></td>
+            <td><input type="number" class="os-rate" oninput="calcOsTotal()"></td>
+            <td style="text-align:center; cursor:pointer; color:red;" onclick="this.closest('tr').remove(); calcOsTotal()">x</td>
+        `;
+        document.getElementById('osRows').appendChild(tr);
     }
 
+    function calcOsTotal() {
+        let tQty = 0, tVal = 0;
+        document.querySelectorAll('#osRows tr').forEach(tr => {
+            const q = parseFloat(tr.querySelector('.os-qty').value) || 0;
+            const r = parseFloat(tr.querySelector('.os-rate').value) || 0;
+            tQty += q;
+            tVal += q * r;
+        });
+        document.getElementById('opQty').value = tQty;
+        document.getElementById('opVal').value = tVal.toFixed(2);
+    }
+
+    // --- CRUD OPS ---
     function newItem() {
-        document.querySelectorAll('input').forEach(i => i.value = '');
-        document.getElementById('itemId').value = '';
-        document.getElementById('unit').value = 'Pcs';
-        document.getElementById('gstRate').value = 0;
-        document.getElementById('stock').value = 0;
-        document.getElementById('minStock').value = 5;
-        resetImg();
-        document.getElementById('formTitle').innerText = "New Item";
-        document.getElementById('btnDelete').style.display = 'none';
-        document.getElementById('barcodeCanvas').style.display = 'none';
+        resetForm();
+        document.getElementById('pageTitle').innerText = "New Item Creation";
+        document.getElementById('btnDel').style.display = 'none';
+        
+        // Logic for Mobile view
+        openMobileForm();
+        setTimeout(() => document.getElementById('itemName').focus(), 300); // Focus after transition
+    }
+
+    function loadItem(i) {
+        document.getElementById('itemId').value = i.id;
+        document.getElementById('pageTitle').innerText = "Edit Item: " + i.name; // Update Title
+        
+        // Basic
+        document.getElementById('itemName').value = i.name;
+        document.getElementById('itemAlias').value = i.alias || '';
+        document.getElementById('itemCat').value = i.category || '';
+        document.getElementById('itemBrand').value = i.brand || '';
+        document.getElementById('itemUnit').value = i.unit || 'Pcs';
+        document.getElementById('itemSku').value = i.sku || '';
+        document.getElementById('itemRack').value = i.rack || '';
+
+        // Tax & Price
+        document.getElementById('itemHsn').value = i.hsn || '';
+        document.getElementById('gstRate').value = i.gst_rate || 0;
+        document.getElementById('mrp').value = i.mrp || '';
+        document.getElementById('salePrice').value = i.std_price || '';
+        document.getElementById('purPrice').value = i.std_cost || '';
+
+        // Checkboxes
+        document.getElementById('trackBatch').checked = i.track_batch || false;
+        document.getElementById('trackExp').checked = i.track_exp || false;
+        document.getElementById('trackSerial').checked = i.track_serial || false;
+        document.getElementById('reorderLvl').value = i.reorder_level || 10;
+
+        // Opening Stock
+        const osBody = document.getElementById('osRows');
+        osBody.innerHTML = '';
+        if(i.opening_batches && i.opening_batches.length > 0) {
+            i.opening_batches.forEach(b => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><input type="text" class="os-loc" value="${b.loc}"></td>
+                    <td><input type="text" class="os-batch" value="${b.batch}"></td>
+                    <td><input type="date" class="os-exp" value="${b.exp}"></td>
+                    <td><input type="number" class="os-qty" value="${b.qty}" oninput="calcOsTotal()"></td>
+                    <td><input type="number" class="os-rate" value="${b.rate}" oninput="calcOsTotal()"></td>
+                    <td style="text-align:center; cursor:pointer; color:red;" onclick="this.closest('tr').remove(); calcOsTotal()">x</td>
+                `;
+                osBody.appendChild(tr);
+            });
+        } else {
+            addOsRow();
+        }
+        calcOsTotal();
+
+        document.getElementById('btnDel').style.display = 'block';
+        openMobileForm(); // Switch view on mobile
     }
 
     async function saveItem() {
-        const name = document.getElementById('name').value;
-        if(!name) return alert("Item Name is required");
+        const name = document.getElementById('itemName').value.trim();
+        if(!name) return alert("Item Name is required!");
+
+        const batches = [];
+        document.querySelectorAll('#osRows tr').forEach(tr => {
+            const qty = parseFloat(tr.querySelector('.os-qty').value);
+            if(qty > 0) {
+                batches.push({
+                    loc: tr.querySelector('.os-loc').value,
+                    batch: tr.querySelector('.os-batch').value,
+                    exp: tr.querySelector('.os-exp').value,
+                    qty: qty,
+                    rate: parseFloat(tr.querySelector('.os-rate').value) || 0
+                });
+            }
+        });
 
         const data = {
             name: name,
-            sku: document.getElementById('sku').value,
-            unit: document.getElementById('unit').value,
-            hsn: document.getElementById('hsn').value,
+            alias: document.getElementById('itemAlias').value,
+            category: document.getElementById('itemCat').value,
+            brand: document.getElementById('itemBrand').value,
+            unit: document.getElementById('itemUnit').value,
+            sku: document.getElementById('itemSku').value,
+            rack: document.getElementById('itemRack').value,
+            hsn: document.getElementById('itemHsn').value,
             gst_rate: parseFloat(document.getElementById('gstRate').value) || 0,
-            std_cost: parseFloat(document.getElementById('cost').value) || 0,
-            std_price: parseFloat(document.getElementById('price').value) || 0,
-            current_stock: parseFloat(document.getElementById('stock').value) || 0,
-            reorder_level: parseFloat(document.getElementById('minStock').value) || 5,
-            image: currentImgBase64
+            mrp: parseFloat(document.getElementById('mrp').value) || 0,
+            std_price: parseFloat(document.getElementById('salePrice').value) || 0,
+            std_cost: parseFloat(document.getElementById('purPrice').value) || 0,
+            track_batch: document.getElementById('trackBatch').checked,
+            track_exp: document.getElementById('trackExp').checked,
+            track_serial: document.getElementById('trackSerial').checked,
+            reorder_level: parseFloat(document.getElementById('reorderLvl').value) || 0,
+            current_stock: parseFloat(document.getElementById('opQty').value) || 0,
+            opening_batches: batches
         };
 
         const id = document.getElementById('itemId').value;
         if(id) data.id = parseInt(id);
 
-        await DB.saveItem(data);
-        alert("✅ Item Saved!");
-        renderList();
-        newItem();
+        try {
+            await DB.saveItem(data);
+            renderList();
+            
+            // Success Feedback
+            const btn = document.querySelector('.btn-primary');
+            const origText = btn.innerHTML;
+            btn.innerHTML = "Saved ✅";
+            btn.style.background = "#10b981";
+            
+            setTimeout(() => { 
+                btn.innerHTML = origText; 
+                btn.style.background = ""; 
+                if(window.innerWidth > 900) newItem(); // Only reset immediately on desktop
+                else closeMobileForm(); // Go back to list on mobile
+            }, 1000);
+            
+        } catch(e) { alert("Error: " + e.message); }
     }
 
     async function deleteItem() {
-        if(!confirm("Delete this item?")) return;
+        if(!confirm("Are you sure?")) return;
         const id = parseInt(document.getElementById('itemId').value);
         const tx = DB.db.transaction('items', 'readwrite');
         tx.objectStore('items').delete(id);
-        tx.oncomplete = () => { renderList(); newItem(); };
-    }
-
-    // IMAGE LOGIC
-    function handleImage(input) {
-        const file = input.files[0];
-        if(!file) return;
-        if(file.size > 100000) return alert("Image too big! Max 100KB"); // Keep it small for IndexedDB
-        
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            currentImgBase64 = e.target.result;
-            document.getElementById('previewImg').src = currentImgBase64;
-            document.getElementById('previewImg').style.display = 'block';
-            document.getElementById('uploadText').style.display = 'none';
+        tx.oncomplete = () => { 
+            renderList(); 
+            newItem();
+            closeMobileForm(); // Return to list logic
         };
-        reader.readAsDataURL(file);
     }
 
-    function resetImg() {
-        currentImgBase64 = null;
-        document.getElementById('previewImg').style.display = 'none';
-        document.getElementById('uploadText').style.display = 'block';
+    function resetForm() {
+        document.querySelectorAll('input').forEach(i => i.value = '');
+        document.querySelectorAll('input[type="checkbox"]').forEach(i => i.checked = false);
+        document.getElementById('itemUnit').value = 'Pcs';
+        document.getElementById('gstRate').value = '0';
+        document.getElementById('osRows').innerHTML = '';
+        addOsRow();
+        document.getElementById('opQty').value = '';
+        document.getElementById('opVal').value = '';
     }
 
-    // BARCODE LOGIC
-    function genBarcode(val) {
-        if(!val) { document.getElementById('barcodeCanvas').style.display='none'; return; }
-        document.getElementById('barcodeCanvas').style.display='block';
-        JsBarcode("#barcodeCanvas", val, { format: "CODE128", height: 40, displayValue: true });
+    function genSku() {
+        document.getElementById('itemSku').value = Math.floor(10000000 + Math.random() * 90000000);
     }
 </script>
 </body>
