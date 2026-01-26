@@ -305,196 +305,268 @@ ul { list-style: none; }
     <a href="sales_invoice.html" class="fab" title="Quick Sale"><i class="fas fa-plus"></i></a>
 
     <script src="db.js"></script>
-    <script>
-        // --- SIDEBAR TOGGLE ---
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('active');
-            document.querySelector('.overlay').classList.toggle('active');
+   <script>
+    // --- 1. SIDEBAR TOGGLE ---
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.querySelector('.overlay');
+        if (sidebar) sidebar.classList.toggle('active');
+        if (overlay) overlay.classList.toggle('active');
+    }
+
+    // --- 2. DATA CONTAINER ---
+    let dbData = { vouchers: [], ledgers: [], items: [], entries: [], groups: [] };
+    window.taxData = { input: 0, output: 0 };
+
+    // --- 3. INIT (STARTUP) ---
+    window.onload = async () => {
+        // Set Date
+        const d = new Date();
+        document.getElementById('currentDate').innerText = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+
+        // Initialize DB
+        if (typeof DB !== 'undefined') {
+            await DB.init();
+            await loadData(); // Load real data
+            calculateKPIs();  // Calc numbers from real data
+            renderCharts();   // Draw charts with real data
+            renderLists();    // Show recent txns
+        } else {
+            console.error("DB.js not found!");
         }
+    };
 
-        // --- DATA LOGIC ---
-        let dbData = { vouchers: [], ledgers: [], items: [], entries: [], groups: [] };
-        window.taxData = { input: 0, output: 0 };
+    // --- 4. LOAD REAL DATA ---
+    async function loadData() {
+        dbData.vouchers = await DB.getAll('vouchers') || [];
+        dbData.ledgers = await DB.getAll('ledgers') || [];
+        dbData.items = await DB.getAll('items') || [];
+        dbData.entries = await DB.getAll('acct_entries') || [];
+        dbData.groups = await DB.getAll('groups') || [];
+    }
 
-        window.onload = async () => {
-            // Set Date
-            const d = new Date();
-            document.getElementById('currentDate').innerText = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+    // --- 5. FORMAT CURRENCY ---
+    function formatCurrency(num) {
+        return '₹' + (parseFloat(num) || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
 
-            // Initialize DB
-            if (typeof DB !== 'undefined') {
-                await DB.init();
-                await loadData();
-                calculateKPIs();
-                renderCharts();
-                renderLists();
-            } else {
-                console.error("DB.js not found!");
-            }
-        };
-
-        async function loadData() {
-            dbData.vouchers = await DB.getAll('vouchers') || [];
-            dbData.ledgers = await DB.getAll('ledgers') || [];
-            dbData.items = await DB.getAll('items') || [];
-            dbData.entries = await DB.getAll('acct_entries') || [];
-            dbData.groups = await DB.getAll('groups') || [];
+    // --- 6. CALCULATE DASHBOARD NUMBERS (REAL) ---
+    function calculateKPIs() {
+        // A. CASH BALANCE (Real Logic)
+        let cashBal = 0;
+        // Find 'Cash' ledger
+        const cashLedger = dbData.ledgers.find(l => l.name === 'Cash' || l.name === 'Cash-in-Hand');
+        if(cashLedger) {
+            // Sum all entries for Cash: Debit(+) - Credit(-)
+            cashBal = dbData.entries
+                .filter(e => e.ledger_id === cashLedger.id)
+                .reduce((sum, e) => sum + (e.debit || 0) - (e.credit || 0), 0);
         }
+        document.getElementById('cashBalance').innerText = formatCurrency(Math.max(0, cashBal));
 
-        function formatCurrency(num) {
-            return '₹' + (parseFloat(num) || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        }
-
-        function calculateKPIs() {
-            // 1. CASH (Approx logic for demo)
-            let cashBal = 0;
-            const cashTxns = dbData.entries.filter(e => e.ledger_id === 1 || e.ledger_name === 'Cash'); // Assuming ID 1 is Cash
-            // Simplified: Sum of all receipts - payments
-            dbData.vouchers.forEach(v => {
-                if(v.type === 'Receipt' || v.type === 'Sales') cashBal += v.amount;
-                if(v.type === 'Payment' || v.type === 'Purchase') cashBal -= v.amount;
+        // B. RECEIVABLES (Udhari Leni Hai)
+        let receivables = 0;
+        const debtorsGroup = dbData.groups.find(g => g.name === 'Sundry Debtors');
+        if(debtorsGroup) {
+            // Find all ledgers in Debtors Group
+            const debtorIds = dbData.ledgers.filter(l => l.group_id === debtorsGroup.id).map(l => l.id);
+            // Sum balances: Debit(+) - Credit(-)
+            dbData.entries.forEach(e => {
+                if(debtorIds.includes(e.ledger_id)) {
+                    receivables += (e.debit || 0) - (e.credit || 0);
+                }
             });
-            document.getElementById('cashBalance').innerText = formatCurrency(Math.max(0, cashBal)); // Mock logic
-
-            // 2. RECEIVABLES
-            let receivables = 0;
-            // Sum of Sales vouchers marked as Credit (simple logic)
-            // Ideally should check ledger balances of Debtors group
-            receivables = 15000; // Placeholder until real ledger calc
-            document.getElementById('receivables').innerText = formatCurrency(receivables);
-
-            // 3. GST
-            let inputTax = 0, outputTax = 0;
-            // Simple logic: 18% of Total Sales vs Purchase
-            let totalSales = dbData.vouchers.filter(v => v.type === 'Sales').reduce((s, v) => s + v.amount, 0);
-            let totalPurch = dbData.vouchers.filter(v => v.type === 'Purchase').reduce((s, v) => s + v.amount, 0);
-            
-            outputTax = totalSales * 0.18; // Rough Est
-            inputTax = totalPurch * 0.18;  // Rough Est
-            
-            let netTax = outputTax - inputTax;
-            document.getElementById('gstPayable').innerText = formatCurrency(Math.abs(netTax));
-            document.getElementById('gstTrend').innerHTML = netTax > 0 ? 
-                '<span style="color:var(--danger)">Payable</span>' : '<span style="color:var(--success)">Credit</span>';
-            
-            // 4. GROSS PROFIT
-            let gp = totalSales - totalPurch;
-            document.getElementById('grossProfit').innerText = formatCurrency(gp);
-
-            window.taxData = { input: inputTax, output: outputTax };
         }
+        document.getElementById('receivables').innerText = formatCurrency(Math.max(0, receivables));
 
-        function renderLists() {
-            // RECENT TRANSACTIONS
-            const list = document.getElementById('recentTxnList');
-            // Get last 10 vouchers
-            const sorted = [...dbData.vouchers].sort((a,b) => b.id - a.id).slice(0, 10);
+        // C. GST & PROFIT (Estimate based on Vouchers)
+        let totalSales = dbData.vouchers.filter(v => v.type === 'Sales').reduce((s, v) => s + (parseFloat(v.amount)||0), 0);
+        let totalPurch = dbData.vouchers.filter(v => v.type === 'Purchase').reduce((s, v) => s + (parseFloat(v.amount)||0), 0);
+        
+        let outputTax = totalSales * 0.18; // Approx 18%
+        let inputTax = totalPurch * 0.18;  // Approx 18%
+        let netTax = outputTax - inputTax;
 
-            if(sorted.length === 0) {
-                list.innerHTML = '<div style="padding:20px; text-align:center; color:#94a3b8;">No transactions found</div>';
-            } else {
-                list.innerHTML = sorted.map(v => {
-                    const isCredit = ['Sales', 'Receipt', 'Credit Note'].includes(v.type);
-                    const color = isCredit ? 'var(--success)' : 'var(--text-main)';
-                    const icon = isCredit ? 'fa-arrow-down' : 'fa-arrow-up';
-                    const iconBg = isCredit ? '#dcfce7' : '#f1f5f9';
-                    
-                    return `
-                    <div class="txn-item" onclick="window.location.href='voucher_entry.html?id=${v.id}&mode=view'">
-                        <div style="display:flex; gap:12px; align-items:center;">
-                            <div style="width:35px; height:35px; background:${iconBg}; border-radius:8px; display:flex; align-items:center; justify-content:center; color:${color}">
-                                <i class="fas ${icon}"></i>
-                            </div>
-                            <div class="txn-info">
-                                <strong>${v.type} #${v.voucher_no}</strong>
-                                <span>${v.date || '-'}</span>
-                            </div>
+        document.getElementById('gstPayable').innerText = formatCurrency(Math.abs(netTax));
+        document.getElementById('gstTrend').innerHTML = netTax >= 0 ? 
+            '<span style="color:var(--danger)">Payable</span>' : '<span style="color:var(--success)">Credit</span>';
+        
+        // Gross Profit (Simple: Sales - Purchase)
+        let gp = totalSales - totalPurch;
+        document.getElementById('grossProfit').innerText = formatCurrency(gp);
+
+        window.taxData = { input: inputTax, output: outputTax };
+    }
+
+    // --- 7. RENDER LISTS ---
+    function renderLists() {
+        const list = document.getElementById('recentTxnList');
+        // Get last 10 vouchers
+        const sorted = [...dbData.vouchers].sort((a,b) => b.id - a.id).slice(0, 10);
+
+        if(sorted.length === 0) {
+            list.innerHTML = '<div style="padding:20px; text-align:center; color:#94a3b8;">No transactions found</div>';
+        } else {
+            list.innerHTML = sorted.map(v => {
+                const isCredit = ['Sales', 'Receipt', 'Credit Note'].includes(v.type);
+                const color = isCredit ? 'var(--success)' : 'var(--text-main)';
+                const icon = isCredit ? 'fa-arrow-down' : 'fa-arrow-up';
+                const iconBg = isCredit ? '#dcfce7' : '#f1f5f9';
+                
+                return `
+                <div class="txn-item" onclick="window.location.href='voucher_entry.html?id=${v.id}&mode=view'">
+                    <div style="display:flex; gap:12px; align-items:center;">
+                        <div style="width:35px; height:35px; background:${iconBg}; border-radius:8px; display:flex; align-items:center; justify-content:center; color:${color}">
+                            <i class="fas ${icon}"></i>
                         </div>
-                        <div class="txn-amt" style="color:${color}">
-                            ${isCredit ? '+' : '-'} ${formatCurrency(v.amount)}
+                        <div class="txn-info">
+                            <strong>${v.type} #${v.voucher_no}</strong>
+                            <span>${v.date || '-'}</span>
                         </div>
-                    </div>`;
-                }).join('');
-            }
-
-            // ALERTS
-            const alerts = document.getElementById('alertList');
-            let alertHtml = '';
-            
-            // Low Stock Check
-            const lowStock = dbData.items.filter(i => (i.current_stock||0) <= (i.reorder_level||5));
-            if(lowStock.length > 0) {
-                alertHtml += `
-                <div class="alert-item">
-                    <div class="alert-icon"><i class="fas fa-box-open"></i></div>
-                    <div>
-                        <strong style="font-size:13px;">Low Stock Warning</strong>
-                        <div style="font-size:12px; color:var(--text-sub);">${lowStock.length} items below reorder level.</div>
+                    </div>
+                    <div class="txn-amt" style="color:${color}">
+                        ${isCredit ? '+' : '-'} ${formatCurrency(v.amount)}
                     </div>
                 </div>`;
-            } else {
-                alertHtml = '<div style="padding:20px; text-align:center; color:var(--success);"><i class="fas fa-check-circle"></i> No pending alerts</div>';
-            }
-            alerts.innerHTML = alertHtml;
+            }).join('');
         }
 
-        function renderCharts() {
-            // SALES CHART
-            const ctx = document.getElementById('salesChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: ['Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan'],
-                    datasets: [{
-                        label: 'Sales',
-                        data: [12000, 19000, 3000, 5000, 2000, 3000], // Demo Data
-                        borderColor: '#0d47a1',
-                        backgroundColor: 'rgba(13, 71, 161, 0.1)',
-                        fill: true,
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: { x: { display: false }, y: { display: false } }
-                }
-            });
-
-            // TAX CHART
-            const ctx2 = document.getElementById('taxChart').getContext('2d');
-            new Chart(ctx2, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Input', 'Output'],
-                    datasets: [{
-                        data: [window.taxData.input || 30, window.taxData.output || 70],
-                        backgroundColor: ['#10b981', '#ef4444'],
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '70%',
-                    plugins: { legend: { position: 'bottom' } }
-                }
-            });
-        }
+        // ALERTS (Low Stock)
+        const alerts = document.getElementById('alertList');
+        let alertHtml = '';
+        const lowStock = dbData.items.filter(i => (i.current_stock||0) <= (i.reorder_level||5));
         
-        function performSearch() {
-            // Basic search UI logic (expandable later)
-            const q = document.getElementById('globalSearch').value;
-            const resBox = document.getElementById('searchResults');
-            if(q.length > 2) {
-                resBox.style.display = 'block';
-                resBox.innerHTML = '<div style="padding:15px; color:#64748b;">Searching...</div>';
-                // Implement filter logic here
-            } else {
-                resBox.style.display = 'none';
-            }
+        if(lowStock.length > 0) {
+            alertHtml += `
+            <div class="alert-item">
+                <div class="alert-icon"><i class="fas fa-box-open"></i></div>
+                <div>
+                    <strong style="font-size:13px;">Low Stock Warning</strong>
+                    <div style="font-size:12px; color:var(--text-sub);">${lowStock.length} items below reorder level.</div>
+                </div>
+            </div>`;
+        } else {
+            alertHtml = '<div style="padding:20px; text-align:center; color:var(--success);"><i class="fas fa-check-circle"></i> No pending alerts</div>';
         }
-    </script>
+        alerts.innerHTML = alertHtml;
+    }
+
+    // --- 8. RENDER CHARTS (REAL DATA) ---
+    function renderCharts() {
+        // A. PREPARE SALES DATA (Last 6 Months)
+        const labels = [];
+        const dataPoints = [];
+        
+        for(let i=5; i>=0; i--) {
+            const d = new Date();
+            d.setMonth(d.getMonth() - i);
+            labels.push(d.toLocaleString('default', { month: 'short' }));
+            
+            // Filter sales for this month
+            const mStart = new Date(d.getFullYear(), d.getMonth(), 1);
+            const mEnd = new Date(d.getFullYear(), d.getMonth() + 1, 0);
+            
+            const val = dbData.vouchers
+                .filter(v => v.type === 'Sales' && new Date(v.date) >= mStart && new Date(v.date) <= mEnd)
+                .reduce((sum, v) => sum + (parseFloat(v.amount)||0), 0);
+            dataPoints.push(val);
+        }
+
+        // B. SALES CHART
+        const ctx = document.getElementById('salesChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Sales',
+                    data: dataPoints, // Real Data
+                    borderColor: '#0d47a1',
+                    backgroundColor: 'rgba(13, 71, 161, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { x: { display: false }, y: { display: false } }
+            }
+        });
+
+        // C. TAX CHART
+        const ctx2 = document.getElementById('taxChart').getContext('2d');
+        // Prevent empty chart glitch
+        let tData = [window.taxData.input, window.taxData.output];
+        if(tData[0] === 0 && tData[1] === 0) tData = [0.1, 0.1]; // Tiny placeholder if empty
+
+        new Chart(ctx2, {
+            type: 'doughnut',
+            data: {
+                labels: ['Input', 'Output'],
+                datasets: [{
+                    data: tData,
+                    backgroundColor: ['#10b981', '#ef4444'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '70%',
+                plugins: { legend: { position: 'bottom' } }
+            }
+        });
+    }
+
+    // --- 9. SEARCH ---
+    function performSearch() {
+        const q = document.getElementById('globalSearch').value.toLowerCase();
+        const resBox = document.getElementById('searchResults');
+        
+        if(q.length > 2) {
+            resBox.style.display = 'block';
+            // Search in Vouchers
+            const hits = dbData.vouchers.filter(v => 
+                (v.voucher_no && v.voucher_no.toString().includes(q)) || 
+                (v.narration && v.narration.toLowerCase().includes(q))
+            ).slice(0, 5);
+            
+            if(hits.length > 0) {
+                resBox.innerHTML = hits.map(v => `
+                    <div style="padding:10px; border-bottom:1px solid #eee; cursor:pointer;" 
+                         onclick="window.location.href='voucher_entry.html?id=${v.id}&mode=view'">
+                        <strong>${v.type} #${v.voucher_no}</strong> - ₹${v.amount}
+                    </div>
+                `).join('');
+            } else {
+                resBox.innerHTML = '<div style="padding:15px; color:#64748b;">No results found</div>';
+            }
+        } else {
+            resBox.style.display = 'none';
+        }
+    }
+
+    // --- 10. CLICK OUTSIDE TO CLOSE SIDEBAR ---
+    document.addEventListener("DOMContentLoaded", function() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.querySelector('.overlay');
+        const links = document.querySelectorAll('.nav-links a');
+
+        links.forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth <= 900) {
+                    if (sidebar) sidebar.classList.remove('active');
+                    if (overlay) overlay.classList.remove('active');
+                }
+            });
+        });
+        
+        if (overlay) {
+            overlay.addEventListener('click', toggleSidebar);
+        }
+    });
+</script>
 </body>
 </html>
