@@ -4,180 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Arth Book Enterprise</title>
-    
+    <link rel="stylesheet" href="css/style.css">
     <style>
-        /* =========================================
-           PROFESSIONAL ERP THEME (CLEAN & SIMPLE)
-           ========================================= */
-        :root {
-            --header-bg: #1b3a57;      /* Deep Professional Blue */
-            --top-bar-bg: #fbd34d;     /* Tally Gold/Yellow Strip */
-            --sidebar-bg: #ffffff;
-            --main-bg: #e2e8f0;        /* Light Grey Background (Easy on eyes) */
-            --panel-bg: #ffffff;
-            --text-color: #1e293b;
-            --border-color: #cbd5e1;
-            --hover-color: #e0f2fe;    /* Light Blue Selection */
-            --accent-color: #0ea5e9;   /* Active Blue */
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; user-select: none; }
-
-        body { 
-            height: 100vh; 
-            display: flex; 
-            flex-direction: column; 
-            overflow: hidden; 
-            background-color: var(--main-bg);
-            color: var(--text-color);
-            font-size: 13px;
-        }
-
-        /* --- 1. TOP STRIP (Info Bar) --- */
-        .top-strip {
-            height: 28px; 
-            background-color: var(--top-bar-bg); 
-            display: flex; align-items: center; padding: 0 15px;
-            font-weight: 600; color: #333; font-size: 12px; 
-            justify-content: space-between; border-bottom: 1px solid #d4af37;
-        }
-        .top-menu span { cursor: pointer; margin-left: 20px; }
-        .top-menu span:hover { text-decoration: underline; }
-
-        /* --- 2. HEADER (Brand Bar) --- */
-        .app-header {
-            height: 48px; 
-            background-color: var(--header-bg);
-            color: white; 
-            display: flex; align-items: center; padding: 0 20px; 
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .logo { 
-            font-size: 18px; font-weight: 700; margin-right: 40px; letter-spacing: 0.5px;
-        }
-        .nav-btn {
-            background: transparent; border: none; color: #cbd5e1; 
-            padding: 6px 15px; border-radius: 3px; cursor: pointer; font-size: 13px; 
-            margin-right: 5px; transition: 0.2s;
-        }
-        .nav-btn:hover, .nav-btn.active { 
-            background: rgba(255,255,255,0.1); color: #fff; font-weight: 600;
-        }
-
-        /* --- 3. LAYOUT --- */
-        .layout { display: flex; flex: 1; overflow: hidden; }
-
-        /* --- SIDEBAR MENU (Gateway) --- */
-        .gateway {
-            width: 250px; 
-            background: var(--sidebar-bg); 
-            border-right: 1px solid var(--border-color);
-            display: flex; flex-direction: column;
-        }
-        .gateway-header {
-            background: #f1f5f9; color: #475569; padding: 8px 15px; 
-            font-weight: 700; border-bottom: 1px solid var(--border-color);
-            text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px;
-        }
-        .menu-list { flex: 1; overflow-y: auto; padding: 5px 0; }
-        
-        .menu-item {
-            padding: 6px 20px; cursor: pointer; color: var(--text-color); 
-            display: flex; justify-content: space-between; align-items: center;
-            border-left: 3px solid transparent; transition: 0.1s;
-        }
-        .menu-item:hover { 
-            background-color: var(--hover-color); color: #000;
-        }
-        .hotkey { color: #dc2626; font-weight: bold; margin-right: 3px; } /* Red Hotkey like Tally */
-
-        /* --- WORKSPACE (Center) --- */
-        .workspace { flex: 1; display: flex; padding: 15px; gap: 15px; overflow: hidden; }
-
-        /* PANELS */
-        .panel {
-            background: var(--panel-bg); border: 1px solid var(--border-color); 
-            border-radius: 4px; flex: 1; display: flex; flex-direction: column;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05); overflow: hidden;
-        }
-        .panel-head {
-            background: #f8fafc; padding: 10px 15px; color: #334155; 
-            font-weight: 700; border-bottom: 1px solid var(--border-color);
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .panel-body { padding: 0; flex: 1; overflow-y: auto; }
-
-        /* --- TABLES --- */
-        table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        thead { background: #f1f5f9; position: sticky; top: 0; z-index: 5; }
-        th { 
-            padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--border-color); 
-            color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 11px;
-        }
-        td { padding: 8px 12px; border-bottom: 1px solid #f1f5f9; color: #333; }
-        tr:hover { background-color: #f8fafc; cursor: pointer; }
-        .text-right { text-align: right; }
-
-        /* --- RIGHT ACTION BAR --- */
-        .actions-bar {
-            width: 120px; background: #1e293b; display: flex; flex-direction: column;
-            border-left: 1px solid #334155;
-        }
-        .action-btn {
-            background: transparent; border: none; border-bottom: 1px solid #334155; 
-            color: #f8fafc; padding: 10px 12px; text-align: left; 
-            cursor: pointer; font-size: 12px; transition: 0.2s;
-        }
-        .action-btn:hover { background: #334155; color: #fff; }
-        .k-hint { font-weight: bold; margin-right: 5px; color: #7dd3fc; }
-
-        /* --- FOOTER --- */
-        .footer {
-            height: 30px; background: #fff; border-top: 1px solid var(--border-color); 
-            display: flex; align-items: center; padding: 0 15px; 
-            color: #64748b; justify-content: space-between; font-size: 11px;
-        }
-
-        /* --- INPUTS --- */
-        input, select {
-            width: 100%; padding: 6px 10px; border: 1px solid #cbd5e1; 
-            border-radius: 3px; font-size: 13px; outline: none;
-        }
-        input:focus, select:focus { border-color: var(--accent-color); box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.1); }
-
-        /* --- SCROLLBAR --- */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        ::-webkit-scrollbar-track { background: #f1f5f9; }
-
-        /* =========================================
-           PRINT SETTINGS (SIMPLE PROFESSIONAL BILL)
-           ========================================= */
-        @media print {
-            body * { visibility: hidden; }
-            #print-area, #print-area * { visibility: visible; }
-            #print-area { position: absolute; left: 0; top: 0; width: 100%; height: 100%; background: white; color: black; }
-            .no-print { display: none !important; }
-        }
-
-        /* Bill Design - Simple & Clean */
-        .bill-box {
-            border: 1px solid #000; padding: 40px; max-width: 800px; margin: 20px auto; 
-            background: #fff; color: #000; font-family: 'Segoe UI', sans-serif;
-        }
-        .bill-header { text-align: center; margin-bottom: 30px; }
-        .bill-org { font-size: 24px; font-weight: bold; margin-bottom: 5px; }
-        .bill-title { font-size: 16px; font-weight: bold; text-decoration: underline; text-transform: uppercase; margin-top: 10px; }
-        
-        .bill-info { display: flex; justify-content: space-between; margin-bottom: 20px; border-bottom: 1px solid #000; padding-bottom: 10px; }
-        
-        .bill-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        .bill-table th, .bill-table td { border: 1px solid #000; padding: 8px; text-align: left; }
-        .bill-table th { background-color: #f0f0f0; font-weight: bold; }
-        .bill-total-row td { border-top: 2px solid #000; font-weight: bold; }
-
-        .bill-footer { margin-top: 60px; display: flex; justify-content: space-between; }
-        .sign-box { border-top: 1px solid #000; padding-top: 5px; width: 200px; text-align: center; }
+        /* CSS वही रहेगा जो style.css में है, बस यहाँ override न हो */
+        body { background-color: #f1f5f9; }
     </style>
 </head>
 <body>
@@ -185,21 +15,21 @@
     <div class="top-strip">
         <div class="top-menu">
             <span>Arth Book Enterprise</span>
-            <span>License: Gold Edition</span>
+            <span>Gold Edition</span>
         </div>
         <div class="top-menu">
-            <span>Help [F1]</span>
-            <span>Settings [F12]</span>
+            <span onclick="App.navigate('settings')">Settings [F12]</span>
+            <span onclick="App.Logic.logout()">Logout</span>
         </div>
     </div>
 
     <div class="app-header">
         <div class="logo">ARTH BOOK</div>
         <div class="nav-links">
-            <button class="nav-btn active">Gateway</button>
-            <button class="nav-btn">Exchange</button>
-            <button class="nav-btn">Import</button>
-            <button class="nav-btn">Export</button>
+            <button class="nav-btn active" onclick="App.navigate('gateway')">Gateway</button>
+            <button class="nav-btn" onclick="App.Logic.backupData()">Backup</button>
+            <button class="nav-btn" onclick="document.getElementById('restore-file').click()">Restore</button>
+            <input type="file" id="restore-file" style="display:none" onchange="App.Logic.restoreData(this)">
         </div>
     </div>
 
@@ -208,48 +38,47 @@
         <div class="gateway">
             <div class="gateway-header">Masters</div>
             <div class="menu-list">
-                <div class="menu-item"><span class="label"><span class="hotkey">C</span>reate Master</span></div>
-                <div class="menu-item"><span class="label"><span class="hotkey">A</span>lter Master</span></div>
-                <div class="menu-item"><span class="label">Chart of Accounts</span></div>
+                <div class="menu-item" onclick="App.navigate('create')"><span class="label"><span class="hotkey">C</span>reate Ledger</span></div>
+                <div class="menu-item" onclick="App.navigate('create_item')"><span class="label"><span class="hotkey">I</span>tem Create</span></div>
+                <div class="menu-item"><span class="label">Alter Master</span></div>
                 
                 <div class="gateway-header" style="margin-top:10px;">Transactions</div>
-                <div class="menu-item active"><span class="label"><span class="hotkey">V</span>ouchers</span></div>
-                <div class="menu-item"><span class="label"><span class="hotkey">D</span>ay Book</span></div>
+                <div class="menu-item" onclick="App.navigate('sales')"><span class="label"><span class="hotkey">V</span>ouchers Entry</span></div>
+                <div class="menu-item" onclick="App.navigate('daybook')"><span class="label"><span class="hotkey">D</span>ay Book</span></div>
                 
                 <div class="gateway-header" style="margin-top:10px;">Reports</div>
-                <div class="menu-item"><span class="label"><span class="hotkey">B</span>alance Sheet</span></div>
-                <div class="menu-item"><span class="label"><span class="hotkey">P</span>rofit & Loss</span></div>
-                <div class="menu-item"><span class="label"><span class="hotkey">S</span>tock Summary</span></div>
-                <div class="menu-item"><span class="label">Ratio Analysis</span></div>
+                <div class="menu-item" onclick="App.navigate('report_gst')"><span class="label">GST Report (GSTR-1)</span></div>
+                <div class="menu-item" onclick="App.navigate('report_pnl')"><span class="label"><span class="hotkey">P</span>rofit & Loss</span></div>
+                <div class="menu-item" onclick="App.navigate('report_ledger')"><span class="label">Ledger Analysis</span></div>
+                <div class="menu-item" onclick="App.navigate('stock')"><span class="label"><span class="hotkey">S</span>tock Summary</span></div>
             </div>
         </div>
 
-        <div class="workspace">
+        <div class="workspace" id="main-workspace">
             <div class="panel">
-                <div class="panel-head">Loading System...</div>
-                <div class="panel-body" style="padding:20px; text-align:center; color:#666;">
-                    Please wait...
-                </div>
+                <div class="panel-head">System Loading...</div>
+                <div class="panel-body" style="padding:20px; text-align:center;">Initializing Arth Book Engine...</div>
             </div>
         </div>
 
         <div class="actions-bar">
-            <button class="action-btn"><span class="k-hint">F2</span>Date</button>
-            <button class="action-btn"><span class="k-hint">F3</span>Company</button>
-            <button class="action-btn"><span class="k-hint">F4</span>Contra</button>
-            <button class="action-btn"><span class="k-hint">F5</span>Payment</button>
-            <button class="action-btn"><span class="k-hint">F6</span>Receipt</button>
-            <button class="action-btn"><span class="k-hint">F7</span>Journal</button>
-            <button class="action-btn"><span class="k-hint">F8</span>Sales</button>
-            <button class="action-btn"><span class="k-hint">F9</span>Purchase</button>
+            <button class="action-btn" onclick="App.navigate('gateway')"><span class="k-hint">Esc</span>Home</button>
+            <button class="action-btn" onclick="App.navigate('contra')"><span class="k-hint">F4</span>Contra</button>
+            <button class="action-btn" onclick="App.navigate('payment')"><span class="k-hint">F5</span>Payment</button>
+            <button class="action-btn" onclick="App.navigate('receipt')"><span class="k-hint">F6</span>Receipt</button>
+            <button class="action-btn" onclick="App.navigate('journal')"><span class="k-hint">F7</span>Journal</button>
+            <button class="action-btn" onclick="App.navigate('sales')"><span class="k-hint">F8</span>Sales</button>
+            <button class="action-btn" onclick="App.navigate('purchase')"><span class="k-hint">F9</span>Purchase</button>
+            <button class="action-btn" onclick="App.navigate('credit_note')"><span class="k-hint">^F8</span>Crd Note</button>
+            <button class="action-btn" onclick="App.navigate('debit_note')"><span class="k-hint">^F9</span>Dbt Note</button>
         </div>
 
     </div>
 
     <div class="footer">
-        <span>User: Admin</span>
+        <span id="footer-user">User: Admin</span>
         <span>GATEWAY OF ARTHBOOK</span>
-        <span>Version 3.0 (Enterprise)</span>
+        <span id="footer-status">Ready</span>
     </div>
 
     <script src="js/db.js"></script>
